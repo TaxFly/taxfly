@@ -2254,8 +2254,8 @@ window.addGastoWithThumb=async(thumb)=>{
     const selTag=document.querySelector('#cat-tag-row .cat-tag.sel');
     const cat=selTag?selTag.dataset.cat:'📦 Otros';
     const lang=localStorage.getItem('appLang')||'es';
-    const fillMsgs={es:'Completá nombre y precio.',en:'Please fill in name and price.',pt:'Por favor preencha nome e preço.'};
-    if(!n||isNaN(v)||v<=0){alert(fillMsgs[lang]||fillMsgs.es);return;}
+    const fillMsgs={es:'Completá el nombre del producto.',en:'Please fill in the product name.',pt:'Por favor preencha o nome do produto.'};
+    if(!n||isNaN(v)||v<0){alert(fillMsgs[lang]||fillMsgs.es);return;}
     const gastoData={nombre:n,valor:v,cat,fecha:Date.now(),thumb:thumb||''};
     // Actualizar caché local inmediatamente (UX optimista)
     const localId='local_'+Date.now();
