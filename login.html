@@ -677,6 +677,7 @@ const FB = {
 const app  = initializeApp(FB);
 const auth = getAuth(app);
 const db   = getFirestore(app);
+if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
     
 // ── i18n ──
 const i18n = {
