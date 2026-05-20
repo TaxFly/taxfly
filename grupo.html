@@ -566,13 +566,14 @@
 
 <!-- ── Firebase + Lógica ── -->
 <script type="module">
-import { initializeApp }        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp }        from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import {
     getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
     arrayUnion, onSnapshot, serverTimestamp, query, collection, where, getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
 // 🔧 Firebase config
 const firebaseConfig = {
@@ -587,6 +588,7 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
+if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 
 let currentUser  = null;
 let currentGroup = null;
