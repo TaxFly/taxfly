@@ -1648,6 +1648,7 @@ buildParks();
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut, reauthenticateWithCredential, EmailAuthProvider, updateEmail, updatePassword, sendEmailVerification, deleteUser } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0",
@@ -1661,6 +1662,7 @@ buildParks();
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 
     let currentUser = null;
     const perfilId = localStorage.getItem('perfilActivoId');
