@@ -651,6 +651,7 @@ window.i18n = {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import { getFirestore, doc, deleteDoc , getDoc , setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
 const FB = {
     apiKey:"AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0",
@@ -663,6 +664,7 @@ const FB = {
 const app = initializeApp(FB);
 const auth = getAuth(app);
 const db = getFirestore(app);
+if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 let currentUser = null;
 const perfilFoto = localStorage.getItem('perfilActivoFoto');
 let tipIndex = 0;
