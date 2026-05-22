@@ -463,7 +463,7 @@
     import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
 // ── reCAPTCHA v3 helper ──
-const _RC_SITE_KEY = '6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';
+const _RC_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
 const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
 async function _rcToken(action) {
     return new Promise((resolve) => {
@@ -494,7 +494,7 @@ async function _rcCheck(action) {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
+    if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 
     const destino = localStorage.getItem('taxfly_destino') || 'usa';
     const destinoLabel = destino === 'europe' ? 'TaxEurope' : 'TaxUSA';
