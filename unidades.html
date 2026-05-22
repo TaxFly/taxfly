@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TaxUSA — Unidades</title>
     <!-- reCAPTCHA: solo cargar con conexión para evitar errores visuales offline -->
-    <script>if(navigator.onLine){var s=document.createElement('script');s.src='https://www.google.com/recaptcha/api.js?render=6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';s.async=true;s.defer=true;document.head.appendChild(s);}
+    <script>if(navigator.onLine){var s=document.createElement('script');s.src='https://www.google.com/recaptcha/api.js?render=6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';s.async=true;s.defer=true;document.head.appendChild(s);}
     </script>
     <style>.grecaptcha-badge{visibility:hidden!important;opacity:0!important;pointer-events:none!important;}</style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -664,7 +664,7 @@ const FB = {
 const app = initializeApp(FB);
 const auth = getAuth(app);
 const db = getFirestore(app);
-if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
+if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 let currentUser = null;
 const perfilFoto = localStorage.getItem('perfilActivoFoto');
 let tipIndex = 0;
