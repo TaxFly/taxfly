@@ -652,6 +652,26 @@ import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUse
 import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
+// ── reCAPTCHA v3 helper ──
+const _RC_SITE_KEY = '6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';
+const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
+async function _rcToken(action) {
+    return new Promise((resolve) => {
+        if (typeof grecaptcha === 'undefined') { resolve(null); return; }
+        grecaptcha.ready(() => grecaptcha.execute(_RC_SITE_KEY, { action }).then(resolve).catch(() => resolve(null)));
+    });
+}
+async function _rcCheck(action) {
+    const token = await _rcToken(action);
+    if (!token) return true;
+    try {
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token, action}) });
+        if (!r.ok) return true;
+        const d = await r.json();
+        return d.success !== false;
+    } catch { return true; }
+}
+
 const FB = { apiKey:"AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0", authDomain:"viajes-db538.firebaseapp.com", projectId:"viajes-db538", storageBucket:"viajes-db538.firebasestorage.app", messagingSenderId:"237311739178", appId:"1:237311739178:web:333e468b184c0402a98a53" };
 const app = initializeApp(FB);
 const auth = getAuth(app);
@@ -1036,6 +1056,7 @@ window.doChangePassword = async () => {
 };
 window.doDeleteAccount = async () => {
     if (!confirm('¿Eliminar cuenta permanentemente?')) return;
+    if (!(await _rcCheck('delete_account'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
     try { await deleteDoc(doc(db, 'usuarios', currentUser.uid)); await deleteUser(currentUser); window.location.replace('login.html'); }
     catch(e) { alert('Reautenticación requerida.'); }
 };
@@ -1993,20 +2014,18 @@ If you cannot find a field, use null for that field. Do not invent data.`;
             { type: 'text', text: prompt }
           ];
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://taxfly.vercel.app/api/analyze-insurance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 150,
-            messages: [{ role: 'user', content }]
+            fileBase64: b64,
+            mediaType,
+            docName,
         })
     });
 
-    const data = await res.json();
-    const text = (data.content || []).map(c => c.text || '').join('').trim();
-    const clean = text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    if (!res.ok) throw new Error('analyze-insurance error: ' + res.status);
+    const parsed = await res.json();
     return {
         insurer: parsed.insurer || null,
         phone:   parsed.phone   || null,

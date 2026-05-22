@@ -489,6 +489,26 @@ import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUse
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
+// ── reCAPTCHA v3 helper ──
+const _RC_SITE_KEY = '6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';
+const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
+async function _rcToken(action) {
+    return new Promise((resolve) => {
+        if (typeof grecaptcha === 'undefined') { resolve(null); return; }
+        grecaptcha.ready(() => grecaptcha.execute(_RC_SITE_KEY, { action }).then(resolve).catch(() => resolve(null)));
+    });
+}
+async function _rcCheck(action) {
+    const token = await _rcToken(action);
+    if (!token) return true;
+    try {
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token, action}) });
+        if (!r.ok) return true;
+        const d = await r.json();
+        return d.success !== false;
+    } catch { return true; }
+}
+
 const FB = { apiKey:"AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0", authDomain:"viajes-db538.firebaseapp.com", projectId:"viajes-db538", storageBucket:"viajes-db538.firebasestorage.app", messagingSenderId:"237311739178", appId:"1:237311739178:web:333e468b184c0402a98a53" };
 const app  = initializeApp(FB);
 const auth = getAuth(app);
@@ -570,6 +590,7 @@ window.doDeleteAccount = async () => {
   const m = { es:{c:"¿Eliminar cuenta permanentemente?",e:"Reautenticación requerida. Cerrá sesión y volvé a entrar."}, en:{c:"Permanently delete account?",e:"Re-authentication required. Please log out and back in."}, pt:{c:"Excluir conta permanentemente?",e:"Reautenticação necessária. Saia e entre novamente."} };
   const t = m[l] || m.es;
   if (!confirm(t.c)) return;
+  if (!(await _rcCheck('delete_account'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
   try { await deleteUser(currentUser); window.location.replace('login.html'); } catch(e) { alert(t.e); }
 };
 

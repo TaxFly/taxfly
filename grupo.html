@@ -571,6 +571,26 @@ import {
     getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
     arrayUnion, onSnapshot, serverTimestamp, query, collection, where, getDocs
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+// ── reCAPTCHA v3 helper ──
+const _RC_SITE_KEY = '6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';
+const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
+async function _rcToken(action) {
+    return new Promise((resolve) => {
+        if (typeof grecaptcha === 'undefined') { resolve(null); return; }
+        grecaptcha.ready(() => grecaptcha.execute(_RC_SITE_KEY, { action }).then(resolve).catch(() => resolve(null)));
+    });
+}
+async function _rcCheck(action) {
+    const token = await _rcToken(action);
+    if (!token) return true;
+    try {
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token, action}) });
+        if (!r.ok) return true;
+        const d = await r.json();
+        return d.success !== false;
+    } catch { return true; }
+}
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail }
     from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
@@ -744,6 +764,7 @@ window.doDeleteAccount = async () => {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser) return;
     if (!confirm('¿Eliminar cuenta permanentemente?')) return;
+    if (!(await _rcCheck('delete_account'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
     try {
         await deleteDoc(doc(db, 'usuarios', firebaseUser.uid));
         await deleteUser(firebaseUser);
@@ -785,6 +806,7 @@ window.crearGrupo = async () => {
     const lang = localStorage.getItem('appLang') || 'es';
     const t = i18n[lang] || i18n.es;
     if (!nombre) { shake('btn-crear'); showToast('⚠️ ' + (t.warn_trip_name || 'Escribí un nombre para el viaje')); return; }
+    if (!(await _rcCheck('create_group'))) { showToast('❌ Verificación de seguridad fallida'); return; }
     if (!currentUser) {
         showToast('⚠️ ' + (t.warn_login_create || 'Iniciá sesión para crear un grupo real'));
         activarDemo(); return;
@@ -1018,6 +1040,7 @@ window.abandonarGrupo = async () => {
 
 window.eliminarGrupo = async () => {
     if (!currentGroup || currentGroup._demo) { showToast('⚠️ No disponible en modo demo'); return; }
+    if (!(await _rcCheck('delete_group'))) { showToast('❌ Verificación de seguridad fallida'); return; }
     if (currentGroup.data.creadoPor !== currentUser.uid) {
         const lang = localStorage.getItem('appLang') || 'es';
         const t = i18n[lang] || i18n.es;

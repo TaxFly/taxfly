@@ -1650,6 +1650,26 @@ buildParks();
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
     import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
+// ── reCAPTCHA v3 helper ──
+const _RC_SITE_KEY = '6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';
+const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
+async function _rcToken(action) {
+    return new Promise((resolve) => {
+        if (typeof grecaptcha === 'undefined') { resolve(null); return; }
+        grecaptcha.ready(() => grecaptcha.execute(_RC_SITE_KEY, { action }).then(resolve).catch(() => resolve(null)));
+    });
+}
+async function _rcCheck(action) {
+    const token = await _rcToken(action);
+    if (!token) return true;
+    try {
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token, action}) });
+        if (!r.ok) return true;
+        const d = await r.json();
+        return d.success !== false;
+    } catch { return true; }
+}
+
     const firebaseConfig = {
         apiKey: "AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0",
         authDomain: "viajes-db538.firebaseapp.com",
@@ -3485,6 +3505,8 @@ document.addEventListener('DOMContentLoaded', () => {
             isLoading = true; if (sendBtn) sendBtn.disabled = true;
             showTyping();
 
+            _rcCheck('chat_message').then(function(rcOk) {
+            if (!rcOk) { hideTyping(); addMessage('bot', errMsg); isLoading = false; if (sendBtn) sendBtn.disabled = false; if (inputEl) inputEl.focus(); return; }
             fetch(GROQ_URL, {
                 method: 'POST',
                 body: JSON.stringify({ model: MODEL, messages: [{ role: 'system', content: SYSTEM }].concat(chatHistory.slice(-14)), max_tokens: 800, temperature: 0.7, stream: false })
@@ -3498,6 +3520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(function(e) { hideTyping(); addMessage('bot', errMsg); console.error('[TaxUSA Chat]', e); })
             .finally(function() { isLoading = false; if (sendBtn) sendBtn.disabled = false; if (inputEl) inputEl.focus(); });
+            }); // end _rcCheck
         }
 
         if (sendBtn) sendBtn.addEventListener('click', sendMessage);
