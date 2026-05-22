@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TaxFly — Profiles</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet"></noscript>
+    <style>
+        :root {
+            --primary: #2563eb; --primary-glow: rgba(37,99,235,0.12);
+            --accent: #ef4444; --danger: #ef4444;
+            --bg: #0f172a; --surface: #1e293b; --surface-2: #273549;
+            --border: #334155; --input-bg: #273549;
+            --text: #f1f5f9; --text-sub: #94a3b8; --text-dim: #64748b;
+            --radius: 20px; --radius-sm: 12px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+            --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+            color-scheme: dark;
+        }
+        /* Tema USA (default) */
+        body.tema-usa {
+            --primary: #2563eb;
+            --accent: #ef4444;
+            --primary-glow: rgba(37,99,235,0.12);
+            --bg: #0f172a; --surface: #1e293b; --surface-2: #273549; --border: #334155;
+        }
+        /* Tema Europe */
+        body.tema-europe {
+            --primary: #003399;
+            --accent: #ffcc00;
+            --primary-glow: rgba(0,51,153,0.12);
+            --bg: #05081a; --surface: #0d1233; --surface-2: #131b40; --border: #1e2d6b;
+        }
+        *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', -apple-system, system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 32px 20px; -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 70% 50% at 50% 0%, var(--primary-glow), transparent);
+            pointer-events: none;
+        }
+
+        .page-title {
+            font-size: 2rem; font-weight: 900; text-align: center;
+            margin-bottom: 48px; letter-spacing: -0.5px;
+            position: relative; z-index: 1;
+            transition: var(--transition);
+        }
+
+        .profiles-grid {
+            display: grid; grid-template-columns: repeat(2, 140px);
+            gap: 28px; justify-content: center;
+            margin-bottom: 48px; position: relative; z-index: 1;
+        }
+
+        .profile-item {
+            display: flex; flex-direction: column;
+            align-items: center; cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .avatar-wrapper {
+            position: relative; width: 120px; height: 120px; margin-bottom: 12px;
+        }
+
+        .avatar {
+            width: 120px; height: 120px;
+            border-radius: 18px;
+            background: var(--surface-2) no-repeat center/cover;
+            border: 2.5px solid transparent;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        body:not(.editing-mode) .profile-item:hover .avatar {
+            transform: scale(1.06); border-color: white;
+            box-shadow: 0 8px 30px rgba(var(--primary-rgb, 37,99,235),0.3);
+        }
+
+        .edit-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.55);
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: var(--transition); z-index: 5;
+        }
+        .editing-mode .edit-overlay { opacity: 1; pointer-events: auto; }
+        .edit-overlay svg { width: 32px; fill: white; }
+
+        .profile-name {
+            color: var(--text-sub); font-size: 0.95rem; font-weight: 700;
+            transition: var(--transition);
+        }
+        body:not(.editing-mode) .profile-item:hover .profile-name { color: var(--text); }
+
+        .add-avatar {
+            width: 120px; height: 120px;
+            border: 2px dashed var(--border);
+            border-radius: 18px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px;
+            font-size: 2rem; color: var(--text-dim);
+            transition: var(--transition);
+            background: var(--surface-2);
+        }
+        .add-avatar .add-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
+        .profile-item:hover .add-avatar { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
+        .profile-item:hover .add-avatar .add-label { color: var(--primary); }
+
+        /* Perfil activo ring */
+        .avatar.is-active {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.35), var(--shadow);
+        }
+        .active-badge {
+            position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white;
+            font-size: .55rem; font-weight: 900; letter-spacing: .5px;
+            padding: 2px 8px; border-radius: 20px; text-transform: uppercase;
+            white-space: nowrap; z-index: 10; pointer-events: none;
+        }
+        /* Botones inferiores agrupados */
+        .bottom-actions {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            margin-top: 4px;
+        }
+        .manage-btn {
+            background: var(--surface); color: var(--text-sub);
+            border: 1.5px solid var(--border);
+            padding: 13px 28px; border-radius: var(--radius-sm);
+            font-size: 0.8rem; font-weight: 800; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            font-family: inherit; transition: var(--transition);
+            width: 200px;
+        }
+        .manage-btn:hover { background: var(--surface-2); color: var(--text); }
+        .editing-mode .manage-btn { background: white; color: black; border-color: white; }
+
+        .modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none; align-items: flex-start; justify-content: center;
+            z-index: 1000; padding: 24px;
+            backdrop-filter: blur(16px);
+            overflow-y: auto;
+        }
+        .modal.show { display: flex; animation: modalIn 0.25s ease; }
+        @keyframes modalIn { from { opacity:0; transform: scale(0.92); } to { opacity:1; transform: scale(1); } }
+
+        .modal-content {
+            background: var(--surface); border-radius: 28px;
+            padding: 28px 24px; width: 100%; max-width: 380px;
+            border: 1.5px solid var(--border); text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
+
+        .preview-avatar {
+            width: 120px; height: 120px; border-radius: 18px;
+            margin: 0 auto 20px; border: 3px solid var(--primary);
+            background-size: cover; background-position: center;
+            background-color: var(--surface-2);
+            box-shadow: 0 0 24px rgba(37,99,235,0.25);
+        }
+
+        .name-input {
+            width: 100%; padding: 14px 16px;
+            background: var(--input-bg); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text);
+            font-family: inherit; font-size: 0.95rem; font-weight: 600;
+            margin-bottom: 16px; outline: none; -webkit-appearance: none;
+        }
+        .name-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px;
+            margin: 20px 0;
+            max-height: 220px; 
+            overflow-y: auto; 
+            padding: 8px;
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+}
+        .photo-option {
+            width: 100%;
+            aspect-ratio: 1 / 1; 
+            object-fit: cover;   
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+}
+        .photo-option:hover { transform: scale(1.05); border-color: var(--primary); }
+        .photo-option.selected { border-color: var(--primary); box-shadow: 0 0 12px var(--primary-dim); }
+
+        /* Upload photo section */
+        .upload-section {
+            margin: 0 0 16px 0;
+        }
+        .upload-divider {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 14px; color: var(--text-dim);
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .upload-divider::before, .upload-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+        .upload-drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--surface-2);
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-drop-zone:hover, .upload-drop-zone.dragover {
+            border-color: var(--primary);
+            background: var(--primary-glow);
+        }
+        .upload-drop-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .upload-icon { font-size: 1.6rem; margin-bottom: 4px; }
+        .upload-text { font-size: 0.78rem; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
+        .upload-specs {
+            display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .upload-spec-tag {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 20px; padding: 3px 9px;
+            font-size: 0.62rem; font-weight: 800; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* Crop modal */
+        .crop-modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000; padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+        .crop-modal.show { display: flex; animation: modalIn 0.2s ease; }
+        .crop-content {
+            background: var(--surface); border-radius: 28px;
+            padding: 24px; width: 100%; max-width: 360px;
+            border: 1.5px solid var(--border); text-align: center;
+        }
+        .crop-title { font-size: 1rem; font-weight: 900; color: var(--text); margin-bottom: 16px; }
+        .crop-canvas-wrapper {
+            position: relative; width: 240px; height: 240px;
+            margin: 0 auto 16px; border-radius: 18px; overflow: hidden;
+            border: 2px solid var(--primary); cursor: grab; touch-action: none;
+            background: #000;
+        }
+        .crop-canvas-wrapper:active { cursor: grabbing; }
+        #cropCanvas {
+            position: absolute; top: 0; left: 0;
+            width: 240px; height: 240px;
+        }
+        .crop-overlay {
+            position: absolute; inset: 0; pointer-events: none;
+            border-radius: 18px;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
+        }
+        .crop-hint {
+            font-size: 0.72rem; color: var(--text-dim); font-weight: 600;
+            margin-bottom: 14px; display: flex; align-items: center; gap: 6px; justify-content: center;
+        }
+        .crop-zoom {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 0 8px;
+        }
+        .crop-zoom-icon { font-size: 0.75rem; color: var(--text-dim); }
+        .crop-zoom input[type="range"] {
+            flex: 1; accent-color: var(--primary); height: 4px;
+        }
+        .crop-actions { display: flex; gap: 10px; }
+        .crop-actions .btn { flex: 1; padding: 12px; }
+
+        /* Moderation status */
+        .mod-status {
+            display: none; align-items: center; gap: 8px; justify-content: center;
+            padding: 10px 14px; border-radius: var(--radius-sm);
+            font-size: 0.78rem; font-weight: 700; margin-bottom: 10px;
+        }
+        .mod-status.checking {
+            display: flex; background: rgba(37,99,235,0.1); color: var(--primary);
+            border: 1px solid rgba(37,99,235,0.2);
+        }
+        .mod-status.approved {
+            display: flex; background: rgba(34,197,94,0.1); color: #22c55e;
+            border: 1px solid rgba(34,197,94,0.2);
+        }
+        .mod-status.rejected {
+            display: flex; background: rgba(239,68,68,0.1); color: var(--danger);
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+        .mod-spinner {
+            width: 14px; height: 14px; border: 2px solid currentColor;
+            border-top-color: transparent; border-radius: 50%;
+            animation: spin 0.7s linear infinite; flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Terms checkbox */
+        .terms-row {
+            display: flex; align-items: flex-start; gap: 10px;
+            text-align: left; margin-bottom: 14px; padding: 12px;
+            background: var(--surface-2); border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        .terms-row input[type="checkbox"] {
+            width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--primary);
+            margin-top: 1px; cursor: pointer;
+        }
+        .terms-row label { font-size: 0.72rem; color: var(--text-sub); line-height: 1.4; cursor: pointer; }
+
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm);
+            font-family: inherit; font-size: 0.85rem; font-weight: 800;
+            cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.4px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 14px rgba(37,99,235,.3); }
+
+        
+        .logout-btn {
+            position: relative; z-index: 1;
+            background: transparent;
+            color: var(--danger);
+            border: 1.5px solid rgba(239,68,68,0.35);
+            padding: 13px 28px; border-radius: var(--radius-sm);
+            font-size: 0.8rem; font-weight: 800; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            font-family: inherit; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 200px;
+        }
+        .logout-btn:hover { background: rgba(239,68,68,0.1); border-color: var(--danger); }
+        .btn-ghost { background: transparent; color: var(--text-sub); border: 1.5px solid var(--border); }
+        .btn-danger { background: transparent; color: var(--danger); margin-top: 6px; font-size: 0.8rem; }
+    </style>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+        // Aplicar tema según destino guardado
+        (function() {
+            const destino = localStorage.getItem('taxfly_destino') || 'usa';
+            document.addEventListener('DOMContentLoaded', () => {
+                document.body.classList.add('tema-' + destino);
+                // Actualizar title e i18n pageTitle según destino
+                if (destino === 'europe') {
+                    document.title = document.title.replace('TaxUSA', 'TaxEurope');
+                }
+            });
+        })();
+    </script>
+</head>
+<body>
+
+<h1 class="page-title" id="pageTitle">¿Quién está planificando hoy?</h1>
+
+<div class="profiles-grid" id="profilesGrid"></div>
+
+<div class="bottom-actions">
+    <button class="manage-btn" id="manageBtn" onclick="toggleEditMode()">EDITAR PERFILES</button>
+    <button class="logout-btn" id="logoutBtn" onclick="doLogout()">🚪 CERRAR SESIÓN</button>
+</div>
+
+
+<!-- Crop Modal -->
+<div class="crop-modal" id="cropModal">
+    <div class="crop-content">
+        <div class="crop-title">✂️ Ajustá tu foto</div>
+        <div class="crop-canvas-wrapper" id="cropWrapper">
+            <canvas id="cropCanvas" width="240" height="240"></canvas>
+            <div class="crop-overlay"></div>
+        </div>
+        <div class="crop-hint">
+            <span>👆</span> Arrastrá para encuadrar · Usá el zoom
+        </div>
+        <div class="crop-zoom">
+            <span class="crop-zoom-icon">🔍</span>
+            <input type="range" id="zoomRange" min="1" max="3" step="0.01" value="1">
+            <span class="crop-zoom-icon">🔎</span>
+        </div>
+        <div class="crop-actions">
+            <button class="btn btn-ghost" onclick="cancelCrop()" id="btnCancelCrop">CANCELAR</button>
+            <button class="btn btn-primary" onclick="confirmCrop()" id="btnConfirmCrop">USAR FOTO</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <h2 class="modal-title" id="modalTitle">Nuevo Perfil</h2>
+        <div id="previewAvatar" class="preview-avatar"></div>
+        <input type="text" class="name-input" id="nameInput" placeholder="Tu nombre">
+
+        <!-- Upload section -->
+        <div class="upload-section">
+            <div class="upload-divider">📷 Subir mi foto</div>
+            <div class="upload-drop-zone" id="dropZone">
+                <input type="file" id="photoUpload" accept="image/jpeg,image/png,image/webp">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Tocá para elegir una foto tuya</div>
+                <div class="upload-specs">
+                    <span class="upload-spec-tag">JPG · PNG · WebP</span>
+                    <span class="upload-spec-tag">Máx 2 MB</span>
+                    <span class="upload-spec-tag">Mín 100×100 px</span>
+                </div>
+            </div>
+            <div class="mod-status checking" id="modStatus">
+                <div class="mod-spinner"></div>
+                <span id="modStatusText">Verificando imagen...</span>
+            </div>
+            <div class="terms-row" id="termsRow" style="display:none;">
+                <input type="checkbox" id="termsCheck">
+                <label for="termsCheck">Confirmo que esta foto me pertenece o tengo los derechos para usarla, y no contiene contenido inapropiado.</label>
+            </div>
+        </div>
+
+        <div class="upload-divider" style="margin:0 0 14px; font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); display:flex; align-items:center; gap:10px;">
+            <span style="flex:1;height:1px;background:var(--border);display:block;"></span>
+            O elegí un avatar
+            <span style="flex:1;height:1px;background:var(--border);display:block;"></span>
+        </div>
+
+        <div class="photo-grid" id="photoGrid"></div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="saveProfile()" id="btnSave">GUARDAR</button>
+            <button class="btn btn-ghost" onclick="closeModal()" id="btnCancel">CANCELAR</button>
+            <button class="btn btn-danger" id="btnDelete" onclick="deleteProfile()">Eliminar Perfil</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
+
+// ── reCAPTCHA v3 helper ──
+const _RC_SITE_KEY = '6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';
+const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
+async function _rcToken(action) {
+    return new Promise((resolve) => {
+        if (typeof grecaptcha === 'undefined') { resolve(null); return; }
+        grecaptcha.ready(() => grecaptcha.execute(_RC_SITE_KEY, { action }).then(resolve).catch(() => resolve(null)));
+    });
+}
+async function _rcCheck(action) {
+    const token = await _rcToken(action);
+    if (!token) return true;
+    try {
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token, action}) });
+        if (!r.ok) return true;
+        const d = await r.json();
+        return d.success !== false;
+    } catch { return true; }
+}
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0",
+        authDomain: "viajes-db538.firebaseapp.com",
+        projectId: "viajes-db538",
+        storageBucket: "viajes-db538.firebasestorage.app",
+        messagingSenderId: "237311739178",
+        appId: "1:237311739178:web:333e468b184c0402a98a53"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
+
+    const destino = localStorage.getItem('taxfly_destino') || 'usa';
+    const destinoLabel = destino === 'europe' ? 'TaxEurope' : 'TaxUSA';
+
+    const i18n = {
+        es: { pageTitle: `${destinoLabel} — Perfiles`, title: "¿Quién está planificando hoy?", editTitle: "Administrar Perfiles", manage: "EDITAR PERFILES", done: "LISTO", save: "GUARDAR", cancel: "CANCELAR", delete: "Eliminar Perfil", edit: "Editar Perfil", newProfile: "Nuevo Perfil", addLabel: "Nuevo", guest: "Invitado", active: "Activo", confirm: "¿Eliminar este perfil?", logout: "🚪 CERRAR SESIÓN", namePlaceholder: "Tu nombre" },
+        en: { pageTitle: `${destinoLabel} — Profiles`, title: "Who's planning today?", editTitle: "Manage Profiles", manage: "EDIT PROFILES", done: "DONE", save: "SAVE", cancel: "CANCEL", delete: "Delete Profile", edit: "Edit Profile", newProfile: "New Profile", addLabel: "New", guest: "Guest", active: "Active", confirm: "Delete this profile?", logout: "🚪 SIGN OUT", namePlaceholder: "Your name" },
+        pt: { pageTitle: `${destinoLabel} — Perfis`, title: "Quem está planejando hoje?", editTitle: "Gerenciar Perfis", manage: "EDITAR PERFIS", done: "PRONTO", save: "SALVAR", cancel: "CANCELAR", delete: "Excluir Perfil", edit: "Editar Perfil", newProfile: "Novo Perfil", addLabel: "Novo", guest: "Convidado", active: "Ativo", confirm: "Excluir este perfil?", logout: "🚪 SAIR", namePlaceholder: "Seu nome" }
+    };
+
+    const photos = [
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1777776216395.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1777776225455.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776311828.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776315983.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776318834.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027664793.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027669500.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027673553.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027676790.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027680096.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027684221.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027686067.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027689046.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027716106.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027718459.png",
+        "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027720162.png"
+    ];
+
+    let uid, profiles = [], editingId = null, selectedPhoto = photos[0], isEditing = false;
+    let lang = localStorage.getItem('appLang') || 'es';
+    let t = i18n[lang];
+
+    function applyLang() {
+        t = i18n[lang];
+        document.title = t.pageTitle;
+        document.getElementById('pageTitle').innerText = isEditing ? t.editTitle : t.title;
+        document.getElementById('manageBtn').innerText = isEditing ? t.done : t.manage;
+        document.getElementById('btnSave').innerText = t.save;
+        document.getElementById('btnCancel').innerText = t.cancel;
+        document.getElementById('btnDelete').innerText = t.delete;
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) logoutBtn.innerText = t.logout;
+        const nameInput = document.getElementById('nameInput');
+        if (nameInput) nameInput.placeholder = t.namePlaceholder;
+
+        render();
+    }
+
+    applyLang();
+
+    // ── Detección de conectividad real (misma lógica que login.html) ──
+    // ── Cached connectivity probe ─────────────────────────────────────────────────
+async function probeConnectivity() {
+    const cached = sessionStorage.getItem('taxfly_connectivity');
+    if (cached !== null) return cached === '1';
+    try {
+        await fetch('https://www.gstatic.com/generate_204', {
+            method: 'HEAD', cache: 'no-store', mode: 'no-cors',
+            signal: AbortSignal.timeout(1500)
+        });
+        sessionStorage.setItem('taxfly_connectivity', '1');
+        return true;
+    } catch(e) {
+        sessionStorage.setItem('taxfly_connectivity', '0');
+        return false;
+    }
+}
+window.addEventListener('online',  () => sessionStorage.setItem('taxfly_connectivity', '1'));
+window.addEventListener('offline', () => sessionStorage.setItem('taxfly_connectivity', '0'));
+// ─────────────────────────────────────────────────────────────────────────────
+async function checkRealConnectivity() {
+        return await probeConnectivity();
+    }
+
+    // ── Carga perfiles desde localStorage (modo offline) ──
+    function loadOfflineProfiles() {
+        try {
+            const cached = localStorage.getItem('taxfly_cached_profiles');
+            return cached ? JSON.parse(cached) : null;
+        } catch(e) { return null; }
+    }
+
+    // ── Modo offline: mostrar perfiles cacheados sin Firebase ──
+    function enterOfflineMode() {
+        const cachedProfiles = loadOfflineProfiles();
+        const cachedUid = localStorage.getItem('taxusa_offline_uid');
+        if (!cachedUid) {
+            // Sin sesión previa cacheada — volver a login
+            window.location.replace('login.html');
+            return;
+        }
+        uid = cachedUid;
+        if (cachedProfiles && cachedProfiles.length > 0) {
+            profiles = cachedProfiles;
+        } else {
+            const nombre = localStorage.getItem('taxusa_cached_name') || t.guest;
+            const foto   = localStorage.getItem('taxusa_cached_foto') || photos[0];
+            profiles = [{ id: localStorage.getItem('perfilActivoId') || 'p_offline', nombre, foto }];
+        }
+        // Mostrar badge offline
+        const badge = document.createElement('div');
+        badge.style.cssText = 'background:rgba(239,159,39,.1);border:1.5px solid rgba(239,159,39,.3);color:#BA7517;border-radius:12px;padding:8px 14px;font-size:.78rem;font-weight:700;margin-bottom:12px;text-align:center;';
+        badge.textContent = '📵 Modo sin conexión — mostrando datos guardados';
+        const wrap = document.querySelector('.profiles-wrap') || document.body;
+        wrap.insertBefore(badge, wrap.firstChild);
+        render();
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        const online = await checkRealConnectivity();
+
+        if (!online) {
+            // Sin internet — usar datos cacheados sin depender de Firebase
+            enterOfflineMode();
+            return;
+        }
+
+        if (!user) {
+            window.location.replace('login.html');
+            return;
+        }
+
+        uid = user.uid;
+        try {
+            const snap = await getDoc(doc(db, 'usuarios', uid));
+            profiles = snap.exists() ? (snap.data().perfiles || []) : [];
+            if (profiles.length === 0) {
+                profiles = [{ id: 'p' + Date.now(), nombre: t.guest, foto: photos[0] }];
+                await setDoc(doc(db, 'usuarios', uid), { perfiles: profiles });
+            }
+            // Cachear perfiles para uso offline
+            localStorage.setItem('taxfly_cached_profiles', JSON.stringify(profiles));
+        } catch(e) {
+            // Firestore falló pero el usuario está autenticado — intentar caché
+            const cached = loadOfflineProfiles();
+            if (cached) profiles = cached;
+        }
+        render();
+    });
+
+    function render() {
+        const activeId = localStorage.getItem('perfilActivoId');
+        const grid = document.getElementById('profilesGrid');
+        grid.innerHTML = profiles.map(p => {
+            const isActive = p.id === activeId;
+            return `
+            <div class="profile-item" onclick="handleClick('${p.id}','${p.nombre}','${encodeURIComponent(p.foto)}')">
+                <div class="avatar-wrapper">
+                    <div class="avatar${isActive ? ' is-active' : ''}" style="background-image:url('${p.foto}')"></div>
+                    ${isActive ? `<div class="active-badge">${t.active}</div>` : ''}
+                    <div class="edit-overlay">
+                        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    </div>
+                </div>
+                <div class="profile-name"${isActive ? ' style="color:var(--text);font-weight:800;"' : ''}>${p.nombre}</div>
+            </div>`;
+        }).join('');
+
+        if (profiles.length < 5) {
+            grid.innerHTML += `
+                <div class="profile-item" onclick="openEditor(null)">
+                    <div class="avatar-wrapper"><div class="add-avatar"><span>+</span><span class="add-label">${t.addLabel}</span></div></div>
+                    <div class="profile-name">${t.newProfile}</div>
+                </div>`;
+        }
+    }
+
+    window.toggleEditMode = () => {
+        isEditing = !isEditing;
+        document.body.classList.toggle('editing-mode', isEditing);
+        document.getElementById('pageTitle').innerText = isEditing ? t.editTitle : t.title;
+        document.getElementById('manageBtn').innerText = isEditing ? t.done : t.manage;
+    };
+
+    window.handleClick = (id, nombre, fotoEnc) => {
+        if (isEditing) { openEditor(id); return; }
+        const foto = decodeURIComponent(fotoEnc);
+        localStorage.setItem('perfilActivoId', id);
+        localStorage.setItem('perfilActivoNombre', nombre);
+        localStorage.setItem('perfilActivoFoto', foto);
+        const destino = localStorage.getItem('taxfly_destino') || 'usa';
+        window.location.replace(destino === 'europe' ? 'europe.html' : 'index.html');
+    };
+
+    window.openEditor = (id) => {
+        editingId = id;
+        const p = profiles.find(x => x.id === id);
+        document.getElementById('modalTitle').innerText = id ? t.edit : t.newProfile;
+        document.getElementById('nameInput').value = p ? p.nombre : '';
+        selectedPhoto = p ? p.foto : photos[0];
+        document.getElementById('btnDelete').style.display = id ? 'block' : 'none';
+        updatePreview();
+
+        const grid = document.getElementById('photoGrid');
+        grid.innerHTML = photos.map(url => `
+            <img src="${url}" class="photo-option ${url === selectedPhoto ? 'selected' : ''}"
+                 onclick="selectPhoto('${url}')">
+        `).join('');
+
+        document.getElementById('editModal').classList.add('show');
+    };
+
+    window.selectPhoto = (url) => {
+        selectedPhoto = url;
+        document.querySelectorAll('.photo-option').forEach(img => img.classList.toggle('selected', img.src === url));
+        updatePreview();
+    };
+
+    function updatePreview() {
+        document.getElementById('previewAvatar').style.backgroundImage = `url('${selectedPhoto}')`;
+    }
+
+    window.closeModal = () => document.getElementById('editModal').classList.remove('show');
+
+    window.doLogout = async () => {
+        try {
+            await signOut(auth);
+            localStorage.removeItem('perfilActivoId');
+            localStorage.removeItem('perfilActivoNombre');
+            localStorage.removeItem('perfilActivoFoto');
+            window.location.replace('login.html');
+        } catch(e) {
+            console.error('Error al cerrar sesión:', e);
+        }
+    };
+
+    window.saveProfile = async () => {
+        const name = document.getElementById('nameInput').value.trim();
+        if (!name) return;
+        if (editingId) profiles = profiles.map(p => p.id === editingId ? { ...p, nombre: name, foto: selectedPhoto } : p);
+        else profiles.push({ id: 'p' + Date.now(), nombre: name, foto: selectedPhoto });
+        await updateDoc(doc(db, 'usuarios', uid), { perfiles: profiles });
+        localStorage.setItem('taxfly_cached_profiles', JSON.stringify(profiles));
+        closeModal();
+        if (isEditing) toggleEditMode();
+        render();
+    };
+
+
+    // ── UPLOAD & CROP ──────────────────────────────────────────────────────
+    let cropImage = null, cropOffsetX = 0, cropOffsetY = 0, cropZoom = 1;
+    let isDragging = false, dragStartX = 0, dragStartY = 0, dragOffsetX = 0, dragOffsetY = 0;
+    let customPhotoDataUrl = null;
+
+    const MAX_MB = 2;
+    const MIN_DIM = 100;
+    const CANVAS_SIZE = 240;
+
+    document.getElementById('photoUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        handleFileSelected(file);
+        this.value = '';
+    });
+
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault(); dropZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) handleFileSelected(file);
+    });
+
+    function handleFileSelected(file) {
+        const allowed = ['image/jpeg','image/png','image/webp'];
+        if (!allowed.includes(file.type)) { alert('Solo se aceptan imágenes JPG, PNG o WebP.'); return; }
+        if (file.size > MAX_MB * 1024 * 1024) { alert(`La foto no puede superar los ${MAX_MB} MB.`); return; }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                if (img.width < MIN_DIM || img.height < MIN_DIM) {
+                    alert(`La imagen es muy pequeña. Mínimo ${MIN_DIM}×${MIN_DIM} px.`); return;
+                }
+                openCropModal(img);
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function openCropModal(img) {
+        cropImage = img;
+        cropZoom = 1;
+        // Center the image
+        const scale = Math.max(CANVAS_SIZE / img.width, CANVAS_SIZE / img.height);
+        cropOffsetX = (CANVAS_SIZE - img.width * scale) / 2;
+        cropOffsetY = (CANVAS_SIZE - img.height * scale) / 2;
+        document.getElementById('zoomRange').value = 1;
+        document.getElementById('cropModal').classList.add('show');
+        drawCrop();
+    }
+
+    function drawCrop() {
+        const canvas = document.getElementById('cropCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+        if (!cropImage) return;
+        const baseScale = Math.max(CANVAS_SIZE / cropImage.width, CANVAS_SIZE / cropImage.height);
+        const scale = baseScale * cropZoom;
+        ctx.drawImage(cropImage, cropOffsetX, cropOffsetY, cropImage.width * scale, cropImage.height * scale);
+    }
+
+    document.getElementById('zoomRange').addEventListener('input', function() {
+        cropZoom = parseFloat(this.value);
+        drawCrop();
+    });
+
+    // Drag to pan
+    const wrapper = document.getElementById('cropWrapper');
+    wrapper.addEventListener('mousedown', e => { isDragging = true; dragStartX = e.clientX; dragStartY = e.clientY; dragOffsetX = cropOffsetX; dragOffsetY = cropOffsetY; });
+    window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        cropOffsetX = dragOffsetX + (e.clientX - dragStartX);
+        cropOffsetY = dragOffsetY + (e.clientY - dragStartY);
+        drawCrop();
+    });
+    window.addEventListener('mouseup', () => isDragging = false);
+
+    // Touch support
+    wrapper.addEventListener('touchstart', e => { isDragging = true; dragStartX = e.touches[0].clientX; dragStartY = e.touches[0].clientY; dragOffsetX = cropOffsetX; dragOffsetY = cropOffsetY; });
+    wrapper.addEventListener('touchmove', e => {
+        if (!isDragging) return; e.preventDefault();
+        cropOffsetX = dragOffsetX + (e.touches[0].clientX - dragStartX);
+        cropOffsetY = dragOffsetY + (e.touches[0].clientY - dragStartY);
+        drawCrop();
+    }, { passive: false });
+    wrapper.addEventListener('touchend', () => isDragging = false);
+
+    window.cancelCrop = () => document.getElementById('cropModal').classList.remove('show');
+
+    window.confirmCrop = async () => {
+        const canvas = document.getElementById('cropCanvas');
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        document.getElementById('cropModal').classList.remove('show');
+        await moderateAndApplyPhoto(dataUrl);
+    };
+
+    // ── MODERATION ─────────────────────────────────────────────────────────
+    async function moderateAndApplyPhoto(dataUrl) {
+        if (!(await _rcCheck('upload_photo'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
+        const statusEl = document.getElementById('modStatus');
+        const statusText = document.getElementById('modStatusText');
+        const termsRow = document.getElementById('termsRow');
+
+        statusEl.className = 'mod-status checking';
+        statusText.textContent = 'Verificando imagen...';
+        termsRow.style.display = 'none';
+
+        // Update preview optimistically
+        document.getElementById('previewAvatar').style.backgroundImage = `url('${dataUrl}')`;
+
+        try {
+            const base64 = dataUrl.split(',')[1];
+            const response = await fetch("https://taxfly.vercel.app/api/moderate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ imageBase64: base64, mediaType: "image/jpeg" })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(`Backend error ${response.status}: ${result.error || 'unknown'}`);
+            }
+
+            if (result.approved) {
+                customPhotoDataUrl = dataUrl;
+                selectedPhoto = dataUrl;
+                statusEl.className = 'mod-status approved';
+                statusText.textContent = '✓ Foto verificada y aprobada';
+                termsRow.style.display = 'flex';
+                updatePreview();
+            } else {
+                statusEl.className = 'mod-status rejected';
+                statusText.textContent = `✗ Foto rechazada: ${result.reason}`;
+                document.getElementById('previewAvatar').style.backgroundImage = `url('${selectedPhoto}')`;
+                customPhotoDataUrl = null;
+            }
+        } catch(err) {
+            // Si falla la moderación, BLOQUEAR — nunca aprobar silenciosamente
+            console.warn('Moderation error:', err);
+            statusEl.className = 'mod-status rejected';
+            statusText.textContent = '✗ No se pudo verificar la foto. Intentá de nuevo.';
+            document.getElementById('previewAvatar').style.backgroundImage = `url('${selectedPhoto}')`;
+            customPhotoDataUrl = null;
+        }
+    }
+
+    // Reset upload UI when modal opens
+    const originalOpenEditor = window.openEditor;
+    window.openEditor = (id) => {
+        originalOpenEditor(id);
+        document.getElementById('modStatus').className = 'mod-status';
+        document.getElementById('termsRow').style.display = 'none';
+        document.getElementById('termsCheck').checked = false;
+        customPhotoDataUrl = null;
+    };
+
+    // Patch saveProfile to validate terms if custom photo is set
+    const originalSave = window.saveProfile;
+    window.saveProfile = async () => {
+        if (customPhotoDataUrl && !document.getElementById('termsCheck').checked) {
+            alert('Por favor confirmá que tenés los derechos sobre la foto antes de guardar.');
+            return;
+        }
+        await originalSave();
+    };
+
+    window.deleteProfile = async () => {
+        if (profiles.length <= 1 || !confirm(t.confirm)) return;
+        profiles = profiles.filter(p => p.id !== editingId);
+        await updateDoc(doc(db, 'usuarios', uid), { perfiles: profiles });
+        localStorage.setItem('taxfly_cached_profiles', JSON.stringify(profiles));
+        closeModal();
+        if (isEditing) toggleEditMode();
+        render();
+    };
+</script>
+</body>
+</html>
