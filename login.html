@@ -953,6 +953,37 @@ window.toggleMode = () => {
     applyTexts();
 };
 
+// ── reCAPTCHA v3 helper ──
+const RECAPTCHA_SITE_KEY = '6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';
+const RECAPTCHA_VERIFY_URL = '/api/verify-recaptcha'; // backend endpoint
+
+async function getRecaptchaToken(action) {
+    return new Promise((resolve, reject) => {
+        if (typeof grecaptcha === 'undefined') { resolve(null); return; }
+        grecaptcha.ready(() => {
+            grecaptcha.execute(RECAPTCHA_SITE_KEY, { action })
+                .then(resolve)
+                .catch(reject);
+        });
+    });
+}
+
+async function verifyRecaptchaToken(token, action) {
+    if (!token) return true; // skip if reCAPTCHA didn't load (offline/bloqueado)
+    try {
+        const res = await fetch(RECAPTCHA_VERIFY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, action })
+        });
+        if (!res.ok) return true; // backend error → no bloquear al usuario
+        const data = await res.json();
+        return data.success !== false; // bloquear solo si explícitamente false
+    } catch {
+        return true; // error de red → no bloquear
+    }
+}
+
 window.handleAuth = async () => {
     // ── Offline shortcut: if no internet and PIN is cached, go to PIN screen ──
     if (!isOnline()) {
@@ -971,6 +1002,18 @@ window.handleAuth = async () => {
     const email = document.getElementById('email').value.trim();
     const pass  = document.getElementById('password').value;
     if (!email || !pass) { alert(t('errFields')); return; }
+
+    // ── reCAPTCHA v3 verification ──
+    const action = isLoginMode ? 'login' : 'register';
+    try {
+        const rcToken = await getRecaptchaToken(action);
+        const rcOk    = await verifyRecaptchaToken(rcToken, action);
+        if (!rcOk) {
+            alert(t('errTooManyRequests'));
+            return;
+        }
+    } catch { /* reCAPTCHA fallo → continuar igual */ }
+
     try {
         if (isLoginMode) {
             await signInWithEmailAndPassword(auth, email, pass);
@@ -998,7 +1041,13 @@ window.handleAuth = async () => {
 window.resetPassword = async () => {
     const email = document.getElementById('email').value.trim();
     if (!email) { alert(t('resetEmail')); return; }
-    try { await sendPasswordResetEmail(auth, email); alert(t('resetOk')); }
+    try {
+        const rcToken = await getRecaptchaToken('reset_password');
+        const rcOk    = await verifyRecaptchaToken(rcToken, 'reset_password');
+        if (!rcOk) { alert(t('errTooManyRequests')); return; }
+        await sendPasswordResetEmail(auth, email);
+        alert(t('resetOk'));
+    }
     catch(e) { alert(t('errDefault')); }
 };
 
