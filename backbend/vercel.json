@@ -3,6 +3,13 @@
   "functions": {
     "api/moderate.js": {
       "maxDuration": 30
+    },
+    "api/verify-recaptcha.js": {
+      "maxDuration": 10
+    },
+    "api/analyze-insurance.js": {
+      "maxDuration": 30
     }
   }
 }
+
