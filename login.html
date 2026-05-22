@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TaxFly">
     <meta name="theme-color" content="#EF9F27">
-    <script>if(navigator.onLine){var s=document.createElement('script');s.src='https://www.google.com/recaptcha/api.js?render=6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';s.async=true;s.defer=true;document.head.appendChild(s);}</script>
+    <script>if(navigator.onLine){var s=document.createElement('script');s.src='https://www.google.com/recaptcha/api.js?render=6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';s.async=true;s.defer=true;document.head.appendChild(s);}</script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -677,7 +677,7 @@ const FB = {
 const app  = initializeApp(FB);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
+if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
     
 // ── i18n ──
 const i18n = {
@@ -954,7 +954,7 @@ window.toggleMode = () => {
 };
 
 // ── reCAPTCHA v3 helper ──
-const RECAPTCHA_SITE_KEY = '6LeK6cssAAAAALxcJy-95R2nhVMmnuIyB78AQgvw';
+const RECAPTCHA_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
 const RECAPTCHA_VERIFY_URL = '/api/verify-recaptcha'; // backend endpoint
 
 async function getRecaptchaToken(action) {
