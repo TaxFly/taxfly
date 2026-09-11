@@ -548,22 +548,50 @@ function getPerfilId() { return localStorage.getItem('perfilActivoId') || 'defau
 const DOCS_CACHE_KEY_PFX = 'taxusa_docs_cache_';
 const DOCS_PENDING_KEY_PFX = 'taxusa_docs_pending_';
 
-function guardarDocsEnCache(docs) {
-    const key = DOCS_CACHE_KEY_PFX + getPerfilId();
-    try {
-        localStorage.setItem(key, JSON.stringify(docs));
-    } catch(e) {
-        try {
-            const meta = docs.map(d => ({ ...d, files: d.files ? d.files.map(f => ({ ...f, dataUrl: '' })) : [] }));
-            localStorage.setItem(key, JSON.stringify(meta));
-        } catch(e2) {}
-    }
+// ── IndexedDB KV helper ─────────────────────────────────────────────────────
+// localStorage tiene un límite chico (~5MB, más chico y estricto en mobile/iOS)
+// y los documentos (fotos/PDFs en base64) lo superan fácil. Antes, cuando no
+// entraban, se guardaba una versión "vacía" (sin el archivo) para no romper,
+// pero eso hacía que en el celular los documentos abrieran vacíos/rotos.
+// IndexedDB no tiene ese límite práctico, así que evitamos el problema de raíz.
+const IDB_NAME = 'taxfly_docs_db';
+const IDB_STORE = 'kv';
+function idbOpen() {
+    return new Promise((res, rej) => {
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains(IDB_STORE)) req.result.createObjectStore(IDB_STORE); };
+        req.onsuccess = () => res(req.result);
+        req.onerror = () => rej(req.error);
+    });
 }
-function cargarDocsDesdeCache() {
+async function idbGet(key) {
     try {
-        const raw = localStorage.getItem(DOCS_CACHE_KEY_PFX + getPerfilId());
-        return raw ? JSON.parse(raw) : null;
+        const db = await idbOpen();
+        return await new Promise((res) => {
+            const tx = db.transaction(IDB_STORE, 'readonly');
+            const rq = tx.objectStore(IDB_STORE).get(key);
+            rq.onsuccess = () => res(rq.result ?? null);
+            rq.onerror = () => res(null);
+        });
     } catch(e) { return null; }
+}
+async function idbSet(key, value) {
+    try {
+        const db = await idbOpen();
+        return await new Promise((res) => {
+            const tx = db.transaction(IDB_STORE, 'readwrite');
+            tx.objectStore(IDB_STORE).put(value, key);
+            tx.oncomplete = () => res(true);
+            tx.onerror = () => res(false);
+        });
+    } catch(e) { return false; }
+}
+
+async function guardarDocsEnCache(docs) {
+    await idbSet(DOCS_CACHE_KEY_PFX + getPerfilId(), docs);
+}
+async function cargarDocsDesdeCache() {
+    return await idbGet(DOCS_CACHE_KEY_PFX + getPerfilId());
 }
 
 function getPendingDocs() {
@@ -786,7 +814,7 @@ const I18N = {
 // ── Init — carga desde Firestore con fallback a caché ─────────────────────
 async function initDocs() {
     // Mostrar caché inmediatamente
-    const cached = cargarDocsDesdeCache();
+    const cached = await cargarDocsDesdeCache();
     if (cached && cached.length) {
         allDocs = cached;
         renderList();
@@ -805,7 +833,7 @@ async function initDocs() {
     showSyncBanner('Cargando documentos…', false);
     try {
         allDocs = await window.fsLoad(window._uid, perfilId);
-        guardarDocsEnCache(allDocs); // ← guardar en caché
+        guardarDocsEnCache(allDocs); // ← guardar en caché (no bloquea el render)
         hideSyncBanner();
     } catch(e) {
         console.warn('Firestore load error', e);
@@ -1120,13 +1148,13 @@ function showSyncOk(msg) {
 }
 window.showSyncOk = showSyncOk;
 
-function updateOfflineToast() {
+async function updateOfflineToast() {
     const toast = document.getElementById('offline-toast');
     if (!toast) return;
     const msgEl = document.getElementById('offline-toast-msg');
     const t = getT();
     if (!navigator.onLine) {
-        const q = loadQueue();
+        const q = await loadQueue();
         if (q.length === 1 && msgEl) msgEl.textContent = t.offline_pending_1;
         else if (q.length > 1 && msgEl) msgEl.textContent = q.length + t.offline_pending_n;
         else if (msgEl) msgEl.textContent = t.offline_chat;
@@ -1139,13 +1167,13 @@ window.updateOfflineToast = updateOfflineToast;
 
 // ── Offline queue ──────────────────────────────────────────────────────────
 const QUEUE_KEY = 'taxusa_tickets_pending_ops';
-function loadQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch { return []; } }
-function saveQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
-function enqueue(op) { const q = loadQueue(); q.push(op); saveQueue(q); }
-function dequeue(id) { const q = loadQueue().filter(o => o.docId !== id); saveQueue(q); }
+async function loadQueue() { return (await idbGet(QUEUE_KEY)) || []; }
+async function saveQueue(q) { await idbSet(QUEUE_KEY, q); }
+async function enqueue(op) { const q = await loadQueue(); q.push(op); await saveQueue(q); }
+async function dequeue(id) { const q = (await loadQueue()).filter(o => o.docId !== id); await saveQueue(q); }
 
 window._flushTicketsPending = async () => {
-    const q = loadQueue();
+    const q = await loadQueue();
     if (!q.length || !navigator.onLine) return;
     let synced = 0;
     for (const op of q) {
@@ -1155,7 +1183,7 @@ window._flushTicketsPending = async () => {
             } else if (op.type === 'del_doc') {
                 await window.fsDelete(window._uid, perfilId, op.docId);
             }
-            dequeue(op.docId);
+            await dequeue(op.docId);
             synced++;
         } catch(e) { console.warn('Flush error', e); break; }
     }
@@ -1175,13 +1203,13 @@ window.saveDoc = async () => {
 
     // Optimistic UI
     allDocs.unshift(docObj);
-    guardarDocsEnCache(allDocs); // ← persistir en caché local
+    await guardarDocsEnCache(allDocs); // ← persistir en caché local
     closeAddModal();
     renderList();
     updateStorage();
 
     if (!navigator.onLine) {
-        enqueue({ type:'save_doc', docId: docObj.id, docObj });
+        await enqueue({ type:'save_doc', docId: docObj.id, docObj });
         updateOfflineToast();
         return;
     }
@@ -1193,7 +1221,7 @@ window.saveDoc = async () => {
         hideSyncBanner();
     } catch(e) {
         console.error('Firestore save error', e);
-        enqueue({ type:'save_doc', docId: docObj.id, docObj });
+        await enqueue({ type:'save_doc', docId: docObj.id, docObj });
         updateOfflineToast();
         showSyncBanner('Sin conexión — se guarda al reconectar', true);
         setTimeout(hideSyncBanner, 4000);
@@ -1206,21 +1234,21 @@ window.deleteDoc = async id => {
     const msg = { es:'¿Eliminar este documento?', en:'Delete this document?', pt:'Excluir este documento?' };
     if (!confirm(msg[lang]||msg.es)) return;
     // Cancel pending save if it exists (optimistic cancel)
-    const q = loadQueue();
+    const q = await loadQueue();
     const wasPending = q.some(o => o.docId === id && o.type === 'save_doc');
-    if (wasPending) { dequeue(id); }
+    if (wasPending) { await dequeue(id); }
     allDocs = allDocs.filter(d=>d.id!==id);
-    guardarDocsEnCache(allDocs); // ← persistir en caché local
+    await guardarDocsEnCache(allDocs); // ← persistir en caché local
     renderList(); updateStorage();
     if (!navigator.onLine) {
-        if (!wasPending) enqueue({ type:'del_doc', docId: id });
+        if (!wasPending) await enqueue({ type:'del_doc', docId: id });
         updateOfflineToast();
         return;
     }
     try { await window.fsDelete(window._uid, perfilId, id); }
     catch(e) {
         console.warn('Firestore delete error', e);
-        if (!wasPending) enqueue({ type:'del_doc', docId: id });
+        if (!wasPending) await enqueue({ type:'del_doc', docId: id });
         updateOfflineToast();
     }
 };
