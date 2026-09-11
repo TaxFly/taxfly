@@ -955,7 +955,7 @@ window.toggleMode = () => {
 
 // ── reCAPTCHA v3 helper ──
 const RECAPTCHA_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
-const RECAPTCHA_VERIFY_URL = '/api/verify-recaptcha'; // backend endpoint
+const RECAPTCHA_VERIFY_URL = 'https://taxfly-claude.juanbria18.workers.dev'; // Cloudflare Worker
 
 async function getRecaptchaToken(action) {
     return new Promise((resolve, reject) => {
@@ -974,7 +974,7 @@ async function verifyRecaptchaToken(token, action) {
         const res = await fetch(RECAPTCHA_VERIFY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, action })
+            body: JSON.stringify({ type: 'verify_recaptcha', token, action })
         });
         if (!res.ok) return true; // backend error → no bloquear al usuario
         const data = await res.json();

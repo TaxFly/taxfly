@@ -510,7 +510,7 @@ import { getFirestore, collection, doc, setDoc, deleteDoc, getDocs, query, order
 
 // ── reCAPTCHA v3 helper ──
 const _RC_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
-const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
+const _RC_VERIFY_URL = 'https://taxfly-claude.juanbria18.workers.dev';
 async function _rcToken(action) {
     return new Promise((resolve) => {
         if (typeof grecaptcha === 'undefined') { resolve(null); return; }
@@ -521,7 +521,7 @@ async function _rcCheck(action) {
     const token = await _rcToken(action);
     if (!token) return true;
     try {
-        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token, action}) });
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
         if (!r.ok) return true;
         const d = await r.json();
         return d.success !== false;

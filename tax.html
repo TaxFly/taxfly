@@ -654,7 +654,7 @@ import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com
 
 // ── reCAPTCHA v3 helper ──
 const _RC_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
-const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
+const _RC_VERIFY_URL = 'https://taxfly-claude.juanbria18.workers.dev';
 async function _rcToken(action) {
     return new Promise((resolve) => {
         if (typeof grecaptcha === 'undefined') { resolve(null); return; }
@@ -665,7 +665,7 @@ async function _rcCheck(action) {
     const token = await _rcToken(action);
     if (!token) return true;
     try {
-        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token, action}) });
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
         if (!r.ok) return true;
         const d = await r.json();
         return d.success !== false;
@@ -2014,10 +2014,12 @@ If you cannot find a field, use null for that field. Do not invent data.`;
             { type: 'text', text: prompt }
           ];
 
-    const res = await fetch('https://taxfly.vercel.app/api/analyze-insurance', {
+    const CLAUDE_WORKER = 'https://taxfly-claude.juanbria18.workers.dev'; // ajustá con la URL real de tu worker
+    const res = await fetch(CLAUDE_WORKER, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+            type: 'insurance_analysis',
             fileBase64: b64,
             mediaType,
             docName,

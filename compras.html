@@ -849,7 +849,7 @@ import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com
 
 // ── reCAPTCHA v3 helper ──
 const _RC_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
-const _RC_VERIFY_URL = 'https://taxfly.vercel.app/api/verify-recaptcha';
+const _RC_VERIFY_URL = 'https://taxfly-claude.juanbria18.workers.dev';
 async function _rcToken(action) {
     return new Promise((resolve) => {
         if (typeof grecaptcha === 'undefined') { resolve(null); return; }
@@ -860,7 +860,7 @@ async function _rcCheck(action) {
     const token = await _rcToken(action);
     if (!token) return true;
     try {
-        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token, action}) });
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
         if (!r.ok) return true;
         const d = await r.json();
         return d.success !== false;
@@ -2081,34 +2081,24 @@ async function runOCR(rawCanvas, thumb){
     try{
         // Imagen en JPEG alta calidad para mejor lectura
         const base64=rawCanvas.toDataURL('image/jpeg',0.92).split(',')[1];
-        const GROQ_WORKER='https://taxusa.juanbria18.workers.dev';
+        const CLAUDE_WORKER='https://taxfly-claude.juanbria18.workers.dev'; // ajustá con la URL real de tu worker
 
-        const resp=await fetch(GROQ_WORKER,{
+        const resp=await fetch(CLAUDE_WORKER,{
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({
-                type:'vision_ocr',
-                model:'meta-llama/llama-4-scout-17b-16e-instruct',
+                type:'invoice_ocr',
                 image_base64:base64,
                 image_media_type:'image/jpeg'
             })
         });
 
-        if(!resp.ok) throw new Error('Worker error: '+resp.status);
-        const data=await resp.json();
-        // Si el worker devuelve JSON estructurado lo pasamos directo; si no, texto plano al parser
-        let parsed=null;
-        if(data.store!==undefined&&data.total!==undefined){
-            parsed=data; // ya es {store,total,subtotal,taxes,items}
-        } else {
-            const rawText=data.text||data.result||data.content||'';
-            try{ const j=JSON.parse(rawText); if(j&&typeof j.total==='number') parsed=j; }catch(_){}
-            if(!parsed) parsed=rawText;
-        }
+        if(!resp.ok) throw new Error('API error: '+resp.status);
+        const parsed=await resp.json(); // ya viene como {store,total,subtotal,taxes,items}
         openOcrModal(parsed, thumb);
 
     }catch(err){
-        console.error('Groq Vision error:',err);
+        console.error('Claude OCR error:',err);
         // Fallback: abre modal vacío para ingreso manual
         const noTotal={es:'No se pudo leer el ticket. Ingresá el total manualmente.',en:'Could not read ticket. Enter total manually.',pt:'Não foi possível ler o ticket. Insira o total manualmente.'};
         openOcrModal('', thumb);
