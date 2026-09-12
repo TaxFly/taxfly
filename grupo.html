@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
     <script src="config.js"></script>
     <style>.grecaptcha-badge{visibility:hidden!important;opacity:0!important;pointer-events:none!important;}</style>
     <meta charset="UTF-8">
@@ -729,7 +730,7 @@ window.gestionarPIN = () => {
     document.getElementById('menuOverlay').style.display = 'none';
     if (!navigator.onLine) {
         const lang = localStorage.getItem('appLang') || 'es';
-        alert(lang==='en' ? 'You need internet to change your PIN.' : lang==='pt' ? 'Você precisa de internet para alterar o PIN.' : 'Necesitás internet para cambiar el PIN.');
+        showAlert(lang==='en' ? 'You need internet to change your PIN.' : lang==='pt' ? 'Você precisa de internet para alterar o PIN.' : 'Necesitás internet para cambiar el PIN.');
         return;
     }
     localStorage.setItem('taxusa_action', 'change_pin');
@@ -764,8 +765,8 @@ window.doChangePassword = async () => {
 window.doDeleteAccount = async () => {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser) return;
-    if (!confirm('¿Eliminar cuenta permanentemente?')) return;
-    if (!(await _rcCheck('delete_account'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
+    if (!(await showConfirm('¿Eliminar cuenta permanentemente?'))) return;
+    if (!(await _rcCheck('delete_account'))) { showAlert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
     try {
         await deleteDoc(doc(db, 'usuarios', firebaseUser.uid));
         await deleteUser(firebaseUser);
@@ -1017,7 +1018,7 @@ window.abandonarGrupo = async () => {
     const nombre = currentGroup.data.nombre;
     const lang = localStorage.getItem('appLang') || 'es';
     const confirmMsg = (i18n[lang] || i18n.es).confirm_salir.replace('{nombre}', nombre).replace('{nome}', nombre);
-    if (!confirm(confirmMsg)) return;
+    if (!(await showConfirm(confirmMsg))) return;
     try {
         const ref = doc(db, 'grupos', currentGroup.id);
         const snap = await getDoc(ref);
@@ -1051,7 +1052,7 @@ window.eliminarGrupo = async () => {
     const lang = localStorage.getItem('appLang') || 'es';
     const t = i18n[lang] || i18n.es;
     const confirmMsg = (t.confirm_eliminar || '¿Eliminar el grupo "{nombre}" permanentemente?\n\nEsta acción no se puede deshacer y borrará todos los gastos.').replace('{nombre}', nombre).replace('{nome}', nombre);
-    if (!confirm(confirmMsg)) return;
+    if (!(await showConfirm(confirmMsg))) return;
     try {
         if (unsubscribe) unsubscribe();
         await deleteDoc(doc(db, 'grupos', currentGroup.id));
@@ -1073,7 +1074,7 @@ window.eliminarGasto = async (gastoId) => {
     if (!currentGroup) return;
     const lang = localStorage.getItem('appLang') || 'es';
     const t = i18n[lang] || i18n.es;
-    if (!confirm(t.confirm_eliminar_gasto || '¿Eliminar este gasto?')) return;
+    if (!(await showConfirm(t.confirm_eliminar_gasto || '¿Eliminar este gasto?'))) return;
     if (currentGroup._demo) {
         currentGroup.data.gastos = currentGroup.data.gastos.filter(g=>g.id!==gastoId);
         renderGrupo(); showToast('🗑️ Gasto eliminado');
@@ -1113,7 +1114,7 @@ window.eliminarMiembro = async (uid) => {
     const lang = localStorage.getItem('appLang') || 'es';
     const t = i18n[lang] || i18n.es;
     const confirmMsg = (t.confirm_eliminar_miembro || '¿Eliminar a "{nombre}" del grupo?\n\nSus gastos registrados se mantendrán.').replace('{nombre}', miembro.nombre).replace('{nome}', miembro.nombre);
-    if (!confirm(confirmMsg)) return;
+    if (!(await showConfirm(confirmMsg))) return;
     try {
         const ref = doc(db,'grupos',currentGroup.id);
         const snap = await getDoc(ref);

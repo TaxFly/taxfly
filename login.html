@@ -2,6 +2,7 @@
 <html lang="es" data-theme="dark">
 <head>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -995,14 +996,14 @@ window.handleAuth = async () => {
             showOfflinePinScreen();
             return;
         } else {
-            alert(t('errNetworkFailed'));
+            showAlert(t('errNetworkFailed'));
             return;
         }
     }
 
     const email = document.getElementById('email').value.trim();
     const pass  = document.getElementById('password').value;
-    if (!email || !pass) { alert(t('errFields')); return; }
+    if (!email || !pass) { showAlert(t('errFields')); return; }
 
     // ── reCAPTCHA v3 verification ──
     const action = isLoginMode ? 'login' : 'register';
@@ -1010,7 +1011,7 @@ window.handleAuth = async () => {
         const rcToken = await getRecaptchaToken(action);
         const rcOk    = await verifyRecaptchaToken(rcToken, action);
         if (!rcOk) {
-            alert(t('errTooManyRequests'));
+            showAlert(t('errTooManyRequests'));
             return;
         }
     } catch { /* reCAPTCHA fallo → continuar igual */ }
@@ -1022,7 +1023,7 @@ window.handleAuth = async () => {
         } else {
             const cred = await createUserWithEmailAndPassword(auth, email, pass);
             await sendEmailVerification(cred.user);
-            alert(t('regOk') + email);
+            showAlert(t('regOk') + email);
             await signOut(auth);
             location.reload();
         }
@@ -1035,21 +1036,21 @@ window.handleAuth = async () => {
             'auth/too-many-requests':     t('errTooManyRequests'),
             'auth/network-request-failed':t('errNetworkFailed'),
         };
-        alert(map[e.code] || t('errDefault'));
+        showAlert(map[e.code] || t('errDefault'));
     }
 };
 
 window.resetPassword = async () => {
     const email = document.getElementById('email').value.trim();
-    if (!email) { alert(t('resetEmail')); return; }
+    if (!email) { showAlert(t('resetEmail')); return; }
     try {
         const rcToken = await getRecaptchaToken('reset_password');
         const rcOk    = await verifyRecaptchaToken(rcToken, 'reset_password');
-        if (!rcOk) { alert(t('errTooManyRequests')); return; }
+        if (!rcOk) { showAlert(t('errTooManyRequests')); return; }
         await sendPasswordResetEmail(auth, email);
-        alert(t('resetOk'));
+        showAlert(t('resetOk'));
     }
-    catch(e) { alert(t('errDefault')); }
+    catch(e) { showAlert(t('errDefault')); }
 };
 
 // ── Auth state ──
@@ -1076,7 +1077,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     if (!user.emailVerified) {
-        alert(t('noVerif'));
+        showAlert(t('noVerif'));
         await signOut(auth);
         return;
     }
@@ -1286,7 +1287,7 @@ async function onCreatePinKey(key) {
                 document.getElementById('create-pin-sub').innerText   = t('createPinSub');
             } else {
                 await savePinToFirestore(pinFirst);
-                alert(t('pinSaved'));
+                showAlert(t('pinSaved'));
                 goToApp();
             }
         }
@@ -1315,7 +1316,7 @@ function updateStepDots(step) {
 // ── Change PIN screen (exposed to index.html drawer) ──
 window.showChangePinScreen = () => {
     if (!isOnline()) {
-        alert(t('errNetworkFailed'));
+        showAlert(t('errNetworkFailed'));
         return;
     }
     changePinStep   = 'send';
@@ -1331,10 +1332,10 @@ window.showChangePinScreen = () => {
 
 window.sendChangePinEmail = async () => {
     const user = auth.currentUser;
-    if (!user) { alert(t('errDefault')); return; }
+    if (!user) { showAlert(t('errDefault')); return; }
     try {
         await sendEmailVerification(user);
-        alert(t('verifyEmailSent'));
+        showAlert(t('verifyEmailSent'));
 
         // Show button to proceed after verification
         document.getElementById('send-verify-btn').style.display = 'none';
@@ -1352,7 +1353,7 @@ window.sendChangePinEmail = async () => {
             });
         };
         document.getElementById('send-verify-btn').parentNode.insertBefore(proceedBtn, document.getElementById('send-verify-btn'));
-    } catch(e) { alert(t('errDefault')); }
+    } catch(e) { showAlert(t('errDefault')); }
 };
 
 async function onChangePinKey(key) {
@@ -1382,7 +1383,7 @@ async function onChangePinKey(key) {
                 document.getElementById('new-pin-sub').innerText   = t('newPinSub');
             } else {
                 await savePinToFirestore(changePinFirst);
-                alert(t('pinChangedOk'));
+                showAlert(t('pinChangedOk'));
                 goToApp();
             }
         }

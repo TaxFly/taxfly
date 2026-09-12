@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -1573,9 +1574,9 @@ function pk_filterParks(id) {
   });
 }
 
-function pk_resetAll() {
+async function pk_resetAll() {
   if (!document.getElementById('pk-parksContainer')) return;
-  if (!confirm('¿Reiniciar todo el progreso? Esto borrará todas tus atracciones tachadas.')) return;
+  if (!(await showConfirm('¿Reiniciar todo el progreso? Esto borrará todas tus atracciones tachadas.'))) return;
   state = {};
   saveState();
   buildParks();
@@ -2141,7 +2142,7 @@ async function _rcCheck(action) {
                 await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "actividades"), data);
             } catch(e) {
                 console.error("Error al guardar actividad:", e);
-                alert("Error al guardar. Reintente.");
+                showAlert("Error al guardar. Reintente.");
             }
         }
         nameEl.value = ''; dateEl.value = ''; document.getElementById('actTime').value = '';
@@ -2165,7 +2166,7 @@ async function _rcCheck(action) {
 
     window.deleteActivity = async (id) => {
         const lang = localStorage.getItem('appLang') || 'es';
-        if (!confirm(i18n[lang].confirm_delete)) return;
+        if (!(await showConfirm(i18n[lang].confirm_delete))) return;
         // Quitar localmente de inmediato
         const wasPending = localActivities.find(a => a.id === id)?._pending;
         localActivities = localActivities.filter(a => a.id !== id);
@@ -2321,7 +2322,7 @@ async function _rcCheck(action) {
 
     window.deleteNote = async (id) => {
         const lang = localStorage.getItem('appLang') || 'es';
-        if (!confirm(i18n[lang].confirm_delete)) return;
+        if (!(await showConfirm(i18n[lang].confirm_delete))) return;
         const wasPending = localNotes.find(n => n.id === id)?._pending;
         localNotes = localNotes.filter(n => n.id !== id);
         renderNotes(localNotes);
@@ -2787,7 +2788,7 @@ onAuthStateChanged(auth, async (user) => {
             scheduleAllReminders();
             showReminderToast('🔔 ' + (T.rbn_title || 'Recordatorios activados'));
         } else {
-            alert(T.reminder_denied || 'Activá las notificaciones desde los ajustes del navegador.');
+            showAlert(T.reminder_denied || 'Activá las notificaciones desde los ajustes del navegador.');
         }
     };
 
@@ -3609,8 +3610,8 @@ window.ipFilter = function(id, btn) {
     });
 };
 
-window.ipResetAll = function() {
-    if (!confirm('¿Reiniciar todo el progreso de parques?')) return;
+window.ipResetAll = async function() {
+    if (!(await showConfirm('¿Reiniciar todo el progreso de parques?'))) return;
     ipSaveState({});
     ipBuildParks();
 };
@@ -4404,8 +4405,8 @@ function pk_filterParks(id) {
   });
 }
 
-function pk_resetAll() {
-  if (!confirm('¿Reiniciar todo el progreso? Esto borrará todas tus atracciones tachadas.')) return;
+async function pk_resetAll() {
+  if (!(await showConfirm('¿Reiniciar todo el progreso? Esto borrará todas tus atracciones tachadas.'))) return;
   state = {};
   saveState();
   buildParks();

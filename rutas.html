@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
     <script src="config.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -575,7 +576,7 @@ window.doChangeEmail = async () => {
   const m = { es:{p:"Ingresá tu nuevo correo:",s:"Verificación enviada.",e:"Error: "}, en:{p:"Enter your new email:",s:"Verification sent.",e:"Error: "}, pt:{p:"Digite seu novo e-mail:",s:"Verificação enviada.",e:"Erro: "} };
   const t = m[l] || m.es;
   const e = prompt(t.p);
-  if (e) { try { await verifyBeforeUpdateEmail(currentUser, e); alert(t.s); } catch(er) { alert(t.e + er.message); } }
+  if (e) { try { await verifyBeforeUpdateEmail(currentUser, e); showAlert(t.s); } catch(er) { showAlert(t.e + er.message); } }
 };
 
 window.doChangePassword = async () => {
@@ -583,16 +584,16 @@ window.doChangePassword = async () => {
   const l = localStorage.getItem('appLang') || 'es';
   const m = { es:{s:"Correo de recuperación enviado.",e:"Error: "}, en:{s:"Recovery email sent.",e:"Error: "}, pt:{s:"E-mail de recuperação enviado.",e:"Erro: "} };
   const t = m[l] || m.es;
-  try { await sendPasswordResetEmail(auth, currentUser.email); alert(t.s); } catch(er) { alert(t.e + er.message); }
+  try { await sendPasswordResetEmail(auth, currentUser.email); showAlert(t.s); } catch(er) { showAlert(t.e + er.message); }
 };
 
 window.doDeleteAccount = async () => {
   const l = localStorage.getItem('appLang') || 'es';
   const m = { es:{c:"¿Eliminar cuenta permanentemente?",e:"Reautenticación requerida. Cerrá sesión y volvé a entrar."}, en:{c:"Permanently delete account?",e:"Re-authentication required. Please log out and back in."}, pt:{c:"Excluir conta permanentemente?",e:"Reautenticação necessária. Saia e entre novamente."} };
   const t = m[l] || m.es;
-  if (!confirm(t.c)) return;
-  if (!(await _rcCheck('delete_account'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
-  try { await deleteUser(currentUser); window.location.replace('login.html'); } catch(e) { alert(t.e); }
+  if (!(await showConfirm(t.c))) return;
+  if (!(await _rcCheck('delete_account'))) { showAlert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
+  try { await deleteUser(currentUser); window.location.replace('login.html'); } catch(e) { showAlert(t.e); }
 };
 
 window.confirmarPIN = async () => {

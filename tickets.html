@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -802,10 +803,10 @@ window.confirmarPIN = async () => {
 };
 window.doLogout = () => signOut(auth).then(() => window.location.replace('login.html'));
 window.doDeleteAccount = async () => {
-    if (!confirm('¿Eliminar cuenta permanentemente?')) return;
-    if (!(await _rcCheck('delete_account'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
+    if (!(await showConfirm('¿Eliminar cuenta permanentemente?'))) return;
+    if (!(await _rcCheck('delete_account'))) { showAlert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
     try { await deleteUser(currentUser); window.location.replace('login.html'); }
-    catch { alert('Reautenticación requerida. Cerrá sesión y volvé a entrar.'); }
+    catch { showAlert('Reautenticación requerida. Cerrá sesión y volvé a entrar.'); }
 };
 
 // ── APP LOGIC (mismo módulo, sin problema de scope) ──────────────────────
@@ -1103,7 +1104,7 @@ window.compressHerePdf = async () => {
         renderPreview();
     } catch(e) {
         console.error(e);
-        alert('No se pudo comprimir el PDF. Intentá desde ilovepdf.com');
+        showAlert('No se pudo comprimir el PDF. Intentá desde ilovepdf.com');
     }
     hideSyncBanner();
     _heavyPdfRaw = null; _heavyPdfName = null;
@@ -1150,7 +1151,7 @@ window.openCamera = async () => {
         camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
         document.getElementById('cam-video').srcObject = camStream;
         ui.style.display = 'block';
-    } catch { alert('Cámara no disponible.'); }
+    } catch { showAlert('Cámara no disponible.'); }
 };
 window.stopCamera = () => {
     if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
@@ -1230,8 +1231,8 @@ window._flushTicketsPending = async () => {
 // ── Save → Firestore (offline-aware) ──────────────────────────────────────
 window.saveDoc = async () => {
     const name = document.getElementById('inp-name').value.trim();
-    if (!name)          { alert('Ingresá un nombre.'); return; }
-    if (!pending.length){ alert('Agregá al menos una imagen o PDF.'); return; }
+    if (!name)          { showAlert('Ingresá un nombre.'); return; }
+    if (!pending.length){ showAlert('Agregá al menos una imagen o PDF.'); return; }
     const docObj = { id:`doc_${Date.now()}_${Math.random().toString(36).slice(2,6)}`, perfilId, name, type:selType, files:[...pending], createdAt:Date.now() };
 
     // Optimistic UI
@@ -1265,7 +1266,7 @@ window.saveDoc = async () => {
 window.deleteDoc = async id => {
     const lang = localStorage.getItem('appLang')||'es';
     const msg = { es:'¿Eliminar este documento?', en:'Delete this document?', pt:'Excluir este documento?' };
-    if (!confirm(msg[lang]||msg.es)) return;
+    if (!(await showConfirm(msg[lang]||msg.es))) return;
     // Cancel pending save if it exists (optimistic cancel)
     const q = await loadQueue();
     const wasPending = q.some(o => o.docId === id && o.type === 'save_doc');
@@ -1489,7 +1490,7 @@ window.shareDoc = async () => {
         const file = new File([blob], doc.name+(f.kind==='pdf'?'.pdf':'.jpg'),{ type:blob.type });
         if (navigator.canShare?.({ files:[file] })) { await navigator.share({ files:[file], title:doc.name }); }
         else { const a=document.createElement('a'); a.href=f.dataUrl; a.download=file.name; a.click(); }
-    } catch(e) { if (e.name!=='AbortError') alert('No se pudo compartir.'); }
+    } catch(e) { if (e.name!=='AbortError') showAlert('No se pudo compartir.'); }
 };
 
 // ── Settings ───────────────────────────────────────────────────────────────

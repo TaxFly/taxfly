@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -763,15 +764,15 @@ async function checkRealConnectivity() {
 
     function handleFileSelected(file) {
         const allowed = ['image/jpeg','image/png','image/webp'];
-        if (!allowed.includes(file.type)) { alert('Solo se aceptan imágenes JPG, PNG o WebP.'); return; }
-        if (file.size > MAX_MB * 1024 * 1024) { alert(`La foto no puede superar los ${MAX_MB} MB.`); return; }
+        if (!allowed.includes(file.type)) { showAlert('Solo se aceptan imágenes JPG, PNG o WebP.'); return; }
+        if (file.size > MAX_MB * 1024 * 1024) { showAlert(`La foto no puede superar los ${MAX_MB} MB.`); return; }
 
         const reader = new FileReader();
         reader.onload = (ev) => {
             const img = new Image();
             img.onload = () => {
                 if (img.width < MIN_DIM || img.height < MIN_DIM) {
-                    alert(`La imagen es muy pequeña. Mínimo ${MIN_DIM}×${MIN_DIM} px.`); return;
+                    showAlert(`La imagen es muy pequeña. Mínimo ${MIN_DIM}×${MIN_DIM} px.`); return;
                 }
                 openCropModal(img);
             };
@@ -839,7 +840,7 @@ async function checkRealConnectivity() {
 
     // ── MODERATION ─────────────────────────────────────────────────────────
     async function moderateAndApplyPhoto(dataUrl) {
-        if (!(await _rcCheck('upload_photo'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
+        if (!(await _rcCheck('upload_photo'))) { showAlert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
         const statusEl = document.getElementById('modStatus');
         const statusText = document.getElementById('modStatusText');
         const termsRow = document.getElementById('termsRow');
@@ -901,14 +902,14 @@ async function checkRealConnectivity() {
     const originalSave = window.saveProfile;
     window.saveProfile = async () => {
         if (customPhotoDataUrl && !document.getElementById('termsCheck').checked) {
-            alert('Por favor confirmá que tenés los derechos sobre la foto antes de guardar.');
+            showAlert('Por favor confirmá que tenés los derechos sobre la foto antes de guardar.');
             return;
         }
         await originalSave();
     };
 
     window.deleteProfile = async () => {
-        if (profiles.length <= 1 || !confirm(t.confirm)) return;
+        if (profiles.length <= 1 || !(await showConfirm(t.confirm))) return;
         profiles = profiles.filter(p => p.id !== editingId);
         await updateDoc(doc(db, 'usuarios', uid), { perfiles: profiles });
         localStorage.setItem('taxfly_cached_profiles', JSON.stringify(profiles));

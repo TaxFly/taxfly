@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -1049,17 +1050,17 @@ window.doLogout = () => signOut(auth).then(() => window.location.replace('login.
 window.doChangeEmail = async () => {
     if (!currentUser) return;
     const e = prompt('Nuevo correo:');
-    if (e) { try { await verifyBeforeUpdateEmail(currentUser, e); alert('Verificación enviada.'); } catch(er) { alert(er.message); } }
+    if (e) { try { await verifyBeforeUpdateEmail(currentUser, e); showAlert('Verificación enviada.'); } catch(er) { showAlert(er.message); } }
 };
 window.doChangePassword = async () => {
     if (!currentUser) return;
-    try { await sendPasswordResetEmail(auth, currentUser.email); alert('Correo de recuperación enviado.'); } catch(er) { alert(er.message); }
+    try { await sendPasswordResetEmail(auth, currentUser.email); showAlert('Correo de recuperación enviado.'); } catch(er) { showAlert(er.message); }
 };
 window.doDeleteAccount = async () => {
-    if (!confirm('¿Eliminar cuenta permanentemente?')) return;
-    if (!(await _rcCheck('delete_account'))) { alert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
+    if (!(await showConfirm('¿Eliminar cuenta permanentemente?'))) return;
+    if (!(await _rcCheck('delete_account'))) { showAlert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
     try { await deleteDoc(doc(db, 'usuarios', currentUser.uid)); await deleteUser(currentUser); window.location.replace('login.html'); }
-    catch(e) { alert('Reautenticación requerida.'); }
+    catch(e) { showAlert('Reautenticación requerida.'); }
 };
 
 onAuthStateChanged(auth, async (user) => {
