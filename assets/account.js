@@ -38,3 +38,27 @@ window.confirmAndDeleteAccount = async function ({ db, doc, deleteDoc, deleteUse
         window.showAlert(t.e);
     }
 };
+
+// ── Cambiar correo (lógica compartida) ──────────────────────────────────
+// Mismo motivo que arriba: 6 copias casi iguales, con distinta cantidad de
+// idiomas y una de ellas usando un toast propio en vez del modal común.
+window.confirmAndChangeEmail = async function ({ currentUser, verifyBeforeUpdateEmail }) {
+    if (!currentUser) { window.showAlert('No hay sesión activa.'); return; }
+    const lang = localStorage.getItem('appLang') || 'es';
+    const M = {
+        es: { p: 'Ingresá tu nuevo correo:', s: 'Verificación enviada.', e: 'Error: ' },
+        en: { p: 'Enter your new email:', s: 'Verification sent.', e: 'Error: ' },
+        pt: { p: 'Digite seu novo e-mail:', s: 'Verificação enviada.', e: 'Erro: ' },
+    };
+    const t = M[lang] || M.es;
+
+    const email = await window.showPrompt(t.p);
+    if (!email) return;
+
+    try {
+        await verifyBeforeUpdateEmail(currentUser, email);
+        window.showAlert(t.s);
+    } catch (er) {
+        window.showAlert(t.e + er.message);
+    }
+};
