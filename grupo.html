@@ -742,16 +742,7 @@ window.doLogout = () => {
     }).catch(er => showToast('❌ ' + er.message));
 };
 
-window.doChangeEmail = async () => {
-    const firebaseUser = auth.currentUser;
-    if (!firebaseUser) { showToast('⚠️ No hay sesión activa'); return; }
-    const e = (await showPrompt('Nuevo correo:'));
-    if (!e) return;
-    try {
-        await verifyBeforeUpdateEmail(firebaseUser, e);
-        showToast('📧 Verificación enviada a ' + e);
-    } catch(er) { showToast('❌ ' + er.message); }
-};
+window.doChangeEmail = () => window.confirmAndChangeEmail({ currentUser: auth.currentUser, verifyBeforeUpdateEmail });
 
 window.doChangePassword = async () => {
     const firebaseUser = auth.currentUser;

@@ -833,7 +833,7 @@ function renderSections() {
     (t.sections||I18N.es.sections).forEach(sec=>{ const a=document.createElement('a'); a.href=sec.href; a.className='section-card'; a.innerHTML=`<span class="sc-emoji">${sec.icon}</span><span class="sc-name">${sec.name}</span>`; list.appendChild(a); });
 }
 
-window.doChangeEmail=async()=>{if(!currentUser)return;const l=lang||'es',m={es:{p:"Ingresá tu nuevo correo:",s:"Verificación enviada.",e:"Error: "},en:{p:"Enter your new email:",s:"Verification sent.",e:"Error: "},pt:{p:"Insira seu novo e-mail:",s:"Verificação enviada.",e:"Erro: "}},tx=m[l]||m.es,e=(await showPrompt(tx.p));if(e){try{await verifyBeforeUpdateEmail(currentUser,e);showAlert(tx.s);}catch(er){showAlert(tx.e+er.message);}}};
+window.doChangeEmail = () => window.confirmAndChangeEmail({ currentUser, verifyBeforeUpdateEmail });
 window.doChangePassword=async()=>{if(!currentUser)return;const l=lang||'es',m={es:{s:"Correo de recuperación enviado.",e:"Error: "},en:{s:"Recovery email sent.",e:"Error: "},pt:{s:"E-mail de recuperação enviado.",e:"Erro: "}},tx=m[l]||m.es;try{await sendPasswordResetEmail(auth,currentUser.email);showAlert(tx.s);}catch(er){showAlert(tx.e+er.message);}};
 window.doDeleteAccount = () => window.confirmAndDeleteAccount({ db, doc, deleteDoc, deleteUser, currentUser });
 window.gestionarPIN=()=>{const l=lang||'es',m={es:"Función de PIN disponible en la app completa.",en:"PIN function available in the full app.",pt:"Função de PIN disponível no app completo."};showAlert(m[l]||m.es);};

@@ -904,7 +904,7 @@ window.confirmarPIN = async () => {
     setTimeout(() => window.closePinModal(), 2200);
 };
 window.doLogout = () => signOut(auth).then(() => window.location.replace('login.html'));
-window.doChangeEmail=async()=>{if(!currentUser)return;const l=localStorage.getItem('appLang')||'es',m={es:{p:"Nuevo correo:",s:"Verificación enviada.",e:"Error: "},en:{p:"New email:",s:"Verification sent.",e:"Error: "}},t=m[l],e=(await showPrompt(t.p));if(e){try{await verifyBeforeUpdateEmail(currentUser,e);showAlert(t.s);}catch(er){showAlert(t.e+er.message);}}};
+window.doChangeEmail = () => window.confirmAndChangeEmail({ currentUser, verifyBeforeUpdateEmail });
 window.doChangePassword=async()=>{if(!currentUser)return;const l=localStorage.getItem('appLang')||'es',m={es:{s:"Correo de recuperación enviado.",e:"Error: "},en:{s:"Recovery email sent.",e:"Error: "}},t=m[l];try{await sendPasswordResetEmail(auth,currentUser.email);showAlert(t.s);}catch(er){showAlert(t.e+er.message);}};
 window.doDeleteAccount = () => window.confirmAndDeleteAccount({ db, doc, deleteDoc, deleteUser, currentUser });
 

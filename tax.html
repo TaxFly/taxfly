@@ -1050,11 +1050,7 @@ window.confirmarPIN = async () => {
     setTimeout(() => window.closePinModal(), 2200);
 };
 window.doLogout = () => signOut(auth).then(() => window.location.replace('login.html'));
-window.doChangeEmail = async () => {
-    if (!currentUser) return;
-    const e = (await showPrompt('Nuevo correo:'));
-    if (e) { try { await verifyBeforeUpdateEmail(currentUser, e); showAlert('Verificación enviada.'); } catch(er) { showAlert(er.message); } }
-};
+window.doChangeEmail = () => window.confirmAndChangeEmail({ currentUser, verifyBeforeUpdateEmail });
 window.doChangePassword = async () => {
     if (!currentUser) return;
     try { await sendPasswordResetEmail(auth, currentUser.email); showAlert('Correo de recuperación enviado.'); } catch(er) { showAlert(er.message); }
