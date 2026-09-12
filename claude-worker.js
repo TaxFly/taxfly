@@ -42,7 +42,7 @@ async function handleInvoice(body, apiKey) {
 Extract the data and respond ONLY with a JSON object, nothing else, no markdown, no explanation:
 
 {
-  "store": "store or business name, or \\"Compra\\" if not legible",
+  "store": "store or business name",
   "total": 0.00,
   "subtotal": 0.00,
   "taxes": 0.00,
@@ -50,6 +50,7 @@ Extract the data and respond ONLY with a JSON object, nothing else, no markdown,
 }
 
 Rules:
+- For "store": use the printed name/text on the receipt if present. If there's no readable name but you can clearly recognize a well-known brand from its logo (shape, colors, typography), use that brand name. If you're not confident (small/unfamiliar local business with an unclear logo), use "Compra" instead of guessing — never invent a store name you're not reasonably sure about.
 - "total", "subtotal" and "taxes" must be numbers (not strings), using dot as decimal separator.
 - If a field is not present on the receipt, use 0 for numbers.
 - List at most 12 items. If items aren't clearly readable, return an empty array.
