@@ -818,7 +818,7 @@ window.changeLanguage = (lang) => {
     if (tc) tc.innerText = econTips[lang][tipIndex];
     calculate();
     updateTripUI();
-    document.title = lang === 'en' ? 'TaxUSA — Home' : lang === 'pt' ? 'TaxUSA — Início' : 'TaxUSA — Inicio';
+    document.title = lang === 'en' ? 'TaxUSA — Taxes' : lang === 'pt' ? 'TaxUSA — Impostos' : 'TaxUSA — Taxes';
     if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
 
     // Retraducir label "Clima en destino" sin recargar clima (usar caché)
