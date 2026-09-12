@@ -1,6 +1,6 @@
 // TaxFly Service Worker — v13 (recordá bumpear CACHE acá cada vez que cambies
 // un archivo que esté en PRECACHE, para forzar el refresco completo)
-const CACHE = 'taxfly-v13';
+const CACHE = 'taxfly-v14';
 const PRECACHE = [
     './login.html',
     './selector.html',
@@ -114,7 +114,7 @@ self.addEventListener('fetch', e => {
             fetchWithTimeout(e.request, 8000)
                 .then(res => {
                     if (res && res.status === 200) {
-                        caches.open(CACHE).then(cache => cache.put(e.request, res.clone()));
+                        caches.open(CACHE).then(cache => cache.put(e.request, res.clone())).catch(() => {});
                     }
                     return res;
                 })
