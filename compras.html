@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="stylesheet" href="assets/style.css">
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -13,8 +14,7 @@
     <style>
         :root{--primary:#2563eb;--primary-dim:rgba(37,99,235,.1);--accent:#7c3aed;--accent-dim:rgba(124,58,237,.1);--danger:#ef4444;--success:#10b981;--cyan:#0ea5e9;--bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--border:#e2e8f0;--input-bg:#f8fafc;--text:#0f172a;--text-sub:#64748b;--text-dim:#94a3b8;--header-color:#1e3a8a;--radius:20px;--radius-sm:12px;--shadow:0 4px 20px rgba(0,0,0,.06);--shadow-lg:0 12px 40px rgba(0,0,0,.1);--tr:all .25s cubic-bezier(.4,0,.2,1);color-scheme:light;}
         [data-theme="dark"]{--bg:#0f172a;--surface:#1e293b;--surface-2:#273549;--border:#334155;--input-bg:#273549;--text:#f1f5f9;--text-sub:#94a3b8;--text-dim:#64748b;--header-color:#2563eb;--shadow:0 4px 20px rgba(0,0,0,.3);--shadow-lg:0 12px 40px rgba(0,0,0,.4);color-scheme:dark;}
-        *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
-        body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px 16px 40px;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}
+        body{padding:16px 16px 40px;}
         .wrap{width:100%;max-width:460px;}
         .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
         .logo{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:900;color:var(--header-color);letter-spacing:-.5px;}
@@ -531,7 +531,7 @@
     </div>
 
     <div id="scanner-ui">
-        <button class="close-scanner" onclick="stopScanner()">✕</button>
+        <button class="close-scanner" onclick="stopScanner()" aria-label="Cerrar escáner">✕</button>
         <div id="ocr-loader" class="ocr-loading">
             <span id="ocr-status" data-i18n="ocr_analyzing">Analizando ticket... 🧐</span>
             <small data-i18n="ocr_detecting">Detectando Totales y Taxes</small>
@@ -789,7 +789,7 @@
 <!-- ══════════ MODAL PIN OFFLINE ══════════ -->
 <div id="pinModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closePinModal()">
   <div id="pinModalBox" style="background:var(--surface);border-radius:var(--radius);padding:28px 24px;width:calc(100% - 40px);max-width:360px;box-shadow:var(--shadow-lg);border:1px solid var(--border);position:relative;animation:pinBoxIn .28s cubic-bezier(0.34,1.56,0.64,1);">
-    <button onclick="closePinModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
+    <button onclick="closePinModal()" aria-label="Cerrar" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
     <div style="font-size:1.4rem;margin-bottom:6px;">🔢</div>
     <div style="font-size:1rem;font-weight:900;color:var(--text);margin-bottom:4px;" id="pinModalTitle">Cambiar PIN Offline</div>
     <div style="font-size:.75rem;font-weight:600;color:var(--text-sub);margin-bottom:20px;" id="pinModalSub">Este PIN se usa para acceder sin conexión</div>
@@ -938,15 +938,15 @@ let presupuestoBase = 0;
 let allRates = {};
 let baseRates = { oficial:0, tarjeta:0, eur:0, brl:0 };
 const flags = {
-  EUR: '<img src="https://flagcdn.com/20x15/eu.png" onerror="this.outerHTML=\'🇪🇺\'">',
-  GBP: '<img src="https://flagcdn.com/20x15/gb.png" onerror="this.outerHTML=\'🇬🇧\'">',
-  CHF: '<img src="https://flagcdn.com/20x15/ch.png" onerror="this.outerHTML=\'🇨🇭\'">',
-  BRL: '<img src="https://flagcdn.com/20x15/br.png" onerror="this.outerHTML=\'🇧🇷\'">',
-  CLP: '<img src="https://flagcdn.com/20x15/cl.png" onerror="this.outerHTML=\'🇨🇱\'">',
-  UYU: '<img src="https://flagcdn.com/20x15/uy.png" onerror="this.outerHTML=\'🇺🇾\'">',
-  MXN: '<img src="https://flagcdn.com/20x15/mx.png" onerror="this.outerHTML=\'🇲🇽\'">',
-  PEN: '<img src="https://flagcdn.com/20x15/pe.png" onerror="this.outerHTML=\'🇵🇪\'">',
-  COP: '<img src="https://flagcdn.com/20x15/co.png" onerror="this.outerHTML=\'🇨🇴\'">'
+  EUR: '<img src="https://flagcdn.com/20x15/eu.png" alt="" onerror="this.outerHTML=\'🇪🇺\'">',
+  GBP: '<img src="https://flagcdn.com/20x15/gb.png" alt="" onerror="this.outerHTML=\'🇬🇧\'">',
+  CHF: '<img src="https://flagcdn.com/20x15/ch.png" alt="" onerror="this.outerHTML=\'🇨🇭\'">',
+  BRL: '<img src="https://flagcdn.com/20x15/br.png" alt="" onerror="this.outerHTML=\'🇧🇷\'">',
+  CLP: '<img src="https://flagcdn.com/20x15/cl.png" alt="" onerror="this.outerHTML=\'🇨🇱\'">',
+  UYU: '<img src="https://flagcdn.com/20x15/uy.png" alt="" onerror="this.outerHTML=\'🇺🇾\'">',
+  MXN: '<img src="https://flagcdn.com/20x15/mx.png" alt="" onerror="this.outerHTML=\'🇲🇽\'">',
+  PEN: '<img src="https://flagcdn.com/20x15/pe.png" alt="" onerror="this.outerHTML=\'🇵🇪\'">',
+  COP: '<img src="https://flagcdn.com/20x15/co.png" alt="" onerror="this.outerHTML=\'🇨🇴\'">'
 };
     let tipIndex = 0;
 let video, stream;
@@ -1485,7 +1485,7 @@ function renderGastosList(gastos){
                 </div>
                 <div class="h-right">
                     <div class="h-amount">-$${fmt(g.valor)}</div>
-                    <button class="h-del" onclick="deleteGasto('${g.id}')">✕</button>
+                    <button class="h-del" onclick="deleteGasto('${g.id}')" aria-label="Eliminar gasto">✕</button>
                 </div>
             </div>`;
         }).join('');

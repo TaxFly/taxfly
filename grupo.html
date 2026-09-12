@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="stylesheet" href="assets/style.css">
     <script src="config.js"></script>
     <style>.grecaptcha-badge{visibility:hidden!important;opacity:0!important;pointer-events:none!important;}</style>
     <meta charset="UTF-8">
@@ -42,9 +43,8 @@
             --shadow:0 4px 20px rgba(0,0,0,0.3); --shadow-lg:0 12px 40px rgba(0,0,0,0.4);
             color-scheme:dark;
         }
-        *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
         html{scroll-behavior:smooth;}
-        body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 40px;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}
+        body{padding:28px 16px 40px;}
         .hidden{display:none!important;}
         .wrap{width:100%;max-width:460px;}
 
@@ -1223,14 +1223,14 @@ function renderGrupo() {
                     <div class="gasto-meta">${g.pagadorNombre} · ${g.fecha}</div>
                 </div>
                 <div class="gasto-monto">${fmt(g.monto)}</div>
-                <button class="gasto-del" onclick="eliminarGasto('${g.id}')" title="Eliminar gasto">🗑️</button>
+                <button class="gasto-del" onclick="eliminarGasto('${g.id}')" title="Eliminar gasto" aria-label="Eliminar gasto">🗑️</button>
             </div>`).join('');
     }
 
     // Members con botón eliminar (solo creador, no puede eliminarse a sí mismo)
     $('members-list').innerHTML=miembros.map(m=>{
         const puedeEliminar = esCreador && m.uid !== currentUser.uid && !currentGroup._demo;
-        return `<span class="member-chip">👤 ${m.nombre}${puedeEliminar ? `<button class="member-del" onclick="eliminarMiembro('${m.uid}')" title="Eliminar miembro">✕</button>` : ''}</span>`;
+        return `<span class="member-chip">👤 ${m.nombre}${puedeEliminar ? `<button class="member-del" onclick="eliminarMiembro('${m.uid}')" title="Eliminar miembro" aria-label="Eliminar miembro">✕</button>` : ''}</span>`;
     }).join('');
 
     renderBalances(miembros,gastos);

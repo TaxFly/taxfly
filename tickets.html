@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="stylesheet" href="assets/style.css">
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -41,8 +42,7 @@
             --header-color:#2563eb;
             --shadow:0 4px 20px rgba(0,0,0,0.3); --shadow-lg:0 12px 40px rgba(0,0,0,0.4);
         }
-        *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
-        body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 48px;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}
+        body{padding:20px 16px 48px;}
         .wrap{width:100%;max-width:460px;}
         .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
         .logo{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:900;color:var(--header-color);letter-spacing:-.5px;}
@@ -363,7 +363,7 @@
         <!-- Camera -->
         <div class="camera-ui" id="camera-ui">
             <video id="cam-video" autoplay playsinline></video>
-            <button class="cam-close" onclick="stopCamera()">✕</button>
+            <button class="cam-close" onclick="stopCamera()" aria-label="Cerrar cámara">✕</button>
             <div class="cam-ring"></div>
             <button class="cam-capture" onclick="capturePhoto()">📸</button>
         </div>
@@ -382,7 +382,7 @@
 <!-- ═══════════ VIEWER ═══════════ -->
 <div class="viewer-modal" id="viewerModal">
     <div class="viewer-header">
-        <button class="viewer-close" onclick="closeViewer()">✕</button>
+        <button class="viewer-close" onclick="closeViewer()" aria-label="Cerrar visor">✕</button>
         <div class="viewer-title" id="viewer-title">—</div>
         <button class="viewer-close" id="btnSearchToggle" onclick="toggleSearch()" style="display:none;">🔍</button>
     </div>
@@ -473,7 +473,7 @@
 <!-- ══════════ MODAL PIN OFFLINE ══════════ -->
 <div id="pinModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closePinModal()">
   <div id="pinModalBox" style="background:var(--surface);border-radius:var(--radius);padding:28px 24px;width:calc(100% - 40px);max-width:360px;box-shadow:var(--shadow-lg);border:1px solid var(--border);position:relative;animation:pinBoxIn .28s cubic-bezier(0.34,1.56,0.64,1);">
-    <button onclick="closePinModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
+    <button onclick="closePinModal()" aria-label="Cerrar" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
     <div style="font-size:1.4rem;margin-bottom:6px;">🔢</div>
     <div style="font-size:1rem;font-weight:900;color:var(--text);margin-bottom:4px;" id="pinModalTitle">Cambiar PIN Offline</div>
     <div style="font-size:.75rem;font-weight:600;color:var(--text-sub);margin-bottom:20px;" id="pinModalSub">Este PIN se usa para acceder sin conexión</div>
@@ -547,7 +547,6 @@ if ('serviceWorker' in navigator) {
 // Los helpers de caché usan una función para obtener el perfilId correcto en el momento de uso
 function getPerfilId() { return localStorage.getItem('perfilActivoId') || 'default'; }
 const DOCS_CACHE_KEY_PFX = 'taxusa_docs_cache_';
-const DOCS_PENDING_KEY_PFX = 'taxusa_docs_pending_';
 
 // ── IndexedDB KV helper ─────────────────────────────────────────────────────
 // localStorage tiene un límite chico (~5MB, más chico y estricto en mobile/iOS)
@@ -595,30 +594,6 @@ async function cargarDocsDesdeCache() {
     return await idbGet(DOCS_CACHE_KEY_PFX + getPerfilId());
 }
 
-function getPendingDocs() {
-    try { return JSON.parse(localStorage.getItem(DOCS_PENDING_KEY_PFX + getPerfilId()) || '[]'); } catch(e) { return []; }
-}
-function savePendingDocs(ops) {
-    try { localStorage.setItem(DOCS_PENDING_KEY_PFX + getPerfilId(), JSON.stringify(ops)); } catch(e) {}
-}
-async function flushPendingDocs() {
-    if (!currentUser) return;
-    const ops = getPendingDocs();
-    if (!ops.length) return;
-    const pid = getPerfilId();
-    const failed = [];
-    for (const op of ops) {
-        try {
-            if (op.type === 'save') {
-                await window.fsSave(currentUser.uid, pid, op.docObj);
-            } else if (op.type === 'del') {
-                await window.fsDelete(currentUser.uid, pid, op.docId);
-            }
-        } catch(e) { failed.push(op); }
-    }
-    savePendingDocs(failed);
-}
-window.addEventListener('online', () => { flushPendingDocs(); renderList(); });
 window.addEventListener('offline', () => { renderList(); });
 
 // ── Firestore helpers ──────────────────────────────
@@ -1000,7 +975,7 @@ function renderList() {
                     </div>
                     <div class="doc-btns">
                         <button class="doc-view-btn" onclick="event.stopPropagation();openViewer('${doc.id}')">${t.lbl_ver||'VER'}</button>
-                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar">🗑️</button>
+                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar" aria-label="Eliminar documento">🗑️</button>
                     </div>
                 </div>
                 ${preview}
@@ -1162,8 +1137,8 @@ function renderPreview() {
     strip.style.display = 'flex';
     strip.innerHTML = pending.map((f,i) =>
         f.kind==='pdf'
-        ? `<div class="preview-item"><div class="preview-pdf"><span>📄</span><small>PDF</small></div><button class="preview-remove" onclick="rmFile(${i})">✕</button></div>`
-        : `<div class="preview-item"><img class="preview-thumb" src="${f.dataUrl}"><button class="preview-remove" onclick="rmFile(${i})">✕</button></div>`
+        ? `<div class="preview-item"><div class="preview-pdf"><span>📄</span><small>PDF</small></div><button class="preview-remove" onclick="rmFile(${i})" aria-label="Quitar archivo">✕</button></div>`
+        : `<div class="preview-item"><img class="preview-thumb" src="${f.dataUrl}"><button class="preview-remove" onclick="rmFile(${i})" aria-label="Quitar archivo">✕</button></div>`
     ).join('');
 }
 window.rmFile = i => { pending.splice(i,1); renderPreview(); };
@@ -2022,6 +1997,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window._flushTicketsPending) {
             try { await window._flushTicketsPending(); } catch(e) { console.warn('Flush error', e); }
         }
+        if (typeof renderList === 'function') renderList();
     });
     window.addEventListener('offline', tryUpdate);
     // Check on load — retry until the module has run

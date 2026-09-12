@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="stylesheet" href="assets/style.css">
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -63,9 +64,8 @@
             --shadow:0 4px 20px rgba(0,0,0,0.3); --shadow-lg:0 12px 40px rgba(0,0,0,0.4);
             color-scheme: dark;
         }
-        *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
         html{scroll-behavior:smooth;}
-        body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 40px;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}
+        body{padding:28px 16px 40px;}
 
         .wrap{width:100%;max-width:460px;}
 
@@ -617,7 +617,7 @@
 <!-- ══════════ MODAL PIN OFFLINE ══════════ -->
 <div id="pinModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;">
   <div id="pinModalBox" style="background:var(--surface);border-radius:var(--radius);padding:28px 24px;width:calc(100% - 40px);max-width:360px;box-shadow:var(--shadow-lg);border:1px solid var(--border);position:relative;">
-    <button onclick="closePinModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
+    <button onclick="closePinModal()" aria-label="Cerrar" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
     <div style="font-size:1.4rem;margin-bottom:6px;">🔢</div>
     <div style="font-size:1rem;font-weight:900;color:var(--text);margin-bottom:4px;" id="pinModalTitle">Cambiar PIN Offline</div>
     <div style="font-size:.75rem;font-weight:600;color:var(--text-sub);margin-bottom:20px;" id="pinModalSub">Este PIN se usa para acceder sin conexión</div>

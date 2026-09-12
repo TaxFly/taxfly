@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="stylesheet" href="assets/style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TaxUSA — Inicio</title>
@@ -53,9 +54,8 @@
             --shadow:0 4px 20px rgba(0,0,0,0.3); --shadow-lg:0 12px 40px rgba(0,0,0,0.4);
             color-scheme: dark;
         }
-        *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
         html{scroll-behavior:smooth;}
-        body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px 16px 40px;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}
+        body{padding:16px 16px 40px;}
         .wrap{width:100%;max-width:460px;}
 
         .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
@@ -233,7 +233,7 @@
             </svg>
             <span>Tax<span style="color:#ef4444;">USA</span></span>
         </div>
-        <button class="btn-nav-set" id="btnSettings" onclick="toggleSettings()" title="Ajustes">⚙️</button>
+        <button class="btn-nav-set" id="btnSettings" onclick="toggleSettings()" title="Ajustes" aria-label="Ajustes">⚙️</button>
     </header>
     <!-- Greeting -->
     <div class="greeting-banner" style="display:flex;align-items:center;justify-content:space-between;">
@@ -268,19 +268,19 @@
             <div class="w-label"><span class="w-icon">💱</span><span id="fx-widget-title">Dólar hoy</span></div>
             <div class="fx-flags" id="fx-flags">
                 <button class="fx-flag-btn active" onclick="fxSelect('ars')" id="fx-btn-ars">
-                    <img src="https://flagcdn.com/20x15/ar.png" onerror="this.outerHTML='🇦🇷'"> ARS
+                    <img src="https://flagcdn.com/20x15/ar.png" alt="" onerror="this.outerHTML='🇦🇷'"> ARS
                 </button>
                 <button class="fx-flag-btn" onclick="fxSelect('eur')" id="fx-btn-eur">
-                    <img src="https://flagcdn.com/20x15/eu.png" onerror="this.outerHTML='🇪🇺'"> EUR
+                    <img src="https://flagcdn.com/20x15/eu.png" alt="" onerror="this.outerHTML='🇪🇺'"> EUR
                 </button>
                 <button class="fx-flag-btn" onclick="fxSelect('uyu')" id="fx-btn-uyu">
-                    <img src="https://flagcdn.com/20x15/uy.png" onerror="this.outerHTML='🇺🇾'"> UYU
+                    <img src="https://flagcdn.com/20x15/uy.png" alt="" onerror="this.outerHTML='🇺🇾'"> UYU
                 </button>
                 <button class="fx-flag-btn" onclick="fxSelect('clp')" id="fx-btn-clp">
-                    <img src="https://flagcdn.com/20x15/cl.png" onerror="this.outerHTML='🇨🇱'"> CLP
+                    <img src="https://flagcdn.com/20x15/cl.png" alt="" onerror="this.outerHTML='🇨🇱'"> CLP
                 </button>
                 <button class="fx-flag-btn" onclick="fxSelect('pen')" id="fx-btn-pen">
-                    <img src="https://flagcdn.com/20x15/pe.png" onerror="this.outerHTML='🇵🇪'"> PEN
+                    <img src="https://flagcdn.com/20x15/pe.png" alt="" onerror="this.outerHTML='🇵🇪'"> PEN
                 </button>
             </div>
             <div id="fx-loading" style="font-size:.7rem;color:var(--text-dim);font-weight:600;">Cargando...</div>
@@ -592,7 +592,7 @@ function fxFmt(n, decimals=2) {
 }
 
 // Helper: inline flag image
-function fxFlag(cc) { return `<img src="https://flagcdn.com/16x12/${cc}.png" style="width:16px;height:12px;border-radius:1px;vertical-align:middle;margin-right:3px;" onerror="this.style.display='none'">`; }
+function fxFlag(cc) { return `<img src="https://flagcdn.com/16x12/${cc}.png" alt="" style="width:16px;height:12px;border-radius:1px;vertical-align:middle;margin-right:3px;" onerror="this.style.display='none'">`; }
 
 function fxRenderARS() {
     const d = fxData.ars;
