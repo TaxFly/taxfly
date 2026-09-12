@@ -6,12 +6,21 @@ export default {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Headers': 'Content-Type, X-App-Secret',
         },
       });
     }
     if (request.method !== 'POST') {
       return json({ error: 'Method not allowed' }, 405);
+    }
+
+    // Secreto compartido: frena bots/scrapers que solo copian la URL del
+    // worker sin mirar el JS de la app. No es autenticación real (el valor
+    // vive en el cliente), la protección de fondo contra abuso masivo es
+    // la regla de Rate Limiting en el dashboard de Cloudflare.
+    const providedSecret = request.headers.get('X-App-Secret');
+    if (!env.APP_SHARED_SECRET || providedSecret !== env.APP_SHARED_SECRET) {
+      return json({ error: 'Unauthorized' }, 401);
     }
 
     let body;

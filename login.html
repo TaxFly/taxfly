@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
+    <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TaxFly — Login</title>
@@ -955,7 +956,7 @@ window.toggleMode = () => {
 
 // ── reCAPTCHA v3 helper ──
 const RECAPTCHA_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
-const RECAPTCHA_VERIFY_URL = 'https://taxfly-claude.juanbria18.workers.dev'; // Cloudflare Worker
+const RECAPTCHA_VERIFY_URL = window.TAXFLY_CONFIG.WORKER_URL;
 
 async function getRecaptchaToken(action) {
     return new Promise((resolve, reject) => {
@@ -973,7 +974,7 @@ async function verifyRecaptchaToken(token, action) {
     try {
         const res = await fetch(RECAPTCHA_VERIFY_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-App-Secret': window.TAXFLY_CONFIG.APP_SECRET },
             body: JSON.stringify({ type: 'verify_recaptcha', token, action })
         });
         if (!res.ok) return true; // backend error → no bloquear al usuario

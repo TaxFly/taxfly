@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TaxUSA — Documentos</title>
@@ -506,11 +507,11 @@
 import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
-import { getFirestore, collection, doc, setDoc, deleteDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, getDocs, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 // ── reCAPTCHA v3 helper ──
 const _RC_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
-const _RC_VERIFY_URL = 'https://taxfly-claude.juanbria18.workers.dev';
+const _RC_VERIFY_URL = window.TAXFLY_CONFIG.WORKER_URL;
 async function _rcToken(action) {
     return new Promise((resolve) => {
         if (typeof grecaptcha === 'undefined') { resolve(null); return; }
@@ -521,7 +522,7 @@ async function _rcCheck(action) {
     const token = await _rcToken(action);
     if (!token) return true;
     try {
-        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json','X-App-Secret':window.TAXFLY_CONFIG.APP_SECRET}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
         if (!r.ok) return true;
         const d = await r.json();
         return d.success !== false;
@@ -622,11 +623,22 @@ window.addEventListener('offline', () => { renderList(); });
 
 // ── Firestore helpers ──────────────────────────────
 // Path: users/{uid}/profiles/{perfilId}/docs/{docId}
+// IMPORTANTE: los archivos (PDFs/fotos en base64) NO se guardan dentro del
+// propio documento. Firestore tiene un límite de 1MB por documento, y
+// guardarlos "en chunks" dentro de un array del mismo documento NO evita ese
+// límite — los chunks siguen sumando al tamaño total de ESE documento.
+// Por eso cada chunk se guarda como su PROPIO documento chico en una
+// subcolección aparte: así el tamaño del archivo ya no tiene techo real
+// (cada chunk de 800KB entra cómodo bajo el límite de 1MB, sin importar
+// cuántos chunks tenga el archivo en total).
 function docsCol(uid, pid) {
     return collection(db, 'users', uid, 'profiles', pid, 'docs');
 }
+function chunksCol(uid, pid, docId) {
+    return collection(db, 'users', uid, 'profiles', pid, 'docs', docId, 'chunks');
+}
 
-const CHUNK = 800_000; // 800KB per Firestore field
+const CHUNK = 800_000; // 800KB por documento de chunk (bien debajo del límite de 1MB de Firestore)
 function splitChunks(b64) {
     const out = [];
     for (let i = 0; i < b64.length; i += CHUNK) out.push(b64.slice(i, i + CHUNK));
@@ -635,23 +647,69 @@ function splitChunks(b64) {
 
 window.fsSave = async (uid, pid, docObj) => {
     const ref = doc(docsCol(uid, pid), docObj.id);
-    const filesSerial = docObj.files.map(f => ({
-        kind: f.kind, name: f.name,
-        chunks: splitChunks(f.dataUrl),
-        numChunks: splitChunks(f.dataUrl).length
-    }));
-    await setDoc(ref, { id:docObj.id, perfilId:docObj.perfilId, name:docObj.name, type:docObj.type, createdAt:docObj.createdAt, files:filesSerial });
+    const filesMeta = docObj.files.map((f, fileIdx) => {
+        const chunks = splitChunks(f.dataUrl);
+        return { kind: f.kind, name: f.name, fileIdx, numChunks: chunks.length, _chunks: chunks };
+    });
+
+    // Documento principal: solo metadata (liviano, nunca se acerca al límite)
+    await setDoc(ref, {
+        id: docObj.id, perfilId: docObj.perfilId, name: docObj.name, type: docObj.type, createdAt: docObj.createdAt,
+        files: filesMeta.map(({ _chunks, ...meta }) => meta),
+    });
+
+    // Cada chunk de cada archivo, como documento propio en la subcolección "chunks"
+    // (Firestore permite hasta 500 escrituras por batch — de sobra para uso normal:
+    // 500 chunks de 800KB serían ~400MB en un solo archivo)
+    const batch = writeBatch(db);
+    const cCol = chunksCol(uid, pid, docObj.id);
+    for (const fm of filesMeta) {
+        for (let ci = 0; ci < fm._chunks.length; ci++) {
+            batch.set(doc(cCol, `${fm.fileIdx}_${ci}`), { data: fm._chunks[ci] });
+        }
+    }
+    await batch.commit();
 };
 
 window.fsLoad = async (uid, pid) => {
     const snap = await getDocs(query(docsCol(uid, pid), orderBy('createdAt', 'desc')));
-    return snap.docs.map(d => {
+    const out = [];
+    for (const d of snap.docs) {
         const data = d.data();
-        return { ...data, files: (data.files||[]).map(f => ({ kind:f.kind, name:f.name, dataUrl:(f.chunks||[]).join('') })) };
-    });
+        const filesMeta = data.files || [];
+
+        // Formato viejo: los chunks venían embebidos en el propio documento
+        // (files[i].chunks). Estos documentos se guardaron antes de este
+        // cambio — los seguimos leyendo así para no romper nada existente.
+        const isOldFormat = filesMeta.some(f => Array.isArray(f.chunks));
+
+        let files;
+        if (isOldFormat) {
+            files = filesMeta.map(f => ({ kind: f.kind, name: f.name, dataUrl: (f.chunks || []).join('') }));
+        } else if (filesMeta.length) {
+            // Formato nuevo: los chunks viven en la subcolección "chunks"
+            const chunkSnap = await getDocs(chunksCol(uid, pid, d.id));
+            const byFile = {};
+            chunkSnap.forEach(c => {
+                const [fi, ci] = c.id.split('_').map(Number);
+                (byFile[fi] ||= [])[ci] = c.data().data;
+            });
+            files = filesMeta.map(f => ({ kind: f.kind, name: f.name, dataUrl: (byFile[f.fileIdx] || []).join('') }));
+        } else {
+            files = [];
+        }
+        out.push({ ...data, files });
+    }
+    return out;
 };
 
 window.fsDelete = async (uid, pid, docId) => {
+    const chunkSnap = await getDocs(chunksCol(uid, pid, docId));
+    if (!chunkSnap.empty) {
+        const batch = writeBatch(db);
+        chunkSnap.forEach(c => batch.delete(c.ref));
+        await batch.commit();
+    }
     await deleteDoc(doc(docsCol(uid, pid), docId));
 };
 
