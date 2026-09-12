@@ -1,6 +1,6 @@
 // TaxFly Service Worker — v13 (recordá bumpear CACHE acá cada vez que cambies
 // un archivo que esté en PRECACHE, para forzar el refresco completo)
-const CACHE = 'taxfly-v14';
+const CACHE = 'taxfly-v15';
 const PRECACHE = [
     './login.html',
     './selector.html',
@@ -23,6 +23,11 @@ const PRECACHE = [
     './manifest.json',
     './assets/icon-512.png',
     './assets/icon-192.png',
+    // Firebase SDK — necesario para que las páginas con sesión funcionen offline
+    'https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js',
+    'https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js',
+    'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js',
+    'https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js',
 ];
 
 const OFFLINE_FALLBACK = './offline.html';
@@ -74,6 +79,29 @@ self.addEventListener('fetch', e => {
 
     // ── 2. Google Fonts → Stale While Revalidate ──
     if (url.href.includes('fonts.googleapis.com') || url.href.includes('fonts.gstatic.com')) {
+        e.respondWith(
+            caches.open(CACHE).then(cache =>
+                cache.match(e.request).then(cached => {
+                    const fetchPromise = fetch(e.request)
+                        .then(res => {
+                            if (res && res.ok) cache.put(e.request, res.clone());
+                            return res;
+                        })
+                        .catch(() => cached);
+                    return cached || fetchPromise;
+                })
+            )
+        );
+        return;
+    }
+
+    // ── 3b. Firebase SDK (gstatic) → Cache First con actualización en background ──
+    // CRÍTICO para el modo offline: todas las páginas hacen `import ... from
+    // "https://www.gstatic.com/firebasejs/..."` de forma estática. Si ese fetch
+    // falla (sin red y sin este cacheo), el módulo entero no se ejecuta y
+    // onAuthStateChanged nunca se dispara — la página queda colgada sin mostrar
+    // el usuario ni entrar al modo offline ya implementado en el código.
+    if (url.href.includes('gstatic.com/firebasejs')) {
         e.respondWith(
             caches.open(CACHE).then(cache =>
                 cache.match(e.request).then(cached => {
