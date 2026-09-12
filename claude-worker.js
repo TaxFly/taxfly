@@ -31,22 +31,23 @@ export default {
     }
 
     // Rate limiting: límite más estricto para las rutas que gastan crédito de
-    // Anthropic (facturas/seguro), más amplio para reCAPTCHA/moderación.
+    // Anthropic (facturas/seguro/moderación de fotos), más amplio para reCAPTCHA.
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
-    const isCostRoute = body.type === 'invoice_ocr' || body.type === 'insurance_analysis';
+    const isCostRoute = body.type === 'invoice_ocr' || body.type === 'insurance_analysis' || body.type === 'moderate_image';
     const limiter = isCostRoute ? env.COST_LIMITER : env.GENERAL_LIMITER;
     if (limiter) {
       const { success } = await limiter.limit({ key: `${ip}:${body.type}` });
       if (!success) return json({ error: 'Too many requests, try again in a bit' }, 429);
     }
 
-    if (body.type === 'invoice_ocr' || body.type === 'insurance_analysis') {
+    if (body.type === 'invoice_ocr' || body.type === 'insurance_analysis' || body.type === 'moderate_image') {
       const apiKey = env.ANTHROPIC_API_KEY;
       if (!apiKey) return json({ error: 'Anthropic API key not configured' }, 500);
-      return body.type === 'invoice_ocr' ? handleInvoice(body, apiKey) : handleInsurance(body, apiKey);
+      if (body.type === 'invoice_ocr') return handleInvoice(body, apiKey);
+      if (body.type === 'insurance_analysis') return handleInsurance(body, apiKey);
+      return handleModerate(body, apiKey);
     }
     if (body.type === 'verify_recaptcha') return handleRecaptcha(body, env);
-    if (body.type === 'moderate_image') return handleModerate(body, env);
     return json({ error: 'Unknown or missing "type" (expected invoice_ocr, insurance_analysis, verify_recaptcha or moderate_image)' }, 400);
   },
 };
@@ -196,28 +197,18 @@ async function handleRecaptcha(body, env) {
   }
 }
 
-// ── Moderación de avatares (Groq Vision) ──────────────────
-async function handleModerate(body, env) {
+// ── Moderación de avatares ─────────────────────────────────
+// Antes usaba Groq (llama-4-scout), pero Groq dio de baja ese modelo el
+// 17/07/2026 (y el reemplazo, llama-4-maverick, también está dado de baja
+// desde marzo 2026 — Groq rota sus modelos de visión seguido). Migrado a
+// Claude, mismo proveedor que ya usamos para facturas/seguro — un
+// proveedor menos del que depender, y ya no hace falta GROQ_API_KEY.
+async function handleModerate(body, apiKey) {
   const { imageBase64, mediaType = 'image/jpeg' } = body;
   if (!imageBase64) return json({ error: 'Missing imageBase64' }, 400);
+  if (!apiKey) return json({ error: 'Anthropic API key not configured' }, 500);
 
-  const apiKey = env.GROQ_API_KEY;
-  if (!apiKey) return json({ error: 'API key not configured' }, 500);
-
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-        max_tokens: 200,
-        messages: [
-          {
-            role: 'system',
-            content: `Eres un moderador de contenido para una app de perfiles. Analizá la imagen y respondé SOLO con un objeto JSON con esta estructura exacta:
+  const prompt = `Analizá esta imagen para un avatar de perfil de usuario. Respondé SOLO con un objeto JSON con esta estructura exacta, sin markdown ni texto adicional:
 {"approved": true|false, "reason": "breve explicación en español"}
 
 Rechazá (approved: false) si la imagen contiene:
@@ -227,36 +218,25 @@ Rechazá (approved: false) si la imagen contiene:
 - Logos o marcas registradas como elemento principal
 - Contenido de odio, símbolos nazis o extremistas
 
-Aprobá (approved: true) si es una foto de persona real, paisaje, mascota, ilustración genérica, o similar.
-No incluyas texto fuera del JSON.`
-          },
-          {
-            role: 'user',
-            content: [
-              { type: 'image_url', image_url: { url: `data:${mediaType};base64,${imageBase64}` } },
-              { type: 'text', text: '¿Esta imagen es apropiada para un avatar de perfil de usuario?' }
-            ]
-          }
-        ]
-      })
-    });
+Aprobá (approved: true) si es una foto de persona real, paisaje, mascota, ilustración genérica, o similar.`;
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      console.error('Groq error:', err);
-      return json({ error: 'Upstream API error', detail: err }, 502);
-    }
+  const claudeRes = await callClaude(apiKey, {
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 150,
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: imageBase64 } },
+        { type: 'text', text: prompt },
+      ],
+    }],
+  });
 
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || '';
-    const result = tryParseJson(text);
-    if (!result) return json({ error: 'Could not parse moderation result' }, 502);
-    return json(result);
+  if (claudeRes.error) return json({ error: 'Upstream API error', detail: claudeRes.error }, 502);
 
-  } catch (err) {
-    console.error('moderate handler error:', err);
-    return json({ error: 'Internal error', detail: err.message }, 500);
-  }
+  const result = tryParseJson(claudeRes.text);
+  if (!result) return json({ error: 'Could not parse moderation result' }, 502);
+  return json(result);
 }
 
 // ── Helpers ──────────────────────────────────────────────
