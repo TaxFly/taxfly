@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="assets/style.css">
     <script src="assets/dialogs.js"></script>
+    <script src="assets/account.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -949,6 +950,8 @@ window.saveTripSettings = async () => {
     autoSelectTaxByCity(dest);
     closeTripModal();
 };
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 function updateTripUI() {
     const lang = localStorage.getItem('appLang') || 'es';
     document.getElementById('tripLabel').innerText = `${i18n[lang].trip_prefix} ${tripData.destination} ✈️`;
@@ -1056,12 +1059,7 @@ window.doChangePassword = async () => {
     if (!currentUser) return;
     try { await sendPasswordResetEmail(auth, currentUser.email); showAlert('Correo de recuperación enviado.'); } catch(er) { showAlert(er.message); }
 };
-window.doDeleteAccount = async () => {
-    if (!(await showConfirm('¿Eliminar cuenta permanentemente?'))) return;
-    if (!(await _rcCheck('delete_account'))) { showAlert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
-    try { await deleteDoc(doc(db, 'usuarios', currentUser.uid)); await deleteUser(currentUser); window.location.replace('login.html'); }
-    catch(e) { showAlert('Reautenticación requerida.'); }
-};
+window.doDeleteAccount = () => window.confirmAndDeleteAccount({ db, doc, deleteDoc, deleteUser, currentUser, rcCheck: _rcCheck });
 
 onAuthStateChanged(auth, async (user) => {
     // ── OFFLINE: Firebase devuelve null si no puede validar token online.
@@ -1887,7 +1885,7 @@ function renderMed() {
     container.innerHTML = items.map(item => `
         <div class="med-item">
             <div class="med-item-info">
-                <div class="med-item-name">${item.name}</div>
+                <div class="med-item-name">${esc(item.name)}</div>
                 <div class="med-item-detail">${item.detail}</div>
             </div>
             <div class="med-item-price">
@@ -2077,7 +2075,7 @@ function renderInsuranceBanner(state) {
             <div class="med-ins-info">
                 <div class="med-ins-label">${lbl.badge}</div>
                 <div class="med-ins-name">${displayName}</div>
-                ${state.insurer && state.name !== state.insurer ? `<div class="med-ins-doc">📄 ${state.name}</div>` : ''}
+                ${state.insurer && state.name !== state.insurer ? `<div class="med-ins-doc">📄 ${esc(state.name)}</div>` : ''}
                 ${state.phone ? `<div class="med-ins-doc">📞 ${state.phone}</div>` : ''}
             </div>
         </div>

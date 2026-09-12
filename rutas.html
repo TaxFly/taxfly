@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="assets/style.css">
     <script src="assets/dialogs.js"></script>
+    <script src="assets/account.js"></script>
     <script src="config.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -488,7 +489,7 @@ textarea{resize:none;line-height:1.5;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
 // ── reCAPTCHA v3 helper ──
@@ -587,14 +588,7 @@ window.doChangePassword = async () => {
   try { await sendPasswordResetEmail(auth, currentUser.email); showAlert(t.s); } catch(er) { showAlert(t.e + er.message); }
 };
 
-window.doDeleteAccount = async () => {
-  const l = localStorage.getItem('appLang') || 'es';
-  const m = { es:{c:"¿Eliminar cuenta permanentemente?",e:"Reautenticación requerida. Cerrá sesión y volvé a entrar."}, en:{c:"Permanently delete account?",e:"Re-authentication required. Please log out and back in."}, pt:{c:"Excluir conta permanentemente?",e:"Reautenticação necessária. Saia e entre novamente."} };
-  const t = m[l] || m.es;
-  if (!(await showConfirm(t.c))) return;
-  if (!(await _rcCheck('delete_account'))) { showAlert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
-  try { await deleteUser(currentUser); window.location.replace('login.html'); } catch(e) { showAlert(t.e); }
-};
+window.doDeleteAccount = () => window.confirmAndDeleteAccount({ db, doc, deleteDoc, deleteUser, currentUser, rcCheck: _rcCheck });
 
 window.confirmarPIN = async () => {
   const lang = localStorage.getItem('appLang') || 'es';
@@ -1137,8 +1131,8 @@ function renderStops() {
     row.innerHTML = `
       <div class="stop-row-num">${i+1}</div>
       <div class="stop-row-body">
-        <div class="stop-row-name">${s.name}</div>
-        ${s.desc ? `<div class="stop-row-addr">${s.desc}</div>` : ''}
+        <div class="stop-row-name">${esc(s.name)}</div>
+        ${s.desc ? `<div class="stop-row-addr">${esc(s.desc)}</div>` : ''}
         ${s.url  ? `<div class="stop-row-addr" style="color:var(--primary)">${s.url.slice(0,45)}…</div>` : ''}
       </div>
       <button class="stop-row-del" onclick="removeStop(${i})" aria-label="Eliminar parada">✕</button>`;

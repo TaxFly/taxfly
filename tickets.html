@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="assets/style.css">
     <script src="assets/dialogs.js"></script>
+    <script src="assets/account.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -557,6 +558,8 @@ const DOCS_CACHE_KEY_PFX = 'taxusa_docs_cache_';
 // IndexedDB no tiene ese límite práctico, así que evitamos el problema de raíz.
 const IDB_NAME = 'taxfly_docs_db';
 const IDB_STORE = 'kv';
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 function idbOpen() {
     return new Promise((res, rej) => {
         const req = indexedDB.open(IDB_NAME, 1);
@@ -802,12 +805,7 @@ window.confirmarPIN = async () => {
     setTimeout(() => window.closePinModal(), 2200);
 };
 window.doLogout = () => signOut(auth).then(() => window.location.replace('login.html'));
-window.doDeleteAccount = async () => {
-    if (!(await showConfirm('¿Eliminar cuenta permanentemente?'))) return;
-    if (!(await _rcCheck('delete_account'))) { showAlert('Verificación de seguridad fallida. Intentá de nuevo.'); return; }
-    try { await deleteUser(currentUser); window.location.replace('login.html'); }
-    catch { showAlert('Reautenticación requerida. Cerrá sesión y volvé a entrar.'); }
-};
+window.doDeleteAccount = () => window.confirmAndDeleteAccount({ db, doc, deleteDoc, deleteUser, currentUser, rcCheck: _rcCheck });
 
 // ── APP LOGIC (mismo módulo, sin problema de scope) ──────────────────────
 // ── State ──────────────────────────────────────────────────────────────────
@@ -965,7 +963,7 @@ function renderList() {
                 <div class="doc-top">
                     <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>
                     <div class="doc-info">
-                        <div class="doc-name">${doc.name}</div>
+                        <div class="doc-name">${esc(doc.name)}</div>
                         <div class="doc-meta">
                             <span>${typeLabel}</span>
                             <span class="doc-meta-dot"></span>
