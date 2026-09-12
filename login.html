@@ -1081,17 +1081,15 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     if (!user.emailVerified) {
-        const wantsResend = await showConfirm(t('noVerif'), { okText: t('resendVerif') || 'Reenviar correo', cancelText: 'OK' });
-        if (wantsResend) {
-            try {
-                await sendEmailVerification(user);
-                showAlert(t('verifyEmailSent') || 'Correo de verificación reenviado. Revisá tu bandeja (y spam).');
-            } catch (e) {
-                showAlert(t('errDefault'));
-            }
-        }
-        await signOut(auth);
-        return;
+        // ⚠️ TEMPORAL (11/09/2026): Firebase está rechazando los links de
+        // verificación de correo por el volumen de pruebas de hoy (parece un
+        // límite/protección anti-abuso interno de Firebase, no algo nuestro).
+        // Mientras se destraba solo, dejamos pasar sin bloquear para no dejar
+        // a nadie afuera de la app. ACORDARSE DE REVERTIR ESTO — volver a:
+        //   const wantsResend = await showConfirm(t('noVerif'), {...});
+        //   if (wantsResend) { ...sendEmailVerification...; }
+        //   await signOut(auth); return;
+        console.warn('[TEMP] Correo no verificado, pero se permite entrar igual mientras Firebase resuelve el bloqueo de action links.');
     }
 
     // ── User is authenticated online ──
