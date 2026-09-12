@@ -3,6 +3,8 @@
 <head>
     <link rel="stylesheet" href="assets/style.css">
     <script src="assets/dialogs.js"></script>
+    <script src="assets/security.js"></script>
+    <script src="assets/recaptcha.js"></script>
     <script src="assets/account.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
@@ -656,24 +658,7 @@ import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstati
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
 // ── reCAPTCHA v3 helper ──
-const _RC_SITE_KEY = '6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME';
-const _RC_VERIFY_URL = window.TAXFLY_CONFIG.WORKER_URL;
-async function _rcToken(action) {
-    return new Promise((resolve) => {
-        if (typeof grecaptcha === 'undefined') { resolve(null); return; }
-        grecaptcha.ready(() => grecaptcha.execute(_RC_SITE_KEY, { action }).then(resolve).catch(() => resolve(null)));
-    });
-}
-async function _rcCheck(action) {
-    const token = await _rcToken(action);
-    if (!token) return true;
-    try {
-        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json','X-App-Secret':window.TAXFLY_CONFIG.APP_SECRET}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
-        if (!r.ok) return true;
-        const d = await r.json();
-        return d.success !== false;
-    } catch { return true; }
-}
+// _rcToken/_rcCheck ahora viven en assets/recaptcha.js (compartido)
 
 const FB = { apiKey:"AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0", authDomain:"viajes-db538.firebaseapp.com", projectId:"viajes-db538", storageBucket:"viajes-db538.firebasestorage.app", messagingSenderId:"237311739178", appId:"1:237311739178:web:333e468b184c0402a98a53" };
 const app = initializeApp(FB);
@@ -1040,9 +1025,8 @@ window.confirmarPIN = async () => {
         return;
     }
     errEl.style.display = 'none';
-    // FIX: guardar como SHA-256 en taxusa_pin_hash (misma clave que usa el overlay offline)
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p1));
-    const hashHex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    // FIX: guardar como SHA-256 con sal en taxusa_pin_hash (misma clave que usa el overlay offline)
+    const hashHex = await window.hashPin(p1);
     localStorage.setItem('taxusa_pin_hash', hashHex);
     localStorage.removeItem('taxusa_offline_pin'); // limpiar clave vieja si existía
     document.getElementById('pinStep1').style.display = 'none';
@@ -2553,8 +2537,8 @@ window.changeLanguage = function(lang) {
     let buf = '', attempts = 0;
 
     async function sha256(str) {
-        const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-        return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join('');
+        // Ahora con sal por usuario — ver assets/security.js
+        return window.hashPin(str);
     }
 
     async function checkOffline() {

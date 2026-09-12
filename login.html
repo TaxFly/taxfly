@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="assets/style.css">
     <script src="assets/dialogs.js"></script>
+    <script src="assets/security.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -851,8 +852,8 @@ function t(key, ...args) {
 }
 
 async function sha256(str) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    // Ahora con sal por usuario — ver assets/security.js
+    return window.hashPin(str);
 }
 
 // Probe lanzado desde <head> — usar window globals para compartir con Firebase

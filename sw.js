@@ -1,5 +1,6 @@
-// TaxFly Service Worker — v8  (+ alertas de presupuesto)
-const CACHE = 'taxfly-v12';
+// TaxFly Service Worker — v13 (recordá bumpear CACHE acá cada vez que cambies
+// un archivo que esté en PRECACHE, para forzar el refresco completo)
+const CACHE = 'taxfly-v13';
 const PRECACHE = [
     './login.html',
     './selector.html',
@@ -14,6 +15,11 @@ const PRECACHE = [
     './tax.html',
     './offline.html',
     './assets/style.css',
+    './config.js',
+    './assets/dialogs.js',
+    './assets/account.js',
+    './assets/recaptcha.js',
+    './assets/security.js',
     './manifest.json',
     './assets/icon-512.png',
     './assets/icon-192.png',

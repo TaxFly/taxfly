@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="assets/style.css">
     <script src="assets/dialogs.js"></script>
+    <script src="assets/security.js"></script>
     <script src="assets/account.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -880,9 +881,8 @@ window.confirmarPIN = async () => {
         return;
     }
     errEl.style.display = 'none';
-    // Hash with SHA-256 (same as login.html)
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p1));
-    const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    // Hash with SHA-256 + sal por usuario (same as login.html) — ver assets/security.js
+    const hash = await window.hashPin(p1);
     // Cache locally (same key as login.html uses)
     localStorage.setItem('taxusa_pin_hash', hash);
     // Sync to Firestore — queue if offline
