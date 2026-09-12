@@ -1180,7 +1180,7 @@ Return ONLY the JSON array of arrays of indexes.`;
     const res = await fetch('https://taxusa.juanbria18.workers.dev', {
       method: 'POST',
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMsg }
@@ -1698,7 +1698,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 (function() {
     var GROQ_URL = 'https://taxusa.juanbria18.workers.dev';
-    var MODEL = 'llama-3.3-70b-versatile';
+    var MODEL = 'openai/gpt-oss-120b';
     var lang = localStorage.getItem('appLang') || 'es';
     var perfilId   = localStorage.getItem('perfilActivoId') || 'default';
     var HISTORY_KEY = 'taxie_history_' + perfilId;

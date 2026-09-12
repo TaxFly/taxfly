@@ -1125,7 +1125,7 @@ document.getElementById('userEmail').innerText = perfilNombre || user.email;
 (function() {
     
     var GROQ_URL = 'https://taxusa.juanbria18.workers.dev';
-    var MODEL = 'llama-3.3-70b-versatile';
+    var MODEL = 'openai/gpt-oss-120b';
     var lang = localStorage.getItem('appLang') || 'es';
     var perfilId   = localStorage.getItem('perfilActivoId') || 'default';
     var HISTORY_KEY = 'taxie_history_' + perfilId;
