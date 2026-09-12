@@ -695,6 +695,7 @@ const i18n = {
         errFields:"Por favor completá todos los campos.",
         regOk:"¡Registro exitoso! Se envió verificación a ",
         noVerif:"Tu cuenta aún no fue verificada. Revisá tu correo.",
+        resendVerif:"Reenviar correo",
         resetOk:"Correo de recuperación enviado.",
         resetEmail:"Ingresá tu correo arriba primero.",
         errInvalidCredential:"Usuario o contraseña incorrectos.",
@@ -744,6 +745,7 @@ const i18n = {
         errFields:"Please fill all fields.",
         regOk:"Registration successful! Verification sent to ",
         noVerif:"Your account hasn't been verified yet. Check your email.",
+        resendVerif:"Resend email",
         resetOk:"Recovery email sent.",
         resetEmail:"Please enter your email above first.",
         errInvalidCredential:"Incorrect email or password.",
@@ -792,6 +794,7 @@ const i18n = {
         errFields:"Por favor, preencha todos os campos.",
         regOk:"Cadastro realizado! Verificação enviada para ",
         noVerif:"Sua conta ainda não foi verificada. Verifique seu e-mail.",
+        resendVerif:"Reenviar e-mail",
         resetOk:"E-mail de recuperação enviado.",
         resetEmail:"Digite seu e-mail acima primeiro.",
         errInvalidCredential:"E-mail ou senha incorretos.",
@@ -1078,7 +1081,15 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     if (!user.emailVerified) {
-        showAlert(t('noVerif'));
+        const wantsResend = await showConfirm(t('noVerif'), { okText: t('resendVerif') || 'Reenviar correo', cancelText: 'OK' });
+        if (wantsResend) {
+            try {
+                await sendEmailVerification(user);
+                showAlert(t('verifyEmailSent') || 'Correo de verificación reenviado. Revisá tu bandeja (y spam).');
+            } catch (e) {
+                showAlert(t('errDefault'));
+            }
+        }
         await signOut(auth);
         return;
     }
