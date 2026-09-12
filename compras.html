@@ -1135,6 +1135,7 @@ window.formatVisual = (inp) => {
 };
 function cleanVal(s){ return parseFloat((s||'').toString().replace(/,/g,''))||0; }
 function fmt(n){ return parseFloat(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 window.nextTip = () => {
     const lang = localStorage.getItem('appLang')||'es';
@@ -2221,7 +2222,7 @@ function openOcrModal(text, thumb){
     const list=document.getElementById('ocr-items-list');
     if(d.items&&d.items.length>0){
         wrap.style.display='block';
-        list.innerHTML=d.items.slice(0,12).map(it=>`<div class="ocr-item-row"><div class="ocr-item-name">${it.name}</div><div class="ocr-item-price">$${it.price.toFixed(2)}</div></div>`).join('');
+        list.innerHTML=d.items.slice(0,12).map(it=>`<div class="ocr-item-row"><div class="ocr-item-name">${esc(it.name)}</div><div class="ocr-item-price">$${it.price.toFixed(2)}</div></div>`).join('');
     }else{wrap.style.display='none';}
 
     // Nombre del campo principal

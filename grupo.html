@@ -1149,7 +1149,7 @@ function cargarMisGrupos() {
     lista.innerHTML = grupos.map(g=>`
         <div class="grupo-item" onclick="volverAGrupo('${g.id}')">
             <div>
-                <div class="grupo-item-name">✈️ ${g.nombre}</div>
+                <div class="grupo-item-name">✈️ ${esc(g.nombre)}</div>
                 <div class="grupo-item-code">${g.id}</div>
             </div>
             <button class="grupo-item-btn">${t.btn_open || 'Abrir'}</button>
@@ -1208,7 +1208,7 @@ function renderGrupo() {
 
     const sel=$('g-pagador');
     sel.innerHTML=miembros.map(m=>
-        `<option value="${m.uid}"${currentUser&&m.uid===currentUser.uid?' selected':''}>${m.nombre}</option>`
+        `<option value="${m.uid}"${currentUser&&m.uid===currentUser.uid?' selected':''}>${esc(m.nombre)}</option>`
     ).join('');
 
     const lista=$('lista-gastos');
@@ -1220,8 +1220,8 @@ function renderGrupo() {
             <div class="gasto-item cat-${g.cat||'otro'}" id="gasto-${g.id}">
                 <div class="gasto-emoji">${catEmoji(g.cat)}</div>
                 <div class="gasto-body">
-                    <div class="gasto-desc">${g.desc}</div>
-                    <div class="gasto-meta">${g.pagadorNombre} · ${g.fecha}</div>
+                    <div class="gasto-desc">${esc(g.desc)}</div>
+                    <div class="gasto-meta">${esc(g.pagadorNombre)} · ${g.fecha}</div>
                 </div>
                 <div class="gasto-monto">${fmt(g.monto)}</div>
                 <button class="gasto-del" onclick="eliminarGasto('${g.id}')" title="Eliminar gasto" aria-label="Eliminar gasto">🗑️</button>
@@ -1231,7 +1231,7 @@ function renderGrupo() {
     // Members con botón eliminar (solo creador, no puede eliminarse a sí mismo)
     $('members-list').innerHTML=miembros.map(m=>{
         const puedeEliminar = esCreador && m.uid !== currentUser.uid && !currentGroup._demo;
-        return `<span class="member-chip">👤 ${m.nombre}${puedeEliminar ? `<button class="member-del" onclick="eliminarMiembro('${m.uid}')" title="Eliminar miembro" aria-label="Eliminar miembro">✕</button>` : ''}</span>`;
+        return `<span class="member-chip">👤 ${esc(m.nombre)}${puedeEliminar ? `<button class="member-del" onclick="eliminarMiembro('${m.uid}')" title="Eliminar miembro" aria-label="Eliminar miembro">✕</button>` : ''}</span>`;
     }).join('');
 
     renderBalances(miembros,gastos);
@@ -1293,7 +1293,7 @@ function renderResumen(miembros,gastos){
         const b=p.pagado-p.parte;
         const badge=b>=0?`<span class="badge-pos">+${fmt(b)}</span>`:`<span class="badge-neg">${fmt(b)}</span>`;
         return `<div class="resumen-row">
-            <div class="resumen-nom">${p.nombre}</div>
+            <div class="resumen-nom">${esc(p.nombre)}</div>
             <div class="resumen-stats">
                 <span>${t.lbl_paid}: <strong>${fmt(p.pagado)}</strong></span>
                 <span>${t.lbl_share}: <strong>${fmt(p.parte)}</strong></span>
@@ -1323,6 +1323,15 @@ window.toggleCollapsible = function(bodyId, toggleId) {
     if (bodyId === 'form-gasto')   window._formOpen    = !isOpen;
     if (bodyId === 'explain-body') window._explainOpen = !isOpen;
 };
+
+// Sanea texto de usuario antes de insertarlo en innerHTML — el grupo es
+// compartido entre varias personas, así que el nombre del grupo, la
+// descripción de un gasto o el nombre de un miembro son texto que escribió
+// OTRA persona: sin esto, alguien podría meter HTML/JS malicioso en esos
+// campos y afectar a los demás miembros del grupo al ver la lista.
+function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 function catEmoji(cat){
     return {comida:'🍽️',transporte:'🚗',alojamiento:'🏨',actividad:'🎡',compras:'🛍️',otro:'📦'}[cat]||'📦';
