@@ -576,7 +576,7 @@ window.doChangeEmail = async () => {
   const l = localStorage.getItem('appLang') || 'es';
   const m = { es:{p:"Ingresá tu nuevo correo:",s:"Verificación enviada.",e:"Error: "}, en:{p:"Enter your new email:",s:"Verification sent.",e:"Error: "}, pt:{p:"Digite seu novo e-mail:",s:"Verificação enviada.",e:"Erro: "} };
   const t = m[l] || m.es;
-  const e = prompt(t.p);
+  const e = (await showPrompt(t.p));
   if (e) { try { await verifyBeforeUpdateEmail(currentUser, e); showAlert(t.s); } catch(er) { showAlert(t.e + er.message); } }
 };
 
@@ -778,10 +778,10 @@ window.gestionarPIN = () => {
   setTimeout(() => document.getElementById('pinInput1').focus(), 100);
 };
 
-window.openSwitchApp = () => {
+window.openSwitchApp = async () => {
   const lang = localStorage.getItem('appLang') || 'es';
   const dest = { es:'¿A qué destino querés ir?\nEscriba "usa" para TaxUSA o "europe" para TaxEurope:', en:'Which destination?\nType "usa" for TaxUSA or "europe" for TaxEurope:', pt:'Qual destino?\nDigite "usa" para TaxUSA ou "europe" para TaxEurope:' };
-  const r = prompt(dest[lang] || dest.es);
+  const r = await showPrompt(dest[lang] || dest.es);
   if (!r) return;
   if (r.toLowerCase().includes('europe')) window.location.href = 'europe.html';
   else window.location.href = 'index.html';

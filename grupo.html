@@ -745,7 +745,7 @@ window.doLogout = () => {
 window.doChangeEmail = async () => {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser) { showToast('⚠️ No hay sesión activa'); return; }
-    const e = prompt('Nuevo correo:');
+    const e = (await showPrompt('Nuevo correo:'));
     if (!e) return;
     try {
         await verifyBeforeUpdateEmail(firebaseUser, e);
@@ -776,7 +776,7 @@ window.doDeleteAccount = async () => {
 
 window.cambiarApodo = async () => {
     if (!currentUser) { showToast('⚠️ No hay sesión activa'); return; }
-    const nuevo = prompt('Nuevo apodo:', currentUser.name);
+    const nuevo = (await showPrompt('Nuevo apodo:', currentUser.name));
     if (!nuevo || !nuevo.trim()) return;
     const nuevoNombre = nuevo.trim();
     try {
