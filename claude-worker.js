@@ -17,7 +17,7 @@ export default {
     // Secreto compartido: frena bots/scrapers que solo copian la URL del
     // worker sin mirar el JS de la app. No es autenticación real (el valor
     // vive en el cliente), la protección de fondo contra abuso masivo es
-    // la regla de Rate Limiting en el dashboard de Cloudflare.
+    // el rate limiting de más abajo.
     const providedSecret = request.headers.get('X-App-Secret');
     if (!env.APP_SHARED_SECRET || providedSecret !== env.APP_SHARED_SECRET) {
       return json({ error: 'Unauthorized' }, 401);
@@ -28,6 +28,16 @@ export default {
       body = await request.json();
     } catch (e) {
       return json({ error: 'Invalid JSON body' }, 400);
+    }
+
+    // Rate limiting: límite más estricto para las rutas que gastan crédito de
+    // Anthropic (facturas/seguro), más amplio para reCAPTCHA/moderación.
+    const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+    const isCostRoute = body.type === 'invoice_ocr' || body.type === 'insurance_analysis';
+    const limiter = isCostRoute ? env.COST_LIMITER : env.GENERAL_LIMITER;
+    if (limiter) {
+      const { success } = await limiter.limit({ key: `${ip}:${body.type}` });
+      if (!success) return json({ error: 'Too many requests, try again in a bit' }, 429);
     }
 
     if (body.type === 'invoice_ocr' || body.type === 'insurance_analysis') {

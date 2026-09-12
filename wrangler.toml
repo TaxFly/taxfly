@@ -1,3 +1,20 @@
 name = "taxfly-claude"
 main = "claude-worker.js"
 compatibility_date = "2024-01-01"
+
+# Rate limiting: protege el gasto de Anthropic (facturas/seguro) con un límite
+# más estricto, y las rutas gratis/baratas (reCAPTCHA/moderación) con uno más
+# amplio. namespace_id es solo un identificador tuyo, cualquier entero sirve.
+[[ratelimits]]
+name = "COST_LIMITER"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 8
+  period = 60
+
+[[ratelimits]]
+name = "GENERAL_LIMITER"
+namespace_id = "1002"
+  [ratelimits.simple]
+  limit = 30
+  period = 60
