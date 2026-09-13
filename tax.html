@@ -1112,20 +1112,22 @@ window.confirmFinishCart = async () => {
         } catch(e) {}
     };
 
-    if (!navigator.onLine || !currentUser || !db || !pid) {
-        queueOffline();
-    } else {
-        try { await addDoc(collection(db,'usuarios',currentUser.uid,'perfiles',pid,'gastos'), gastoData); }
-        catch(e) { queueOffline(); }
-    }
-
+    // UX optimista: primero limpiamos y cerramos, el guardado en Firestore
+    // sigue en segundo plano (igual que en compras.html). Así no se siente
+    // que la app "tarda" esperando la respuesta de red.
     cartItems = [];
     saveCartToCache();
     renderCart();
     closeFinishCartModal();
-
     const msgs = {es:'✅ Compra guardada en Gastos.', en:'✅ Purchase saved to Expenses.', pt:'✅ Compra salva em Gastos.'};
     showAlert(msgs[lang] || msgs.es);
+
+    if (!navigator.onLine || !currentUser || !db || !pid) {
+        queueOffline();
+        return;
+    }
+    try { await addDoc(collection(db,'usuarios',currentUser.uid,'perfiles',pid,'gastos'), gastoData); }
+    catch(e) { queueOffline(); }
 };
 
 window.setCategory = (cat) => {
