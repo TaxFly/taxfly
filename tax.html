@@ -121,6 +121,21 @@
         .cat-btn .cat-icon{font-size:1.05rem;}
         .cat-btn.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
 
+        .mode-toggle{display:flex;background:var(--surface);padding:5px;border-radius:16px;margin-bottom:14px;gap:4px;border:1px solid var(--border);box-shadow:var(--shadow);}
+        .mode-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 6px;border:none;border-radius:11px;background:transparent;color:var(--text-sub);font-family:inherit;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;cursor:pointer;transition:var(--tr);position:relative;}
+        .mode-btn.active{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.3);}
+        .mode-btn .mode-icon{font-size:1rem;}
+        .cart-count-badge{position:absolute;top:2px;right:6px;background:var(--danger);color:#fff;font-size:.55rem;font-weight:900;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
+        .cart-summary-box{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;padding:16px 18px;border-radius:var(--radius-sm);margin-bottom:12px;box-shadow:0 8px 24px rgba(37,99,235,.3);}
+        .cart-summary-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;font-weight:700;opacity:.9;padding:3px 0;}
+        .cart-summary-row.cart-summary-total{font-size:1.15rem;font-weight:900;opacity:1;margin-top:6px;padding-top:10px;border-top:1px solid rgba(255,255,255,.25);}
+        .cart-item-row{background:var(--surface-2);padding:11px 13px;border-radius:12px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid var(--primary);}
+        .cart-item-info{display:flex;flex-direction:column;gap:1px;}
+        .cart-item-cat{font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px;}
+        .cart-item-price{font-size:.85rem;font-weight:800;color:var(--text);}
+        .cart-item-right{display:flex;align-items:center;gap:10px;}
+        .cart-item-del{width:26px;height:26px;border-radius:50%;border:none;background:rgba(239,68,68,.1);color:var(--danger);font-weight:800;font-size:.75rem;cursor:pointer;flex-shrink:0;}
+        .cart-empty-hint{text-align:center;color:var(--text-dim);font-size:.75rem;font-weight:600;padding:18px 10px;}
         .result-box{background:var(--primary-dim);padding:16px;border-radius:var(--radius-sm);border:1.5px solid var(--primary);margin-bottom:14px;text-align:center;}
         .result-value{font-size:1.8rem;font-weight:900;color:var(--primary);margin:2px 0;}
         .result-detail{font-size:.8rem;font-weight:700;color:var(--primary);opacity:.8;}
@@ -411,6 +426,16 @@
         <div id="wc-body"><div class="wc-loading"><div class="wc-spinner"></div><span>Obteniendo clima...</span></div></div>
     </div>
 
+    <div class="mode-toggle" id="mode-toggle">
+        <button class="mode-btn active" id="mode-single" onclick="setMode('single')">
+            <span class="mode-icon">🧮</span><span data-i18n="mode_single">ÍTEM INDIVIDUAL</span>
+        </button>
+        <button class="mode-btn" id="mode-cart" onclick="setMode('cart')">
+            <span class="mode-icon">🛒</span><span data-i18n="mode_cart">CARRITO</span>
+            <span class="cart-count-badge" id="cart-count-badge" style="display:none;">0</span>
+        </button>
+    </div>
+
     <div class="card">
         <div class="input-group">
             <span class="slabel" data-i18n="label_price">Precio en Etiqueta (USD)</span>
@@ -446,14 +471,32 @@
             <div class="result-detail" id="tax-detail">Tax Aplicado: 0%</div>
         </div>
 
-        <div class="tip-collapse-header" onclick="toggleTip()">
+        <!-- ── Modo Carrito ── -->
+        <div class="cart-only" id="cart-section" style="display:none;">
+            <button class="btn btn-cyan" id="btn-add-cart" onclick="addToCart()">➕ <span data-i18n="btn_add_cart">Agregar al Carrito</span></button>
+
+            <div class="cart-summary-box" id="cart-summary-box" style="display:none;">
+                <div class="cart-summary-row"><span data-i18n="cart_items_count">Ítems</span><span id="cart-items-count">0</span></div>
+                <div class="cart-summary-row"><span data-i18n="cart_subtotal">Subtotal</span><span id="cart-subtotal">USD 0.00</span></div>
+                <div class="cart-summary-row"><span data-i18n="cart_tax">Tax</span><span id="cart-tax-total">USD 0.00</span></div>
+                <div class="cart-summary-row cart-summary-total"><span data-i18n="cart_grand_total">TOTAL CARRITO</span><span id="cart-grand-total">USD 0.00</span></div>
+            </div>
+
+            <div id="cart-items-list"></div>
+            <div class="cart-empty-hint" id="cart-empty-hint" data-i18n="cart_empty">Todavía no agregaste productos. Cargá un precio arriba y tocá "Agregar al Carrito".</div>
+
+            <button class="btn btn-primary" id="btn-finish-cart" style="display:none;" onclick="openFinishCartModal()">✅ <span data-i18n="btn_finish_cart">Finalizar Compra</span></button>
+            <button class="btn btn-ghost" id="btn-clear-cart" style="display:none;" onclick="clearCart()">🗑️ <span data-i18n="btn_clear_cart">Vaciar Carrito</span></button>
+        </div>
+
+        <div class="tip-collapse-header single-only" onclick="toggleTip()">
             <div class="tip-collapse-title" data-i18n="label_tip">Propina (Tip)</div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <span class="tip-preview" id="tip-preview-badge">10%</span>
                 <span class="tip-toggle-lbl" id="tip-toggle-lbl">▼ VER</span>
             </div>
         </div>
-        <div class="tip-body" id="tip-body">
+        <div class="tip-body single-only" id="tip-body">
             <div class="tip-grid">
                 <button class="tip-btn" id="tip-0"  onclick="setTip(0)">0%<small id="val-tip-0">$0.00</small></button>
                 <button class="tip-btn active" id="tip-10" onclick="setTip(10)">10%<small id="val-tip-10">$0.00</small></button>
@@ -471,13 +514,13 @@
         </div>
     </div>
 
-    <div class="final-box">
+    <div class="final-box single-only">
         <div class="final-label" data-i18n="label_total">TOTAL FINAL (INC. TIP)</div>
         <div class="final-value" id="final-total">USD 0.00</div>
     </div>
 
     <!-- ── Split Bill ── -->
-    <div class="split-card">
+    <div class="split-card single-only">
         <div class="split-header" onclick="toggleSplit()">
             <div class="split-title">🍽️ <span data-i18n="split_title">Dividir la Cuenta</span></div>
             <div class="split-toggle" id="split-toggle-lbl">▼ <span data-i18n="split_open">VER</span></div>
@@ -596,6 +639,22 @@
     </div>
 </div>
 
+<div id="finishCartModal" class="modal">
+    <div class="modal-content">
+        <h3 class="modal-title" data-i18n="cart_modal_title">Finalizar Compra</h3>
+        <div class="input-group">
+            <span class="slabel" data-i18n="cart_store_label">Nombre del local</span>
+            <input type="text" id="input-cart-store" placeholder="Walmart" maxlength="40">
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:var(--text-sub);margin-bottom:6px;" data-i18n="cart_modal_total_lbl">Total a registrar en Gastos:</div>
+        <div style="font-size:1.4rem;font-weight:900;color:var(--primary);margin-bottom:6px;" id="cart-modal-total">USD 0.00</div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="confirmFinishCart()">💾 <span data-i18n="cart_btn_save_gasto">GUARDAR EN GASTOS</span></button>
+            <button class="btn btn-ghost" onclick="closeFinishCartModal()">❌ <span data-i18n="btn_close">CERRAR</span></button>
+        </div>
+    </div>
+</div>
+
 <div id="menuOverlay" class="menu-overlay" onclick="toggleSettings()"></div>
 <div id="settingsDrawer" class="settings-drawer">
     <div class="drawer-header"><span data-i18n="settings_title">Ajustes</span></div>
@@ -664,7 +723,7 @@ const FB = { apiKey:"AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0", authDomain:"viaje
 // abajo. Con import() dinámico dentro de un try/catch, si falla, seguimos
 // directo al modo offline en vez de quedar trabados.
 let initializeApp, getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail,
-    getFirestore, doc, setDoc, getDoc, deleteDoc,
+    getFirestore, doc, setDoc, getDoc, deleteDoc, addDoc, collection,
     initializeAppCheck, ReCaptchaV3Provider;
 let app, auth, db;
 let firebaseOk = true;
@@ -672,7 +731,7 @@ let firebaseOk = true;
 try {
     ({ initializeApp } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js"));
     ({ getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js"));
-    ({ getFirestore, doc, setDoc, getDoc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"));
+    ({ getFirestore, doc, setDoc, getDoc, deleteDoc, addDoc, collection } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"));
     ({ initializeAppCheck, ReCaptchaV3Provider } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js"));
     app = initializeApp(FB);
     auth = getAuth(app);
@@ -732,7 +791,13 @@ const i18n = {
         split_subtotal:"subtotal",split_tax:"tax",split_tip_amt:"propina",
         offline_title:"Sin conexión",
         offline_sub:"La calculadora, propina y dividir cuenta siguen funcionando normalmente",
-        btn_manual_tax:"Ingresar tax manualmente"
+        btn_manual_tax:"Ingresar tax manualmente",
+        mode_single:"Ítem Individual",mode_cart:"Carrito",btn_add_cart:"Agregar al Carrito",
+        cart_items_count:"Ítems",cart_subtotal:"Subtotal",cart_tax:"Tax",cart_grand_total:"TOTAL CARRITO",
+        cart_empty:'Todavía no agregaste productos. Cargá un precio arriba y tocá "Agregar al Carrito".',
+        btn_finish_cart:"Finalizar Compra",btn_clear_cart:"Vaciar Carrito",
+        cart_modal_title:"Finalizar Compra",cart_store_label:"Nombre del local",
+        cart_modal_total_lbl:"Total a registrar en Gastos:",cart_btn_save_gasto:"Guardar en Gastos"
     },
     en:{
         nav_expenses:"EXPENSES",nav_home:"HOME",nav_itinerary:"ITINERARY",nav_compare:"COMPARE",nav_units:"Help & References",nav_tickets:"DOCUMENTS",nav_group:"GROUP",nav_routes:"ROUTES",nav_more:"MORE",nav_units_desc:"Unit Converter & Utilities",nav_tickets_desc:"ESTA, insurance, check-in",nav_group_desc:"Shared expenses",
@@ -755,7 +820,13 @@ const i18n = {
         split_subtotal:"subtotal",split_tax:"tax",split_tip_amt:"tip",
         offline_title:"No connection",
         offline_sub:"Calculator, tip and split bill work normally without internet",
-        btn_manual_tax:"Enter tax manually"
+        btn_manual_tax:"Enter tax manually",
+        mode_single:"Single Item",mode_cart:"Cart",btn_add_cart:"Add to Cart",
+        cart_items_count:"Items",cart_subtotal:"Subtotal",cart_tax:"Tax",cart_grand_total:"CART TOTAL",
+        cart_empty:'You haven\'t added products yet. Enter a price above and tap "Add to Cart".',
+        btn_finish_cart:"Finish Purchase",btn_clear_cart:"Clear Cart",
+        cart_modal_title:"Finish Purchase",cart_store_label:"Store name",
+        cart_modal_total_lbl:"Total to log in Expenses:",cart_btn_save_gasto:"Save to Expenses"
     },
     pt:{
         nav_expenses:"GASTOS",nav_home:"INÍCIO",nav_itinerary:"ITINERARIO",nav_compare:"COMPARAR",nav_units:"Ajuda e Referências",nav_tickets:"DOCUMENTOS",nav_group:"GRUPO",nav_routes:"ROTAS",nav_more:"MAIS",nav_units_desc:"Conversor de Unidades e Utilidades",nav_tickets_desc:"ESTA, seguros, check-in",nav_group_desc:"Gastos compartilhados",
@@ -778,7 +849,13 @@ const i18n = {
         split_subtotal:"subtotal",split_tax:"tax",split_tip_amt:"gorjeta",
         offline_title:"Sem conexão",
         offline_sub:"Calculadora, gorjeta e dividir conta funcionam normalmente sem internet",
-        btn_manual_tax:"Inserir imposto manualmente"
+        btn_manual_tax:"Inserir imposto manualmente",
+        mode_single:"Item Individual",mode_cart:"Carrinho",btn_add_cart:"Adicionar ao Carrinho",
+        cart_items_count:"Itens",cart_subtotal:"Subtotal",cart_tax:"Tax",cart_grand_total:"TOTAL CARRINHO",
+        cart_empty:'Você ainda não adicionou produtos. Insira um preço acima e toque em "Adicionar ao Carrinho".',
+        btn_finish_cart:"Finalizar Compra",btn_clear_cart:"Esvaziar Carrinho",
+        cart_modal_title:"Finalizar Compra",cart_store_label:"Nome da loja",
+        cart_modal_total_lbl:"Total a registrar em Gastos:",cart_btn_save_gasto:"Salvar em Gastos"
     }
 };
 
@@ -850,6 +927,205 @@ window.changeLanguage = (lang) => {
             splitToggleLbl.innerHTML = '▼ <span>' + (i18n[lang].split_open || 'VER') + '</span>';
         }
     }
+};
+
+// ── Modo Carrito ────────────────────────────────────────────────────────
+const CART_CACHE_KEY        = 'taxusa_cart_cache_'     + (localStorage.getItem('perfilActivoId') || 'default');
+const GASTOS_CACHE_KEY_TAX  = 'taxusa_gastos_cache_'   + (localStorage.getItem('perfilActivoId') || 'default');
+const PENDING_GASTOS_KEY_TAX= 'taxusa_gastos_pending_' + (localStorage.getItem('perfilActivoId') || 'default');
+let cartMode = false;
+let cartItems = [];
+
+function loadCartFromCache() {
+    try { cartItems = JSON.parse(localStorage.getItem(CART_CACHE_KEY) || '[]'); } catch(e) { cartItems = []; }
+}
+function saveCartToCache() {
+    try { localStorage.setItem(CART_CACHE_KEY, JSON.stringify(cartItems)); } catch(e) {}
+}
+loadCartFromCache();
+if (cartItems.length) {
+    const _badgeInit = document.getElementById('cart-count-badge');
+    if (_badgeInit) { _badgeInit.textContent = cartItems.length; _badgeInit.style.display = 'flex'; }
+}
+
+const CART_CAT_MAP = { general:'🛍️ Compras', tech:'📦 Otros', food:'🍔 Comida', med:'💊 Farmacia' };
+const CART_CAT_LABEL = {
+    es:{general:'General', tech:'Tech', food:'Comida', med:'Medicina'},
+    en:{general:'General', tech:'Tech', food:'Food', med:'Medicine'},
+    pt:{general:'Geral', tech:'Tech', food:'Comida', med:'Medicina'}
+};
+
+window.setMode = (mode) => {
+    cartMode = (mode === 'cart');
+    document.getElementById('mode-single').classList.toggle('active', !cartMode);
+    document.getElementById('mode-cart').classList.toggle('active', cartMode);
+    document.querySelectorAll('.single-only').forEach(el => { el.style.display = cartMode ? 'none' : ''; });
+    document.querySelectorAll('.cart-only').forEach(el => { el.style.display = cartMode ? '' : 'none'; });
+    if (cartMode) renderCart();
+};
+
+window.addToCart = () => {
+    const price = parseFloat(document.getElementById('price').value);
+    if (isNaN(price) || price <= 0) {
+        const lang = localStorage.getItem('appLang') || 'es';
+        const msgs = {es:'Ingresá un precio válido primero.', en:'Enter a valid price first.', pt:'Insira um preço válido primeiro.'};
+        showAlert(msgs[lang] || msgs.es);
+        return;
+    }
+    let tax;
+    if (manualTaxActive) {
+        const manVal = parseFloat(document.getElementById('manual-tax-input')?.value);
+        tax = isNaN(manVal) ? 0 : manVal;
+    } else {
+        tax = parseFloat(document.getElementById('city-select').value) || 0;
+    }
+    const catBtn = document.querySelector('.cat-btn.active');
+    const catId = catBtn ? catBtn.id.replace('btn-','') : 'general';
+    if (catId === 'med' || catId === 'food') tax = 0;
+    const subtotal = price * (1 + tax / 100);
+    cartItems.push({ id: 'ci_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), price, tax, cat: catId, subtotal });
+    saveCartToCache();
+    document.getElementById('price').value = '';
+    document.getElementById('price').focus();
+    renderCart();
+    const btn = document.getElementById('btn-add-cart');
+    if (btn) {
+        const original = btn.innerHTML;
+        btn.innerHTML = '✅ Agregado';
+        setTimeout(() => { btn.innerHTML = original; }, 700);
+    }
+};
+
+window.removeCartItem = (id) => {
+    cartItems = cartItems.filter(i => i.id !== id);
+    saveCartToCache();
+    renderCart();
+};
+
+window.clearCart = () => {
+    const lang = localStorage.getItem('appLang') || 'es';
+    const msgs = {es:'¿Vaciar el carrito? Se perderán los ítems cargados.', en:'Clear the cart? Loaded items will be lost.', pt:'Esvaziar o carrinho? Os itens carregados serão perdidos.'};
+    if (!confirm(msgs[lang] || msgs.es)) return;
+    cartItems = [];
+    saveCartToCache();
+    renderCart();
+};
+
+window.renderCart = () => {
+    const lang = localStorage.getItem('appLang') || 'es';
+    const fmt = n => n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const list = document.getElementById('cart-items-list');
+    const emptyHint = document.getElementById('cart-empty-hint');
+    const summaryBox = document.getElementById('cart-summary-box');
+    const btnFinish = document.getElementById('btn-finish-cart');
+    const btnClear = document.getElementById('btn-clear-cart');
+    const badge = document.getElementById('cart-count-badge');
+
+    if (!cartItems.length) {
+        list.innerHTML = '';
+        emptyHint.style.display = 'block';
+        summaryBox.style.display = 'none';
+        btnFinish.style.display = 'none';
+        btnClear.style.display = 'none';
+        if (badge) badge.style.display = 'none';
+        return;
+    }
+
+    emptyHint.style.display = 'none';
+    summaryBox.style.display = 'block';
+    btnFinish.style.display = 'flex';
+    btnClear.style.display = 'flex';
+
+    let subtotalSum = 0, taxSum = 0;
+    list.innerHTML = cartItems.slice().reverse().map(it => {
+        const preTax = it.price;
+        const taxAmt = it.subtotal - preTax;
+        subtotalSum += preTax;
+        taxSum += taxAmt;
+        const catLbl = (CART_CAT_LABEL[lang] || CART_CAT_LABEL.es)[it.cat] || it.cat;
+        return `<div class="cart-item-row">
+            <div class="cart-item-info">
+                <span class="cart-item-price">$${fmt(it.subtotal)}</span>
+                <span class="cart-item-cat">${esc(catLbl)} · ${it.tax}% tax</span>
+            </div>
+            <div class="cart-item-right">
+                <button class="cart-item-del" onclick="removeCartItem('${it.id}')" aria-label="Eliminar">✕</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    const grandTotal = subtotalSum + taxSum;
+    document.getElementById('cart-items-count').textContent = cartItems.length;
+    document.getElementById('cart-subtotal').textContent = `USD ${fmt(subtotalSum)}`;
+    document.getElementById('cart-tax-total').textContent = `USD ${fmt(taxSum)}`;
+    document.getElementById('cart-grand-total').textContent = `USD ${fmt(grandTotal)}`;
+    if (badge) { badge.textContent = cartItems.length; badge.style.display = 'flex'; }
+};
+
+window.openFinishCartModal = () => {
+    if (!cartItems.length) return;
+    const fmt = n => n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const total = cartItems.reduce((s,i) => s + i.subtotal, 0);
+    document.getElementById('cart-modal-total').textContent = `USD ${fmt(total)}`;
+    document.getElementById('input-cart-store').value = '';
+    document.getElementById('finishCartModal').classList.add('show');
+    setTimeout(() => document.getElementById('input-cart-store')?.focus(), 150);
+};
+window.closeFinishCartModal = () => {
+    document.getElementById('finishCartModal').classList.remove('show');
+};
+
+window.confirmFinishCart = async () => {
+    const lang = localStorage.getItem('appLang') || 'es';
+    const storeInput = document.getElementById('input-cart-store');
+    const storeName = (storeInput.value || '').trim();
+    if (!storeName) {
+        const msgs = {es:'Ingresá el nombre del local.', en:'Enter the store name.', pt:'Insira o nome da loja.'};
+        showAlert(msgs[lang] || msgs.es);
+        return;
+    }
+    const total = cartItems.reduce((s,i) => s + i.subtotal, 0);
+    const catTotals = {};
+    cartItems.forEach(i => { catTotals[i.cat] = (catTotals[i.cat]||0) + i.subtotal; });
+    const dominantCat = Object.keys(catTotals).sort((a,b) => catTotals[b]-catTotals[a])[0] || 'general';
+    const gastoData = {
+        nombre: storeName,
+        valor: parseFloat(total.toFixed(2)),
+        cat: CART_CAT_MAP[dominantCat] || '🛍️ Compras',
+        fecha: Date.now(),
+        thumb: ''
+    };
+
+    const pid = localStorage.getItem('perfilActivoId');
+
+    try {
+        const cached = JSON.parse(localStorage.getItem(GASTOS_CACHE_KEY_TAX) || '[]');
+        cached.unshift({ ...gastoData, id: 'local_' + Date.now() });
+        localStorage.setItem(GASTOS_CACHE_KEY_TAX, JSON.stringify(cached));
+    } catch(e) {}
+
+    const queueOffline = () => {
+        try {
+            const ops = JSON.parse(localStorage.getItem(PENDING_GASTOS_KEY_TAX) || '[]');
+            ops.push({ type:'add', data: gastoData, ts: Date.now() });
+            localStorage.setItem(PENDING_GASTOS_KEY_TAX, JSON.stringify(ops));
+        } catch(e) {}
+    };
+
+    if (!navigator.onLine || !currentUser || !db || !pid) {
+        queueOffline();
+    } else {
+        try { await addDoc(collection(db,'usuarios',currentUser.uid,'perfiles',pid,'gastos'), gastoData); }
+        catch(e) { queueOffline(); }
+    }
+
+    cartItems = [];
+    saveCartToCache();
+    renderCart();
+    closeFinishCartModal();
+
+    const msgs = {es:'✅ Compra guardada en Gastos.', en:'✅ Purchase saved to Expenses.', pt:'✅ Compra salva em Gastos.'};
+    showAlert(msgs[lang] || msgs.es);
 };
 
 window.setCategory = (cat) => {
