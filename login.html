@@ -1141,6 +1141,11 @@ if (firebaseOk) onAuthStateChanged(auth, async (user) => {
 });
 
 function goToApp() {
+    // Si Maps (u otra app hermana) nos mandó acá porque no había sesión,
+    // volvemos a esa URL en vez del destino de siempre.
+    const pending = (() => { try { const r = localStorage.getItem('taxusa_pending_redirect'); if (r) { localStorage.removeItem('taxusa_pending_redirect'); return r; } } catch(e) {} return null; })();
+    if (pending) { hideSplash(() => window.location.replace(pending)); return; }
+
     // Si hay un perfil activo cacheado, saltear profiles y ir directo al destino
     const perfilId     = localStorage.getItem('perfilActivoId');
     const perfilNombre = localStorage.getItem('perfilActivoNombre');

@@ -680,6 +680,11 @@ async function checkRealConnectivity() {
         localStorage.setItem('perfilActivoId', id);
         localStorage.setItem('perfilActivoNombre', nombre);
         localStorage.setItem('perfilActivoFoto', foto);
+        // Si Maps (u otra app hermana) nos mandó acá porque no había sesión,
+        // volvemos a esa URL en vez del destino de siempre.
+        let pending = null;
+        try { pending = localStorage.getItem('taxusa_pending_redirect'); if (pending) localStorage.removeItem('taxusa_pending_redirect'); } catch(e) {}
+        if (pending) { window.location.replace(pending); return; }
         const destino = localStorage.getItem('taxfly_destino') || 'usa';
         window.location.replace(destino === 'europe' ? 'europe.html' : 'index.html');
     };
