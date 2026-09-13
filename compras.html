@@ -1345,10 +1345,28 @@ window.changeLanguage = (lang) => {
 })();
 
 
+// Cache compartido con Maps (mismo dominio) — ver detalle en index.html.
+function sharedCacheGet(key, ttlMs) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const c = JSON.parse(raw);
+        if (!c || (Date.now() - c.ts) > ttlMs) return null;
+        return c.data;
+    } catch(e) { return null; }
+}
+function sharedCacheSet(key, data) {
+    try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+}
+
 async function fetchRates(){
     try{
-        const r1=await fetch('https://dolarapi.com/v1/dolares');
-        const d1=await r1.json();
+        let d1 = sharedCacheGet('shared-dolarapi-raw-v1', 3600000);
+        if (!d1) {
+            const r1=await fetch('https://dolarapi.com/v1/dolares');
+            d1=await r1.json();
+            sharedCacheSet('shared-dolarapi-raw-v1', d1);
+        }
         baseRates.oficial=d1.find(d=>d.casa==='oficial')?.venta||0;
         baseRates.tarjeta=d1.find(d=>d.casa==='tarjeta')?.venta||0;
         const r2=await fetch('https://open.er-api.com/v6/latest/USD');

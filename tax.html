@@ -1163,6 +1163,20 @@ const WI = {
 };
 const WIND_DIR = ['N','NE','E','SE','S','SO','O','NO'];
 
+// Cache compartido con Maps (mismo dominio) — ver detalle en index.html.
+function sharedCacheGet(key, ttlMs) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const c = JSON.parse(raw);
+        if (!c || (Date.now() - c.ts) > ttlMs) return null;
+        return c.data;
+    } catch(e) { return null; }
+}
+function sharedCacheSet(key, data) {
+    try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+}
+
 let weatherCache = { city: '', data: null, ts: 0 };
 
 window.fetchWeather = async function(city) {
@@ -1196,22 +1210,32 @@ window.fetchWeather = async function(city) {
     body.innerHTML = '<div class="wc-loading"><div class="wc-spinner"></div><span>' + (lang==='en'?'Fetching weather...':lang==='pt'?'Obtendo clima...':'Obteniendo clima...') + '</span></div>';
 
     try {
-        
-        const geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1&language=' + (lang==='pt'?'pt':'es') + '&format=json');
-        const geoData = await geoRes.json();
-        if (!geoData.results || !geoData.results.length) throw new Error('Ciudad no encontrada');
+        const geoCacheKey = 'shared-geo-cache::' + city.trim().toLowerCase();
+        let geo = sharedCacheGet(geoCacheKey, 90 * 24 * 3600000);
+        if (!geo) {
+            const geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1&language=' + (lang==='pt'?'pt':'es') + '&format=json');
+            const geoData = await geoRes.json();
+            if (!geoData.results || !geoData.results.length) throw new Error('Ciudad no encontrada');
+            const g = geoData.results[0];
+            geo = { latitude: g.latitude, longitude: g.longitude, name: g.name, country_code: g.country_code };
+            sharedCacheSet(geoCacheKey, geo);
+        }
 
-        const { latitude, longitude, name, country_code } = geoData.results[0];
+        const { latitude, longitude, name, country_code } = geo;
         const displayName = name + (country_code ? ', ' + country_code.toUpperCase() : '');
 
-      
-        const wRes = await fetch(
-            'https://api.open-meteo.com/v1/forecast?latitude=' + latitude + '&longitude=' + longitude +
-            '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m' +
-            '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto'
-        );
-        const wData = await wRes.json();
-        const c = wData.current;
+        const wCacheKey = 'shared-weather-current::' + latitude.toFixed(2) + ',' + longitude.toFixed(2);
+        let c = sharedCacheGet(wCacheKey, 1800000);
+        if (!c) {
+            const wRes = await fetch(
+                'https://api.open-meteo.com/v1/forecast?latitude=' + latitude + '&longitude=' + longitude +
+                '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m' +
+                '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto'
+            );
+            const wData = await wRes.json();
+            c = wData.current;
+            sharedCacheSet(wCacheKey, c);
+        }
 
         const result = {
             tempF: Math.round(c.temperature_2m),

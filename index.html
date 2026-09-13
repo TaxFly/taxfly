@@ -297,6 +297,7 @@
             <div class="w-divider"></div>
             <div class="w-label" style="margin-bottom:4px;"><span class="w-icon">📊</span><span data-i18n="widget_total">Total gastado</span></div>
             <div class="w-value" id="total-gasto-val" style="font-size:.95rem;">—</div>
+            <div class="w-sub" id="total-gasto-maps-note" style="display:none;font-size:.65rem;margin-top:2px;"></div>
         </div>
     </div>
 
@@ -388,6 +389,34 @@ const app  = initializeApp(FB);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
+
+// ── Presupuesto de Maps (app hermana, mismo dominio, sin auth) ──────────
+// Maps no tiene login: es un doc público del proyecto de Firebase de esa
+// app. Lo leemos con una segunda instancia de Firebase (misma técnica que
+// una segunda cuenta), SOLO LECTURA, y lo sumamos al total de acá para
+// que "cuánto gasté" sea un solo número real en vez de dos que no se
+// hablan entre sí.
+const FB_MAPS = { apiKey:"AIzaSyCQ-JeQ5sHqv5PC-Md_Qfif3ulXOfyFubc", authDomain:"orlando-planning-5c1e1.firebaseapp.com", projectId:"orlando-planning-5c1e1", storageBucket:"orlando-planning-5c1e1.firebasestorage.app", messagingSenderId:"658373278539", appId:"1:658373278539:web:83f019075c8f47555dc6ce" };
+const mapsApp = initializeApp(FB_MAPS, 'mapsApp');
+const mapsDb  = getFirestore(mapsApp);
+const MAPS_BUDGET_CACHE_KEY = 'taxusa_maps_budget_cache';
+let mapsSpentCache = parseFloat(localStorage.getItem(MAPS_BUDGET_CACHE_KEY)) || 0;
+function computeMapsSpent(data) {
+    if (!data) return 0;
+    const wm = parseFloat(data.walmartSpent) || 0;
+    const manual = (data.gastos || []).reduce((s,g) => s + (parseFloat(g.monto) || 0), 0);
+    return wm + manual;
+}
+function listenMapsBudget() {
+    onSnapshot(doc(mapsDb, 'orlando', 'budget'), snap => {
+        mapsSpentCache = computeMapsSpent(snap.exists() ? snap.data() : null);
+        try { localStorage.setItem(MAPS_BUDGET_CACHE_KEY, String(mapsSpentCache)); } catch(e) {}
+        const base = parseFloat(localStorage.getItem('taxusa_budget_cache_'+perfilId)) || 0;
+        let g = [];
+        try { g = JSON.parse(localStorage.getItem('taxusa_gastos_cache_'+perfilId) || '[]'); } catch(e) {}
+        renderBudgetUI(base, g);
+    }, () => { /* si falla (sin red, proyecto caído), seguimos con el cache local */ });
+}
 
 const I18N = {
     es: {
@@ -521,13 +550,14 @@ function updateGreeting() {
 }
 
 function renderBudgetUI(base, gastos) {
-    const gastado = gastos.reduce((s,g)=>s+(parseFloat(g.valor||g.monto)||0),0);
+    const gastadoPropio = gastos.reduce((s,g)=>s+(parseFloat(g.valor||g.monto)||0),0);
+    const gastado = gastadoPropio + (mapsSpentCache||0);
     // Último gasto
     const totalEl=document.getElementById('total-gasto-val');
+    const mapsNoteEl=document.getElementById('total-gasto-maps-note');
     if(!gastos||gastos.length===0){
         document.getElementById('last-gasto-val').textContent='—';
         document.getElementById('last-gasto-name').textContent=t.no_gastos||'Sin gastos';
-        if(totalEl) totalEl.textContent='$0.00';
     } else {
         // gastos viene ordenado desc desde Firestore, el [0] es el último
         const last=gastos[0];
@@ -535,7 +565,11 @@ function renderBudgetUI(base, gastos) {
         document.getElementById('last-gasto-name').textContent=last.descripcion||last.nombre||last.tienda||'—';
         const catEl=document.getElementById('last-gasto-cat');
         if(last.categoria){catEl.textContent=last.categoria;catEl.style.display='inline-flex';}
-        if(totalEl) totalEl.textContent=`$${gastado.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    }
+    if(totalEl) totalEl.textContent=`$${gastado.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    if(mapsNoteEl) {
+        if(mapsSpentCache>0){ mapsNoteEl.textContent=`incluye $${mapsSpentCache.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} de Maps (Orlando)`; mapsNoteEl.style.display='block'; }
+        else mapsNoteEl.style.display='none';
     }
     // Presupuesto restante
     if(base<=0){ document.getElementById('wb-value').textContent=t.budget_no_data||'—'; document.getElementById('wb-pct').textContent='—'; return; }
@@ -554,6 +588,7 @@ function loadBudget() {
     let cachedGastos=[];
     try { cachedGastos=JSON.parse(localStorage.getItem('taxusa_gastos_cache_'+perfilId)||'[]'); } catch(e){}
     renderBudgetUI(cachedBase, cachedGastos);
+    listenMapsBudget();
 
     // Escuchar Firestore en tiempo real
     if(!currentUser||!perfilId) return;
@@ -667,9 +702,13 @@ window.fxSelect = function(code) {
 async function loadExchangeRate() {
     if(!navigator.onLine) { document.getElementById('fx-loading').textContent='—'; return; }
     try {
-        // 1) Cotizaciones ARS
-        const r1 = await fetch('https://dolarapi.com/v1/dolares', {signal:AbortSignal.timeout(5000)});
-        const d1 = await r1.json();
+        // 1) Cotizaciones ARS — payload crudo compartido con Maps
+        let d1 = sharedCacheGet('shared-dolarapi-raw-v1', 3600000);
+        if (!d1) {
+            const r1 = await fetch('https://dolarapi.com/v1/dolares', {signal:AbortSignal.timeout(5000)});
+            d1 = await r1.json();
+            sharedCacheSet('shared-dolarapi-raw-v1', d1);
+        }
         const get = (casa) => d1.find(d=>d.casa===casa)?.venta || 0;
         fxData.ars = { oficial: get('oficial'), tarjeta: get('tarjeta') };
         // 2) Tipos de cambio internacionales (base USD)
@@ -716,6 +755,25 @@ const WI = {
     95:'⛈️',96:'⛈️',99:'🌪️'
 };
 const WIND_DIR = ['N','NE','E','SE','S','SO','O','NO'];
+// ─── CACHE COMPARTIDO CON MAPS (mismo dominio → mismo localStorage) ────
+// Esta app y Maps le pegan a las mismas APIs (Open-Meteo, dolarapi.com)
+// por separado. Como comparten origen, guardamos la respuesta CRUDA de
+// cada API bajo una key común: quien la pida primero "calienta" el cache
+// para la otra. Cada app sigue procesando esos datos crudos a su manera
+// (acá mostramos sensación térmica/humedad/viento que Maps no pide).
+function sharedCacheGet(key, ttlMs) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const c = JSON.parse(raw);
+        if (!c || (Date.now() - c.ts) > ttlMs) return null;
+        return c.data;
+    } catch(e) { return null; }
+}
+function sharedCacheSet(key, data) {
+    try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+}
+
 let weatherCache = { city:'', data:null, ts:0 };
 
 function renderWeather(r, lang) {
@@ -765,18 +823,30 @@ window.loadWeather = async function(force=false) {
     }
     if(body) body.innerHTML='<div class="ww-loading"><div class="ww-spinner"></div><span>' + (l==='en'?'Fetching weather...':l==='pt'?'Obtendo clima...':'Obteniendo clima...') + '</span></div>';
     try {
-        const geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city)+'&count=1&language='+(l==='pt'?'pt':'es')+'&format=json');
-        const geoData = await geoRes.json();
-        if(!geoData.results||!geoData.results.length) throw new Error('Ciudad no encontrada');
-        const {latitude, longitude, name, country_code} = geoData.results[0];
+        const geoCacheKey = 'shared-geo-cache::' + city.trim().toLowerCase();
+        let geo = sharedCacheGet(geoCacheKey, 90 * 24 * 3600000); // 90 días, la ciudad no se mueve
+        if (!geo) {
+            const geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city)+'&count=1&language='+(l==='pt'?'pt':'es')+'&format=json');
+            const geoData = await geoRes.json();
+            if(!geoData.results||!geoData.results.length) throw new Error('Ciudad no encontrada');
+            const g = geoData.results[0];
+            geo = { latitude: g.latitude, longitude: g.longitude, name: g.name, country_code: g.country_code };
+            sharedCacheSet(geoCacheKey, geo);
+        }
+        const {latitude, longitude, name, country_code} = geo;
         const displayName = name + (country_code ? ', ' + country_code.toUpperCase() : '');
-        const wRes = await fetch(
-            'https://api.open-meteo.com/v1/forecast?latitude='+latitude+'&longitude='+longitude+
-            '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m'+
-            '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto'
-        );
-        const wData = await wRes.json();
-        const c = wData.current;
+        const wCacheKey = 'shared-weather-current::' + latitude.toFixed(2) + ',' + longitude.toFixed(2);
+        let c = sharedCacheGet(wCacheKey, 1800000);
+        if (!c) {
+            const wRes = await fetch(
+                'https://api.open-meteo.com/v1/forecast?latitude='+latitude+'&longitude='+longitude+
+                '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m'+
+                '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto'
+            );
+            const wData = await wRes.json();
+            c = wData.current;
+            sharedCacheSet(wCacheKey, c);
+        }
         const result = {
             tempF: Math.round(c.temperature_2m),
             tempC: Math.round((c.temperature_2m-32)*5/9),
