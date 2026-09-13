@@ -734,9 +734,11 @@ async function checkRealConnectivity() {
     window.saveProfile = async () => {
         const name = document.getElementById('nameInput').value.trim();
         if (!name) return;
+        const isNew = !editingId;
+        const newProfile = { id: 'p' + Date.now(), nombre: name, foto: selectedPhoto };
         const updatedProfiles = editingId
             ? profiles.map(p => p.id === editingId ? { ...p, nombre: name, foto: selectedPhoto } : p)
-            : [...profiles, { id: 'p' + Date.now(), nombre: name, foto: selectedPhoto }];
+            : [...profiles, newProfile];
         try {
             await updateDoc(doc(db, 'usuarios', uid), { perfiles: updatedProfiles });
         } catch (err) {
@@ -746,6 +748,14 @@ async function checkRealConnectivity() {
         }
         profiles = updatedProfiles;
         localStorage.setItem('taxfly_cached_profiles', JSON.stringify(profiles));
+        // Crear un perfil nuevo lo activa de una — sino queda la lista
+        // actualizada pero perfilActivoId sigue apuntando al de antes, y
+        // tanto Taxfly como Maps se quedan mirando el perfil viejo sin que
+        // se note por qué.
+        if (isNew) {
+            handleClick(newProfile.id, newProfile.nombre, encodeURIComponent(newProfile.foto || ''));
+            return;
+        }
         closeModal();
         if (isEditing) toggleEditMode();
         render();
