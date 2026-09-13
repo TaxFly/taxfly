@@ -146,10 +146,6 @@
         .badge-parque{background:rgba(16,185,129,.15);color:#10b981;}
         .badge-comida{background:rgba(245,158,11,.15);color:#f59e0b;}
         .badge-otro{background:rgba(100,116,139,.15);color:#64748b;}
-        .badge-maps{background:rgba(37,99,235,.15);color:#2563eb;}
-        .act-item[data-type="maps"]{border-left-color:#2563eb;}
-        .act-check-readonly{border-color:#2563eb;}
-        .act-check-readonly.checked{background:#2563eb;border-color:#2563eb;}
         .act-del{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;line-height:1;padding:4px;flex-shrink:0;transition:var(--tr);}
         .act-del:hover{color:var(--danger);}
         .empty-state{text-align:center;padding:28px 20px;color:var(--text-dim);}
@@ -1951,85 +1947,7 @@ async function _rcCheck(action) {
     window._flushPending = flushPending;
 
     // ═══ Activities ═══
-    const typeIconMap = { vuelo:'✈️', hotel:'🏨', parque:'🎡', comida:'🍽️', otro:'📌', maps:'🧭' };
-
-    // ─── Itinerario de Maps (solo lectura) ─────────────────────────
-    // Maps (app hermana, mismo proyecto de Firebase, doc público) tiene
-    // su propio día-a-día (mealData: un renglón por día del viaje con
-    // tipo Disney/Universal/libre/etc). Lo mostramos mezclado acá para
-    // tener UN SOLO lugar donde ver todo el itinerario, pero de solo
-    // lectura — para editarlo hay que ir a Maps, porque ahí vive con
-    // mapas, checklist de compras, etc. No escribimos nada en 'orlando'.
-    const MONTHS_ES_IT = { ene:1, feb:2, mar:3, abr:4, may:5, jun:6, jul:7, ago:8, sep:9, oct:10, nov:11, dic:12 };
-    function parseMapsDayDate(str) {
-        if (!str) return null;
-        let m = String(str).match(/(\d{1,2})\/(\d{1,2})/);
-        if (m) return { d: +m[1], mo: +m[2] };
-        m = String(str).toLowerCase().match(/(\d{1,2})\s*([a-záéíóúñ]{3,})/i);
-        if (m) { const mon = MONTHS_ES_IT[m[2].slice(0,3)]; if (mon) return { d: +m[1], mo: mon }; }
-        return null;
-    }
-    // Convierte "17 ene" a una fecha ISO real, usando el año más cercano
-    // (mismo criterio que la cuenta regresiva de Maps): si esa fecha ya
-    // pasó este año, asume el año que viene.
-    function mapsDateToISO(str) {
-        const p = parseMapsDayDate(str);
-        if (!p) return null;
-        const now = new Date();
-        const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        let year = now.getFullYear();
-        let candidate = new Date(year, p.mo - 1, p.d);
-        if (candidate < today0) { year += 1; candidate = new Date(year, p.mo - 1, p.d); }
-        return year + '-' + String(p.mo).padStart(2,'0') + '-' + String(p.d).padStart(2,'0');
-    }
-    // Estado propio de Taxfly sobre los días de Maps: qué está marcado
-    // como hecho y qué se ocultó de esta vista. Vive en el mismo doc de
-    // perfil que ya usás para el presupuesto — no se toca nada de Maps,
-    // así que el contenido sigue siendo de solo lectura, pero el check y
-    // el ocultar son 100% de Taxfly.
-    let mapsProgress = { done: {}, hidden: {} };
-    let mapsMealsRaw = [];
-    function mapsProgressDocRef() { return doc(db, 'usuarios', currentUser.uid, 'perfiles', perfilId); }
-    async function loadMapsProgress() {
-        if (!currentUser || !perfilId) return;
-        try {
-            const snap = await getDoc(mapsProgressDocRef());
-            if (snap.exists() && snap.data().mapsProgress) {
-                mapsProgress = Object.assign({ done:{}, hidden:{} }, snap.data().mapsProgress);
-            }
-        } catch(e) {}
-        renderActivities();
-    }
-    async function saveMapsProgress() {
-        if (!currentUser || !perfilId) return;
-        try { await updateDoc(mapsProgressDocRef(), { mapsProgress }); } catch(e) {}
-    }
-    window.toggleMapsDone = function(id) {
-        mapsProgress.done[id] = !mapsProgress.done[id];
-        saveMapsProgress();
-        renderActivities();
-    };
-    window.hideMapsActivity = function(id, name) {
-        if (!confirm('¿Ocultar "' + name + '" de esta lista? Seguís viéndolo en Maps normalmente — esto solo lo saca de acá.')) return;
-        mapsProgress.hidden[id] = true;
-        saveMapsProgress();
-        renderActivities();
-    };
-    function computeMapsActivities() {
-        return mapsMealsRaw.map(d => {
-            const id = 'maps_' + d.id;
-            return {
-                id, name: d.title || 'Día de Maps', date: mapsDateToISO(d.date), time: '',
-                type: 'maps', done: !!mapsProgress.done[id], _readOnly: true,
-            };
-        }).filter(a => a.date && !mapsProgress.hidden[a.id]);
-    }
-    function listenMapsItinerary() {
-        onSnapshot(doc(db, 'orlando', 'meals'), snap => {
-            mapsMealsRaw = (snap.exists() && Array.isArray(snap.data().meals)) ? snap.data().meals : [];
-            renderActivities();
-        }, () => { /* si falla, seguimos mostrando solo lo de Taxfly */ });
-    }
+    const typeIconMap = { vuelo:'✈️', hotel:'🏨', parque:'🎡', comida:'🍽️', otro:'📌' };
 
     // Estado local de actividades para poder operar offline
     let localActivities = [];
@@ -2100,7 +2018,6 @@ async function _rcCheck(action) {
     };
 
     function renderActivities(acts) {
-        acts = [...(acts || localActivities), ...computeMapsActivities()];
         const lang = localStorage.getItem('appLang') || 'es';
         const container = document.getElementById('activitiesList');
         const progressCard = document.getElementById('progressCard');
@@ -2113,10 +2030,9 @@ async function _rcCheck(action) {
             return;
         }
 
-        // Progress: ahora los días de Maps también cuentan, con su propio
-        // check acoplado a la lógica de Taxfly (se guarda en tu perfil).
+        // Progress
         const done = acts.filter(a => a.done).length;
-        const pct = acts.length ? Math.round((done / acts.length) * 100) : 0;
+        const pct = Math.round((done / acts.length) * 100);
         progressCard.style.display = 'block';
         progressCount.textContent = `${done}/${acts.length}`;
         progressFill.style.width = pct + '%';
@@ -2140,19 +2056,7 @@ async function _rcCheck(action) {
                         <span class="act-group-date">${dateLabel}</span>
                         <span class="act-group-count">${dayDone}/${dayActs.length}</span>
                     </div>
-                    ${dayActs.sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99')).map(act => act._readOnly ? `
-                        <div class="act-item act-item-readonly ${act.done ? 'done' : ''}" id="act-item-${act.id}" data-type="${act.type}">
-                            <div class="act-check act-check-readonly ${act.done ? 'checked' : ''}" onclick="toggleMapsDone('${act.id}')" title="Marcado acá, en tu perfil de Taxfly"></div>
-                            <div class="act-info">
-                                <div class="act-name">${typeIconMap.maps} ${esc(act.name)}</div>
-                                <div class="act-meta">
-                                    <span class="act-badge badge-maps">Maps</span>
-                                </div>
-                            </div>
-                            <button class="act-bell ${isReminderOn(act.id) ? 'on' : ''}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g,"\\'")}','${act.date}','${act.time||''}')" title="Recordatorio">🔔</button>
-                            <button class="act-del" onclick="hideMapsActivity('${act.id}','${act.name.replace(/'/g,"\\'")}')" title="Ocultar de esta lista (no borra nada en Maps)" aria-label="Ocultar">✕</button>
-                        </div>
-                    ` : `
+                    ${dayActs.sort((a,b) => (a.time||'99:99').localeCompare(b.time||'99:99')).map(act => `
                         <div class="act-item ${act.done ? 'done' : ''}" id="act-item-${act.id}" data-type="${act.type}">
                             <div class="act-check ${act.done ? 'checked' : ''}" onclick="toggleActivity('${act.id}', ${act.done})"></div>
                             <div class="act-info">
@@ -2652,8 +2556,6 @@ onAuthStateChanged(auth, async (user) => {
             renderCityData();
             listenNotes();
             listenActivities();
-            listenMapsItinerary();
-            loadMapsProgress();
             const lang = localStorage.getItem('appLang') || 'es';
             window.changeLanguage(lang);
             setInterval(window.nextTip, 8000);
