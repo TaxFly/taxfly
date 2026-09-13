@@ -390,15 +390,12 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 
-// ── Presupuesto de Maps (app hermana, mismo dominio, sin auth) ──────────
-// Maps no tiene login: es un doc público del proyecto de Firebase de esa
-// app. Lo leemos con una segunda instancia de Firebase (misma técnica que
-// una segunda cuenta), SOLO LECTURA, y lo sumamos al total de acá para
-// que "cuánto gasté" sea un solo número real en vez de dos que no se
-// hablan entre sí.
-const FB_MAPS = { apiKey:"AIzaSyCQ-JeQ5sHqv5PC-Md_Qfif3ulXOfyFubc", authDomain:"orlando-planning-5c1e1.firebaseapp.com", projectId:"orlando-planning-5c1e1", storageBucket:"orlando-planning-5c1e1.firebasestorage.app", messagingSenderId:"658373278539", appId:"1:658373278539:web:83f019075c8f47555dc6ce" };
-const mapsApp = initializeApp(FB_MAPS, 'mapsApp');
-const mapsDb  = getFirestore(mapsApp);
+// ── Presupuesto de Maps (app hermana, mismo proyecto de Firebase ahora) ─
+// Maps no tiene login: su doc 'orlando/budget' es público (regla propia
+// sin filtro de auth). Como ahora comparte el mismo proyecto que Taxfly,
+// lo leemos directo con la instancia 'db' de acá — ya no hace falta una
+// segunda app de Firebase. Lo sumamos al total para que "cuánto gasté"
+// sea un solo número real en vez de dos que no se hablan entre sí.
 const MAPS_BUDGET_CACHE_KEY = 'taxusa_maps_budget_cache';
 let mapsSpentCache = parseFloat(localStorage.getItem(MAPS_BUDGET_CACHE_KEY)) || 0;
 function computeMapsSpent(data) {
@@ -408,14 +405,14 @@ function computeMapsSpent(data) {
     return wm + manual;
 }
 function listenMapsBudget() {
-    onSnapshot(doc(mapsDb, 'orlando', 'budget'), snap => {
+    onSnapshot(doc(db, 'orlando', 'budget'), snap => {
         mapsSpentCache = computeMapsSpent(snap.exists() ? snap.data() : null);
         try { localStorage.setItem(MAPS_BUDGET_CACHE_KEY, String(mapsSpentCache)); } catch(e) {}
         const base = parseFloat(localStorage.getItem('taxusa_budget_cache_'+perfilId)) || 0;
         let g = [];
         try { g = JSON.parse(localStorage.getItem('taxusa_gastos_cache_'+perfilId) || '[]'); } catch(e) {}
         renderBudgetUI(base, g);
-    }, () => { /* si falla (sin red, proyecto caído), seguimos con el cache local */ });
+    }, () => { /* si falla (sin red), seguimos con el cache local */ });
 }
 
 const I18N = {
