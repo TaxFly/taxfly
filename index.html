@@ -390,14 +390,15 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 
-// ── Presupuesto de Maps (app hermana, mismo proyecto de Firebase ahora) ─
-// Maps no tiene login: su doc 'orlando/budget' es público (regla propia
-// sin filtro de auth). Como ahora comparte el mismo proyecto que Taxfly,
-// lo leemos directo con la instancia 'db' de acá — ya no hace falta una
-// segunda app de Firebase. Lo sumamos al total para que "cuánto gasté"
-// sea un solo número real en vez de dos que no se hablan entre sí.
-const MAPS_BUDGET_CACHE_KEY = 'taxusa_maps_budget_cache';
-let mapsSpentCache = parseFloat(localStorage.getItem(MAPS_BUDGET_CACHE_KEY)) || 0;
+// ── Presupuesto de Maps (ahora vive por perfil, mismo proyecto) ─────────
+// Cada perfil de Taxfly tiene su propio Maps bajo
+// usuarios/{uid}/perfiles/{perfilId}/orlando/budget — mismo path que ya
+// usás para Gastos/Actividades de este perfil. Lo sumamos al total de
+// acá para que "cuánto gasté" sea un solo número real.
+// (perfilId todavía no existe en este punto del archivo — por eso la key
+// de cache se arma con una función, no con un const de nivel superior.)
+function mapsBudgetCacheKey() { return 'taxusa_maps_budget_cache_' + perfilId; }
+let mapsSpentCache = 0;
 function computeMapsSpent(data) {
     if (!data) return 0;
     const wm = parseFloat(data.walmartSpent) || 0;
@@ -405,9 +406,11 @@ function computeMapsSpent(data) {
     return wm + manual;
 }
 function listenMapsBudget() {
-    onSnapshot(doc(db, 'orlando', 'budget'), snap => {
+    if (!currentUser || !perfilId) return;
+    mapsSpentCache = parseFloat(localStorage.getItem(mapsBudgetCacheKey())) || 0;
+    onSnapshot(doc(db, 'usuarios', currentUser.uid, 'perfiles', perfilId, 'orlando', 'budget'), snap => {
         mapsSpentCache = computeMapsSpent(snap.exists() ? snap.data() : null);
-        try { localStorage.setItem(MAPS_BUDGET_CACHE_KEY, String(mapsSpentCache)); } catch(e) {}
+        try { localStorage.setItem(mapsBudgetCacheKey(), String(mapsSpentCache)); } catch(e) {}
         const base = parseFloat(localStorage.getItem('taxusa_budget_cache_'+perfilId)) || 0;
         let g = [];
         try { g = JSON.parse(localStorage.getItem('taxusa_gastos_cache_'+perfilId) || '[]'); } catch(e) {}
