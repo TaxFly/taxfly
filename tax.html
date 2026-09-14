@@ -103,6 +103,13 @@
 
         .card{background:var(--surface);border-radius:var(--radius);padding:20px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px;position:relative;}
 
+        /* ── Selector Precio Individual / Carrito ── */
+        .calc-tabs{display:flex;gap:8px;margin-bottom:14px;}
+        .calc-tab{flex:1;padding:13px 8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--input-bg);font-size:.72rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;text-transform:uppercase;letter-spacing:.3px;}
+        .calc-tab.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
+        .calc-panel{display:none;}
+        .calc-panel.active{display:block;}
+
         .countdown-box{background:var(--surface-2);padding:14px 16px;border-radius:var(--radius-sm);margin-bottom:16px;cursor:pointer;border:1.5px solid var(--border);transition:var(--tr);position:relative;}
         .countdown-box:hover{border-color:var(--primary);}
         .countdown-label{font-size:0.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
@@ -442,6 +449,13 @@
         <div id="wc-body"><div class="wc-loading"><div class="wc-spinner"></div><span>Obteniendo clima...</span></div></div>
     </div>
 
+    <!-- ── Selector: Precio Individual vs Carrito ── -->
+    <div class="calc-tabs">
+        <button class="calc-tab active" id="tab-individual" onclick="switchCalcTab('individual')">🏷️ <span data-i18n="tab_individual">Precio Individual</span></button>
+        <button class="calc-tab" id="tab-cart" onclick="switchCalcTab('cart')">🛒 <span data-i18n="tab_cart">Carrito</span></button>
+    </div>
+
+    <div class="calc-panel active" id="panel-individual">
     <div class="card">
         <div class="input-group">
             <span class="slabel" data-i18n="label_price">Precio en Etiqueta (USD)</span>
@@ -506,41 +520,59 @@
         <div class="final-label" data-i18n="label_total">TOTAL FINAL (INC. TIP)</div>
         <div class="final-value" id="final-total">USD 0.00</div>
     </div>
+    </div><!-- /panel-individual -->
 
     <!-- ── Carrito de Compras (Multi-Producto) ── -->
+    <div class="calc-panel" id="panel-cart">
     <div class="cart-card">
-        <div class="cart-header" onclick="toggleCart()">
-            <div class="cart-title">🛒 <span data-i18n="cart_title">Carrito de Compras</span></div>
-            <div class="cart-toggle" id="cart-toggle-lbl">▼ <span data-i18n="cart_open">VER</span></div>
+        <div style="font-size:.68rem;font-weight:600;color:var(--text-dim);margin-bottom:14px;line-height:1.4;" data-i18n="cart_hint">Sumá cada producto del súper y mirá el total con tax al final, sin salir de la app.</div>
+
+        <div class="input-group">
+            <span class="slabel" data-i18n="label_category">Categoría</span>
+            <div class="cat-grid">
+                <button class="cat-btn active" id="cart-btn-general" onclick="setCartCategory('general')"><span class="cat-icon">🛍️</span><span data-i18n="cat_general">GENERAL</span></button>
+                <button class="cat-btn" id="cart-btn-tech"    onclick="setCartCategory('tech')"><span class="cat-icon">💻</span><span data-i18n="cat_tech">TECH</span></button>
+                <button class="cat-btn" id="cart-btn-food"    onclick="setCartCategory('food')"><span class="cat-icon">🍎</span><span data-i18n="cat_food">COMIDA</span></button>
+                <button class="cat-btn" id="cart-btn-med"     onclick="setCartCategory('med')"><span class="cat-icon">💊</span><span data-i18n="cat_med">MEDICINA</span></button>
+            </div>
         </div>
-        <div class="cart-body" id="cart-body">
-            <div style="font-size:.68rem;font-weight:600;color:var(--text-dim);margin-bottom:12px;line-height:1.4;" data-i18n="cart_hint">Sumá cada producto del súper y mirá el total con tax al final, sin salir de la app.</div>
 
-            <div class="cart-add-row">
-                <input type="number" id="cart-price-input" placeholder="0.00" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}">
-                <label class="cart-exempt-toggle">
-                    <input type="checkbox" id="cart-exempt-check">
-                    <span data-i18n="cart_exempt">Sin tax</span>
-                </label>
-                <button class="cart-add-btn" onclick="addCartItem()" aria-label="Agregar">+</button>
-            </div>
+        <div class="input-group">
+            <span class="slabel" data-i18n="label_state">Estado</span>
+            <select id="cart-state-select" onchange="loadCartCities()"></select>
+        </div>
+        <div class="input-group">
+            <span class="slabel" data-i18n="label_city">Ciudad / Condado</span>
+            <select id="cart-city-select" onchange="renderCart()"></select>
+        </div>
+        <!-- Fallback manual: ingresar tax a mano si el usuario no encuentra su ciudad -->
+        <div class="input-group" id="cart-manual-tax-group" style="display:none;">
+            <span class="slabel">TAX MANUAL (%)</span>
+            <input type="number" id="cart-manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="renderCart()" style="border-color:var(--warn);">
+        </div>
+        <button id="cart-toggle-manual-tax" onclick="toggleCartManualTax()" style="background:none;border:none;color:var(--text-dim);font-size:.65rem;font-weight:700;cursor:pointer;padding:2px 0 14px;text-decoration:underline;display:block;">✏️ <span data-i18n="btn_manual_tax">Ingresar tax manualmente</span></button>
 
-            <div class="cart-list" id="cart-list">
-                <div class="cart-empty" id="cart-empty" data-i18n="cart_empty">Todavía no agregaste productos.</div>
-            </div>
+        <div class="cart-add-row">
+            <input type="number" id="cart-price-input" placeholder="0.00" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}">
+            <button class="cart-add-btn" onclick="addCartItem()" aria-label="Agregar">+</button>
+        </div>
 
-            <div class="cart-summary" id="cart-summary" style="display:none;">
-                <div class="cart-summary-row"><span data-i18n="cart_subtotal">Subtotal</span><span id="cart-subtotal">$0.00</span></div>
-                <div class="cart-summary-row"><span id="cart-tax-lbl" data-i18n="cart_tax">Tax</span><span id="cart-tax-amt">$0.00</span></div>
-                <div class="cart-total"><span data-i18n="cart_total">TOTAL</span><span id="cart-total">$0.00</span></div>
-            </div>
+        <div class="cart-list" id="cart-list">
+            <div class="cart-empty" id="cart-empty" data-i18n="cart_empty">Todavía no agregaste productos.</div>
+        </div>
 
-            <div class="cart-actions" id="cart-actions" style="display:none;">
-                <button class="cart-btn cart-btn-clear" onclick="clearCart()">🗑️ <span data-i18n="cart_clear">Vaciar</span></button>
-                <button class="cart-btn cart-btn-save" onclick="saveCartAsExpense()">💾 <span data-i18n="cart_save">Guardar en Gastos</span></button>
-            </div>
+        <div class="cart-summary" id="cart-summary" style="display:none;">
+            <div class="cart-summary-row"><span data-i18n="cart_subtotal">Subtotal</span><span id="cart-subtotal">$0.00</span></div>
+            <div class="cart-summary-row"><span id="cart-tax-lbl" data-i18n="cart_tax">Tax</span><span id="cart-tax-amt">$0.00</span></div>
+            <div class="cart-total"><span data-i18n="cart_total">TOTAL</span><span id="cart-total">$0.00</span></div>
+        </div>
+
+        <div class="cart-actions" id="cart-actions" style="display:none;">
+            <button class="cart-btn cart-btn-clear" onclick="clearCart()">🗑️ <span data-i18n="cart_clear">Vaciar</span></button>
+            <button class="cart-btn cart-btn-save" onclick="saveCartAsExpense()">💾 <span data-i18n="cart_save">Guardar en Gastos</span></button>
         </div>
     </div>
+    </div><!-- /panel-cart -->
 
     <!-- ── Split Bill ── -->
     <div class="split-card">
@@ -803,7 +835,8 @@ const i18n = {
         cart_hint:"Sumá cada producto del súper y mirá el total con tax al final, sin salir de la app.",
         cart_exempt:"Sin tax",cart_empty:"Todavía no agregaste productos.",
         cart_subtotal:"Subtotal",cart_tax:"Tax",cart_total:"TOTAL",
-        cart_clear:"Vaciar",cart_save:"Guardar en Gastos"
+        cart_clear:"Vaciar",cart_save:"Guardar en Gastos",
+        tab_individual:"Precio Individual",tab_cart:"Carrito"
     },
     en:{
         nav_expenses:"EXPENSES",nav_home:"HOME",nav_itinerary:"ITINERARY",nav_compare:"COMPARE",nav_units:"Help & References",nav_tickets:"DOCUMENTS",nav_group:"GROUP",nav_routes:"ROUTES",nav_more:"MORE",nav_units_desc:"Unit Converter & Utilities",nav_tickets_desc:"ESTA, insurance, check-in",nav_group_desc:"Shared expenses",
@@ -831,7 +864,8 @@ const i18n = {
         cart_hint:"Add each item from the store and see the total with tax at the end, without leaving the app.",
         cart_exempt:"Tax free",cart_empty:"No items added yet.",
         cart_subtotal:"Subtotal",cart_tax:"Tax",cart_total:"TOTAL",
-        cart_clear:"Clear",cart_save:"Save to Expenses"
+        cart_clear:"Clear",cart_save:"Save to Expenses",
+        tab_individual:"Individual Price",tab_cart:"Cart"
     },
     pt:{
         nav_expenses:"GASTOS",nav_home:"INÍCIO",nav_itinerary:"ITINERARIO",nav_compare:"COMPARAR",nav_units:"Ajuda e Referências",nav_tickets:"DOCUMENTOS",nav_group:"GRUPO",nav_routes:"ROTAS",nav_more:"MAIS",nav_units_desc:"Conversor de Unidades e Utilidades",nav_tickets_desc:"ESTA, seguros, check-in",nav_group_desc:"Gastos compartilhados",
@@ -859,7 +893,8 @@ const i18n = {
         cart_hint:"Some cada produto do mercado e veja o total com imposto no final, sem sair do app.",
         cart_exempt:"Sem imposto",cart_empty:"Ainda não adicionou produtos.",
         cart_subtotal:"Subtotal",cart_tax:"Imposto",cart_total:"TOTAL",
-        cart_clear:"Esvaziar",cart_save:"Salvar em Gastos"
+        cart_clear:"Esvaziar",cart_save:"Salvar em Gastos",
+        tab_individual:"Preço Individual",tab_cart:"Carrinho"
     }
 };
 
@@ -1782,6 +1817,21 @@ window.autoSelectTaxByCity = (destination) => {
         }
     }
     calculate();
+
+    // Sincronizar también el selector propio del carrito con el destino del viaje
+    const cartStateSelect = document.getElementById('cart-state-select');
+    const cartCitySelect  = document.getElementById('cart-city-select');
+    if (cartStateSelect && cartCitySelect) {
+        cartStateSelect.value = match.state;
+        loadCartCities();
+        for (let i = 0; i < cartCitySelect.options.length; i++) {
+            if (cartCitySelect.options[i].text.startsWith(match.cityName)) {
+                cartCitySelect.selectedIndex = i;
+                break;
+            }
+        }
+        renderCart();
+    }
 };
 
 const _origCalc = window.calculate;
@@ -1800,6 +1850,14 @@ window.onload = () => {
     const ss = document.getElementById('state-select');
     Object.keys(taxData).sort().forEach(s => { const o = document.createElement('option'); o.value = s; o.text = s; if(s==='Florida') o.selected=true; ss.appendChild(o); });
     loadCities();
+
+    // Selector de estado propio del carrito (independiente del de arriba)
+    const css = document.getElementById('cart-state-select');
+    if (css) {
+        Object.keys(taxData).sort().forEach(s => { const o = document.createElement('option'); o.value = s; o.text = s; if(s==='Florida') o.selected=true; css.appendChild(o); });
+        loadCartCities();
+    }
+
     setInterval(updateCountdown, 1000);
     const lang = localStorage.getItem('appLang') || 'es';
     window.changeLanguage(lang);
@@ -1809,44 +1867,98 @@ window.onload = () => {
 };
 
 // ══════════════════════════════════════════════
-// 🛒 CARRITO DE COMPRAS (multi-producto)
-// Suma varios productos de una misma compra (ej. supermercado) usando
-// el tax de la ciudad/manual ya seleccionado arriba, para no tener que
-// usar la calculadora del celular y volver con un solo número.
+// 🏷️ / 🛒 Selector entre "Precio Individual" y "Carrito"
 // ══════════════════════════════════════════════
-let cartItems = [];
-let cartOpen = false;
-
-function getCurrentCartTaxRate() {
-    if (typeof manualTaxActive !== 'undefined' && manualTaxActive) {
-        const v = parseFloat(document.getElementById('manual-tax-input')?.value);
-        return isNaN(v) ? 0 : v;
-    }
-    return parseFloat(document.getElementById('city-select')?.value) || 0;
-}
-
-window.toggleCart = () => {
-    cartOpen = !cartOpen;
-    const body = document.getElementById('cart-body');
-    const lbl = document.getElementById('cart-toggle-lbl');
-    const lang = localStorage.getItem('appLang') || 'es';
-    if (cartOpen) {
-        body.classList.add('open');
-        lbl.innerHTML = '▲ <span>' + (i18n[lang].cart_close || 'OCULTAR') + '</span>';
+window.switchCalcTab = (tab) => {
+    const tabIndividual = document.getElementById('tab-individual');
+    const tabCart = document.getElementById('tab-cart');
+    const panelIndividual = document.getElementById('panel-individual');
+    const panelCart = document.getElementById('panel-cart');
+    if (tab === 'cart') {
+        tabCart.classList.add('active');
+        tabIndividual.classList.remove('active');
+        panelCart.classList.add('active');
+        panelIndividual.classList.remove('active');
+        renderCart();
     } else {
-        body.classList.remove('open');
-        lbl.innerHTML = '▼ <span>' + (i18n[lang].cart_open || 'VER') + '</span>';
+        tabIndividual.classList.add('active');
+        tabCart.classList.remove('active');
+        panelIndividual.classList.add('active');
+        panelCart.classList.remove('active');
     }
 };
+
+// ══════════════════════════════════════════════
+// 🛒 CARRITO DE COMPRAS (multi-producto)
+// Card independiente de "Precio Individual": tiene su propio
+// estado/ciudad (o tax manual) y su propia categoría, para sumar
+// varios productos de una misma compra (ej. supermercado) sin salir
+// de la app. Cada producto guarda la categoría con la que se cargó,
+// y comida/medicina quedan exentas de tax igual que en el otro tab.
+// ══════════════════════════════════════════════
+let cartItems = [];
+let cartCurrentCategory = 'general';
+let cartManualTaxActive = false;
+
+const CART_CAT_META = {
+    general: { icon: '🛍️', i18nKey: 'cat_general', taxFree: false },
+    tech:    { icon: '💻', i18nKey: 'cat_tech',    taxFree: false },
+    food:    { icon: '🍎', i18nKey: 'cat_food',    taxFree: true  },
+    med:     { icon: '💊', i18nKey: 'cat_med',     taxFree: true  }
+};
+
+window.setCartCategory = (cat) => {
+    cartCurrentCategory = cat;
+    document.querySelectorAll('#panel-cart .cat-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('cart-btn-' + cat).classList.add('active');
+};
+
+window.loadCartCities = () => {
+    const state = document.getElementById('cart-state-select').value;
+    const cs = document.getElementById('cart-city-select');
+    cs.innerHTML = '';
+    (taxData[state] || []).forEach(c => { const o = document.createElement('option'); o.value = c.t; o.text = `${c.n} (${c.t}%)`; cs.appendChild(o); });
+    renderCart();
+};
+
+window.toggleCartManualTax = () => {
+    cartManualTaxActive = !cartManualTaxActive;
+    const lang = localStorage.getItem('appLang') || 'es';
+    const grp = document.getElementById('cart-manual-tax-group');
+    const btn = document.getElementById('cart-toggle-manual-tax');
+    const stateG = document.getElementById('cart-state-select')?.closest('.input-group');
+    const cityG  = document.getElementById('cart-city-select')?.closest('.input-group');
+    if (cartManualTaxActive) {
+        if (grp) grp.style.display = 'block';
+        if (btn) btn.innerHTML = lang==='en' ? '✕ Use state/city selector' : lang==='pt' ? '✕ Usar seletor de estado/cidade' : '✕ Usar selector de estado/ciudad';
+        if (stateG) stateG.style.opacity = '.4';
+        if (cityG)  cityG.style.opacity  = '.4';
+        document.getElementById('cart-manual-tax-input')?.focus();
+    } else {
+        if (grp) grp.style.display = 'none';
+        if (btn) btn.innerHTML = '✏️ <span data-i18n="btn_manual_tax">' + (i18n[lang].btn_manual_tax || 'Ingresar tax manualmente') + '</span>';
+        if (stateG) stateG.style.opacity = '1';
+        if (cityG)  cityG.style.opacity  = '1';
+        const inp = document.getElementById('cart-manual-tax-input');
+        if (inp) inp.value = '';
+    }
+    renderCart();
+};
+
+function getCurrentCartTaxRate() {
+    if (cartManualTaxActive) {
+        const v = parseFloat(document.getElementById('cart-manual-tax-input')?.value);
+        return isNaN(v) ? 0 : v;
+    }
+    return parseFloat(document.getElementById('cart-city-select')?.value) || 0;
+}
 
 window.addCartItem = () => {
     const input = document.getElementById('cart-price-input');
     const price = parseFloat(input.value);
     if (isNaN(price) || price <= 0) { input.focus(); return; }
-    const exempt = document.getElementById('cart-exempt-check').checked;
-    cartItems.push({ id: Date.now() + Math.random(), price, exempt });
+    cartItems.push({ id: Date.now() + Math.random(), price, category: cartCurrentCategory });
     input.value = '';
-    document.getElementById('cart-exempt-check').checked = false;
     renderCart();
     input.focus();
 };
@@ -1882,18 +1994,21 @@ function renderCart() {
     }
 
     const taxRate = getCurrentCartTaxRate();
-    list.innerHTML = cartItems.map(it => `
+    list.innerHTML = cartItems.map(it => {
+        const meta = CART_CAT_META[it.category] || CART_CAT_META.general;
+        const catLabel = i18n[lang][meta.i18nKey] || it.category;
+        return `
         <div class="cart-item">
             <div class="cart-item-info">
                 <span class="cart-item-price">$${fmt(it.price)}</span>
-                ${it.exempt ? `<span class="cart-item-tag">${i18n[lang].cart_exempt}</span>` : ''}
+                <span class="cart-item-tag" style="${meta.taxFree ? '' : 'color:var(--text-dim);background:var(--input-bg);'}">${meta.icon} ${catLabel}${meta.taxFree ? ' · ' + i18n[lang].cart_exempt : ''}</span>
             </div>
             <button class="cart-item-del" onclick="removeCartItem(${it.id})">✕</button>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 
     const subtotal = cartItems.reduce((s, it) => s + it.price, 0);
-    const taxAmt = cartItems.reduce((s, it) => s + (it.exempt ? 0 : it.price * taxRate / 100), 0);
+    const taxAmt = cartItems.reduce((s, it) => s + ((CART_CAT_META[it.category] || CART_CAT_META.general).taxFree ? 0 : it.price * taxRate / 100), 0);
     const total = subtotal + taxAmt;
 
     document.getElementById('cart-subtotal').innerText = `$${fmt(subtotal)}`;
@@ -1913,7 +2028,7 @@ window.saveCartAsExpense = async () => {
 
     const taxRate = getCurrentCartTaxRate();
     const subtotal = cartItems.reduce((s, it) => s + it.price, 0);
-    const taxAmt = cartItems.reduce((s, it) => s + (it.exempt ? 0 : it.price * taxRate / 100), 0);
+    const taxAmt = cartItems.reduce((s, it) => s + ((CART_CAT_META[it.category] || CART_CAT_META.general).taxFree ? 0 : it.price * taxRate / 100), 0);
     const total = parseFloat((subtotal + taxAmt).toFixed(2));
     const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
