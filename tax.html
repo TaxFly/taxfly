@@ -474,6 +474,7 @@
             <button class="cat-btn" id="btn-tech"    onclick="setCategory('tech')"><span class="cat-icon">💻</span><span data-i18n="cat_tech">TECH</span></button>
             <button class="cat-btn" id="btn-food"    onclick="setCategory('food')"><span class="cat-icon">🍎</span><span data-i18n="cat_food">COMIDA</span></button>
             <button class="cat-btn" id="btn-med"     onclick="setCategory('med')"><span class="cat-icon">💊</span><span data-i18n="cat_med">MEDICINA</span></button>
+            <button class="cat-btn" id="btn-clothing" onclick="setCategory('clothing')"><span class="cat-icon">👕</span><span data-i18n="cat_clothing">ROPA</span></button>
         </div>
 
         <div class="subcat-grid" id="food-mode-grid">
@@ -492,6 +493,16 @@
         <div class="input-group">
             <span class="slabel" data-i18n="label_city">Ciudad / Condado</span>
             <select id="city-select" onchange="calculate()"></select>
+        </div>
+        <!-- ZIP preciso (opcional): usa SalesTaxZip para la tasa exacta de esa dirección,
+             en vez del promedio por ciudad de arriba. -->
+        <div class="input-group">
+            <span class="slabel" data-i18n="label_zip">ZIP preciso (opcional)</span>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;" oninput="this.value=this.value.replace(/\D/g,'')">
+                <button class="btn btn-ghost" style="flex:0 0 auto;padding:14px 16px;" onclick="lookupZipTax()" data-i18n="btn_zip_search">Buscar</button>
+            </div>
+            <div id="zip-status" style="font-size:.68rem;font-weight:700;margin-top:6px;color:var(--text-sub);"></div>
         </div>
         <!-- Fallback manual: ingresar tax a mano si el usuario no encuentra su ciudad -->
         <div class="input-group" id="manual-tax-group" style="display:none;">
@@ -549,6 +560,7 @@
                 <button class="cat-btn" id="cart-btn-tech"    onclick="setCartCategory('tech')"><span class="cat-icon">💻</span><span data-i18n="cat_tech">TECH</span></button>
                 <button class="cat-btn" id="cart-btn-food"    onclick="setCartCategory('food')"><span class="cat-icon">🍎</span><span data-i18n="cat_food">COMIDA</span></button>
                 <button class="cat-btn" id="cart-btn-med"     onclick="setCartCategory('med')"><span class="cat-icon">💊</span><span data-i18n="cat_med">MEDICINA</span></button>
+                <button class="cat-btn" id="cart-btn-clothing" onclick="setCartCategory('clothing')"><span class="cat-icon">👕</span><span data-i18n="cat_clothing">ROPA</span></button>
             </div>
             <div class="subcat-grid" id="cart-food-mode-grid">
                 <button class="subcat-btn active" id="cart-foodmode-prepared" onclick="setCartFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
@@ -695,7 +707,7 @@
         <span data-i18n="footer_by">Creado por Juan Cruz Bria</span>
         <img src="https://flagcdn.com/w40/ar.png" alt="Argentina" onerror="this.outerHTML='🇦🇷';">
     </div>
-    <div class="api-note">Firebase · FlagCDN · reCAPTCHA v3</div>
+    <div class="api-note">Firebase · FlagCDN · reCAPTCHA v3 · SalesTaxZip</div>
 
 </div>
 
@@ -835,8 +847,8 @@ const i18n = {
     es:{
         nav_expenses:"GASTOS",nav_home:"INICIO",nav_itinerary:"ITINERARIO",nav_compare:"COMPARAR",nav_units:"AYUDA Y REFERENCIAS",nav_tickets:"DOCUMENTOS",nav_group:"GRUPO",nav_routes:"RUTAS",nav_more:"MÁS",nav_units_desc:"Conversor de unidades y ayudas varias",nav_tickets_desc:"ESTA, seguros, check-in",nav_group_desc:"Gastos compartidos",
         label_price:"Precio en Etiqueta (USD)",label_category:"Categoría",
-        cat_general:"GENERAL",cat_tech:"TECH",cat_food:"COMIDA",cat_med:"MEDICINA",
-        label_state:"Estado",label_city:"Ciudad / Condado",tax_applied:"Tax Aplicado",
+        cat_general:"GENERAL",cat_tech:"TECH",cat_food:"COMIDA",cat_med:"MEDICINA",cat_clothing:"ROPA",
+        label_state:"Estado",label_city:"Ciudad / Condado",label_zip:"ZIP preciso (opcional)",btn_zip_search:"Buscar",tax_applied:"Tax Aplicado",
         label_tip:"Propina (Tip)",label_total:"TOTAL FINAL (INC. TIP)",label_other:"OTRO",
         settings_title:"Ajustes",label_language:"Idioma", btn_pin: "Cambiar PIN Offline",
         btn_change_profile:"Cambiar Perfil",btn_theme:"Cambiar Tema",btn_update:"Actualizar App",
@@ -866,8 +878,8 @@ const i18n = {
     en:{
         nav_expenses:"EXPENSES",nav_home:"HOME",nav_itinerary:"ITINERARY",nav_compare:"COMPARE",nav_units:"Help & References",nav_tickets:"DOCUMENTS",nav_group:"GROUP",nav_routes:"ROUTES",nav_more:"MORE",nav_units_desc:"Unit Converter & Utilities",nav_tickets_desc:"ESTA, insurance, check-in",nav_group_desc:"Shared expenses",
         label_price:"Pre-tax Price (USD)",label_category:"Category",
-        cat_general:"GENERAL",cat_tech:"TECH",cat_food:"FOOD",cat_med:"MEDICINE",
-        label_state:"State",label_city:"City / County",tax_applied:"Applied Tax",
+        cat_general:"GENERAL",cat_tech:"TECH",cat_food:"FOOD",cat_med:"MEDICINE",cat_clothing:"CLOTHING",
+        label_state:"State",label_city:"City / County",label_zip:"Precise ZIP (optional)",btn_zip_search:"Search",tax_applied:"Applied Tax",
         label_tip:"Tip",label_total:"FINAL TOTAL (TIP INC.)",label_other:"OTHER",
         settings_title:"Settings",label_language:"Language", btn_pin: "Change PIN Offline",
         btn_change_profile:"Change Profile",btn_theme:"Toggle Theme",btn_update:"Update App",
@@ -897,8 +909,8 @@ const i18n = {
     pt:{
         nav_expenses:"GASTOS",nav_home:"INÍCIO",nav_itinerary:"ITINERARIO",nav_compare:"COMPARAR",nav_units:"Ajuda e Referências",nav_tickets:"DOCUMENTOS",nav_group:"GRUPO",nav_routes:"ROTAS",nav_more:"MAIS",nav_units_desc:"Conversor de Unidades e Utilidades",nav_tickets_desc:"ESTA, seguros, check-in",nav_group_desc:"Gastos compartilhados",
         label_price:"Preço na Etiqueta (USD)",label_category:"Categoria",
-        cat_general:"GERAL",cat_tech:"TECH",cat_food:"COMIDA",cat_med:"MEDICINA",
-        label_state:"Estado",label_city:"Cidade / Condado",tax_applied:"Tax Aplicado",
+        cat_general:"GERAL",cat_tech:"TECH",cat_food:"COMIDA",cat_med:"MEDICINA",cat_clothing:"ROUPA",
+        label_state:"Estado",label_city:"Cidade / Condado",label_zip:"CEP preciso (opcional)",btn_zip_search:"Buscar",tax_applied:"Tax Aplicado",
         label_tip:"Gorjeta (Tip)",label_total:"TOTAL FINAL (COM GORJETA)",label_other:"OUTRO",
         settings_title:"Configurações",label_language:"Idioma", btn_pin: "Alterar PIN Offline",
         btn_change_profile:"Trocar Perfil",btn_theme:"Alternar Tema",btn_update:"Atualizar App",
@@ -1051,7 +1063,7 @@ window.setCustomTip = () => {
 // también sobre la comida de supermercado (tasa estatal, no la local de la
 // ciudad elegida):
 const GROCERY_TAX_OVERRIDE = {
-    "Alabama": 3, "Hawaii": 4, "Idaho": 6, "Mississippi": 5,
+    "Alabama": 2, "Hawaii": 4, "Idaho": 6, "Mississippi": 5,
     "Missouri": 1.225, "South Dakota": 4.2, "Tennessee": 4,
     "Utah": 3, "Virginia": 1
 };
@@ -1070,10 +1082,72 @@ function getMedTaxRate(state, mode, localRate) {
     return OTC_MED_EXEMPT_STATES.has(state) ? 0 : localRate;
 }
 
+// Ropa: 4 estados la exentan sin tope de precio, 3 estados la exentan solo
+// por debajo de un monto por prenda (por encima de ese monto se cobra el
+// tax completo sobre TODO el precio, no solo el excedente).
+const CLOTHING_EXEMPT_STATES = new Set(["Minnesota", "New Jersey", "Pennsylvania", "Vermont"]);
+const CLOTHING_THRESHOLD_STATES = { "New York": 110, "Massachusetts": 175, "Rhode Island": 250 };
+function getClothingTaxRate(state, price, localRate) {
+    if (CLOTHING_EXEMPT_STATES.has(state)) return 0;
+    if (state in CLOTHING_THRESHOLD_STATES) {
+        return price <= CLOTHING_THRESHOLD_STATES[state] ? 0 : localRate;
+    }
+    return localRate;
+}
+
 // ── Tax manual fallback ──────────────────────────────────────────────────
 let manualTaxActive = false;
 let individualFoodMode = 'prepared';
 let individualMedMode = 'otc';
+
+// ── ZIP preciso vía SalesTaxZip (gratis, sin API key, CORS habilitado) ────
+// Reemplaza la tasa promedio por ciudad con la tasa combinada real de ese
+// ZIP code (estado + condado + ciudad). Si falla o no hay conexión, se cae
+// automáticamente a la tasa de la ciudad seleccionada en el dropdown.
+let zipTaxOverride = null; // % combinado exacto, o null si no está activo
+
+window.lookupZipTax = async () => {
+    const zipInput = document.getElementById('zip-input');
+    const statusEl = document.getElementById('zip-status');
+    const zip = (zipInput?.value || '').trim();
+    if (!/^\d{5}$/.test(zip)) {
+        statusEl.textContent = '⚠ Ingresá un ZIP de 5 dígitos';
+        statusEl.style.color = 'var(--warn)';
+        return;
+    }
+    if (!navigator.onLine) {
+        statusEl.textContent = '⚠ Sin conexión — usando tasa de ciudad';
+        statusEl.style.color = 'var(--warn)';
+        return;
+    }
+    statusEl.textContent = 'Buscando…';
+    statusEl.style.color = 'var(--text-sub)';
+    try {
+        const res = await fetch(`https://salestaxzip.com/api/v1/rate/${zip}`);
+        if (!res.ok) throw new Error('zip not found');
+        const json = await res.json();
+        if (!json.success || !json.data) throw new Error('bad response');
+        zipTaxOverride = json.data.rates.combined * 100;
+        statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${json.data.rates.combined_pct} exacto`;
+        statusEl.style.color = 'var(--success)';
+    } catch (e) {
+        zipTaxOverride = null;
+        statusEl.textContent = '⚠ ZIP no encontrado — usando tasa de ciudad';
+        statusEl.style.color = 'var(--warn)';
+    }
+    calculate();
+    if (typeof renderCart === 'function') renderCart();
+};
+
+window.clearZipTax = () => {
+    zipTaxOverride = null;
+    const zipInput = document.getElementById('zip-input');
+    const statusEl = document.getElementById('zip-status');
+    if (zipInput) zipInput.value = '';
+    if (statusEl) { statusEl.textContent = ''; }
+    calculate();
+    if (typeof renderCart === 'function') renderCart();
+};
 
 window.calculate = () => {
     const price = parseFloat(document.getElementById('price').value) || 0;
@@ -1082,12 +1156,15 @@ window.calculate = () => {
     if (manualTaxActive) {
         const manVal = parseFloat(document.getElementById('manual-tax-input')?.value);
         tax = isNaN(manVal) ? 0 : manVal;
+    } else if (zipTaxOverride !== null) {
+        tax = zipTaxOverride;
     } else {
         tax = parseFloat(document.getElementById('city-select').value) || 0;
     }
     const cat = document.querySelector('#panel-individual .cat-btn.active');
     if (cat?.id === 'btn-food') tax = getFoodTaxRate(state, individualFoodMode, tax);
     else if (cat?.id === 'btn-med') tax = getMedTaxRate(state, individualMedMode, tax);
+    else if (cat?.id === 'btn-clothing') tax = getClothingTaxRate(state, price, tax);
     const subtotal = price * (1 + tax / 100);
     const fmt = n => n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     [0,10,15,20].forEach(p => { const el = document.getElementById(`val-tip-${p}`); if(el) el.innerText = `$${fmt(subtotal * p/100)}`; });
@@ -1134,6 +1211,8 @@ window.loadCities = () => {
     const cs = document.getElementById('city-select');
     cs.innerHTML = '';
     (taxData[state] || []).forEach(c => { const o = document.createElement('option'); o.value = c.t; o.text = `${c.n} (${c.t}%)`; cs.appendChild(o); });
+    // Si el usuario cambia de estado a mano, el ZIP preciso ya no aplica
+    if (zipTaxOverride !== null) window.clearZipTax();
     calculate();
 };
 
@@ -1534,11 +1613,12 @@ window.calcSplit = () => {
     const state  = document.getElementById('state-select')?.value;
     const taxPct = manualTaxActive
         ? (parseFloat(document.getElementById('manual-tax-input')?.value) || 0)
-        : (parseFloat(document.getElementById('city-select')?.value) || 0);
+        : (zipTaxOverride !== null ? zipTaxOverride : (parseFloat(document.getElementById('city-select')?.value) || 0));
     const cat = document.querySelector('#panel-individual .cat-btn.active')?.id;
     let effectiveTax = taxPct;
     if (cat === 'btn-food') effectiveTax = getFoodTaxRate(state, individualFoodMode, taxPct);
     else if (cat === 'btn-med') effectiveTax = getMedTaxRate(state, individualMedMode, taxPct);
+    else if (cat === 'btn-clothing') effectiveTax = getClothingTaxRate(state, raw, taxPct);
 
     const tax      = raw * effectiveTax / 100;
     const subtotal = raw + tax;
@@ -1982,17 +2062,19 @@ let cartMedMode = 'otc';
 let cartManualTaxActive = false;
 
 const CART_CAT_META = {
-    general: { icon: '🛍️', i18nKey: 'cat_general' },
-    tech:    { icon: '💻', i18nKey: 'cat_tech'    },
-    food:    { icon: '🍎', i18nKey: 'cat_food'    },
-    med:     { icon: '💊', i18nKey: 'cat_med'     }
+    general:  { icon: '🛍️', i18nKey: 'cat_general'  },
+    tech:     { icon: '💻', i18nKey: 'cat_tech'     },
+    food:     { icon: '🍎', i18nKey: 'cat_food'     },
+    med:      { icon: '💊', i18nKey: 'cat_med'      },
+    clothing: { icon: '👕', i18nKey: 'cat_clothing' }
 };
 
 // Tax real de un producto del carrito según su categoría/sub-tipo y el
 // estado elegido en el carrito (reutiliza las mismas reglas que "Precio Individual").
 function getCartItemTaxRate(item, state, localRate) {
-    if (item.category === 'food') return getFoodTaxRate(state, item.mode, localRate);
-    if (item.category === 'med')  return getMedTaxRate(state, item.mode, localRate);
+    if (item.category === 'food')     return getFoodTaxRate(state, item.mode, localRate);
+    if (item.category === 'med')      return getMedTaxRate(state, item.mode, localRate);
+    if (item.category === 'clothing') return getClothingTaxRate(state, item.price, localRate);
     return localRate;
 }
 
@@ -2051,6 +2133,7 @@ function getCurrentCartTaxRate() {
         const v = parseFloat(document.getElementById('cart-manual-tax-input')?.value);
         return isNaN(v) ? 0 : v;
     }
+    if (zipTaxOverride !== null) return zipTaxOverride;
     return parseFloat(document.getElementById('cart-city-select')?.value) || 0;
 }
 
