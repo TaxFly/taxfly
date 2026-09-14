@@ -481,6 +481,10 @@
             <button class="subcat-btn active" id="foodmode-prepared" onclick="setFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
             <button class="subcat-btn" id="foodmode-grocery" onclick="setFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
         </div>
+        <div class="subcat-grid" id="food-candy-grid">
+            <button class="subcat-btn active" id="foodcandy-no" onclick="setFoodCandy(false)">🥦 <span data-i18n="food_staple">Alimento básico</span></button>
+            <button class="subcat-btn" id="foodcandy-yes" onclick="setFoodCandy(true)">🍬 <span data-i18n="food_candy">Golosina / gaseosa</span></button>
+        </div>
         <div class="subcat-grid" id="med-mode-grid">
             <button class="subcat-btn active" id="medmode-otc" onclick="setMedMode('otc')">💊 <span data-i18n="med_otc">Venta libre (OTC)</span></button>
             <button class="subcat-btn" id="medmode-rx" onclick="setMedMode('prescription')">📋 <span data-i18n="med_rx">Con receta</span></button>
@@ -499,8 +503,8 @@
         <div class="input-group">
             <span class="slabel" data-i18n="label_zip">ZIP preciso (opcional)</span>
             <div style="display:flex;gap:8px;">
-                <input type="text" id="zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;" oninput="this.value=this.value.replace(/\D/g,'')">
-                <button class="btn btn-ghost" style="flex:0 0 auto;padding:14px 16px;" onclick="lookupZipTax()" data-i18n="btn_zip_search">Buscar</button>
+                <input type="text" id="zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;min-width:0;" oninput="this.value=this.value.replace(/\D/g,'')">
+                <button class="btn btn-ghost" style="width:auto;flex:0 0 auto;padding:14px 14px;" onclick="lookupZipTax()" data-i18n="btn_zip_search">Buscar</button>
             </div>
             <div id="zip-status" style="font-size:.68rem;font-weight:700;margin-top:6px;color:var(--text-sub);"></div>
         </div>
@@ -566,6 +570,10 @@
                 <button class="subcat-btn active" id="cart-foodmode-prepared" onclick="setCartFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
                 <button class="subcat-btn" id="cart-foodmode-grocery" onclick="setCartFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
             </div>
+            <div class="subcat-grid" id="cart-food-candy-grid">
+                <button class="subcat-btn active" id="cart-foodcandy-no" onclick="setCartFoodCandy(false)">🥦 <span data-i18n="food_staple">Alimento básico</span></button>
+                <button class="subcat-btn" id="cart-foodcandy-yes" onclick="setCartFoodCandy(true)">🍬 <span data-i18n="food_candy">Golosina / gaseosa</span></button>
+            </div>
             <div class="subcat-grid" id="cart-med-mode-grid">
                 <button class="subcat-btn active" id="cart-medmode-otc" onclick="setCartMedMode('otc')">💊 <span data-i18n="med_otc">Venta libre (OTC)</span></button>
                 <button class="subcat-btn" id="cart-medmode-rx" onclick="setCartMedMode('prescription')">📋 <span data-i18n="med_rx">Con receta</span></button>
@@ -579,6 +587,15 @@
         <div class="input-group">
             <span class="slabel" data-i18n="label_city">Ciudad / Condado</span>
             <select id="cart-city-select" onchange="renderCart()"></select>
+        </div>
+        <!-- ZIP preciso (opcional) — independiente del ZIP del panel individual -->
+        <div class="input-group">
+            <span class="slabel" data-i18n="label_zip">ZIP preciso (opcional)</span>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="cart-zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;min-width:0;" oninput="this.value=this.value.replace(/\D/g,'')">
+                <button class="btn btn-ghost" style="width:auto;flex:0 0 auto;padding:14px 14px;" onclick="lookupCartZipTax()" data-i18n="btn_zip_search">Buscar</button>
+            </div>
+            <div id="cart-zip-status" style="font-size:.68rem;font-weight:700;margin-top:6px;color:var(--text-sub);"></div>
         </div>
         <!-- Fallback manual: ingresar tax a mano si el usuario no encuentra su ciudad -->
         <div class="input-group" id="cart-manual-tax-group" style="display:none;">
@@ -872,7 +889,7 @@ const i18n = {
         cart_subtotal:"Subtotal",cart_tax:"Tax",cart_total:"TOTAL",
         cart_clear:"Vaciar",cart_save:"Guardar en Gastos",
         tab_individual:"Precio Individual",tab_cart:"Carrito",
-        food_prepared:"Preparada / Restaurante",food_grocery:"Súper (sin preparar)",
+        food_prepared:"Preparada / Restaurante",food_grocery:"Súper (sin preparar)",food_staple:"Alimento básico",food_candy:"Golosina / gaseosa",
         med_otc:"Venta libre (OTC)",med_rx:"Con receta"
     },
     en:{
@@ -903,7 +920,7 @@ const i18n = {
         cart_subtotal:"Subtotal",cart_tax:"Tax",cart_total:"TOTAL",
         cart_clear:"Clear",cart_save:"Save to Expenses",
         tab_individual:"Individual Price",tab_cart:"Cart",
-        food_prepared:"Prepared / Restaurant",food_grocery:"Grocery (unprepared)",
+        food_prepared:"Prepared / Restaurant",food_grocery:"Grocery (unprepared)",food_staple:"Grocery staple",food_candy:"Candy / soda",
         med_otc:"Over-the-counter (OTC)",med_rx:"Prescription"
     },
     pt:{
@@ -934,7 +951,7 @@ const i18n = {
         cart_subtotal:"Subtotal",cart_tax:"Imposto",cart_total:"TOTAL",
         cart_clear:"Esvaziar",cart_save:"Salvar em Gastos",
         tab_individual:"Preço Individual",tab_cart:"Carrinho",
-        food_prepared:"Preparada / Restaurante",food_grocery:"Supermercado (sem preparar)",
+        food_prepared:"Preparada / Restaurante",food_grocery:"Supermercado (sem preparar)",food_staple:"Alimento básico",food_candy:"Doce / refrigerante",
         med_otc:"Venda livre (OTC)",med_rx:"Com receita"
     }
 };
@@ -1025,6 +1042,7 @@ window.setCategory = (cat) => {
     document.querySelectorAll('#panel-individual .cat-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + cat).classList.add('active');
     document.getElementById('food-mode-grid')?.classList.toggle('show', cat === 'food');
+    document.getElementById('food-candy-grid')?.classList.toggle('show', cat === 'food' && individualFoodMode === 'grocery');
     document.getElementById('med-mode-grid')?.classList.toggle('show', cat === 'med');
     calculate();
 };
@@ -1032,6 +1050,13 @@ window.setFoodMode = (mode) => {
     individualFoodMode = mode;
     document.getElementById('foodmode-prepared')?.classList.toggle('active', mode === 'prepared');
     document.getElementById('foodmode-grocery')?.classList.toggle('active', mode === 'grocery');
+    document.getElementById('food-candy-grid')?.classList.toggle('show', mode === 'grocery');
+    calculate();
+};
+window.setFoodCandy = (isCandy) => {
+    individualFoodCandy = isCandy;
+    document.getElementById('foodcandy-no')?.classList.toggle('active', !isCandy);
+    document.getElementById('foodcandy-yes')?.classList.toggle('active', isCandy);
     calculate();
 };
 window.setMedMode = (mode) => {
@@ -1073,9 +1098,23 @@ const OTC_MED_EXEMPT_STATES = new Set([
     "Connecticut", "Florida", "Maryland", "Minnesota", "New Jersey",
     "New York", "Pennsylvania", "Texas", "Vermont", "Virginia"
 ]);
-function getFoodTaxRate(state, mode, localRate) {
-    if (mode === 'grocery') return GROCERY_TAX_OVERRIDE[state] ?? 0;
-    return localRate; // comida preparada/restaurante: tax completo, como cualquier categoría general
+// Golosinas y bebidas azucaradas: en ~19 estados NO se consideran "comida"
+// aunque el resto del súper (pan, leche, verduras, etc.) esté exento — pagan
+// el tax local completo, igual que cualquier producto general. En el resto
+// de los estados, las golosinas siguen la misma regla que el resto del súper
+// (exentas, o con la tasa reducida de GROCERY_TAX_OVERRIDE si corresponde).
+// Fuente: definición SST de "candy" (sin harina, sin refrigeración) + guías
+// estado por estado (Avalara, actualizado 2024-2026).
+const CANDY_SODA_FULL_TAX_STATES = new Set([
+    "Arkansas", "Colorado", "Connecticut", "Florida", "Illinois", "Indiana",
+    "Iowa", "Kentucky", "Maine", "Maryland", "Minnesota", "New Jersey",
+    "New York", "North Carolina", "North Dakota", "Rhode Island",
+    "Tennessee", "Texas", "Wisconsin"
+]);
+function getFoodTaxRate(state, mode, localRate, isCandy) {
+    if (mode !== 'grocery') return localRate; // comida preparada/restaurante: tax completo, como cualquier categoría general
+    if (isCandy && CANDY_SODA_FULL_TAX_STATES.has(state)) return localRate;
+    return GROCERY_TAX_OVERRIDE[state] ?? 0;
 }
 function getMedTaxRate(state, mode, localRate) {
     if (mode === 'prescription') return 0;
@@ -1098,6 +1137,7 @@ function getClothingTaxRate(state, price, localRate) {
 // ── Tax manual fallback ──────────────────────────────────────────────────
 let manualTaxActive = false;
 let individualFoodMode = 'prepared';
+let individualFoodCandy = false;
 let individualMedMode = 'otc';
 
 // ── ZIP preciso vía SalesTaxZip (gratis, sin API key, CORS habilitado) ────
@@ -1149,6 +1189,51 @@ window.clearZipTax = () => {
     if (typeof renderCart === 'function') renderCart();
 };
 
+// ZIP preciso del carrito — independiente del ZIP del panel individual,
+// por si se compra en dos lugares distintos durante el mismo viaje.
+let cartZipTaxOverride = null;
+
+window.lookupCartZipTax = async () => {
+    const zipInput = document.getElementById('cart-zip-input');
+    const statusEl = document.getElementById('cart-zip-status');
+    const zip = (zipInput?.value || '').trim();
+    if (!/^\d{5}$/.test(zip)) {
+        statusEl.textContent = '⚠ Ingresá un ZIP de 5 dígitos';
+        statusEl.style.color = 'var(--warn)';
+        return;
+    }
+    if (!navigator.onLine) {
+        statusEl.textContent = '⚠ Sin conexión — usando tasa de ciudad';
+        statusEl.style.color = 'var(--warn)';
+        return;
+    }
+    statusEl.textContent = 'Buscando…';
+    statusEl.style.color = 'var(--text-sub)';
+    try {
+        const res = await fetch(`https://salestaxzip.com/api/v1/rate/${zip}`);
+        if (!res.ok) throw new Error('zip not found');
+        const json = await res.json();
+        if (!json.success || !json.data) throw new Error('bad response');
+        cartZipTaxOverride = json.data.rates.combined * 100;
+        statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${json.data.rates.combined_pct} exacto`;
+        statusEl.style.color = 'var(--success)';
+    } catch (e) {
+        cartZipTaxOverride = null;
+        statusEl.textContent = '⚠ ZIP no encontrado — usando tasa de ciudad';
+        statusEl.style.color = 'var(--warn)';
+    }
+    if (typeof renderCart === 'function') renderCart();
+};
+
+window.clearCartZipTax = () => {
+    cartZipTaxOverride = null;
+    const zipInput = document.getElementById('cart-zip-input');
+    const statusEl = document.getElementById('cart-zip-status');
+    if (zipInput) zipInput.value = '';
+    if (statusEl) { statusEl.textContent = ''; }
+    if (typeof renderCart === 'function') renderCart();
+};
+
 window.calculate = () => {
     const price = parseFloat(document.getElementById('price').value) || 0;
     const state = document.getElementById('state-select')?.value;
@@ -1162,7 +1247,7 @@ window.calculate = () => {
         tax = parseFloat(document.getElementById('city-select').value) || 0;
     }
     const cat = document.querySelector('#panel-individual .cat-btn.active');
-    if (cat?.id === 'btn-food') tax = getFoodTaxRate(state, individualFoodMode, tax);
+    if (cat?.id === 'btn-food') tax = getFoodTaxRate(state, individualFoodMode, tax, individualFoodCandy);
     else if (cat?.id === 'btn-med') tax = getMedTaxRate(state, individualMedMode, tax);
     else if (cat?.id === 'btn-clothing') tax = getClothingTaxRate(state, price, tax);
     const subtotal = price * (1 + tax / 100);
@@ -1616,7 +1701,7 @@ window.calcSplit = () => {
         : (zipTaxOverride !== null ? zipTaxOverride : (parseFloat(document.getElementById('city-select')?.value) || 0));
     const cat = document.querySelector('#panel-individual .cat-btn.active')?.id;
     let effectiveTax = taxPct;
-    if (cat === 'btn-food') effectiveTax = getFoodTaxRate(state, individualFoodMode, taxPct);
+    if (cat === 'btn-food') effectiveTax = getFoodTaxRate(state, individualFoodMode, taxPct, individualFoodCandy);
     else if (cat === 'btn-med') effectiveTax = getMedTaxRate(state, individualMedMode, taxPct);
     else if (cat === 'btn-clothing') effectiveTax = getClothingTaxRate(state, raw, taxPct);
 
@@ -2058,6 +2143,7 @@ window.switchCalcTab = (tab) => {
 let cartItems = [];
 let cartCurrentCategory = 'general';
 let cartFoodMode = 'prepared';
+let cartFoodCandy = false;
 let cartMedMode = 'otc';
 let cartManualTaxActive = false;
 
@@ -2072,7 +2158,7 @@ const CART_CAT_META = {
 // Tax real de un producto del carrito según su categoría/sub-tipo y el
 // estado elegido en el carrito (reutiliza las mismas reglas que "Precio Individual").
 function getCartItemTaxRate(item, state, localRate) {
-    if (item.category === 'food')     return getFoodTaxRate(state, item.mode, localRate);
+    if (item.category === 'food')     return getFoodTaxRate(state, item.mode, localRate, item.isCandy);
     if (item.category === 'med')      return getMedTaxRate(state, item.mode, localRate);
     if (item.category === 'clothing') return getClothingTaxRate(state, item.price, localRate);
     return localRate;
@@ -2083,12 +2169,19 @@ window.setCartCategory = (cat) => {
     document.querySelectorAll('#panel-cart .cat-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('cart-btn-' + cat).classList.add('active');
     document.getElementById('cart-food-mode-grid')?.classList.toggle('show', cat === 'food');
+    document.getElementById('cart-food-candy-grid')?.classList.toggle('show', cat === 'food' && cartFoodMode === 'grocery');
     document.getElementById('cart-med-mode-grid')?.classList.toggle('show', cat === 'med');
 };
 window.setCartFoodMode = (mode) => {
     cartFoodMode = mode;
     document.getElementById('cart-foodmode-prepared')?.classList.toggle('active', mode === 'prepared');
     document.getElementById('cart-foodmode-grocery')?.classList.toggle('active', mode === 'grocery');
+    document.getElementById('cart-food-candy-grid')?.classList.toggle('show', mode === 'grocery');
+};
+window.setCartFoodCandy = (isCandy) => {
+    cartFoodCandy = isCandy;
+    document.getElementById('cart-foodcandy-no')?.classList.toggle('active', !isCandy);
+    document.getElementById('cart-foodcandy-yes')?.classList.toggle('active', isCandy);
 };
 window.setCartMedMode = (mode) => {
     cartMedMode = mode;
@@ -2101,6 +2194,7 @@ window.loadCartCities = () => {
     const cs = document.getElementById('cart-city-select');
     cs.innerHTML = '';
     (taxData[state] || []).forEach(c => { const o = document.createElement('option'); o.value = c.t; o.text = `${c.n} (${c.t}%)`; cs.appendChild(o); });
+    if (cartZipTaxOverride !== null) window.clearCartZipTax();
     renderCart();
 };
 
@@ -2133,7 +2227,7 @@ function getCurrentCartTaxRate() {
         const v = parseFloat(document.getElementById('cart-manual-tax-input')?.value);
         return isNaN(v) ? 0 : v;
     }
-    if (zipTaxOverride !== null) return zipTaxOverride;
+    if (cartZipTaxOverride !== null) return cartZipTaxOverride;
     return parseFloat(document.getElementById('cart-city-select')?.value) || 0;
 }
 
@@ -2142,7 +2236,8 @@ window.addCartItem = () => {
     const price = parseFloat(input.value);
     if (isNaN(price) || price <= 0) { input.focus(); return; }
     const mode = cartCurrentCategory === 'food' ? cartFoodMode : cartCurrentCategory === 'med' ? cartMedMode : null;
-    cartItems.push({ id: Date.now() + Math.random(), price, category: cartCurrentCategory, mode });
+    const isCandy = cartCurrentCategory === 'food' && cartFoodMode === 'grocery' ? cartFoodCandy : false;
+    cartItems.push({ id: Date.now() + Math.random(), price, category: cartCurrentCategory, mode, isCandy });
     input.value = '';
     renderCart();
     input.focus();
@@ -2182,14 +2277,15 @@ function renderCart() {
     const localRate = getCurrentCartTaxRate();
     list.innerHTML = cartItems.map(it => {
         const meta = CART_CAT_META[it.category] || CART_CAT_META.general;
-        const catLabel = i18n[lang][meta.i18nKey] || it.category;
+        const catLabel = it.isCandy ? (i18n[lang].food_candy || 'Golosina') : (i18n[lang][meta.i18nKey] || it.category);
+        const catIcon = it.isCandy ? '🍬' : meta.icon;
         const itemRate = getCartItemTaxRate(it, state, localRate);
         const exempt = itemRate === 0;
         return `
         <div class="cart-item">
             <div class="cart-item-info">
                 <span class="cart-item-price">$${fmt(it.price)}</span>
-                <span class="cart-item-tag" style="${exempt ? '' : 'color:var(--text-dim);background:var(--input-bg);'}">${meta.icon} ${catLabel}${exempt ? ' · ' + i18n[lang].cart_exempt : ` · ${itemRate}%`}</span>
+                <span class="cart-item-tag" style="${exempt ? '' : 'color:var(--text-dim);background:var(--input-bg);'}">${catIcon} ${catLabel}${exempt ? ' · ' + i18n[lang].cart_exempt : ` · ${itemRate}%`}</span>
             </div>
             <button class="cart-item-del" onclick="removeCartItem(${it.id})">✕</button>
         </div>`;
