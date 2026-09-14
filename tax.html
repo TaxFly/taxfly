@@ -128,6 +128,12 @@
         .cat-btn .cat-icon{font-size:1.05rem;}
         .cat-btn.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
 
+        /* ── Sub-selector Comida/Medicina (define si aplica exención real por estado) ── */
+        .subcat-grid{display:none;gap:6px;margin:-6px 0 14px;}
+        .subcat-grid.show{display:grid;grid-template-columns:1fr 1fr;}
+        .subcat-btn{padding:9px 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.6rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);font-family:inherit;text-transform:uppercase;letter-spacing:.2px;}
+        .subcat-btn.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
+
         .result-box{background:var(--primary-dim);padding:16px;border-radius:var(--radius-sm);border:1.5px solid var(--primary);margin-bottom:14px;text-align:center;}
         .result-value{font-size:1.8rem;font-weight:900;color:var(--primary);margin:2px 0;}
         .result-detail{font-size:.8rem;font-weight:700;color:var(--primary);opacity:.8;}
@@ -470,6 +476,15 @@
             <button class="cat-btn" id="btn-med"     onclick="setCategory('med')"><span class="cat-icon">💊</span><span data-i18n="cat_med">MEDICINA</span></button>
         </div>
 
+        <div class="subcat-grid" id="food-mode-grid">
+            <button class="subcat-btn active" id="foodmode-prepared" onclick="setFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
+            <button class="subcat-btn" id="foodmode-grocery" onclick="setFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
+        </div>
+        <div class="subcat-grid" id="med-mode-grid">
+            <button class="subcat-btn active" id="medmode-otc" onclick="setMedMode('otc')">💊 <span data-i18n="med_otc">Venta libre (OTC)</span></button>
+            <button class="subcat-btn" id="medmode-rx" onclick="setMedMode('prescription')">📋 <span data-i18n="med_rx">Con receta</span></button>
+        </div>
+
         <div class="input-group">
             <span class="slabel" data-i18n="label_state">Estado</span>
             <select id="state-select" onchange="loadCities()"></select>
@@ -534,6 +549,14 @@
                 <button class="cat-btn" id="cart-btn-tech"    onclick="setCartCategory('tech')"><span class="cat-icon">💻</span><span data-i18n="cat_tech">TECH</span></button>
                 <button class="cat-btn" id="cart-btn-food"    onclick="setCartCategory('food')"><span class="cat-icon">🍎</span><span data-i18n="cat_food">COMIDA</span></button>
                 <button class="cat-btn" id="cart-btn-med"     onclick="setCartCategory('med')"><span class="cat-icon">💊</span><span data-i18n="cat_med">MEDICINA</span></button>
+            </div>
+            <div class="subcat-grid" id="cart-food-mode-grid">
+                <button class="subcat-btn active" id="cart-foodmode-prepared" onclick="setCartFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
+                <button class="subcat-btn" id="cart-foodmode-grocery" onclick="setCartFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
+            </div>
+            <div class="subcat-grid" id="cart-med-mode-grid">
+                <button class="subcat-btn active" id="cart-medmode-otc" onclick="setCartMedMode('otc')">💊 <span data-i18n="med_otc">Venta libre (OTC)</span></button>
+                <button class="subcat-btn" id="cart-medmode-rx" onclick="setCartMedMode('prescription')">📋 <span data-i18n="med_rx">Con receta</span></button>
             </div>
         </div>
 
@@ -836,7 +859,9 @@ const i18n = {
         cart_exempt:"Sin tax",cart_empty:"Todavía no agregaste productos.",
         cart_subtotal:"Subtotal",cart_tax:"Tax",cart_total:"TOTAL",
         cart_clear:"Vaciar",cart_save:"Guardar en Gastos",
-        tab_individual:"Precio Individual",tab_cart:"Carrito"
+        tab_individual:"Precio Individual",tab_cart:"Carrito",
+        food_prepared:"Preparada / Restaurante",food_grocery:"Súper (sin preparar)",
+        med_otc:"Venta libre (OTC)",med_rx:"Con receta"
     },
     en:{
         nav_expenses:"EXPENSES",nav_home:"HOME",nav_itinerary:"ITINERARY",nav_compare:"COMPARE",nav_units:"Help & References",nav_tickets:"DOCUMENTS",nav_group:"GROUP",nav_routes:"ROUTES",nav_more:"MORE",nav_units_desc:"Unit Converter & Utilities",nav_tickets_desc:"ESTA, insurance, check-in",nav_group_desc:"Shared expenses",
@@ -865,7 +890,9 @@ const i18n = {
         cart_exempt:"Tax free",cart_empty:"No items added yet.",
         cart_subtotal:"Subtotal",cart_tax:"Tax",cart_total:"TOTAL",
         cart_clear:"Clear",cart_save:"Save to Expenses",
-        tab_individual:"Individual Price",tab_cart:"Cart"
+        tab_individual:"Individual Price",tab_cart:"Cart",
+        food_prepared:"Prepared / Restaurant",food_grocery:"Grocery (unprepared)",
+        med_otc:"Over-the-counter (OTC)",med_rx:"Prescription"
     },
     pt:{
         nav_expenses:"GASTOS",nav_home:"INÍCIO",nav_itinerary:"ITINERARIO",nav_compare:"COMPARAR",nav_units:"Ajuda e Referências",nav_tickets:"DOCUMENTOS",nav_group:"GRUPO",nav_routes:"ROTAS",nav_more:"MAIS",nav_units_desc:"Conversor de Unidades e Utilidades",nav_tickets_desc:"ESTA, seguros, check-in",nav_group_desc:"Gastos compartilhados",
@@ -894,7 +921,9 @@ const i18n = {
         cart_exempt:"Sem imposto",cart_empty:"Ainda não adicionou produtos.",
         cart_subtotal:"Subtotal",cart_tax:"Imposto",cart_total:"TOTAL",
         cart_clear:"Esvaziar",cart_save:"Salvar em Gastos",
-        tab_individual:"Preço Individual",tab_cart:"Carrinho"
+        tab_individual:"Preço Individual",tab_cart:"Carrinho",
+        food_prepared:"Preparada / Restaurante",food_grocery:"Supermercado (sem preparar)",
+        med_otc:"Venda livre (OTC)",med_rx:"Com receita"
     }
 };
 
@@ -981,8 +1010,22 @@ window.changeLanguage = (lang) => {
 };
 
 window.setCategory = (cat) => {
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#panel-individual .cat-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + cat).classList.add('active');
+    document.getElementById('food-mode-grid')?.classList.toggle('show', cat === 'food');
+    document.getElementById('med-mode-grid')?.classList.toggle('show', cat === 'med');
+    calculate();
+};
+window.setFoodMode = (mode) => {
+    individualFoodMode = mode;
+    document.getElementById('foodmode-prepared')?.classList.toggle('active', mode === 'prepared');
+    document.getElementById('foodmode-grocery')?.classList.toggle('active', mode === 'grocery');
+    calculate();
+};
+window.setMedMode = (mode) => {
+    individualMedMode = mode;
+    document.getElementById('medmode-otc')?.classList.toggle('active', mode === 'otc');
+    document.getElementById('medmode-rx')?.classList.toggle('active', mode === 'prescription');
     calculate();
 };
 window.setTip = (pct) => {
@@ -1000,11 +1043,41 @@ window.setCustomTip = () => {
     calculate();
     updateTipBadge();
 };
+// ── Exenciones de tax por categoría (precisas por estado) ──────────────────
+// Comida: la mayoría de los estados exime la comida de supermercado (sin
+// preparar), pero la comida preparada/restaurante casi SIEMPRE paga tax
+// completo, incluso en esos mismos estados (ej: Florida exime el súper pero
+// no un plato de restaurante). Estos son los estados que sí cobran tax
+// también sobre la comida de supermercado (tasa estatal, no la local de la
+// ciudad elegida):
+const GROCERY_TAX_OVERRIDE = {
+    "Alabama": 3, "Hawaii": 4, "Idaho": 6, "Mississippi": 5,
+    "Missouri": 1.225, "South Dakota": 4.2, "Tennessee": 4,
+    "Utah": 3, "Virginia": 1
+};
+// Medicina de venta libre (OTC): solo estos estados la eximen de tax.
+// Los medicamentos CON RECETA están exentos en prácticamente todo EE.UU.
+const OTC_MED_EXEMPT_STATES = new Set([
+    "Connecticut", "Florida", "Maryland", "Minnesota", "New Jersey",
+    "New York", "Pennsylvania", "Texas", "Vermont", "Virginia"
+]);
+function getFoodTaxRate(state, mode, localRate) {
+    if (mode === 'grocery') return GROCERY_TAX_OVERRIDE[state] ?? 0;
+    return localRate; // comida preparada/restaurante: tax completo, como cualquier categoría general
+}
+function getMedTaxRate(state, mode, localRate) {
+    if (mode === 'prescription') return 0;
+    return OTC_MED_EXEMPT_STATES.has(state) ? 0 : localRate;
+}
+
 // ── Tax manual fallback ──────────────────────────────────────────────────
 let manualTaxActive = false;
+let individualFoodMode = 'prepared';
+let individualMedMode = 'otc';
 
 window.calculate = () => {
     const price = parseFloat(document.getElementById('price').value) || 0;
+    const state = document.getElementById('state-select')?.value;
     let tax;
     if (manualTaxActive) {
         const manVal = parseFloat(document.getElementById('manual-tax-input')?.value);
@@ -1012,8 +1085,9 @@ window.calculate = () => {
     } else {
         tax = parseFloat(document.getElementById('city-select').value) || 0;
     }
-    const cat = document.querySelector('.cat-btn.active');
-    if (cat && (cat.id === 'btn-med' || cat.id === 'btn-food')) tax = 0;
+    const cat = document.querySelector('#panel-individual .cat-btn.active');
+    if (cat?.id === 'btn-food') tax = getFoodTaxRate(state, individualFoodMode, tax);
+    else if (cat?.id === 'btn-med') tax = getMedTaxRate(state, individualMedMode, tax);
     const subtotal = price * (1 + tax / 100);
     const fmt = n => n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     [0,10,15,20].forEach(p => { const el = document.getElementById(`val-tip-${p}`); if(el) el.innerText = `$${fmt(subtotal * p/100)}`; });
@@ -1457,10 +1531,14 @@ window.calcSplit = () => {
     if (raw <= 0) { res.style.display = 'none'; return; }
 
     // Use the currently selected tax from the main calculator
-    const taxPct = parseFloat(document.getElementById('city-select')?.value) || 0;
-    const cat    = document.querySelector('.cat-btn.active')?.id;
-    const noTax  = (cat === 'btn-med' || cat === 'btn-food');
-    const effectiveTax = noTax ? 0 : taxPct;
+    const state  = document.getElementById('state-select')?.value;
+    const taxPct = manualTaxActive
+        ? (parseFloat(document.getElementById('manual-tax-input')?.value) || 0)
+        : (parseFloat(document.getElementById('city-select')?.value) || 0);
+    const cat = document.querySelector('#panel-individual .cat-btn.active')?.id;
+    let effectiveTax = taxPct;
+    if (cat === 'btn-food') effectiveTax = getFoodTaxRate(state, individualFoodMode, taxPct);
+    else if (cat === 'btn-med') effectiveTax = getMedTaxRate(state, individualMedMode, taxPct);
 
     const tax      = raw * effectiveTax / 100;
     const subtotal = raw + tax;
@@ -1893,24 +1971,47 @@ window.switchCalcTab = (tab) => {
 // Card independiente de "Precio Individual": tiene su propio
 // estado/ciudad (o tax manual) y su propia categoría, para sumar
 // varios productos de una misma compra (ej. supermercado) sin salir
-// de la app. Cada producto guarda la categoría con la que se cargó,
-// y comida/medicina quedan exentas de tax igual que en el otro tab.
+// de la app. Cada producto guarda la categoría (y el sub-tipo si es
+// Comida o Medicina) con la que se cargó, y el tax exacto se calcula
+// según el estado elegido, igual que en "Precio Individual".
 // ══════════════════════════════════════════════
 let cartItems = [];
 let cartCurrentCategory = 'general';
+let cartFoodMode = 'prepared';
+let cartMedMode = 'otc';
 let cartManualTaxActive = false;
 
 const CART_CAT_META = {
-    general: { icon: '🛍️', i18nKey: 'cat_general', taxFree: false },
-    tech:    { icon: '💻', i18nKey: 'cat_tech',    taxFree: false },
-    food:    { icon: '🍎', i18nKey: 'cat_food',    taxFree: true  },
-    med:     { icon: '💊', i18nKey: 'cat_med',     taxFree: true  }
+    general: { icon: '🛍️', i18nKey: 'cat_general' },
+    tech:    { icon: '💻', i18nKey: 'cat_tech'    },
+    food:    { icon: '🍎', i18nKey: 'cat_food'    },
+    med:     { icon: '💊', i18nKey: 'cat_med'     }
 };
+
+// Tax real de un producto del carrito según su categoría/sub-tipo y el
+// estado elegido en el carrito (reutiliza las mismas reglas que "Precio Individual").
+function getCartItemTaxRate(item, state, localRate) {
+    if (item.category === 'food') return getFoodTaxRate(state, item.mode, localRate);
+    if (item.category === 'med')  return getMedTaxRate(state, item.mode, localRate);
+    return localRate;
+}
 
 window.setCartCategory = (cat) => {
     cartCurrentCategory = cat;
     document.querySelectorAll('#panel-cart .cat-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('cart-btn-' + cat).classList.add('active');
+    document.getElementById('cart-food-mode-grid')?.classList.toggle('show', cat === 'food');
+    document.getElementById('cart-med-mode-grid')?.classList.toggle('show', cat === 'med');
+};
+window.setCartFoodMode = (mode) => {
+    cartFoodMode = mode;
+    document.getElementById('cart-foodmode-prepared')?.classList.toggle('active', mode === 'prepared');
+    document.getElementById('cart-foodmode-grocery')?.classList.toggle('active', mode === 'grocery');
+};
+window.setCartMedMode = (mode) => {
+    cartMedMode = mode;
+    document.getElementById('cart-medmode-otc')?.classList.toggle('active', mode === 'otc');
+    document.getElementById('cart-medmode-rx')?.classList.toggle('active', mode === 'prescription');
 };
 
 window.loadCartCities = () => {
@@ -1957,7 +2058,8 @@ window.addCartItem = () => {
     const input = document.getElementById('cart-price-input');
     const price = parseFloat(input.value);
     if (isNaN(price) || price <= 0) { input.focus(); return; }
-    cartItems.push({ id: Date.now() + Math.random(), price, category: cartCurrentCategory });
+    const mode = cartCurrentCategory === 'food' ? cartFoodMode : cartCurrentCategory === 'med' ? cartMedMode : null;
+    cartItems.push({ id: Date.now() + Math.random(), price, category: cartCurrentCategory, mode });
     input.value = '';
     renderCart();
     input.focus();
@@ -1993,26 +2095,30 @@ function renderCart() {
         return;
     }
 
-    const taxRate = getCurrentCartTaxRate();
+    const state = document.getElementById('cart-state-select')?.value;
+    const localRate = getCurrentCartTaxRate();
     list.innerHTML = cartItems.map(it => {
         const meta = CART_CAT_META[it.category] || CART_CAT_META.general;
         const catLabel = i18n[lang][meta.i18nKey] || it.category;
+        const itemRate = getCartItemTaxRate(it, state, localRate);
+        const exempt = itemRate === 0;
         return `
         <div class="cart-item">
             <div class="cart-item-info">
                 <span class="cart-item-price">$${fmt(it.price)}</span>
-                <span class="cart-item-tag" style="${meta.taxFree ? '' : 'color:var(--text-dim);background:var(--input-bg);'}">${meta.icon} ${catLabel}${meta.taxFree ? ' · ' + i18n[lang].cart_exempt : ''}</span>
+                <span class="cart-item-tag" style="${exempt ? '' : 'color:var(--text-dim);background:var(--input-bg);'}">${meta.icon} ${catLabel}${exempt ? ' · ' + i18n[lang].cart_exempt : ` · ${itemRate}%`}</span>
             </div>
             <button class="cart-item-del" onclick="removeCartItem(${it.id})">✕</button>
         </div>`;
     }).join('');
 
     const subtotal = cartItems.reduce((s, it) => s + it.price, 0);
-    const taxAmt = cartItems.reduce((s, it) => s + ((CART_CAT_META[it.category] || CART_CAT_META.general).taxFree ? 0 : it.price * taxRate / 100), 0);
+    const taxAmt = cartItems.reduce((s, it) => s + it.price * getCartItemTaxRate(it, state, localRate) / 100, 0);
     const total = subtotal + taxAmt;
+    const blendedPct = subtotal > 0 ? (taxAmt / subtotal * 100) : 0;
 
     document.getElementById('cart-subtotal').innerText = `$${fmt(subtotal)}`;
-    document.getElementById('cart-tax-lbl').innerText = `${i18n[lang].cart_tax} (${taxRate}%)`;
+    document.getElementById('cart-tax-lbl').innerText = `${i18n[lang].cart_tax} (~${blendedPct.toFixed(2)}%)`;
     document.getElementById('cart-tax-amt').innerText = `$${fmt(taxAmt)}`;
     document.getElementById('cart-total').innerText = `$${fmt(total)}`;
     if (summary) summary.style.display = 'block';
@@ -2026,9 +2132,10 @@ window.saveCartAsExpense = async () => {
     const store = window.showPrompt ? await window.showPrompt(promptMsgs[lang] || promptMsgs.es, '') : prompt(promptMsgs[lang] || promptMsgs.es, '');
     if (!store) return;
 
-    const taxRate = getCurrentCartTaxRate();
+    const state = document.getElementById('cart-state-select')?.value;
+    const localRate = getCurrentCartTaxRate();
     const subtotal = cartItems.reduce((s, it) => s + it.price, 0);
-    const taxAmt = cartItems.reduce((s, it) => s + ((CART_CAT_META[it.category] || CART_CAT_META.general).taxFree ? 0 : it.price * taxRate / 100), 0);
+    const taxAmt = cartItems.reduce((s, it) => s + it.price * getCartItemTaxRate(it, state, localRate) / 100, 0);
     const total = parseFloat((subtotal + taxAmt).toFixed(2));
     const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
