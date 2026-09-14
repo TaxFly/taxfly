@@ -213,6 +213,37 @@
         .split-tip-btn{flex:1;padding:9px 4px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.75rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);font-family:inherit;text-align:center;}
         .split-tip-btn.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
 
+        /* ── Carrito de Compras (Multi-Producto) ── */
+        .cart-card{background:var(--surface);border-radius:var(--radius);padding:20px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px;}
+        .cart-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+        .cart-title{font-size:.85rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:8px;}
+        .cart-toggle{font-size:.7rem;color:var(--text-dim);font-weight:700;display:flex;align-items:center;gap:4px;transition:var(--tr);}
+        .cart-body{display:none;}
+        .cart-body.open{display:block;margin-top:16px;}
+        .cart-add-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;}
+        .cart-add-row input{flex:1;}
+        .cart-exempt-toggle{display:flex;align-items:center;gap:5px;font-size:.58rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;flex-shrink:0;}
+        .cart-exempt-toggle input{width:16px;height:16px;padding:0;flex-shrink:0;accent-color:var(--primary);}
+        .cart-add-btn{flex-shrink:0;width:48px;height:48px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:#fff;font-size:1.4rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr);}
+        .cart-add-btn:hover{opacity:.88;}
+        .cart-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;max-height:260px;overflow-y:auto;}
+        .cart-empty{text-align:center;font-size:.72rem;font-weight:600;color:var(--text-dim);padding:14px 0;}
+        .cart-item{display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+        .cart-item-info{display:flex;align-items:center;gap:8px;}
+        .cart-item-price{font-size:.85rem;font-weight:800;color:var(--text);}
+        .cart-item-tag{font-size:.55rem;font-weight:800;color:var(--success);background:rgba(16,185,129,.1);padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.4px;}
+        .cart-item-del{background:none;border:none;color:var(--text-dim);font-size:.9rem;cursor:pointer;padding:4px 6px;line-height:1;}
+        .cart-item-del:hover{color:#ef4444;}
+        .cart-summary{background:var(--surface-2);border-radius:var(--radius-sm);padding:14px 16px;margin-top:10px;border:1px solid var(--border);}
+        .cart-summary-row{display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:var(--text-sub);margin-bottom:6px;}
+        .cart-total{display:flex;justify-content:space-between;font-size:1.05rem;font-weight:900;color:var(--primary);padding-top:8px;border-top:1px solid var(--border);margin-top:4px;}
+        .cart-actions{display:flex;gap:10px;margin-top:14px;}
+        .cart-btn{flex:1;padding:13px 10px;border-radius:var(--radius-sm);font-size:.75rem;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr);border:1.5px solid var(--border);}
+        .cart-btn-clear{background:var(--input-bg);color:var(--text-sub);}
+        .cart-btn-clear:hover{border-color:#ef4444;color:#ef4444;}
+        .cart-btn-save{background:var(--primary);color:#fff;border-color:var(--primary);}
+        .cart-btn-save:hover{opacity:.9;}
+
         .app-footer{margin-top:8px;padding:12px 0;text-align:center;font-size:.7rem;color:var(--text-dim);font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;}
         .app-footer img{width:16px;border-radius:2px;}
         .api-note{font-size:.55rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;opacity:.6;text-align:center;margin-top:4px;}
@@ -476,6 +507,41 @@
         <div class="final-value" id="final-total">USD 0.00</div>
     </div>
 
+    <!-- ── Carrito de Compras (Multi-Producto) ── -->
+    <div class="cart-card">
+        <div class="cart-header" onclick="toggleCart()">
+            <div class="cart-title">🛒 <span data-i18n="cart_title">Carrito de Compras</span></div>
+            <div class="cart-toggle" id="cart-toggle-lbl">▼ <span data-i18n="cart_open">VER</span></div>
+        </div>
+        <div class="cart-body" id="cart-body">
+            <div style="font-size:.68rem;font-weight:600;color:var(--text-dim);margin-bottom:12px;line-height:1.4;" data-i18n="cart_hint">Sumá cada producto del súper y mirá el total con tax al final, sin salir de la app.</div>
+
+            <div class="cart-add-row">
+                <input type="number" id="cart-price-input" placeholder="0.00" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}">
+                <label class="cart-exempt-toggle">
+                    <input type="checkbox" id="cart-exempt-check">
+                    <span data-i18n="cart_exempt">Sin tax</span>
+                </label>
+                <button class="cart-add-btn" onclick="addCartItem()" aria-label="Agregar">+</button>
+            </div>
+
+            <div class="cart-list" id="cart-list">
+                <div class="cart-empty" id="cart-empty" data-i18n="cart_empty">Todavía no agregaste productos.</div>
+            </div>
+
+            <div class="cart-summary" id="cart-summary" style="display:none;">
+                <div class="cart-summary-row"><span data-i18n="cart_subtotal">Subtotal</span><span id="cart-subtotal">$0.00</span></div>
+                <div class="cart-summary-row"><span id="cart-tax-lbl" data-i18n="cart_tax">Tax</span><span id="cart-tax-amt">$0.00</span></div>
+                <div class="cart-total"><span data-i18n="cart_total">TOTAL</span><span id="cart-total">$0.00</span></div>
+            </div>
+
+            <div class="cart-actions" id="cart-actions" style="display:none;">
+                <button class="cart-btn cart-btn-clear" onclick="clearCart()">🗑️ <span data-i18n="cart_clear">Vaciar</span></button>
+                <button class="cart-btn cart-btn-save" onclick="saveCartAsExpense()">💾 <span data-i18n="cart_save">Guardar en Gastos</span></button>
+            </div>
+        </div>
+    </div>
+
     <!-- ── Split Bill ── -->
     <div class="split-card">
         <div class="split-header" onclick="toggleSplit()">
@@ -664,7 +730,7 @@ const FB = { apiKey:"AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0", authDomain:"viaje
 // abajo. Con import() dinámico dentro de un try/catch, si falla, seguimos
 // directo al modo offline en vez de quedar trabados.
 let initializeApp, getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail,
-    getFirestore, doc, setDoc, getDoc, deleteDoc,
+    getFirestore, doc, setDoc, getDoc, deleteDoc, addDoc, collection,
     initializeAppCheck, ReCaptchaV3Provider;
 let app, auth, db;
 let firebaseOk = true;
@@ -672,7 +738,7 @@ let firebaseOk = true;
 try {
     ({ initializeApp } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js"));
     ({ getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js"));
-    ({ getFirestore, doc, setDoc, getDoc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"));
+    ({ getFirestore, doc, setDoc, getDoc, deleteDoc, addDoc, collection } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"));
     ({ initializeAppCheck, ReCaptchaV3Provider } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js"));
     app = initializeApp(FB);
     auth = getAuth(app);
@@ -732,7 +798,12 @@ const i18n = {
         split_subtotal:"subtotal",split_tax:"tax",split_tip_amt:"propina",
         offline_title:"Sin conexión",
         offline_sub:"La calculadora, propina y dividir cuenta siguen funcionando normalmente",
-        btn_manual_tax:"Ingresar tax manualmente"
+        btn_manual_tax:"Ingresar tax manualmente",
+        cart_title:"Carrito de Compras",cart_open:"VER",cart_close:"OCULTAR",
+        cart_hint:"Sumá cada producto del súper y mirá el total con tax al final, sin salir de la app.",
+        cart_exempt:"Sin tax",cart_empty:"Todavía no agregaste productos.",
+        cart_subtotal:"Subtotal",cart_tax:"Tax",cart_total:"TOTAL",
+        cart_clear:"Vaciar",cart_save:"Guardar en Gastos"
     },
     en:{
         nav_expenses:"EXPENSES",nav_home:"HOME",nav_itinerary:"ITINERARY",nav_compare:"COMPARE",nav_units:"Help & References",nav_tickets:"DOCUMENTS",nav_group:"GROUP",nav_routes:"ROUTES",nav_more:"MORE",nav_units_desc:"Unit Converter & Utilities",nav_tickets_desc:"ESTA, insurance, check-in",nav_group_desc:"Shared expenses",
@@ -755,7 +826,12 @@ const i18n = {
         split_subtotal:"subtotal",split_tax:"tax",split_tip_amt:"tip",
         offline_title:"No connection",
         offline_sub:"Calculator, tip and split bill work normally without internet",
-        btn_manual_tax:"Enter tax manually"
+        btn_manual_tax:"Enter tax manually",
+        cart_title:"Shopping Cart",cart_open:"SHOW",cart_close:"HIDE",
+        cart_hint:"Add each item from the store and see the total with tax at the end, without leaving the app.",
+        cart_exempt:"Tax free",cart_empty:"No items added yet.",
+        cart_subtotal:"Subtotal",cart_tax:"Tax",cart_total:"TOTAL",
+        cart_clear:"Clear",cart_save:"Save to Expenses"
     },
     pt:{
         nav_expenses:"GASTOS",nav_home:"INÍCIO",nav_itinerary:"ITINERARIO",nav_compare:"COMPARAR",nav_units:"Ajuda e Referências",nav_tickets:"DOCUMENTOS",nav_group:"GRUPO",nav_routes:"ROTAS",nav_more:"MAIS",nav_units_desc:"Conversor de Unidades e Utilidades",nav_tickets_desc:"ESTA, seguros, check-in",nav_group_desc:"Gastos compartilhados",
@@ -778,7 +854,12 @@ const i18n = {
         split_subtotal:"subtotal",split_tax:"tax",split_tip_amt:"gorjeta",
         offline_title:"Sem conexão",
         offline_sub:"Calculadora, gorjeta e dividir conta funcionam normalmente sem internet",
-        btn_manual_tax:"Inserir imposto manualmente"
+        btn_manual_tax:"Inserir imposto manualmente",
+        cart_title:"Carrinho de Compras",cart_open:"VER",cart_close:"OCULTAR",
+        cart_hint:"Some cada produto do mercado e veja o total com imposto no final, sem sair do app.",
+        cart_exempt:"Sem imposto",cart_empty:"Ainda não adicionou produtos.",
+        cart_subtotal:"Subtotal",cart_tax:"Imposto",cart_total:"TOTAL",
+        cart_clear:"Esvaziar",cart_save:"Salvar em Gastos"
     }
 };
 
@@ -850,6 +931,18 @@ window.changeLanguage = (lang) => {
             splitToggleLbl.innerHTML = '▼ <span>' + (i18n[lang].split_open || 'VER') + '</span>';
         }
     }
+
+    // Retraducir toggle del carrito (VER/OCULTAR/SHOW/HIDE)
+    const cartToggleLbl = document.getElementById('cart-toggle-lbl');
+    if (cartToggleLbl) {
+        if (typeof cartOpen !== 'undefined' && cartOpen) {
+            cartToggleLbl.innerHTML = '▲ <span>' + (i18n[lang].cart_close || 'OCULTAR') + '</span>';
+        } else {
+            cartToggleLbl.innerHTML = '▼ <span>' + (i18n[lang].cart_open || 'VER') + '</span>';
+        }
+    }
+    // Retraducir contenido dinámico del carrito ya renderizado
+    if (typeof renderCart === 'function') renderCart();
 };
 
 window.setCategory = (cat) => {
@@ -1713,6 +1806,153 @@ window.onload = () => {
     const tc = document.getElementById('tip-content');
     if (tc) tc.innerText = econTips[lang][tipIndex];
     tipTimer = setInterval(window.cambiarConsejo, 8000);
+};
+
+// ══════════════════════════════════════════════
+// 🛒 CARRITO DE COMPRAS (multi-producto)
+// Suma varios productos de una misma compra (ej. supermercado) usando
+// el tax de la ciudad/manual ya seleccionado arriba, para no tener que
+// usar la calculadora del celular y volver con un solo número.
+// ══════════════════════════════════════════════
+let cartItems = [];
+let cartOpen = false;
+
+function getCurrentCartTaxRate() {
+    if (typeof manualTaxActive !== 'undefined' && manualTaxActive) {
+        const v = parseFloat(document.getElementById('manual-tax-input')?.value);
+        return isNaN(v) ? 0 : v;
+    }
+    return parseFloat(document.getElementById('city-select')?.value) || 0;
+}
+
+window.toggleCart = () => {
+    cartOpen = !cartOpen;
+    const body = document.getElementById('cart-body');
+    const lbl = document.getElementById('cart-toggle-lbl');
+    const lang = localStorage.getItem('appLang') || 'es';
+    if (cartOpen) {
+        body.classList.add('open');
+        lbl.innerHTML = '▲ <span>' + (i18n[lang].cart_close || 'OCULTAR') + '</span>';
+    } else {
+        body.classList.remove('open');
+        lbl.innerHTML = '▼ <span>' + (i18n[lang].cart_open || 'VER') + '</span>';
+    }
+};
+
+window.addCartItem = () => {
+    const input = document.getElementById('cart-price-input');
+    const price = parseFloat(input.value);
+    if (isNaN(price) || price <= 0) { input.focus(); return; }
+    const exempt = document.getElementById('cart-exempt-check').checked;
+    cartItems.push({ id: Date.now() + Math.random(), price, exempt });
+    input.value = '';
+    document.getElementById('cart-exempt-check').checked = false;
+    renderCart();
+    input.focus();
+};
+
+window.removeCartItem = (id) => {
+    cartItems = cartItems.filter(it => it.id !== id);
+    renderCart();
+};
+
+window.clearCart = async () => {
+    if (!cartItems.length) return;
+    const lang = localStorage.getItem('appLang') || 'es';
+    const msgs = { es: '¿Vaciar el carrito?', en: 'Clear the cart?', pt: 'Esvaziar o carrinho?' };
+    const ok = window.showConfirm ? await window.showConfirm(msgs[lang] || msgs.es) : confirm(msgs[lang] || msgs.es);
+    if (!ok) return;
+    cartItems = [];
+    renderCart();
+};
+
+function renderCart() {
+    const list = document.getElementById('cart-list');
+    if (!list) return; // el HTML del carrito todavía no cargó
+    const summary = document.getElementById('cart-summary');
+    const actions = document.getElementById('cart-actions');
+    const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const lang = localStorage.getItem('appLang') || 'es';
+
+    if (!cartItems.length) {
+        list.innerHTML = `<div class="cart-empty" id="cart-empty">${i18n[lang].cart_empty}</div>`;
+        if (summary) summary.style.display = 'none';
+        if (actions) actions.style.display = 'none';
+        return;
+    }
+
+    const taxRate = getCurrentCartTaxRate();
+    list.innerHTML = cartItems.map(it => `
+        <div class="cart-item">
+            <div class="cart-item-info">
+                <span class="cart-item-price">$${fmt(it.price)}</span>
+                ${it.exempt ? `<span class="cart-item-tag">${i18n[lang].cart_exempt}</span>` : ''}
+            </div>
+            <button class="cart-item-del" onclick="removeCartItem(${it.id})">✕</button>
+        </div>
+    `).join('');
+
+    const subtotal = cartItems.reduce((s, it) => s + it.price, 0);
+    const taxAmt = cartItems.reduce((s, it) => s + (it.exempt ? 0 : it.price * taxRate / 100), 0);
+    const total = subtotal + taxAmt;
+
+    document.getElementById('cart-subtotal').innerText = `$${fmt(subtotal)}`;
+    document.getElementById('cart-tax-lbl').innerText = `${i18n[lang].cart_tax} (${taxRate}%)`;
+    document.getElementById('cart-tax-amt').innerText = `$${fmt(taxAmt)}`;
+    document.getElementById('cart-total').innerText = `$${fmt(total)}`;
+    if (summary) summary.style.display = 'block';
+    if (actions) actions.style.display = 'flex';
+}
+
+window.saveCartAsExpense = async () => {
+    if (!cartItems.length) return;
+    const lang = localStorage.getItem('appLang') || 'es';
+    const promptMsgs = { es: '¿En qué local hiciste la compra?', en: 'Which store did you shop at?', pt: 'Em qual loja você comprou?' };
+    const store = window.showPrompt ? await window.showPrompt(promptMsgs[lang] || promptMsgs.es, '') : prompt(promptMsgs[lang] || promptMsgs.es, '');
+    if (!store) return;
+
+    const taxRate = getCurrentCartTaxRate();
+    const subtotal = cartItems.reduce((s, it) => s + it.price, 0);
+    const taxAmt = cartItems.reduce((s, it) => s + (it.exempt ? 0 : it.price * taxRate / 100), 0);
+    const total = parseFloat((subtotal + taxAmt).toFixed(2));
+    const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Misma estructura que compras.html espera para un gasto
+    const gastoData = { nombre: store, valor: total, cat: '🍔 Comida', fecha: Date.now(), thumb: '' };
+
+    try {
+        if (firebaseOk && currentUser && perfilId && navigator.onLine) {
+            await addDoc(collection(db, 'usuarios', currentUser.uid, 'perfiles', perfilId, 'gastos'), gastoData);
+        } else {
+            // Misma cola offline que usa compras.html (misma clave de localStorage),
+            // así se sincroniza solo la próxima vez que se abra esa pantalla online.
+            const pid = perfilId || 'default';
+            const key = 'taxusa_gastos_pending_' + pid;
+            let pending = [];
+            try { pending = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { pending = []; }
+            pending.push({ type: 'add', data: gastoData, ts: Date.now() });
+            localStorage.setItem(key, JSON.stringify(pending));
+        }
+        const okMsgs = {
+            es: `Guardado en Gastos: $${fmt(total)} en ${store}.`,
+            en: `Saved to Expenses: $${fmt(total)} at ${store}.`,
+            pt: `Salvo em Gastos: $${fmt(total)} em ${store}.`
+        };
+        if (window.showAlert) window.showAlert(okMsgs[lang] || okMsgs.es); else alert(okMsgs[lang] || okMsgs.es);
+        cartItems = [];
+        renderCart();
+    } catch (e) {
+        const errMsgs = { es: 'No se pudo guardar el gasto.', en: 'Could not save the expense.', pt: 'Não foi possível salvar o gasto.' };
+        if (window.showAlert) window.showAlert(errMsgs[lang] || errMsgs.es); else alert(errMsgs[lang] || errMsgs.es);
+    }
+};
+
+// El total del carrito depende del tax seleccionado arriba (ciudad o manual):
+// cada vez que se recalcula el precio principal, refrescamos el carrito también.
+const _origCalcForCart = window.calculate;
+window.calculate = () => {
+    _origCalcForCart && _origCalcForCart();
+    renderCart();
 };
 
 // ══════════════════════════════════════════════
