@@ -93,6 +93,11 @@
         logout:     '<path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4M16 17l5-5-5-5M21 12H9"/>',
         key:        '<circle cx="8" cy="14" r="4"/><path d="m11 11 9-9M17 5l3 3M14 8l2 2"/>',
         play:       '<path d="M7 4v16l13-8Z"/>',
+        user:       '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+        syringe:    '<path d="m18 2 4 4M17 7l3-3M19 9 8.7 19.3a2 2 0 0 1-1.4.6H4v-3.3a2 2 0 0 1 .6-1.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6"/>',
+        leaf:       '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/><path d="M2 21c0-3 1.9-5.4 5.6-6.5C12 13.2 14 11 15 9"/>',
+        gift:       '<path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7ZM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7Z"/>',
+        paw:        '<circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>',
         chevDown:   '<path d="m6 9 6 6 6-6"/>',
         chevUp:     '<path d="m6 15 6-6 6 6"/>',
         apple:      '<path d="M12 7c-2-2-6-1-6 4 0 4 2 9 4 9 1 0 1-.5 2-.5s1 .5 2 .5c2 0 4-5 4-9 0-5-4-6-6-4Z"/><path d="M12 7c0-2 1-3 3-3"/>',
@@ -119,9 +124,9 @@
         '🏛': 'landmark', '🔗': 'link',
         '🌤': 'sun', '🌞': 'sun', '📵': 'phone', '📲': 'phone', '🏷': 'tag', '💾': 'save', '⚕': 'medical', '📸': 'camera',
         '🏆': 'trophy', '🔍': 'search', '🤖': 'sparkles', '🏪': 'bag', '📧': 'mail', '🖨': 'printer', '🅿': 'car', '🚂': 'bus',
-        '🔒': 'lock', '🎧': 'headphones', '📁': 'folder', '💉': 'pulse', '⚡': 'zap', '🌐': 'globe', '☁': 'cloud', '🔊': 'volume',
+        '🔒': 'lock', '🎧': 'headphones', '📁': 'folder', '💉': 'syringe', '⚡': 'zap', '🌐': 'globe', '☁': 'cloud', '🔊': 'volume',
         '🔤': 'notes', '⛔': 'xCircle', '🔴': 'dot', '🥤': 'droplet', '📐': 'ruler', '📏': 'ruler', '⛽': 'droplet', '🥨': 'box',
-        '💬': 'message', '🚪': 'logout', '🔑': 'key', '▶': 'play', '⬇': 'download', '🗓': 'calendar', '📆': 'calendar', '🧭': 'map', '🍎': 'apple', '👕': 'shirt', '👟': 'shirt', '💛': 'zap', '🎥': 'film', '🖥': 'laptop', '👗': 'shirt', '⭐': 'sparkles', '👠': 'tag', '💄': 'sparkles', '💅': 'sparkles', '🏕': 'pin', '🔨': 'plug', '🪑': 'bed', '🎮': 'play', '🎯': 'search', '🏬': 'landmark'
+        '💬': 'message', '🚪': 'logout', '🔑': 'key', '▶': 'play', '⬇': 'download', '🗓': 'calendar', '📆': 'calendar', '🧭': 'map', '🍎': 'apple', '👕': 'shirt', '👟': 'shirt', '👤': 'user', '🥦': 'leaf', '🍬': 'gift', '🦁': 'paw', '🦖': 'paw', '💛': 'zap', '🎥': 'film', '🖥': 'laptop', '👗': 'shirt', '⭐': 'sparkles', '👠': 'tag', '💄': 'sparkles', '💅': 'sparkles', '🏕': 'pin', '🔨': 'plug', '🪑': 'bed', '🎮': 'play', '🎯': 'search', '🏬': 'landmark'
     };
     // Si el ícono vive dentro de un link, manda el destino (así 📊 en "TAXES" es la calculadora y no un gráfico)
     const BY_HREF = [
@@ -224,7 +229,7 @@
     // conserva sus emojis de categoría.
     const LEAD_RE = /^(\s*)(\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*|[✓✕])(\s*)/u;
     const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'OPTION', 'SELECT', 'TITLE', 'INPUT', 'NOSCRIPT']);
-    const ALWAYS = '.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon';
+    const ALWAYS = '.sync-banner,.offlineBannerBody,.park-emoji,.filter-btn,.subcat-btn,.member-chip,.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon';
     let staticEls = new WeakSet();
     const isStaticZone = el => {
         for (let n = el; n && n !== document.body; n = n.parentElement) {
@@ -324,6 +329,14 @@
     function start() {
         document.querySelectorAll('body *').forEach(e => staticEls.add(e));
         run();
+        // ui.js se carga arriba de todo: lo que el HTML declara más abajo (modales,
+        // botones, avisos) recién existe al terminar de leer la página.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('body *').forEach(e => staticEls.add(e));
+                run();
+            });
+        }
         new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true, characterData: true });
     }
     if (document.body) start();

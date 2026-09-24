@@ -248,3 +248,8 @@ body { padding-top: 16px; }
     outline: none; -webkit-appearance: none; transition: border-color .2s, box-shadow .2s;
 }
 #farma-search::placeholder { color: var(--text-dim); font-weight: 500; }
+
+/* Tickets / Grupo */
+.empty-state > svg.ui-ic { display: block; margin: 0 auto 12px; }
+@media (max-width: 520px) { .lobby-grid { grid-template-columns: 1fr; } }
+.empty-state { flex-direction: column; align-items: center; }
