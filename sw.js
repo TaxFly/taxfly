@@ -1,6 +1,6 @@
 // TaxFly Service Worker — v13 (recordá bumpear CACHE acá cada vez que cambies
 // un archivo que esté en PRECACHE, para forzar el refresco completo)
-const CACHE = 'taxfly-v18';
+const CACHE = 'taxfly-v19';
 const PRECACHE = [
     './login.html',
     './selector.html',
