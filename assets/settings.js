@@ -142,7 +142,7 @@
     var css = [
         '#settingsDrawer.settings-drawer{width:min(370px,92vw);right:calc(-1 * min(370px,92vw) - 24px);padding:0;gap:0;display:flex;flex-direction:column;overflow:hidden;background:var(--surface);}',
         '#settingsDrawer.settings-drawer.open{right:0;}',
-        '#settingsDrawer .sx-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 10px;flex-shrink:0;}',
+        '#settingsDrawer .sx-head{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top,0px)) 18px 10px;flex-shrink:0;}',
         '#settingsDrawer .sx-title{font-size:1.15rem;font-weight:900;color:var(--text);letter-spacing:-.2px;}',
         '#settingsDrawer .sx-x{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--tr);}',
         '#settingsDrawer .sx-x:hover{color:var(--text);border-color:var(--primary);}',
