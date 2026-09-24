@@ -15,6 +15,8 @@
             .tf-dialog-box{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:var(--radius,20px);box-shadow:var(--shadow-lg,0 12px 40px rgba(0,0,0,.2));padding:22px 20px;width:100%;max-width:340px;transform:translateY(8px) scale(.98);transition:transform .18s ease;}
             .tf-dialog-overlay.show .tf-dialog-box{transform:translateY(0) scale(1);}
             .tf-dialog-msg{font-size:.88rem;font-weight:600;color:var(--text,#0f172a);line-height:1.45;white-space:pre-line;margin-bottom:18px;}
+            .tf-dialog-input{width:100%;padding:12px 14px;background:var(--input-bg,#f8fafc);border:1.5px solid var(--border,#e2e8f0);border-radius:var(--radius-sm,12px);color:var(--text,#0f172a);font-family:inherit;font-size:.9rem;font-weight:600;outline:none;margin:-6px 0 16px;transition:border-color .15s;}
+            .tf-dialog-input:focus{border-color:var(--primary,#2563eb);}
             .tf-dialog-actions{display:flex;gap:10px;justify-content:flex-end;}
             .tf-dialog-btn{border:none;border-radius:var(--radius-sm,12px);padding:10px 18px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;}
             .tf-dialog-btn:active{opacity:.75;}
@@ -25,7 +27,7 @@
         document.head.appendChild(style);
     }
 
-    function openDialog({ message, okText, cancelText, danger }) {
+    function openDialog({ message, okText, cancelText, danger, withInput, inputValue, inputType, inputPlaceholder }) {
         ensureStyles();
         return new Promise((resolve) => {
             overlay = document.createElement('div');
@@ -33,6 +35,7 @@
             overlay.innerHTML = `
                 <div class="tf-dialog-box" role="alertdialog" aria-modal="true">
                     <div class="tf-dialog-msg"></div>
+                    ${withInput ? `<input type="${inputType || 'text'}" class="tf-dialog-input" placeholder="${inputPlaceholder || ''}">` : ''}
                     <div class="tf-dialog-actions">
                         ${cancelText ? `<button type="button" class="tf-dialog-btn tf-dialog-btn-cancel" data-tf="cancel">${cancelText}</button>` : ''}
                         <button type="button" class="tf-dialog-btn ${danger ? 'tf-dialog-btn-danger' : 'tf-dialog-btn-ok'}" data-tf="ok">${okText}</button>
@@ -42,11 +45,17 @@
             document.body.appendChild(overlay);
             requestAnimationFrame(() => overlay.classList.add('show'));
 
+            const inputEl = withInput ? overlay.querySelector('.tf-dialog-input') : null;
+            if (inputEl) {
+                inputEl.value = inputValue || '';
+                setTimeout(() => { inputEl.focus(); inputEl.select(); }, 180);
+            }
+
             const close = (result) => {
                 overlay.classList.remove('show');
                 setTimeout(() => overlay.remove(), 160);
                 document.removeEventListener('keydown', onKey);
-                resolve(result);
+                resolve(withInput ? (result ? inputEl.value : null) : result);
             };
             const onKey = (e) => {
                 if (e.key === 'Escape') close(false);
@@ -75,6 +84,20 @@
             okText: opts.okText || 'Confirmar',
             cancelText: opts.cancelText || 'Cancelar',
             danger: !!opts.danger,
+        });
+    };
+    // Reemplazo de prompt(): usarlo con await, ej:
+    // const email = await showPrompt('Nuevo correo:'); if (!email) return;
+    // Devuelve el texto ingresado, o null si cancelan (igual que prompt()).
+    window.showPrompt = function (message, defaultValue = '', opts = {}) {
+        return openDialog({
+            message,
+            okText: opts.okText || 'Aceptar',
+            cancelText: opts.cancelText || 'Cancelar',
+            withInput: true,
+            inputValue: defaultValue,
+            inputType: opts.inputType || 'text',
+            inputPlaceholder: opts.placeholder || '',
         });
     };
 })();
