@@ -232,7 +232,7 @@
     // conserva sus emojis de categoría.
     const LEAD_RE = /^(\s*)(\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*|[✓✕])(\s*)/u;
     const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'OPTION', 'SELECT', 'TITLE', 'INPUT', 'NOSCRIPT']);
-    const ALWAYS = '.ios-step-icon,.crop-zoom-icon,.pc-emoji,.tip-icon,.btn-label,.sync-banner,.offlineBannerBody,.park-emoji,.filter-btn,.subcat-btn,.member-chip,.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon,.h-thumb-placeholder,.cat-bar-name,.h-del,.act-del,.note-del,.member-del,.stop-row-del,.cart-item-del,.preview-remove,.close-scanner,.cam-close,.viewer-close,#ai-close,.ocr-btn-cancel,.rv-btn-close,.preview-pdf span';
+    const ALWAYS = '.ios-step-icon,.crop-zoom-icon,.pc-emoji,.tip-icon,.btn-label,#sync-banner,#offlineBannerBody,#offline-group-banner span,#toast,.toast,#offline-toast,#offline-toast-msg,#sync-ok-toast,#export-toast,#reminder-toast,.park-emoji,.filter-btn,.subcat-btn,.member-chip,.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon,.h-thumb-placeholder,.cat-bar-name,.h-del,.act-del,.note-del,.member-del,.stop-row-del,.cart-item-del,.preview-remove,.close-scanner,.cam-close,.viewer-close,#ai-close,.ocr-btn-cancel,.rv-btn-close,.preview-pdf span';
     let staticEls = new WeakSet();
     const isStaticZone = el => {
         for (let n = el; n && n !== document.body; n = n.parentElement) {
@@ -253,7 +253,8 @@
             // debe ser el primer contenido "visible" del elemento
             let prev = n.previousSibling;
             while (prev && prev.nodeType === 3 && !prev.nodeValue.trim()) prev = prev.previousSibling;
-            if (prev) continue;
+            // un <br> cuenta como inicio de línea (avisos de varias líneas)
+            if (prev && prev.nodeName !== 'BR') continue;
             if (!isStaticZone(el) && !el.closest(ALWAYS)) continue;
             const name = EMOJI[norm(m[2])];
             if (!name) continue;
