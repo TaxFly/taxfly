@@ -192,3 +192,12 @@ label .ui-lead, .w-label .ui-lead { color: var(--primary); }
 .tip-label .ui-lead { display: none; }
 .nav-dropdown, .nav-dropdown .dd-item { text-align: left; cursor: pointer; }
 .dd-item > div { flex: 1; min-width: 0; }
+
+/* ═══ 6. Marca TaxUSA: estrella sobre franjas (misma en todas las pantallas) ═══ */
+.logo { gap: 9px; font-size: 1.32rem; }
+.logo > svg { width: 32px; height: 32px; border-radius: 10px; box-shadow: 0 4px 12px -3px rgba(30,58,138,.55); }
+.wm { font-weight: 500; color: var(--text); letter-spacing: -.045em; line-height: 1; }
+.wm .wm-usa { font-weight: 900; color: var(--header-color); letter-spacing: -.045em; }
+.wm-card { color: #fff; }
+.wm-card .wm-usa { color: #93c5fd; }
+.ec-logo > svg { border-radius: 8px; }
