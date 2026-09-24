@@ -31,26 +31,76 @@ export default {
     }
 
     // Rate limiting: límite más estricto para las rutas que gastan crédito de
-    // Anthropic (facturas/seguro/moderación de fotos), más amplio para reCAPTCHA.
+    // Anthropic (facturas/seguro/moderación de fotos/rutas/chat de Taxie), más
+    // amplio para reCAPTCHA.
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
-    const isCostRoute = body.type === 'invoice_ocr' || body.type === 'insurance_analysis' || body.type === 'moderate_image';
+    const AI_TYPES = ['invoice_ocr', 'insurance_analysis', 'moderate_image', 'optimize_route', 'taxie_chat'];
+    const isCostRoute = AI_TYPES.includes(body.type);
     const limiter = isCostRoute ? env.COST_LIMITER : env.GENERAL_LIMITER;
     if (limiter) {
       const { success } = await limiter.limit({ key: `${ip}:${body.type}` });
       if (!success) return json({ error: 'Too many requests, try again in a bit' }, 429);
     }
 
-    if (body.type === 'invoice_ocr' || body.type === 'insurance_analysis' || body.type === 'moderate_image') {
+    if (AI_TYPES.includes(body.type)) {
       const apiKey = env.ANTHROPIC_API_KEY;
       if (!apiKey) return json({ error: 'Anthropic API key not configured' }, 500);
       if (body.type === 'invoice_ocr') return handleInvoice(body, apiKey);
       if (body.type === 'insurance_analysis') return handleInsurance(body, apiKey);
-      return handleModerate(body, apiKey);
+      if (body.type === 'moderate_image') return handleModerate(body, apiKey);
+      // Antes rutas.html llamaba directo a Groq (openai/gpt-oss-120b) en otro
+      // worker sin auth. Ahora pasa por acá, mismo proveedor/secreto que el
+      // resto de la app.
+      // optimize_route usa Sonnet (mejor razonamiento geográfico/de planificación,
+      // priorizamos precisión) con temperatura baja para que sea consistente.
+      // taxie_chat sigue en Haiku (charla, no necesita tanto razonamiento).
+      if (body.type === 'optimize_route') return handleAIChat(body, apiKey, 'claude-sonnet-5', 800, 0.2);
+      return handleAIChat(body, apiKey, 'claude-haiku-4-5-20251001', 800, 0.7); // taxie_chat
     }
     if (body.type === 'verify_recaptcha') return handleRecaptcha(body, env);
-    return json({ error: 'Unknown or missing "type" (expected invoice_ocr, insurance_analysis, verify_recaptcha or moderate_image)' }, 400);
+    return json({ error: 'Unknown or missing "type" (expected invoice_ocr, insurance_analysis, verify_recaptcha, moderate_image, optimize_route or taxie_chat)' }, 400);
   },
 };
+
+// ── Optimización de rutas / chat Taxie ──────────────────
+// Handler genérico: recibe { messages: [{role, content}, ...], max_tokens }
+// en formato "estilo OpenAI" (incluyendo un mensaje role:"system" opcional
+// al principio, como ya mandaba el cliente), lo traduce al formato de Claude
+// (system aparte) y devuelve la respuesta con la MISMA forma que ya
+// consumía el cliente (choices[0].message.content), para no tener que
+// reescribir el parseo en rutas.html.
+async function handleAIChat(body, apiKey, model, defaultMaxTokens, defaultTemperature) {
+  const { messages } = body;
+  if (!Array.isArray(messages) || !messages.length) {
+    return json({ error: 'Missing required field: messages' }, 400);
+  }
+
+  let system;
+  const chatMessages = [];
+  for (const m of messages) {
+    if (!m || typeof m.content !== 'string') continue;
+    if (m.role === 'system') system = system ? `${system}\n\n${m.content}` : m.content;
+    else chatMessages.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content });
+  }
+  if (!chatMessages.length) return json({ error: 'No user/assistant messages provided' }, 400);
+
+  const maxTokens = Math.min(Number(body.max_tokens) || defaultMaxTokens, 1500);
+  const temperature = typeof body.temperature === 'number' ? body.temperature : defaultTemperature;
+
+  const claudeRes = await callClaude(apiKey, {
+    model,
+    max_tokens: maxTokens,
+    ...(temperature !== undefined ? { temperature } : {}),
+    ...(system ? { system } : {}),
+    messages: chatMessages,
+  });
+
+  if (claudeRes.error) return json({ error: 'Upstream API error', detail: claudeRes.error }, 502);
+
+  return json({
+    choices: [{ message: { role: 'assistant', content: claudeRes.text } }],
+  });
+}
 
 // ── Facturas / tickets ──────────────────────────────────
 async function handleInvoice(body, apiKey) {

@@ -1137,16 +1137,20 @@ async function generateRoute() {
       url: s.url || ''
     }));
 
-    const systemPrompt = `You are a travel route optimization expert. Your ONLY task is to return a valid JSON array.
-Given a list of stops (places to visit) and a starting point (hotel), group them into ${days} day(s) to minimize travel between stops each day — keeping geographically close places together.
+    const systemPrompt = `You are a travel route optimization expert with real, detailed knowledge of Central Florida / Orlando geography — including the different areas/clusters: Walt Disney World & Lake Buena Vista, Universal Orlando Resort & International Drive, Kissimmee, downtown Orlando, Winter Garden, Winter Haven, and Cape Canaveral/Kennedy Space Center. Your ONLY task is to return a valid JSON array.
+
+Given a list of stops (places to visit) and a starting point (hotel), group them into ${days} day(s) so the resulting itinerary is realistic and efficient, not just numerically balanced.
 
 Rules:
 - Return ONLY a JSON array of arrays of original stop indexes (0-based), no explanation, no markdown, no backticks.
-- Each inner array = one day's stops, in optimal visit order.
+- Each inner array = one day's stops, in optimal visit order for that day (minimizing backtracking).
 - Every stop index must appear exactly once across all days.
-- Spread stops as evenly as possible across days.
-- Keep nearby places together on the same day.
-- If there is no geographic info, keep the original order but distribute evenly.
+- FULL-DAY ANCHORS: major theme parks (e.g. Magic Kingdom, EPCOT, Hollywood Studios, Animal Kingdom, Universal Studios, Islands of Adventure, Epic Universe, Volcano Bay, SeaWorld, Legoland, Busch Gardens, and similar large parks) each realistically take a FULL day by themselves. Never put two of these full-day anchors on the same day — each one gets its own day — unless there are strictly more anchors than available days, in which case distribute them as evenly as possible.
+- Smaller stops (outlets, malls, museums, short attractions, parks, tours, restaurants) CAN be combined 2-3 per day, but only if they are genuinely in the same or adjacent area. Do NOT mix stops from different areas just because they fit numerically — e.g. don't combine something in the Disney/Lake Buena Vista area with something on International Drive/Universal, and don't combine downtown Orlando with Kissimmee, unless there is no other reasonable option.
+- Attractions clearly far from the main Orlando area (e.g. Kennedy Space Center, Legoland in Winter Haven) should be alone on their day — the drive there and back already fills the day.
+- Use your own knowledge of these specific places and their real locations to judge proximity — don't just pattern-match on city names in the address text.
+- If a stop's location is unclear or missing, use its name/description to infer the area as best you can; only fall back to the original order if truly no signal exists.
+- Spread stops as evenly as possible across days ONLY after applying the rules above — realism comes first, balance second.
 
 Example output for 3 stops, 2 days: [[0,2],[1]]`;
 
