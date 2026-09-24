@@ -95,11 +95,11 @@
         /* USA card */
         .card-usa {
             background: var(--surface);
-            border-color: rgba(239,68,68,0.35);
-            border-top: 3px solid #ef4444;
+            border-color: rgba(37,99,235,0.3);
+            border-top: 3px solid #2563eb;
         }
-        .card-usa::before { background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(239,68,68,0.07)); }
-        .card-usa:hover { border-color: #ef4444; box-shadow: 0 8px 32px rgba(239,68,68,0.22), 0 0 0 1px rgba(37,99,235,0.2); transform: translateY(-2px); }
+        .card-usa::before { background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(239,68,68,0.06)); }
+        .card-usa:hover { border-color: #2563eb; box-shadow: 0 8px 32px rgba(37,99,235,0.22); transform: translateY(-2px); }
         .card-usa:hover::before { opacity: 1; }
 
         .card-europe {
@@ -124,16 +124,20 @@
             flex-shrink: 0; width: 64px; height: 64px; border-radius: 16px;
             display: flex; align-items: center; justify-content: center;
         }
-        .logo-box-usa { background: transparent; box-shadow: 0 0 16px rgba(239,68,68,0.25), 0 0 6px rgba(37,99,235,0.3); }
+        .logo-box-usa { background: transparent; box-shadow: 0 6px 16px -4px rgba(30,58,138,.5); }
+        .logo-box-usa svg { border-radius: 14px; }
         .logo-box-eu  { background: linear-gradient(135deg, #002080 0%, #003399 60%, #0044bb); }
 
         .card-body { flex: 1; }
         .card-name {
             font-size: 1.35rem; font-weight: 900; line-height: 1.1; margin-bottom: 4px;
         }
-        .card-name .tax { color: #2563eb; }
-        .card-name .region-usa { color: #ef4444; text-shadow: 0 0 12px rgba(239,68,68,0.7), 0 0 24px rgba(239,68,68,0.4); }
-        .card-name .region-eu  { color: #ffcc00; text-shadow: 0 0 14px rgba(255,204,0,0.45); }
+        .card-name { letter-spacing: -.045em; }
+        .card-name .tax { color: var(--text); font-weight: 500; }
+        .card-name .region-usa { color: #2563eb; font-weight: 900; }
+        .card-name .region-eu  { color: #ffcc00; font-weight: 900; text-shadow: 0 0 14px rgba(255,204,0,0.45); }
+        [data-theme="dark"] .card-name .region-usa { color: #5b8def; }
+        .ui-lead { display: inline-block; vertical-align: -3px; margin-right: 5px; }
         .card-tagline { font-size: .75rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
         .card-desc { font-size: .82rem; font-weight: 600; color: var(--text-sub); line-height: 1.4; }
 
@@ -142,7 +146,7 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 1rem; transition: transform .2s;
         }
-        .card-usa .card-arrow   { background: rgba(239,68,68,.12); color: #ef4444; }
+        .card-usa .card-arrow   { background: rgba(37,99,235,.12); color: #2563eb; }
         .region-card:hover .card-arrow { transform: translateX(4px); }
 
         /* Soon badge */
@@ -218,7 +222,7 @@
 </div>
 
 <!-- Theme toggle -->
-<button class="theme-btn" onclick="toggleTheme()">🌓</button>
+<button class="theme-btn" onclick="toggleTheme()" aria-label="Tema" title="Tema"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18Z" fill="currentColor"/></svg></button>
 
 <div class="wrap">
 
@@ -234,16 +238,7 @@
         <a class="region-card card-usa" href="profiles.html" onclick="localStorage.setItem('taxfly_destino','usa')">
             <div class="card-inner">
                 <div class="logo-box logo-box-usa">
-                    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- fondo azul marino -->
-                        <rect width="44" height="44" rx="10" fill="#1e3a8a"/>
-                        <!-- raya roja superior -->
-                        <rect x="0" y="13" width="44" height="6" fill="#ef4444"/>
-                        <!-- raya roja inferior -->
-                        <rect x="0" y="25" width="44" height="6" fill="#ef4444"/>
-                        <!-- estrella blanca centrada -->
-                        <polygon points="22,7 24.5,14.5 32.5,14.5 26,19.5 28.5,27 22,22 15.5,27 18,19.5 11.5,14.5 19.5,14.5" fill="#ffffff"/>
-                    </svg>
+                    <svg width="56" height="56" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#2563eb"/></linearGradient><clipPath id="tc1"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="url(#tg1)"/><g clip-path="url(#tc1)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
                 </div>
                 <div class="card-body">
                     <div class="card-name">
@@ -259,7 +254,7 @@
                         <span class="feat-pill" id="feat-group">👥 Gastos grupales</span>
                     </div>
                 </div>
-                <div class="card-arrow">→</div>
+                <div class="card-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
             </div>
         </a>
 
@@ -297,7 +292,7 @@
                     <div class="card-tagline" id="txt-eu-tag">Asistente de viaje · Europa</div>
                     <div class="soon-badge">🚀 <span id="txt-soon">Próximamente</span></div>
                 </div>
-                <div class="card-arrow">🔒</div>
+                <div class="card-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
             </div>
         </div>
 
@@ -445,5 +440,7 @@
         window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
     }
 </script>
+<style>.ui-lead{display:inline-block;vertical-align:-3px;margin-right:5px;flex-shrink:0}.ui-arw{vertical-align:-3px}</style>
+<script src="assets/ui.js"></script>
 </body>
 </html>

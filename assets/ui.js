@@ -98,6 +98,9 @@
         leaf:       '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/><path d="M2 21c0-3 1.9-5.4 5.6-6.5C12 13.2 14 11 15 9"/>',
         gift:       '<path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7ZM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7Z"/>',
         paw:        '<circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>',
+        scissors:   '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/>',
+        pointer:    '<path d="m4 4 7.5 17 2.4-7.1L21 11.5Z"/>',
+        wifi:       '<path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".6"/><path d="M2 9a14 14 0 0 1 20 0"/>',
         chevDown:   '<path d="m6 9 6 6 6-6"/>',
         chevUp:     '<path d="m6 15 6-6 6 6"/>',
         apple:      '<path d="M12 7c-2-2-6-1-6 4 0 4 2 9 4 9 1 0 1-.5 2-.5s1 .5 2 .5c2 0 4-5 4-9 0-5-4-6-6-4Z"/><path d="M12 7c0-2 1-3 3-3"/>',
@@ -126,7 +129,7 @@
         '🏆': 'trophy', '🔍': 'search', '🤖': 'sparkles', '🏪': 'bag', '📧': 'mail', '🖨': 'printer', '🅿': 'car', '🚂': 'bus',
         '🔒': 'lock', '🎧': 'headphones', '📁': 'folder', '💉': 'syringe', '⚡': 'zap', '🌐': 'globe', '☁': 'cloud', '🔊': 'volume',
         '🔤': 'notes', '⛔': 'xCircle', '🔴': 'dot', '🥤': 'droplet', '📐': 'ruler', '📏': 'ruler', '⛽': 'droplet', '🥨': 'box',
-        '💬': 'message', '🚪': 'logout', '🔑': 'key', '▶': 'play', '⬇': 'download', '🗓': 'calendar', '📆': 'calendar', '🧭': 'map', '🍎': 'apple', '👕': 'shirt', '👟': 'shirt', '👤': 'user', '🥦': 'leaf', '🍬': 'gift', '🦁': 'paw', '🦖': 'paw', '💛': 'zap', '🎥': 'film', '🖥': 'laptop', '👗': 'shirt', '⭐': 'sparkles', '👠': 'tag', '💄': 'sparkles', '💅': 'sparkles', '🏕': 'pin', '🔨': 'plug', '🪑': 'bed', '🎮': 'play', '🎯': 'search', '🏬': 'landmark'
+        '💬': 'message', '🚪': 'logout', '🔑': 'key', '▶': 'play', '⬇': 'download', '🗓': 'calendar', '📆': 'calendar', '🧭': 'map', '🍎': 'apple', '👕': 'shirt', '👟': 'shirt', '👤': 'user', '🧮': 'calculator', '✂': 'scissors', '👆': 'pointer', '🔎': 'search', '⬆': 'upload', '📶': 'wifi', '🥦': 'leaf', '🍬': 'gift', '🦁': 'paw', '🦖': 'paw', '💛': 'zap', '🎥': 'film', '🖥': 'laptop', '👗': 'shirt', '⭐': 'sparkles', '👠': 'tag', '💄': 'sparkles', '💅': 'sparkles', '🏕': 'pin', '🔨': 'plug', '🪑': 'bed', '🎮': 'play', '🎯': 'search', '🏬': 'landmark'
     };
     // Si el ícono vive dentro de un link, manda el destino (así 📊 en "TAXES" es la calculadora y no un gráfico)
     const BY_HREF = [
@@ -229,7 +232,7 @@
     // conserva sus emojis de categoría.
     const LEAD_RE = /^(\s*)(\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*|[✓✕])(\s*)/u;
     const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'OPTION', 'SELECT', 'TITLE', 'INPUT', 'NOSCRIPT']);
-    const ALWAYS = '.sync-banner,.offlineBannerBody,.park-emoji,.filter-btn,.subcat-btn,.member-chip,.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon';
+    const ALWAYS = '.ios-step-icon,.crop-zoom-icon,.pc-emoji,.tip-icon,.btn-label,.sync-banner,.offlineBannerBody,.park-emoji,.filter-btn,.subcat-btn,.member-chip,.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon';
     let staticEls = new WeakSet();
     const isStaticZone = el => {
         for (let n = el; n && n !== document.body; n = n.parentElement) {
