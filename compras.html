@@ -515,6 +515,7 @@
     <div class="budget-card">
         <div class="budget-label" data-i18n="label_budget">Presupuesto Restante</div>
         <div class="budget-value" id="disp-fondo">USD 0.00</div>
+        <div id="budget-maps-note" style="display:none;font-size:.68rem;font-weight:700;opacity:.8;margin:-4px 0 8px;"></div>
 
         <!-- Fila: presupuesto base + boton cambiar (visible cuando ya hay un presupuesto) -->
         <div id="budget-info-row" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px;">
@@ -905,6 +906,10 @@ async function flushPendingGastos() {
 window.addEventListener('online', () => { flushPendingGastos(); });
 const perfilFoto = localStorage.getItem('perfilActivoFoto');
 let presupuestoBase = 0;
+// Gastos cargados en Orlando Planning (Maps) para este perfil: se descuentan
+// del mismo presupuesto, igual que en el Inicio. Ver computeMapsSpent en index.html.
+let mapsSpent = parseFloat(localStorage.getItem('taxusa_maps_budget_cache_'+perfilId)) || 0;
+let lastGastosTotal = 0;
 let allRates = {};
 let baseRates = { oficial:0, tarjeta:0, eur:0, brl:0 };
 const flags = {
@@ -1516,13 +1521,44 @@ function listenGastos(){
         renderGastosList(allGastos);
     });
 }
+// Presupuesto (perfil) y gastos de Orlando en vivo: si se cambian desde
+// Orlando Planning se reflejan acá sin recargar.
+function listenPresupuestoYOrlando(){
+    if(!currentUser||!perfilId) return;
+    onSnapshot(doc(db,'usuarios',currentUser.uid,'perfiles',perfilId),snap=>{
+        if(!snap.exists()||snap.data().presupuesto===undefined) return;
+        const v=Number(snap.data().presupuesto)||0;
+        if(v===presupuestoBase) return;
+        presupuestoBase=v;
+        guardarPresupuestoEnCache(v);
+        updateBudgetDisplay(lastGastosTotal);
+    },()=>{});
+    onSnapshot(doc(db,'usuarios',currentUser.uid,'perfiles',perfilId,'orlando','budget'),snap=>{
+        const d=snap.exists()?snap.data():null;
+        // El estimado del Market solo cuenta si en Orlando se activó "Descontar estimado
+        // del Market" (si no, se asume que el súper se carga acá con el ticket).
+        const wm=d&&d.countMarket?(parseFloat(d.walmartSpent)||0):0;
+        const manual=d?(d.gastos||[]).reduce((s,g)=>s+(parseFloat(g.monto)||0),0):0;
+        mapsSpent=wm+manual;
+        try{localStorage.setItem('taxusa_maps_budget_cache_'+perfilId,String(mapsSpent));}catch(e){}
+        updateBudgetDisplay(lastGastosTotal);
+    },()=>{});
+}
 function updateBudgetDisplay(spent){
+    lastGastosTotal=spent;
+    // Una sola cuenta con Orlando Planning: se descuenta también lo gastado allá
+    const eff=spent+mapsSpent;
     const el=document.getElementById('disp-fondo');
-    if(el) el.innerText='USD '+fmt(presupuestoBase-spent);
+    if(el) el.innerText='USD '+fmt(presupuestoBase-eff);
+    const mn=document.getElementById('budget-maps-note');
+    if(mn){
+        if(mapsSpent>0){ mn.textContent='incluye USD '+fmt(mapsSpent)+' de Orlando Planning'; mn.style.display='block'; }
+        else mn.style.display='none';
+    }
     // Siempre refrescar la fila de info (por si cambió presupuestoBase)
     refreshBudgetInfoRow();
     // Verificar umbrales de presupuesto y disparar notificación local si corresponde
-    if(presupuestoBase>0) checkBudgetAlerts(spent);
+    if(presupuestoBase>0) checkBudgetAlerts(eff);
 }
 
 // ── PUSH NOTIFICATIONS — sistema completo del lado cliente ──────────────────
@@ -1753,7 +1789,7 @@ function poblarExportCard(){
     const count = allGastos.length;
     const avg   = total / count;
     const top   = allGastos.reduce((a,b)=>b.valor>a.valor?b:a,allGastos[0]);
-    const rest  = presupuestoBase > 0 ? (presupuestoBase - total) : null;
+    const rest  = presupuestoBase > 0 ? (presupuestoBase - total - mapsSpent) : null;
     const now   = new Date();
 
     const locale = lang==='en'?'en-US':lang==='pt'?'pt-BR':'es-AR';
@@ -1766,7 +1802,7 @@ function poblarExportCard(){
     document.getElementById('ec-cats-title').textContent = T.ec_by_cat || 'POR CATEGORÍA';
     document.getElementById('ec-footer-tag').textContent = T.ec_footer_tag || 'Generado con TaxUSA';
 
-    document.getElementById('ec-spent-val').textContent = '$' + fmt(total);
+    document.getElementById('ec-spent-val').textContent = '$' + fmt(total + mapsSpent);
     document.getElementById('ec-rest-val').textContent  = rest !== null ? '$' + fmt(rest) : '—';
     document.getElementById('ec-rest-val').style.color  = rest !== null ? (rest < 0 ? '#ef4444' : '#34d399') : '#f1f5f9';
     document.getElementById('ec-count').textContent     = count;
@@ -2403,6 +2439,7 @@ document.getElementById('userEmail').innerText = perfilNombre || user.email;
     }catch(e){console.error(e);}
     fetchRates();
     listenGastos();
+    listenPresupuestoYOrlando();
     // Asegurar que la fila de presupuesto esté actualizada después de cargar gastos
     setTimeout(refreshBudgetInfoRow, 500);
     flushPendingGastos(); // Sincronizar operaciones pendientes

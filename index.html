@@ -384,7 +384,10 @@ function mapsBudgetCacheKey() { return 'taxusa_maps_budget_cache_' + perfilId; }
 let mapsSpentCache = 0;
 function computeMapsSpent(data) {
     if (!data) return 0;
-    const wm = parseFloat(data.walmartSpent) || 0;
+    // El estimado del Market (walmartSpent) SOLO cuenta si en Orlando se activó
+    // "Descontar estimado del Market": por defecto se asume que el súper se
+    // carga acá con el ticket, y sumar además el estimado lo contaría doble.
+    const wm = data.countMarket ? (parseFloat(data.walmartSpent) || 0) : 0;
     const manual = (data.gastos || []).reduce((s,g) => s + (parseFloat(g.monto) || 0), 0);
     return wm + manual;
 }
@@ -575,17 +578,16 @@ function loadBudget() {
 
     // Escuchar Firestore en tiempo real
     if(!currentUser||!perfilId) return;
-    // Presupuesto desde el perfil
-    getDoc(doc(db,'usuarios',currentUser.uid,'perfiles',perfilId)).then(snap=>{
+    // Presupuesto desde el perfil (en vivo: si se edita desde Orlando, se ve acá)
+    onSnapshot(doc(db,'usuarios',currentUser.uid,'perfiles',perfilId), snap=>{
         if(snap.exists()&&snap.data().presupuesto!==undefined){
             const base=parseFloat(snap.data().presupuesto)||0;
             localStorage.setItem('taxusa_budget_cache_'+perfilId, String(base));
-            // Volver a renderizar con base actualizada y gastos ya cargados
             let g=[];
             try { g=JSON.parse(localStorage.getItem('taxusa_gastos_cache_'+perfilId)||'[]'); } catch(e){}
             renderBudgetUI(base, g);
         }
-    }).catch(()=>{});
+    }, ()=>{});
 
     // Gastos en tiempo real
     const q=query(collection(db,'usuarios',currentUser.uid,'perfiles',perfilId,'gastos'),orderBy('fecha','desc'));
