@@ -241,9 +241,6 @@
             <div class="greeting-name" id="greetingName">—</div>
             <div class="greeting-date" id="greetingDate"></div>
         </div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-            <span style="font-size:1.15rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;opacity:.35;white-space:nowrap;">Dashboard</span>
-        </div>
     </div>
 
     <!-- Section grid -->
@@ -555,7 +552,9 @@ function renderBudgetUI(base, gastos) {
         else mapsNoteEl.style.display='none';
     }
     // Presupuesto restante
-    if(base<=0){ document.getElementById('wb-value').textContent=t.budget_no_data||'—'; document.getElementById('wb-pct').textContent='—'; return; }
+    const wbEl=document.querySelector('.widget-budget');
+    if(base<=0){ document.getElementById('wb-value').textContent=t.budget_no_data||'—'; document.getElementById('wb-pct').textContent='—'; if(wbEl) wbEl.classList.add('is-empty'); return; }
+    if(wbEl) wbEl.classList.remove('is-empty');
     const restante=base-gastado, pct=Math.max(0,Math.min(100,Math.round((restante/base)*100)));
     document.getElementById('wb-value').textContent=`USD ${restante.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
     document.getElementById('wb-pct').textContent=pct+'%';
@@ -842,7 +841,7 @@ window.loadWeather = async function(force=false) {
         renderWeather(result, l);
     } catch(e) {
         if(refreshBtn) refreshBtn.classList.remove('spinning');
-        const errTxt = l==='en' ? 'Could not load weather. Tap 🔄 to retry.' : l==='pt' ? 'Não foi possível carregar o clima.' : 'No se pudo cargar el clima. Tocá 🔄 para reintentar.';
+        const errTxt = l==='en' ? 'Could not load weather. Tap the refresh button to retry.' : l==='pt' ? 'Não foi possível carregar o clima.' : 'No se pudo cargar el clima. Tocá el botón de actualizar para reintentar.';
         if(body) body.innerHTML='<div class="ww-error">⚠️ '+errTxt+'</div>';
     }
 };

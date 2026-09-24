@@ -93,6 +93,8 @@
         logout:     '<path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4M16 17l5-5-5-5M21 12H9"/>',
         key:        '<circle cx="8" cy="14" r="4"/><path d="m11 11 9-9M17 5l3 3M14 8l2 2"/>',
         play:       '<path d="M7 4v16l13-8Z"/>',
+        chevDown:   '<path d="m6 9 6 6 6-6"/>',
+        chevUp:     '<path d="m6 15 6-6 6 6"/>',
         apple:      '<path d="M12 7c-2-2-6-1-6 4 0 4 2 9 4 9 1 0 1-.5 2-.5s1 .5 2 .5c2 0 4-5 4-9 0-5-4-6-6-4Z"/><path d="M12 7c0-2 1-3 3-3"/>',
         shirt:      '<path d="M8 3 3 6l2 3 3-1.2V21h8V7.8L19 9l2-3-5-3-2 2h-4Z"/>',
         tooth:      '<path d="M7 3.5c-2.5 0-4 2-4 4.5 0 2 1 3 1.5 5S5.5 20 7.5 20c1.8 0 1.5-4 4.5-4s2.7 4 4.5 4c2 0 2-4.5 3-6.5S21 10 21 8c0-2.5-1.5-4.5-4-4.5-2 0-3 1-5 1s-3-1-5-1Z"/>'
@@ -119,7 +121,7 @@
         '🏆': 'trophy', '🔍': 'search', '🤖': 'sparkles', '🏪': 'bag', '📧': 'mail', '🖨': 'printer', '🅿': 'car', '🚂': 'bus',
         '🔒': 'lock', '🎧': 'headphones', '📁': 'folder', '💉': 'pulse', '⚡': 'zap', '🌐': 'globe', '☁': 'cloud', '🔊': 'volume',
         '🔤': 'notes', '⛔': 'xCircle', '🔴': 'dot', '🥤': 'droplet', '📐': 'ruler', '📏': 'ruler', '⛽': 'droplet', '🥨': 'box',
-        '💬': 'message', '🚪': 'logout', '🔑': 'key', '▶': 'play', '⬇': 'download', '🗓': 'calendar', '📆': 'calendar', '🧭': 'map', '🍎': 'apple', '👕': 'shirt'
+        '💬': 'message', '🚪': 'logout', '🔑': 'key', '▶': 'play', '⬇': 'download', '🗓': 'calendar', '📆': 'calendar', '🧭': 'map', '🍎': 'apple', '👕': 'shirt', '👟': 'shirt', '💛': 'zap', '🎥': 'film', '🖥': 'laptop', '👗': 'shirt', '⭐': 'sparkles', '👠': 'tag', '💄': 'sparkles', '💅': 'sparkles', '🏕': 'pin', '🔨': 'plug', '🪑': 'bed', '🎮': 'play', '🎯': 'search', '🏬': 'landmark'
     };
     // Si el ícono vive dentro de un link, manda el destino (así 📊 en "TAXES" es la calculadora y no un gráfico)
     const BY_HREF = [
@@ -222,7 +224,7 @@
     // conserva sus emojis de categoría.
     const LEAD_RE = /^(\s*)(\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*|[✓✕])(\s*)/u;
     const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'OPTION', 'SELECT', 'TITLE', 'INPUT', 'NOSCRIPT']);
-    const ALWAYS = '.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon';
+    const ALWAYS = '.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon';
     let staticEls = new WeakSet();
     const isStaticZone = el => {
         for (let n = el; n && n !== document.body; n = n.parentElement) {
@@ -264,6 +266,30 @@
     }
     const swapLeading = swapText;
 
+
+    // ▼ VER / ▲ CERRAR de los desplegables → chevron de línea (mismo trazo que el resto)
+    const ARROW_SEL = '#act-form-toggle,#adaptador-toggle,[id$="chevron-a"],[id$="chevron-b"],#ip-chevron,.tip-toggle-lbl,.split-toggle,.med-toggle,.cart-toggle,.collapsible-toggle,.group-arrow,.chevron,.arr,.arrow';
+    const ARROW_RE = /^(\s*)([▼▲▾▴])(\s*)/;
+    function swapArrows(root) {
+        (root.querySelectorAll ? root : document).querySelectorAll('.conv-divider,.rate-divider').forEach(el => {
+            if (el.children.length || el.textContent.trim() !== '⇅') return;
+            el.innerHTML = svg('exchange', 14).replace('class="ui-ic"', 'class="ui-ic ui-swap"');
+        });
+        (root.querySelectorAll ? root : document).querySelectorAll(ARROW_SEL).forEach(el => {
+            let n = el.firstChild;
+            while (n && n.nodeType === 3 && !n.nodeValue.trim() && n.nextSibling) n = n.nextSibling;
+            if (!n || n.nodeType !== 3) return;
+            const m = n.nodeValue.match(ARROW_RE);
+            if (!m) return;
+            const rest = n.nodeValue.slice(m[0].length);
+            const up = m[2] === '▲' || m[2] === '▴';
+            const tpl = document.createElement('template');
+            tpl.innerHTML = svg(up ? 'chevUp' : 'chevDown', 14).replace('class="ui-ic"', 'class="ui-ic ui-arw"');
+            n.nodeValue = rest;
+            el.insertBefore(tpl.content.firstChild, n);
+        });
+    }
+
     // Página actual → resaltar en la barra de navegación
     function markActive() {
         const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
@@ -284,6 +310,7 @@
         swapSlots(document);
         swapHeadings(document);
         swapLeading(document);
+        swapArrows(document);
         markActive();
     }
 

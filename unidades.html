@@ -434,10 +434,11 @@
 
                 <!-- Buscador -->
                 <div style="position:relative;margin-bottom:14px;">
+                    <svg class="ui-ic ui-search-ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                     <input type="text" id="farma-search"
-                        placeholder="🔍  Ibuprofeno, Paracetamol, Losec..."
+                        placeholder="Ibuprofeno, Paracetamol, Losec..."
                         oninput="farmaFilter(this.value)"
-                        style="padding-left:16px;font-size:.88rem;">
+                        style="padding-left:40px;font-size:.88rem;">
                     <button onclick="document.getElementById('farma-search').value='';farmaFilter('')"
                         id="farma-clear"
                         style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>

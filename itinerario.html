@@ -3092,7 +3092,7 @@ window.toggleInlineTransport = function() {
     if (!body) return;
     const open = body.style.display !== 'none';
     body.style.display = open ? 'none' : 'block';
-    if (chev) { chev.textContent = open ? '▾' : '▴'; chev.style.transform = open ? '' : 'rotate(180deg)'; }
+    if (chev) { chev.textContent = '▾'; chev.style.transform = open ? '' : 'rotate(180deg)'; }
 };
 
 window.toggleInlineTransportOrlando = function() {
@@ -3101,7 +3101,7 @@ window.toggleInlineTransportOrlando = function() {
     if (!body) return;
     const open = body.style.display !== 'none';
     body.style.display = open ? 'none' : 'block';
-    if (chev) { chev.textContent = open ? '▾' : '▴'; chev.style.transform = open ? '' : 'rotate(180deg)'; }
+    if (chev) { chev.textContent = '▾'; chev.style.transform = open ? '' : 'rotate(180deg)'; }
 };
 
 // Hookear al cambio de ciudad

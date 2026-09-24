@@ -1302,7 +1302,7 @@ function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 
 function updateTripUI() {
     const lang = localStorage.getItem('appLang') || 'es';
-    document.getElementById('tripLabel').innerText = `${i18n[lang].trip_prefix} ${tripData.destination} ✈️`;
+    document.getElementById('tripLabel').innerHTML = `${esc(i18n[lang].trip_prefix)} ${esc(tripData.destination)} ${window.uiIcon ? window.uiIcon('plane', 12).replace('class="ui-ic"','class="ui-ic ui-lead-end"') : ''}`;
     document.getElementById('input-destination').value = tripData.destination;
     document.getElementById('input-date').value = tripData.date;
 }
@@ -1311,7 +1311,7 @@ function updateCountdown() {
     const diff = new Date(tripData.date + 'T00:00:00').getTime() - Date.now();
     const lang = localStorage.getItem('appLang') || 'es';
     const t = i18n[lang];
-    if (diff <= 0) { document.getElementById('timer').innerText = lang === 'es' ? '¡Buen viaje! ✈️' : 'Safe travels! ✈️'; return; }
+    if (diff <= 0) { document.getElementById('timer').innerText = lang === 'es' ? '¡Buen viaje!' : lang === 'pt' ? 'Boa viagem!' : 'Safe travels!'; return; }
     const d=Math.floor(diff/864e5), h=Math.floor((diff%864e5)/36e5), m=Math.floor((diff%36e5)/6e4), s=Math.floor((diff%6e4)/1e3);
     document.getElementById('timer').innerText = `${d}${t.d} ${h}${t.h} ${m}${t.m} ${s}${t.s}`;
 }
@@ -1600,7 +1600,7 @@ window.fetchWeather = async function(city) {
 
     } catch(e) {
         if (refreshBtn) refreshBtn.classList.remove('spinning');
-        const errTxt = lang==='en' ? 'Could not load weather. Tap 🔄 to retry.' : lang==='pt' ? 'Não foi possível carregar o clima. Toque 🔄 para tentar.' : 'No se pudo cargar el clima. Tocá 🔄 para reintentar.';
+        const errTxt = lang==='en' ? 'Could not load weather. Tap the refresh button to retry.' : lang==='pt' ? 'Não foi possível carregar o clima. Toque no botão de atualizar para tentar.' : 'No se pudo cargar el clima. Tocá el botón de actualizar para reintentar.';
         body.innerHTML = '<div class="wc-error">⚠️ ' + errTxt + '</div>';
     }
 };
