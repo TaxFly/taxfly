@@ -246,6 +246,7 @@
         #sync-ok-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:9px;padding:10px 18px;background:rgba(16,185,129,.12);border:1.5px solid var(--success);border-radius:14px;font-size:.78rem;font-weight:700;color:var(--success);box-shadow:var(--shadow-lg);z-index:9998;white-space:nowrap;animation:ot-in .3s cubic-bezier(.34,1.56,.64,1);}
         #sync-ok-toast.show{display:flex;}
     </style>
+    <link rel="stylesheet" href="assets/ui.css">
 </head>
 <body>
 <!-- ── Offline Toast ── -->
@@ -287,6 +288,7 @@
         </button>
         <button class="btn-nav-set active" id="btnSettings" onclick="toggleSettings()"></button>
     </nav>
+    <script src="assets/ui.js"></script>
 
     <!-- Page heading -->
     <div class="page-heading">
@@ -720,7 +722,7 @@ async function handleAuthState(user) {
     // Sincronizar operaciones pendientes al estar online
     if (navigator.onLine) {
         if (window._flushTicketsPending) window._flushTicketsPending();
-        flushPendingDocs();
+        if (typeof flushPendingDocs === 'function') flushPendingDocs();
     }
 }
 
