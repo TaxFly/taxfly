@@ -1,0 +1,85 @@
+{
+  "name": "Orlando Planning",
+  "short_name": "Orlando",
+  "description": "Cronograma de outlets, comidas, compras y parques para el viaje a Orlando",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Supermercado",
+      "short_name": "Walmart",
+      "description": "Ir directo a la lista de compras del supermercado",
+      "url": "./index.html?section=walmart",
+      "icons": [
+        {
+          "src": "favicon.png",
+          "sizes": "128x128",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Parques",
+      "short_name": "Parques",
+      "description": "Ir directo al tracker de atracciones de los parques",
+      "url": "./index.html?section=parques",
+      "icons": [
+        {
+          "src": "favicon.png",
+          "sizes": "128x128",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Mis cosas de viaje",
+      "short_name": "Mis cosas",
+      "description": "Accesorios, ropa y mochila del día",
+      "url": "./Mis_cosas_de_viaje.html",
+      "icons": [
+        {
+          "src": "favicon.png",
+          "sizes": "128x128",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "lang": "es",
+  "categories": [
+    "travel",
+    "lifestyle",
+    "utilities"
+  ],
+  "prefer_related_applications": false
+}
