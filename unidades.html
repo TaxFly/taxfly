@@ -183,6 +183,7 @@
         .farma-detail-item{display:flex;flex-direction:column;gap:2px;}
         .farma-detail-lbl{font-size:.58rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;}
         .farma-detail-val{font-size:.78rem;font-weight:700;color:var(--text);}
+        .farma-warn{color:#f59e0b;margin-right:4px;vertical-align:-2px}.farma-warn svg{display:inline-block}
         .farma-tip{font-size:.72rem;font-weight:600;color:var(--text-sub);line-height:1.5;padding:8px 10px;background:rgba(37,99,235,.05);border-radius:8px;border-left:3px solid var(--primary);}
         .farma-stores{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
         .farma-store{font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text-sub);}
@@ -1842,7 +1843,7 @@ function farmaRender(list) {
                     <span class="farma-detail-val">${dosisUs}</span>
                 </div>
             </div>
-            <div class="farma-tip">💡 ${tipText}</div>
+            <div class="farma-tip">💡 ${String(tipText).startsWith('⚠️') ? `<span class="farma-warn">${window.uiIcon ? window.uiIcon('alert', 13) : '⚠️'}</span>${String(tipText).replace(/^⚠️\s*/, '')}` : tipText}</div>
             <div class="farma-stores">${stores}</div>
         </div>`;
     }).join('');

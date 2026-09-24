@@ -107,8 +107,10 @@ const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
 
 // ── EXPORTAR ────────────────────────────────────────────────────────────────
 // onProgress({ label, docs }) se llama a medida que avanza.
-export async function exportBackup({ includeTickets = false, onProgress = () => {} } = {}) {
-    const { db, uid, pid } = ctx();
+export async function exportBackup({ includeTickets = false, onProgress = () => {}, pid: pidOverride = null } = {}) {
+    const c = ctx();
+    const { db, uid } = c;
+    const pid = pidOverride || c.pid;   // permite respaldar un perfil que NO es el activo (ej. antes de eliminarlo)
     const base = ['usuarios', uid, 'perfiles', pid];
     let total = 0;
     const warnings = [];
@@ -120,8 +122,8 @@ export async function exportBackup({ includeTickets = false, onProgress = () => 
         const p = (await accountProfiles(db, uid)).find(x => x.id === pid);
         if (p) meta = { id: pid, nombre: p.nombre || '', foto: p.foto || '' };
     } catch (e) {}
-    if (!meta.nombre) { try { meta.nombre = localStorage.getItem('perfilActivoNombre') || ''; } catch (e) {} }
-    if (!meta.foto)   { try { meta.foto   = localStorage.getItem('perfilActivoFoto')   || ''; } catch (e) {} }
+    if (!meta.nombre && pid === c.pid) { try { meta.nombre = localStorage.getItem('perfilActivoNombre') || ''; } catch (e) {} }
+    if (!meta.foto && pid === c.pid)   { try { meta.foto   = localStorage.getItem('perfilActivoFoto')   || ''; } catch (e) {} }
 
     const out = {
         format: FORMAT, version: VERSION, exportedAt: new Date().toISOString(),

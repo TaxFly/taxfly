@@ -25,6 +25,8 @@
         document.head.appendChild(style);
     }
 
+    window.tfEnsureDialogStyles = ensureStyles;
+
     function openDialog({ message, okText, cancelText, danger }) {
         ensureStyles();
         return new Promise((resolve) => {

@@ -954,8 +954,74 @@ async function checkRealConnectivity() {
         await originalSave();
     };
 
+    const DEL_TXT = {
+        es: { msg: (n) => `Antes de eliminar "${n}", podés guardar una copia de todo lo de este perfil (gastos, itinerario, notas y Orlando Planning) en un archivo JSON.`, backup: 'Descargar respaldo y eliminar', noBackup: 'Eliminar sin respaldo', cancel: 'Cancelar', busy: 'Preparando respaldo…', fail: 'No se pudo generar el respaldo, así que el perfil NO se eliminó. Revisá tu conexión e intentá de nuevo.' },
+        en: { msg: (n) => `Before deleting "${n}", you can save a copy of everything in this profile (expenses, itinerary, notes and Orlando Planning) as a JSON file.`, backup: 'Download backup and delete', noBackup: 'Delete without backup', cancel: 'Cancel', busy: 'Preparing backup…', fail: 'The backup could not be created, so the profile was NOT deleted. Check your connection and try again.' },
+        pt: { msg: (n) => `Antes de excluir "${n}", você pode salvar uma cópia de tudo neste perfil (gastos, itinerário, notas e Orlando Planning) em um arquivo JSON.`, backup: 'Baixar backup e excluir', noBackup: 'Excluir sem backup', cancel: 'Cancelar', busy: 'Preparando backup…', fail: 'Não foi possível criar o backup, então o perfil NÃO foi excluído. Verifique sua conexão e tente de novo.' },
+    };
+    // Diálogo de 3 opciones: 'backup' | 'delete' | null (cancelar)
+    function askDeleteChoice(name) {
+        const T = DEL_TXT[lang] || DEL_TXT.es;
+        return new Promise(resolve => {
+            if (window.tfEnsureDialogStyles) window.tfEnsureDialogStyles();
+            const ov = document.createElement('div');
+            ov.className = 'tf-dialog-overlay';
+            ov.innerHTML = `<div class="tf-dialog-box" role="alertdialog" aria-modal="true">
+                <div class="tf-dialog-msg"></div>
+                <div class="tf-dialog-actions" style="flex-direction:column;align-items:stretch;">
+                    <button type="button" class="tf-dialog-btn tf-dialog-btn-ok" data-c="backup"></button>
+                    <button type="button" class="tf-dialog-btn tf-dialog-btn-danger" data-c="delete" style="background:transparent;color:var(--danger);border:1.5px solid rgba(239,68,68,.4);"></button>
+                    <button type="button" class="tf-dialog-btn tf-dialog-btn-cancel" data-c="cancel"></button>
+                </div></div>`;
+            ov.querySelector('.tf-dialog-msg').textContent = T.msg(name);
+            ov.querySelector('[data-c="backup"]').textContent = T.backup;
+            ov.querySelector('[data-c="delete"]').textContent = T.noBackup;
+            ov.querySelector('[data-c="cancel"]').textContent = T.cancel;
+            document.body.appendChild(ov);
+            requestAnimationFrame(() => ov.classList.add('show'));
+            const done = (v) => { ov.classList.remove('show'); setTimeout(() => ov.remove(), 160); document.removeEventListener('keydown', onKey); resolve(v); };
+            const onKey = (e) => { if (e.key === 'Escape') done(null); };
+            document.addEventListener('keydown', onKey);
+            ov.addEventListener('click', (e) => {
+                const c = e.target.closest && e.target.closest('[data-c]');
+                if (c) done(c.dataset.c === 'cancel' ? null : c.dataset.c);
+                else if (e.target === ov) done(null);
+            });
+        });
+    }
+    async function downloadProfileBackup(pid) {
+        const B = await import('./assets/backup.js');
+        const r = await B.exportBackup({ pid });
+        const url = URL.createObjectURL(r.blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = r.filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        return r;
+    }
+
     window.deleteProfile = async () => {
-        if (profiles.length <= 1 || !(await showConfirm(t.confirm))) return;
+        if (profiles.length <= 1) return;
+        const target = profiles.find(p => p.id === editingId);
+        const choice = await askDeleteChoice((target && target.nombre) || '');
+        if (!choice) return;
+        if (choice === 'backup') {
+            const btn = document.getElementById('btnDelete');
+            const T = DEL_TXT[lang] || DEL_TXT.es;
+            const prevTxt = btn ? btn.innerText : '';
+            if (btn) { btn.disabled = true; btn.innerText = T.busy; }
+            try {
+                await downloadProfileBackup(editingId);
+            } catch (e) {
+                console.error(e);
+                if (btn) { btn.disabled = false; btn.innerText = prevTxt; }
+                await showAlert(T.fail);
+                return;     // sin respaldo no se elimina
+            }
+            if (btn) { btn.disabled = false; btn.innerText = prevTxt; }
+        } else if (!(await showConfirm(t.confirm, { danger: true }))) {
+            return;
+        }
         profiles = profiles.filter(p => p.id !== editingId);
         await updateDoc(doc(db, 'usuarios', uid), { perfiles: profiles });
         localStorage.setItem('taxfly_cached_profiles', JSON.stringify(profiles));
