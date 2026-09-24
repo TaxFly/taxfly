@@ -1,0 +1,203 @@
+/* ── Taxfly UI — capa visual compartida ───────────────────────────────────
+   Se carga DESPUÉS del <style> de cada página, así que unifica sin tener que
+   tocar cada pantalla: mismos colores en modo oscuro, mismo fondo, misma
+   barra de navegación, mismas pestañas, tarjetas y botones. Es el mismo
+   lenguaje visual que Orlando Planning (fondo con degradé suave, barra
+   con pestaña activa rellena, íconos de línea, esquinas de 16–20px).
+   Los íconos los pone assets/ui.js. */
+
+/* ═══ 1. Tokens: un solo modo oscuro y un solo fondo ═══ */
+:root {
+    --ui-accent: #2563eb;
+    --ui-accent2: #7c3aed;
+    --ui-glow: 0 6px 18px -6px color-mix(in srgb, var(--ui-accent) 60%, transparent);
+    --ui-radius-lg: 20px;
+    --ui-radius-md: 16px;
+    --ui-radius-sm: 12px;
+}
+[data-theme="dark"] {
+    --bg: #0b1220;
+    --surface: #1a2434;
+    --surface-2: #222e42;
+    --input-bg: #222e42;
+    --border: #303f56;
+    --text-sub: #94a3b8;
+    --text-dim: #7c8ba1;
+    --header-color: #5b8def;
+    --shadow: 0 4px 20px rgba(0,0,0,.35);
+    --shadow-lg: 0 16px 44px rgba(0,0,0,.5);
+}
+html { background: var(--bg); }
+body {
+    background:
+        radial-gradient(720px 420px at 8% -6%, color-mix(in srgb, var(--ui-accent) 12%, transparent), transparent 60%),
+        radial-gradient(600px 380px at 105% 8%, color-mix(in srgb, var(--ui-accent2) 10%, transparent), transparent 55%),
+        var(--bg);
+    background-attachment: fixed;
+}
+
+/* ═══ 2. Encabezado y barra de navegación ═══ */
+.app-header { margin-bottom: 12px; }
+.logo { letter-spacing: -.6px; }
+.nav-bar {
+    position: sticky;
+    top: 8px;
+    z-index: 200;
+    border-radius: var(--ui-radius-md);
+    padding: 6px;
+    gap: 2px;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+}
+.btn-nav, .btn-nav-more {
+    gap: 3px;
+    padding: 8px 2px 7px;
+    border-radius: 11px;
+    color: var(--text-sub);
+    transition: background .2s, color .2s, transform .2s, box-shadow .2s;
+}
+.btn-nav { font-size: 10px; letter-spacing: .2px; }
+.btn-nav .ni { display: flex; align-items: center; justify-content: center; height: 21px; font-size: 17px; }
+.btn-nav:hover, .btn-nav-more:hover, .btn-nav-more.open { color: var(--primary); background: var(--primary-dim); }
+.btn-nav.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: var(--ui-glow);
+}
+.btn-nav.active .ni { transform: translateY(-1px) scale(1.05); }
+.more-dots { height: 21px; }
+.more-lbl { font-size: 10px; letter-spacing: .2px; }
+.btn-nav-more.is-current { color: var(--primary); background: var(--primary-dim); }
+.btn-nav-more.is-current .more-dot { background: var(--primary); }
+.btn-nav-more.is-current .more-lbl { color: var(--primary); }
+.btn-nav-set {
+    width: 36px !important; height: 36px !important; min-width: 36px !important;
+    margin-left: 4px;
+    transition: transform .25s, border-color .2s;
+}
+.btn-nav-set:hover { border-color: var(--primary); transform: rotate(20deg); }
+
+/* menú "Más": íconos en cuadradito de color */
+.nav-dropdown { border-radius: var(--ui-radius-md); padding: 6px; width: 238px; }
+.dd-item { gap: 12px; padding: 9px 10px; border-radius: 12px; }
+.dd-icon {
+    width: 34px !important; height: 34px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--primary-dim); color: var(--primary);
+}
+.dd-item .dd-name { font-size: 11.5px; }
+.dd-item .dd-desc { font-size: 10.5px; }
+.dd-item.current { background: var(--primary-dim); }
+.dd-item.current .dd-name { color: var(--primary); }
+
+/* tonos por destino (cuadraditos de íconos en inicio y menú) */
+.ui-slot[data-tone="blue"]   { --tone: #2563eb; }
+.ui-slot[data-tone="violet"] { --tone: #7c3aed; }
+.ui-slot[data-tone="green"]  { --tone: #10b981; }
+.ui-slot[data-tone="amber"]  { --tone: #f59e0b; }
+.ui-slot[data-tone="cyan"]   { --tone: #0ea5e9; }
+.ui-slot[data-tone="indigo"] { --tone: #6366f1; }
+.ui-slot[data-tone="red"]    { --tone: #ef4444; }
+.ui-slot[data-tone="teal"]   { --tone: #14b8a6; }
+.dd-icon.ui-slot[data-tone] { background: color-mix(in srgb, var(--tone) 13%, transparent); color: var(--tone); }
+
+/* ═══ 3. Inicio: accesos rápidos ═══ */
+.section-card, .quick-item {
+    border-radius: var(--ui-radius-md);
+    padding: 12px 4px 10px;
+    box-shadow: var(--shadow);
+    gap: 7px;
+}
+.sc-emoji {
+    width: 40px; height: 40px; border-radius: 13px;
+    display: flex !important; align-items: center; justify-content: center;
+    background: var(--primary-dim); color: var(--primary);
+    font-size: 1.3rem !important;
+    transition: transform .25s, background .25s;
+}
+.sc-emoji.ui-slot[data-tone] { background: color-mix(in srgb, var(--tone) 13%, transparent); color: var(--tone); }
+.section-card:hover .sc-emoji { transform: translateY(-1px) scale(1.06); }
+.sc-name { font-size: .62rem !important; }
+.greeting-banner::after { content: '' !important; }
+.greeting-banner {
+    border-radius: var(--ui-radius-lg);
+    background-image:
+        radial-gradient(220px 140px at 100% 0%, rgba(255,255,255,.14), transparent 70%),
+        linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#7c3aed 100%) !important;
+}
+.widget, .weather-widget, .next-event-card, .tip-card { border-radius: var(--ui-radius-md); }
+.widget-budget { border-radius: var(--ui-radius-md); }
+.w-label, .ww-label, .ne-label, .wb-label, .greeting-sub { font-size: .64rem !important; letter-spacing: .9px; }
+.w-icon { display: inline-flex; align-items: center; color: var(--primary); }
+.ne-dot.ui-slot, #ne-dot.ui-slot { color: var(--accent); }
+.tip-icon.ui-slot { color: var(--accent); display: flex; }
+
+/* ═══ 4. Tarjetas, pestañas, botones, campos ═══ */
+.card { border-radius: var(--ui-radius-lg); }
+.budget-card { border-radius: var(--ui-radius-lg); }
+.budget-label { font-size: .68rem; }
+
+/* Todas las pestañas iguales: barra suave con la activa rellena */
+.tab-bar, .tabs:not(.tabs-wrap > .tabs) {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--ui-radius-md);
+    padding: 4px;
+    gap: 3px;
+    box-shadow: none;
+}
+.tab-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 6px !important;
+    border-radius: 12px !important;
+    color: var(--text-sub);
+    font-size: .7rem !important;
+    letter-spacing: .3px;
+    transition: background .2s, color .2s, box-shadow .2s;
+}
+.tab-btn .ti { display: inline-flex; align-items: center; }
+.tab-btn:hover:not(.active) { color: var(--primary); background: var(--primary-dim); }
+.tab-btn.active {
+    background: var(--primary) !important;
+    color: #fff !important;
+    box-shadow: var(--ui-glow) !important;
+}
+/* rutas: chips deslizables (otro uso), mismo color de acento */
+.tab.active { box-shadow: var(--ui-glow); }
+
+.btn, .btn-compare, .btn-export, .btn-generate, .btn-add { border-radius: var(--ui-radius-sm); }
+.btn-primary { box-shadow: var(--ui-glow); }
+.btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+input, select, textarea { border-radius: var(--ui-radius-sm); }
+input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
+
+/* Títulos de pantalla con ícono */
+.ui-title { display: inline-flex; align-items: center; gap: 8px; }
+.ui-title .ui-ic { color: var(--primary); flex-shrink: 0; }
+h1.ui-title { font-size: 1.35rem; letter-spacing: -.4px; }
+
+/* ═══ 5. Animación de entrada pareja ═══ */
+@keyframes uiRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.card, .budget-card { animation: uiRise .35s ease both; }
+@media (prefers-reduced-motion: reduce) {
+    .card, .budget-card, .greeting-banner, .quick-grid, .section-card { animation: none !important; }
+}
+
+/* Emoji inicial de etiquetas/botones → ícono de línea */
+.ui-lead { display: inline-block; vertical-align: -3px; color: currentColor; flex-shrink: 0; }
+.ui-lead.has-text, .ui-lead:not(:last-child) { margin-right: 6px; }
+label .ui-lead, .w-label .ui-lead { color: var(--primary); }
+.ui-lead.big { color: var(--text-dim); opacity: .85; vertical-align: middle; }
+.tip-label .ui-lead { display: none; }
+.nav-dropdown, .nav-dropdown .dd-item { text-align: left; cursor: pointer; }
+.dd-item > div { flex: 1; min-width: 0; }
+
+/* ═══ 6. Marca TaxUSA: estrella sobre franjas (misma en todas las pantallas) ═══ */
+.logo { gap: 9px; font-size: 1.32rem; }
+.logo > svg { width: 32px; height: 32px; border-radius: 10px; box-shadow: 0 4px 12px -3px rgba(30,58,138,.55); }
+.wm { font-weight: 500; color: var(--text); letter-spacing: -.045em; line-height: 1; }
+.wm .wm-usa { font-weight: 900; color: var(--header-color); letter-spacing: -.045em; }
+.wm-card { color: #fff; }
+.wm-card .wm-usa { color: #93c5fd; }
+.ec-logo > svg { border-radius: 8px; }
