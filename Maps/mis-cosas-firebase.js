@@ -8,14 +8,8 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 // perfil de Taxfly tiene SU PROPIO "Mis cosas de viaje" — los datos viven
 // bajo usuarios/{uid}/perfiles/{perfilId}/misCosas/root/..., igual que
 // Orlando vive bajo .../orlando/{docId}.
-const firebaseConfig = {
-  apiKey: "AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0",
-  authDomain: "viajes-db538.firebaseapp.com",
-  projectId: "viajes-db538",
-  storageBucket: "viajes-db538.firebasestorage.app",
-  messagingSenderId: "237311739178",
-  appId: "1:237311739178:web:333e468b184c0402a98a53"
-};
+// Config centralizada en config.js (../config.js, cargado antes de este módulo).
+const firebaseConfig = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 const TAXFLY_LOGIN_URL = 'https://taxfly.github.io/taxfly/login.html';
 const TAXFLY_PROFILES_URL = 'https://taxfly.github.io/taxfly/profiles.html';
 const PENDING_REDIRECT_KEY = 'taxusa_pending_redirect';
