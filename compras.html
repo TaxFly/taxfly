@@ -845,9 +845,14 @@ const auth = getAuth(app);
 // al mismo tiempo en pestañas distintas del mismo origen. Si falla (ya se
 // había inicializado Firestore antes en esta pestaña, o el navegador no
 // soporta IndexedDB), se cae a la versión sin persistencia.
+// cacheSizeBytes tope en 200MB: sin esto, las pólizas/fotos de Documentos
+// (guardadas en trozos de 800KB) irían acumulando espacio en el dispositivo
+// sin límite. Con el tope, Firestore borra solo lo más viejo que no esté
+// activamente abierto cuando se pasa de 200MB — nunca se pierde de la nube,
+// solo deja de estar cacheado localmente hasta la próxima vez que haya red.
 const db = (() => {
     try {
-        return initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+        return initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager(), cacheSizeBytes: 200 * 1024 * 1024 }) });
     } catch (e) {
         return getFirestore(app);
     }

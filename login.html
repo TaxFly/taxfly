@@ -687,7 +687,7 @@ try {
     // acá además es lo que le da sentido a "PIN offline": sin esto, apenas
     // se recarga login.html sin conexión no había NADA de Firestore que leer.
     try {
-        db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+        db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager(), cacheSizeBytes: 200 * 1024 * 1024 }) });
     } catch (e) {
         db = getFirestore(app);
     }

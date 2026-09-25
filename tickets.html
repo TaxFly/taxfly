@@ -508,7 +508,7 @@ try {
     // Persistencia local (IndexedDB): ver nota en compras.html/index.html —
     // acá cubre además las pólizas/PDFs guardados en 'users/{uid}/profiles'.
     try {
-        db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+        db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager(), cacheSizeBytes: 200 * 1024 * 1024 }) });
     } catch (e) {
         db = getFirestore(app);
     }

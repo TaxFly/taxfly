@@ -805,7 +805,7 @@ try {
     auth = getAuth(app);
     // Persistencia local (IndexedDB): ver nota en compras.html/index.html.
     try {
-        db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+        db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager(), cacheSizeBytes: 200 * 1024 * 1024 }) });
     } catch (e) {
         db = getFirestore(app);
     }
