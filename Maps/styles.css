@@ -803,6 +803,14 @@ body {
   padding: 22px;
   width: 100%;
   max-width: 420px;
+  /* Antes no tenía tope de altura ni scroll propio: un modal con contenido
+     largo (ej. la Guía de talles, con varias tablas) quedaba más alto que
+     la pantalla, y como el fondo tampoco scrollea, la parte de abajo —
+     incluido el botón "Cerrar"— quedaba inalcanzable: no dejaba ni scrollear
+     ni salir. Con esto, el modal scrollea internamente en vez de desbordar. */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-lg);
   animation: modalPopIn .22s cubic-bezier(.2,.9,.3,1.1);
 }
@@ -1309,6 +1317,12 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
   width: 100%;
   max-width: 320px;
   text-align: center;
+  /* Mismo arreglo que .modal-box: sin esto, un mensaje largo (o con lista)
+     podía quedar más alto que la pantalla, sin scroll y sin forma de llegar
+     a los botones. */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .confirm-title {
   font-family: 'DM Sans', sans-serif;

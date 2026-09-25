@@ -12,7 +12,7 @@
         style.textContent = `
             .tf-dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .18s ease;}
             .tf-dialog-overlay.show{opacity:1;}
-            .tf-dialog-box{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:var(--radius,20px);box-shadow:var(--shadow-lg,0 12px 40px rgba(0,0,0,.2));padding:22px 20px;width:100%;max-width:340px;transform:translateY(8px) scale(.98);transition:transform .18s ease;}
+            .tf-dialog-box{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:var(--radius,20px);box-shadow:var(--shadow-lg,0 12px 40px rgba(0,0,0,.2));padding:22px 20px;width:100%;max-width:340px;max-height:calc(100vh - 40px);overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateY(8px) scale(.98);transition:transform .18s ease;}
             .tf-dialog-overlay.show .tf-dialog-box{transform:translateY(0) scale(1);}
             .tf-dialog-msg{font-size:.88rem;font-weight:600;color:var(--text,#0f172a);line-height:1.45;white-space:pre-line;margin-bottom:18px;}
             .tf-dialog-actions{display:flex;gap:10px;justify-content:flex-end;}
