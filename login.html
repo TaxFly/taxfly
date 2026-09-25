@@ -669,7 +669,7 @@ const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 // mostrar la pantalla de PIN offline usando solo localStorage, sin Firebase.
 let initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
     onAuthStateChanged, sendPasswordResetEmail, sendEmailVerification, signOut,
-    getFirestore, doc, getDoc, setDoc, updateDoc,
+    getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, updateDoc,
     initializeAppCheck, ReCaptchaV3Provider;
 let app, auth, db;
 let firebaseOk = true;
@@ -679,11 +679,18 @@ try {
     ({ getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
        onAuthStateChanged, sendPasswordResetEmail, sendEmailVerification,
        signOut } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js"));
-    ({ getFirestore, doc, getDoc, setDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"));
+    ({ getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"));
     ({ initializeAppCheck, ReCaptchaV3Provider } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js"));
     app  = initializeApp(FB);
     auth = getAuth(app);
-    db   = getFirestore(app);
+    // Persistencia local (IndexedDB): ver nota en compras.html/index.html —
+    // acá además es lo que le da sentido a "PIN offline": sin esto, apenas
+    // se recarga login.html sin conexión no había NADA de Firestore que leer.
+    try {
+        db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+    } catch (e) {
+        db = getFirestore(app);
+    }
     if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 } catch (err) {
     console.warn('[TaxFly] SDK de Firebase no disponible (sin conexión) — se usa el flujo de PIN offline directo.', err);
@@ -860,6 +867,15 @@ function t(key, ...args) {
     let str = (i18n[currentLang] || i18n.es)[key] || key;
     args.forEach(a => { str = str.replace('%d', a); });
     return str;
+}
+
+// Ventana de gracia del PIN offline: si hubo actividad reciente en
+// CUALQUIER página de la app (esta u otra — ver el heartbeat en config.js),
+// no lo volvemos a pedir. Solo se re-pide después de estar sin uso.
+const PIN_GRACE_MINUTES = 30;
+function hasRecentActivity() {
+    return typeof window.taxflyMinutesSinceActivity === 'function'
+        && window.taxflyMinutesSinceActivity() < PIN_GRACE_MINUTES;
 }
 
 async function sha256(str) {
@@ -1081,6 +1097,11 @@ if (firebaseOk) onAuthStateChanged(auth, async (user) => {
         const cachedHash  = localStorage.getItem('taxusa_pin_hash');
         const cachedEmail = localStorage.getItem('taxusa_offline_email');
         const hasCachedPin = cachedHash && cachedHash !== '' && cachedHash !== 'null';
+        if (hasRecentActivity()) {
+            // Uso reciente: no repetir el PIN, entrar directo.
+            goToApp();
+            return;
+        }
         if (cachedEmail && hasCachedPin) {
             showOfflinePinScreen();
         }
@@ -1121,6 +1142,10 @@ if (firebaseOk) onAuthStateChanged(auth, async (user) => {
         const cachedFoto = localStorage.getItem('perfilActivoFoto')   || '';
         if (cachedName) localStorage.setItem('taxusa_cached_name', cachedName);
         if (cachedFoto) localStorage.setItem('taxusa_cached_foto', cachedFoto);
+
+        // Login online exitoso: cuenta como actividad reciente para la
+        // ventana de gracia del PIN offline.
+        try { window.taxflyTouchActivity && window.taxflyTouchActivity(); } catch(e) {}
 
         if (!pinHash) {
             showCreatePinScreen();
@@ -1167,7 +1192,10 @@ async function initScreen() {
         const cachedHash  = localStorage.getItem('taxusa_pin_hash');
         const cachedEmail = localStorage.getItem('taxusa_offline_email');
         const hasCachedPin = cachedHash && cachedHash !== '' && cachedHash !== 'null';
-        if (cachedEmail && hasCachedPin) {
+        if (cachedEmail && hasCachedPin && hasRecentActivity()) {
+            // Ya se pidió el PIN hace poco (en esta app o en otra) — entrar directo.
+            hideSplash(() => goToApp());
+        } else if (cachedEmail && hasCachedPin) {
             hideSplash(() => showOfflinePinScreen());
         } else {
             hideSplash(() => {
@@ -1199,7 +1227,7 @@ function hideSplash(callback) {
 }
 
 window.addEventListener('online',  () => { if (document.getElementById('screen-pin-offline').classList.contains('hidden') === false) showScreen('screen-login'); });
-window.addEventListener('offline', () => { if (!document.getElementById('screen-login').classList.contains('hidden')) { const h = localStorage.getItem('taxusa_pin_hash'); const e = localStorage.getItem('taxusa_offline_email'); if (e && h && h !== '' && h !== 'null') showOfflinePinScreen(); } });
+window.addEventListener('offline', () => { if (!document.getElementById('screen-login').classList.contains('hidden')) { const h = localStorage.getItem('taxusa_pin_hash'); const e = localStorage.getItem('taxusa_offline_email'); if (e && h && h !== '' && h !== 'null' && !hasRecentActivity()) showOfflinePinScreen(); } });
 
 // ── Offline PIN screen ──
 function showOfflinePinScreen() {
@@ -1246,6 +1274,7 @@ async function onOfflinePinKey(key) {
 
         if (hash === stored) {
             // ✅ Correct PIN — bypass online auth, go straight to app
+            try { window.taxflyTouchActivity && window.taxflyTouchActivity(); } catch(e) {}
             goToApp();
         } else {
             pinAttempts++;

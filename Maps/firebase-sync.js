@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot, getDoc, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, onSnapshot, getDoc, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
@@ -9,7 +9,19 @@ import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com
 const firebaseConfig = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Persistencia local (IndexedDB): los datos ya cargados quedan disponibles
+// sin conexión, y lo que se escribe offline se sincroniza solo al volver la
+// señal. tabManager multi-pestaña porque TaxFly y Maps pueden estar abiertos
+// al mismo tiempo en pestañas distintas del mismo origen. Si falla (ya se
+// había inicializado Firestore antes en esta pestaña, o el navegador no
+// soporta IndexedDB), se cae a la versión sin persistencia.
+const db = (() => {
+    try {
+        return initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+    } catch (e) {
+        return getFirestore(app);
+    }
+})();
 const auth = getAuth(app);
 // App Check — mismo patrón que el resto de TaxFly (antes Maps no lo hacía;
 // si algún día se pasa App Check a modo "Enforce" en la consola, Maps se

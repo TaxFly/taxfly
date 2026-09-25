@@ -33,3 +33,25 @@ window.taxflyWorker = async function (body) {
     } catch (e) { /* sin sesión: sigue sin token */ }
     return fetch(window.TAXFLY_CONFIG.WORKER_URL, { method: 'POST', headers, body: JSON.stringify(body) });
 };
+
+// ── Actividad reciente (para el PIN offline) ────────────────────────────────
+// login.html pedía el PIN offline cada vez que la app arrancaba sin conexión,
+// aunque hubieras entrado hace un minuto. Esto guarda "cuándo se usó por
+// última vez cualquier página de la app" en localStorage (compartido por
+// TaxFly y Maps, mismo origen), para que login.html pueda saltear el PIN si
+// hubo uso reciente. Se actualiza solo, en todas las páginas que cargan
+// config.js, sin que cada una tenga que acordarse de hacerlo.
+(function () {
+    const KEY = 'taxfly_last_activity';
+    function touch() { try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {} }
+    touch(); // esta página se está usando ahora mismo
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') touch(); });
+    // Mientras la pestaña siga abierta y visible, "seguir usando la app"
+    // cuenta como actividad aunque no dispares ningún evento puntual.
+    setInterval(() => { if (document.visibilityState === 'visible') touch(); }, 5 * 60 * 1000);
+    window.taxflyTouchActivity = touch;
+    window.taxflyMinutesSinceActivity = function () {
+        const last = parseInt(localStorage.getItem(KEY), 10) || 0;
+        return (Date.now() - last) / 60000;
+    };
+})();
