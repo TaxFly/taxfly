@@ -197,7 +197,6 @@ h1.ui-title { font-size: 1.35rem; letter-spacing: -.4px; }
 }
 
 /* Emoji inicial de etiquetas/botones → ícono de línea */
-.ui-lead { display: inline-block; vertical-align: -3px; color: currentColor; flex-shrink: 0; }
 .ui-lead.has-text, .ui-lead:not(:last-child) { margin-right: 6px; }
 label .ui-lead, .w-label .ui-lead { color: var(--primary); }
 .ui-lead.big { color: var(--text-dim); opacity: .85; vertical-align: middle; }
@@ -215,8 +214,7 @@ label .ui-lead, .w-label .ui-lead { color: var(--primary); }
 .ec-logo > svg { border-radius: 8px; }
 
 /* ═══ 7. Revisión Inicio + Taxes ═══ */
-/* flechas de desplegables: chevron de línea */
-.ui-arw { flex-shrink: 0; vertical-align: -3px; }
+/* flechas de desplegables: chevron de línea (.ui-arw base vive en style.css) */
 .tip-toggle-lbl, .split-toggle, .med-toggle, .cart-toggle { display: inline-flex; align-items: center; gap: 3px; }
 /* tarjeta colapsada: sin el hueco del encabezado abierto */
 .split-header:has(+ .split-body:not(.open)),

@@ -32,6 +32,14 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* .ui-lead / .ui-arw (íconos al lado de texto en labels/botones) — antes
+   estaba duplicado inline en selector.html, login.html y profiles.html con
+   una versión más simple (margin-right:5px fijo). Se unifica acá (todas las
+   páginas cargan style.css) con la versión completa que ya usaba ui.css. */
+.ui-lead { display: inline-block; vertical-align: -3px; color: currentColor; flex-shrink: 0; }
+.ui-lead.has-text, .ui-lead:not(:last-child) { margin-right: 6px; }
+.ui-arw { flex-shrink: 0; vertical-align: -3px; }
+
 /* Badge de reCAPTCHA v3 — antes estaba repetido inline en 8 páginas, con dos
    variantes distintas (algunas con display:none, otras con visibility+opacity
    +pointer-events). Se unifica acá (todas las páginas cargan style.css) con
