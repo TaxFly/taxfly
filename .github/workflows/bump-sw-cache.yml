@@ -1,0 +1,41 @@
+name: Bump service worker cache
+
+# Corre en cada push a la rama que sirve GitHub Pages. Si cambió algo que
+# está en PRECACHE (sw.js), recalcula CACHE y commitea sw.js solo, así el
+# refresco es automático y nadie tiene que acordarse de bumpearlo a mano.
+#
+# ⚠️ Ajustar 'branches' abajo a la rama real desde la que se sirve GitHub
+# Pages (Settings → Pages → Build and deployment → Branch) si no es 'main'.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'sw.js' # evita que el propio commit de este workflow se dispare en loop
+
+permissions:
+  contents: write
+
+jobs:
+  bump-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Recalcular CACHE si hace falta
+        run: node scripts/bump-cache.js
+
+      - name: Commitear sw.js si cambió
+        run: |
+          if git diff --quiet -- sw.js; then
+            echo "sw.js ya estaba al día, nada que commitear."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sw.js
+          git commit -m "chore: bump service worker cache [skip ci]"
+          git push

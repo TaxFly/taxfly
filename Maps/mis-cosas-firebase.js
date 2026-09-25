@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
 // Mismo proyecto de Firebase que Taxfly y Orlando Planning (mismo origen,
 // taxfly.github.io): la sesión de Auth ya es compartida, así que si ya
@@ -17,6 +18,10 @@ const PENDING_REDIRECT_KEY = 'taxusa_pending_redirect';
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+// App Check — mismo patrón que el resto de TaxFly (antes esta página no lo
+// hacía; si algún día se pasa App Check a modo "Enforce" en la consola, se
+// habría quedado sin acceso de un día para el otro sin este bloque).
+if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 
 // El script principal (no es un módulo) no puede hacer `import`, así que
 // se comunican con esta promesa: la crea ANTES de arrancar el login para

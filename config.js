@@ -11,7 +11,6 @@ window.TAXFLY_CONFIG = {
         storageBucket: "viajes-db538.firebasestorage.app",
         messagingSenderId: "237311739178",
         appId: "1:237311739178:web:333e468b184c0402a98a53",
-        measurementId: "G-WYF0L0YSYJ",
     },
 };
 

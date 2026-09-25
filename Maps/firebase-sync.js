@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot, getDoc, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
 // Proyecto de Firebase de TaxUSA/Taxfly — unificado (antes Maps tenía su
 // propio proyecto, orlando-planning-5c1e1). La config vive en config.js
@@ -10,6 +11,10 @@ const firebaseConfig = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+// App Check — mismo patrón que el resto de TaxFly (antes Maps no lo hacía;
+// si algún día se pasa App Check a modo "Enforce" en la consola, Maps se
+// habría quedado sin acceso de un día para el otro sin este bloque).
+if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 
 // ── Login + perfil compartido con Taxfly ────────────────────────────
 // Mismo proyecto de Firebase, mismo origen (taxfly.github.io): la sesión
