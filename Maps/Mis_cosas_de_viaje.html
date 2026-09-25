@@ -538,7 +538,6 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
     <span class="sx-sec">Mi equipo</span>
     <div class="sx-card">
       <button class="sx-row" data-do="dispositivos"><span class="sx-ico" style="--c:#2563eb"><i data-ic="camera" data-s="18"></i></span><span class="sx-lbl">Dispositivos</span><span class="sx-go"><i data-ic="chevR" data-s="16"></i></span></button>
-      <button class="sx-row" data-do="enlaces"><span class="sx-ico" style="--c:#7c3aed"><i data-ic="link" data-s="18"></i></span><span class="sx-lbl">Enlaces a otras apps</span><span class="sx-go"><i data-ic="chevR" data-s="16"></i></span></button>
     </div>
 
     <span class="sx-sec">Datos y respaldo</span>
@@ -642,27 +641,6 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
     </div>
   </div>
 </dialog>
-
-<dialog id="enlDlg">
-  <form class="dlg" id="enlForm" novalidate>
-    <h2>Enlaces a otras apps</h2>
-    <div id="enlList"></div>
-    <label class="f">Nombre
-      <input id="enlNombre" autocomplete="off" placeholder="ej: Orlando Planning">
-    </label>
-    <label class="f">Dirección
-      <input id="enlUrl" type="url" autocomplete="off" placeholder="https://…">
-    </label>
-    <p class="err" id="enlErr" hidden></p>
-    <div class="foot">
-      <div class="r">
-        <button type="button" class="btn" id="enlClose">Listo</button>
-        <button type="submit" class="btn primary">Agregar enlace</button>
-      </div>
-    </div>
-  </form>
-</dialog>
-
 
 <dialog id="devDlg">
   <div class="dlg">
@@ -790,14 +768,14 @@ let mochila = {
 let mochilaPend = 0, dispPend = 0;
 
 const ENLACES_DEF = [ {
-  nombre: "Orlando Planning",
-  url: "https://taxfly.github.io/taxfly/Maps/"
-}, {
   nombre: "TaxUSA",
   url: "https://taxfly.github.io/taxfly/index.html"
+}, {
+  nombre: "Orlando Planning",
+  url: "https://taxfly.github.io/taxfly/Maps/index.html"
 } ];
 
-let enlaces = ENLACES_DEF;
+const enlaces = ENLACES_DEF;
 
 const urlValida = u => {
   try {
@@ -807,11 +785,6 @@ const urlValida = u => {
     return false;
   }
 };
-
-const limpiaEnlaces = v => Array.isArray(v) ? v.filter(e => e && typeof e.nombre === "string" && urlValida(e.url)).map(e => ({
-  nombre: e.nombre.slice(0, 40),
-  url: e.url
-})) : ENLACES_DEF;
 
 const limpiaMochila = v => ({
   hotel: Array.isArray(v && v.hotel) ? v.hotel.filter(x => typeof x === "string") : [],
@@ -1057,10 +1030,6 @@ function iniciarNube(dbAdapter) {
       render();
     }, err => aviso("Se cortó la conexión con la nube. Recargá la página para seguir sincronizando."));
   }
-  DB.doc("estado/enlaces").onSnapshot(d => {
-    enlaces = d.exists ? limpiaEnlaces((d.data() || {}).lista) : ENLACES_DEF;
-    renderEnlaces();
-  }, () => {});
   DB.doc("estado/dispositivos").onSnapshot(d => {
     if (dispPend) return;
     dispositivos = d.exists ? limpiaDisp((d.data() || {}).lista) : DEV_DEF.map(x => ({
@@ -1118,11 +1087,6 @@ async function iniciarLocal() {
       q.onerror = () => rej(q.error);
     });
     for (const s of SECS) data[s] = (await get(SEC[s].key)).map(o => normalizar(o, s));
-    enlaces = await new Promise(res => {
-      const q = db.transaction("kv").objectStore("kv").get("enlaces");
-      q.onsuccess = () => res(q.result === undefined ? ENLACES_DEF : limpiaEnlaces(q.result));
-      q.onerror = () => res(ENLACES_DEF);
-    });
     dispositivos = await new Promise(res => {
       const q = db.transaction("kv").objectStore("kv").get("dispositivos");
       q.onsuccess = () => res(q.result === undefined ? DEV_DEF.map(x => ({
@@ -1161,19 +1125,6 @@ async function putLocal(k, v) {
   }
 }
 
-function guardarEnlaces() {
-  if (modo === "local") {
-    putLocal("enlaces", enlaces);
-    return;
-  }
-  const v = {
-    lista: enlaces.map(e => ({
-      ...e
-    }))
-  };
-  cadenas.enlaces = (cadenas.enlaces || Promise.resolve()).then(() => conTimeout(DB.doc("estado/enlaces").set(v), 15e3)).catch(errorNube);
-}
-
 const norm = u => new URL(u, location.href).href.split(/[?#]/)[0].replace(/index\.html$/, "");
 
 const misma = u => {
@@ -1201,53 +1152,6 @@ function renderEnlaces() {
     return `<a class="enl" href="${esc(e.url)}" ${misma(e.url) ? "data-app" : 'target="_blank" rel="noopener"'} title="${esc(e.nombre)}">${t ? logo(t, 20) : ic("upRight", 14)}<span>${esc(e.nombre)}</span></a>`;
   }).join("");
 }
-
-function pintarEnlDlg() {
-  $("#enlList").innerHTML = enlaces.length ? enlaces.map((e, n) => `<div class="enl-row">${tipoLogo(e) ? `<span class="lg">${logo(tipoLogo(e), 22)}</span>` : ""}<div><strong>${esc(e.nombre)}</strong><small>${esc(e.url)}</small></div>\n     <button type="button" data-rmenl="${n}" aria-label="Quitar ${esc(e.nombre)}">${ic("x", 15)}</button></div>`).join("") : '<p class="notes" style="margin:0">No hay enlaces todavía.</p>';
-}
-
-function abrirEnlaces() {
-  cerrarMenu();
-  pintarEnlDlg();
-  $("#enlErr").hidden = true;
-  $("#enlNombre").value = "";
-  $("#enlUrl").value = "";
-  $("#enlDlg").showModal();
-}
-
-$("#enlList").addEventListener("click", e => {
-  const b = e.target.closest("[data-rmenl]");
-  if (!b) return;
-  enlaces = enlaces.filter((_, n) => n !== +b.dataset.rmenl);
-  guardarEnlaces();
-  pintarEnlDlg();
-  renderEnlaces();
-});
-
-$("#enlForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const nombre = $("#enlNombre").value.trim();
-  let url = $("#enlUrl").value.trim();
-  if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
-  const err = t => {
-    $("#enlErr").textContent = t;
-    $("#enlErr").hidden = false;
-  };
-  if (!nombre) return err("Escribí un nombre para el enlace.");
-  if (!urlValida(url)) return err("La dirección no es válida. Tiene que empezar con https://");
-  enlaces = [ ...enlaces, {
-    nombre: nombre.slice(0, 40),
-    url: url
-  } ];
-  guardarEnlaces();
-  renderEnlaces();
-  $("#enlNombre").value = "";
-  $("#enlUrl").value = "";
-  $("#enlErr").hidden = true;
-  pintarEnlDlg();
-});
-
-$("#enlClose").onclick = () => $("#enlDlg").close();
 
 function guardarDisp() {
   if (modo === "local") {
@@ -1452,7 +1356,7 @@ function abrirPicker() {
   $("#pickDlg").showModal();
 }
 
-[ [ "editor", "#edCancel" ], [ "impDlg", "#impCancel" ], [ "enlDlg", "#enlClose" ], [ "devDlg", "#devClose" ], [ "pickDlg", "#pickCancel" ] ].forEach(([id, btn]) => {
+[ [ "editor", "#edCancel" ], [ "impDlg", "#impCancel" ], [ "devDlg", "#devClose" ], [ "pickDlg", "#pickCancel" ] ].forEach(([id, btn]) => {
   const d = document.getElementById(id), f = d && d.querySelector(".dlg");
   if (!f) return;
   const x = document.createElement("button");
@@ -1604,7 +1508,7 @@ $("#settingsDrawer").addEventListener("click", async e => {
   if (a === "perfil") cambiarPerfil(); else if (a === "refresh") location.reload(); else if (a === "dispositivos") {
     cerrarDrawer();
     abrirDevDlg();
-  } else if (a === "enlaces") abrirEnlaces(); else if (a === "logout") {
+  } else if (a === "logout") {
     if (window._misCosasSignOut) await window._misCosasSignOut(); else location.href = "https://taxfly.github.io/taxfly/login.html";
   }
 });
