@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script>
+(function() {
+  // Key 'theme' compartida con TaxUSA/Taxfly (mismo dominio, mismo
+  // localStorage) — elegís el tema en cualquiera de las dos apps y te
+  // acompaña en la otra. Mismo patrón exacto que usa Taxfly en sus
+  // páginas, para que el valor se interprete igual de los dos lados.
+  var _t = null;
+  try { _t = localStorage.getItem('theme'); } catch(e) {}
+  if (_t) document.documentElement.setAttribute('data-theme', _t);
+  else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+})();
+// Flag de debug: por defecto apagado en producción. Para activarlo, correr
+// en la consola del navegador: localStorage.setItem('debug','1') y recargar.
+try { window.DEBUG = localStorage.getItem('debug') === '1'; } catch(e) { window.DEBUG = false; }
+function devError(...args) { if (window.DEBUG) console.error(...args); }
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Orlando Planning">
+<meta name="theme-color" content="#0b1220">
+<title>Orlando Planning</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="https://taxfly.github.io/taxfly/Maps/favicon.png?v=5">
+<link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/Maps/apple-touch-icon.png?v=5">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="sx.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="module" src="firebase-sync.js"></script>
+<script>
+// Registro del service worker — habilita instalar la app y que el
+// checklist funcione sin señal. Si falla (ej. abierta como file://),
+// la app sigue andando normal, solo sin el offline.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // Un solo Service Worker para todo el sitio (antes Maps tenía el suyo);
+    // registrarlo desde acá con la ruta al de la raíz le da scope de sitio
+    // completo (cubre /Maps/ igual), así una sola versión de cache controla
+    // el refresco de TaxFly y Maps juntos.
+    navigator.serviceWorker.register('../sw.js').catch(() => {});
+  });
+}
+</script>
+</head>
+<body class="theme-outlets">
+
+<!-- ════ SPLASH SCREEN ════ -->
+<div id="splash-screen" style="
+    position:fixed;inset:0;z-index:9999;
+    background:#0b1220;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    transition:opacity .4s ease;
+">
+  <style>
+    @keyframes spBadgeIn { from{opacity:0;transform:scale(.82);} to{opacity:1;transform:scale(1);} }
+    @keyframes spRingSpin { to{ transform:rotate(360deg); } }
+    @keyframes spWipe { from{clip-path:inset(0 100% 0 0);opacity:1;} to{clip-path:inset(0 0% 0 0);opacity:1;} }
+    @keyframes spTagIn { from{opacity:0;letter-spacing:7px;} to{opacity:1;letter-spacing:2.5px;} }
+    @keyframes spTwinkle { 0%,100%{opacity:0;transform:scale(.4);} 50%{opacity:.55;transform:scale(1);} }
+    @keyframes spSweep { 0%{left:-25%;opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{left:110%;opacity:0;} }
+    @keyframes spBlob1 { 0%,100%{transform:translate(-8%,-6%) scale(1);} 50%{transform:translate(14%,10%) scale(1.25);} }
+    @keyframes spBlob2 { 0%,100%{transform:translate(10%,8%) scale(1.1);} 50%{transform:translate(-14%,-10%) scale(.9);} }
+    @keyframes spBlob3 { 0%,100%{transform:translate(-50%,-50%) rotate(0deg);} 50%{transform:translate(-50%,-50%) rotate(180deg);} }
+    @keyframes spGridDrift { from{background-position:0 0;} to{background-position:60px 60px;} }
+    @keyframes spHueDrift { 0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(26deg);} }
+    @keyframes spRaysSpin { to{ transform:rotate(360deg); } }
+    @keyframes spFloatUp {
+      0%   { transform:translateY(0) translateX(0); opacity:0; }
+      10%  { opacity:1; }
+      88%  { opacity:1; }
+      100% { transform:translateY(-112vh) translateX(var(--drift,20px)); opacity:0; }
+    }
+    @keyframes spPlaneFly {
+      0%   { opacity:0; transform:translate(-58vw,42vh) rotate(-32deg) scale(.85); }
+      8%   { opacity:.9; }
+      92%  { opacity:.9; }
+      100% { opacity:0; transform:translate(58vw,-46vh) rotate(-32deg) scale(1.05); }
+    }
+    .sp-blob{ position:absolute; border-radius:50%; filter:blur(70px); mix-blend-mode:screen; pointer-events:none; will-change:transform; }
+    @media (prefers-reduced-motion: reduce) {
+      #splash-screen *, #splash-screen { animation-duration: .01s !important; animation-delay: 0s !important; }
+    }
+  </style>
+
+  <!-- Tema según hora del día: define los colores del fondo/manchas -->
+  <script>
+  (function(){
+    var h = new Date().getHours(), t;
+    if (h>=5 && h<8) t = { bg:'#2a1f3d', b1:'rgba(251,146,60,.5)', b2:'rgba(236,72,153,.45)', b3:'rgba(124,58,237,.4)', b4:'rgba(250,204,21,.2)', glow:'rgba(251,146,60,.22)' };      // amanecer
+    else if (h>=8 && h<18) t = { bg:'#0c1b2e', b1:'rgba(37,99,235,.5)', b2:'rgba(34,211,238,.45)', b3:'rgba(14,165,233,.4)', b4:'rgba(255,255,255,.12)', glow:'rgba(34,211,238,.2)' }; // día
+    else if (h>=18 && h<22) t = { bg:'#241030', b1:'rgba(249,115,22,.5)', b2:'rgba(236,72,153,.45)', b3:'rgba(124,58,237,.4)', b4:'rgba(239,68,68,.18)', glow:'rgba(249,115,22,.22)' }; // atardecer
+    else t = { bg:'#0b1220', b1:'rgba(37,99,235,.55)', b2:'rgba(124,58,237,.5)', b3:'rgba(34,211,238,.4)', b4:'rgba(245,158,11,.16)', glow:'rgba(37,99,235,.22)' };                    // noche
+    var el = document.getElementById('splash-screen');
+    if (!el) return;
+    el.style.background = t.bg;
+    el.style.setProperty('--sp-blob1', t.b1);
+    el.style.setProperty('--sp-blob2', t.b2);
+    el.style.setProperty('--sp-blob3', t.b3);
+    el.style.setProperty('--sp-blob4', t.b4);
+    el.style.setProperty('--sp-glow', t.glow);
+  })();
+  </script>
+
+  <div id="sp-stars" style="position:absolute;inset:0;overflow:hidden;"></div>
+  <div id="sp-particles" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
+
+  <!-- Grilla sutil de fondo, deriva lentamente -->
+  <div style="position:absolute;inset:-60px;opacity:.35;pointer-events:none;
+      background-image:linear-gradient(rgba(120,150,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,150,255,.06) 1px,transparent 1px);
+      background-size:60px 60px;animation:spGridDrift 9s linear infinite;"></div>
+
+  <!-- Rayos de sol sutiles, giran muy lento -->
+  <div style="position:absolute;top:50%;left:50%;width:140vmax;height:140vmax;margin:-70vmax 0 0 -70vmax;
+      background:repeating-conic-gradient(rgba(255,255,255,.05) 0deg 1.1deg,transparent 1.1deg 18deg);
+      -webkit-mask-image:radial-gradient(circle,black 0%,black 20%,transparent 55%);
+      mask-image:radial-gradient(circle,black 0%,black 20%,transparent 55%);
+      animation:spRaysSpin 46s linear infinite;pointer-events:none;"></div>
+
+  <!-- Manchas de color difuminadas, tipo aurora, flotando, con drift de tono muy lento -->
+  <div style="position:absolute;inset:0;animation:spHueDrift 24s ease-in-out infinite alternate;pointer-events:none;">
+    <div class="sp-blob" style="width:340px;height:340px;top:8%;left:8%;background:radial-gradient(circle,var(--sp-blob1,rgba(37,99,235,.55)) 0%,transparent 70%);animation:spBlob1 11s ease-in-out infinite;"></div>
+    <div class="sp-blob" style="width:300px;height:300px;bottom:6%;right:10%;background:radial-gradient(circle,var(--sp-blob2,rgba(124,58,237,.5)) 0%,transparent 70%);animation:spBlob2 13s ease-in-out infinite;"></div>
+    <div class="sp-blob" style="width:260px;height:260px;top:55%;left:60%;background:radial-gradient(circle,var(--sp-blob3,rgba(34,211,238,.4)) 0%,transparent 70%);animation:spBlob1 9s ease-in-out infinite reverse;"></div>
+    <div class="sp-blob" style="width:380px;height:380px;top:50%;left:50%;background:radial-gradient(circle,var(--sp-blob4,rgba(245,158,11,.16)) 0%,transparent 70%);animation:spBlob3 20s linear infinite;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 42%,var(--sp-glow,rgba(37,99,235,0.22)) 0%,transparent 70%);pointer-events:none;"></div>
+  </div>
+
+  <div style="position:absolute;top:0;left:-20%;width:20%;height:100%;
+      background:linear-gradient(90deg,transparent 0%,rgba(180,200,255,0.04) 35%,rgba(255,255,255,0.16) 50%,rgba(180,200,255,0.04) 65%,transparent 100%);
+      animation:spSweep .6s ease-in-out .78s forwards;pointer-events:none;z-index:2;"></div>
+
+  <!-- Avioncito que cruza la pantalla una sola vez, de paso -->
+  <div style="position:absolute;top:50%;left:50%;font-size:22px;opacity:0;z-index:3;
+      animation:spPlaneFly 3.4s cubic-bezier(.4,0,.2,1) 1.3s 1 both;
+      filter:drop-shadow(0 0 8px rgba(255,255,255,.35));pointer-events:none;">✈️</div>
+
+  <div style="position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:0;">
+    <div style="opacity:0;animation:spBadgeIn .45s cubic-bezier(.16,1,.3,1) .15s forwards;margin-bottom:20px;position:relative;width:96px;height:96px;">
+      <svg width="96" height="96" viewBox="0 0 96 96" style="position:absolute;inset:0;animation:spRingSpin 5.5s linear infinite;">
+        <circle cx="48" cy="48" r="43" fill="none" stroke="url(#spGrad)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="90 180"/>
+        <defs>
+          <linearGradient id="spGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop id="spGradStop1" offset="0%" stop-color="#22c55e"/>
+            <stop id="spGradStop2" offset="100%" stop-color="#2563eb"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div id="sp-emoji" style="position:absolute;inset:8px;border-radius:50%;background:#141d30;display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 8px 28px -6px rgba(37,99,235,.5);transition:opacity .26s ease,transform .26s ease;">🌴</div>
+    </div>
+
+    <div style="clip-path:inset(0 100% 0 0);opacity:0;
+        animation:spWipe .4s cubic-bezier(.16,1,.3,1) .5s forwards;
+        font-family:'DM Sans',sans-serif;font-size:2.3rem;font-weight:900;letter-spacing:-1px;line-height:1;">
+      <span style="color:#ffffff">Orlando</span> <span style="color:#5b8fd4">Planning</span>
+    </div>
+
+    <div style="font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:600;
+        color:rgba(255,255,255,.4);letter-spacing:2.5px;text-transform:uppercase;
+        text-align:center;white-space:nowrap;
+        opacity:0;animation:spTagIn .45s ease .9s forwards;margin-top:12px;">
+      Tu próximo viaje, planeado
+    </div>
+
+    <div id="sp-msg" style="font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:500;
+        color:rgba(255,255,255,.55);text-align:center;white-space:nowrap;
+        opacity:0;animation:spTagIn .45s ease 1.15s forwards;margin-top:14px;
+        transition:opacity .26s ease,transform .26s ease;">
+      Preparando tu viaje...
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var starsEl = document.getElementById('sp-stars');
+  for (var i=0;i<50;i++){
+    var s=document.createElement('div');
+    var sz=(Math.random()*1.6+0.6).toFixed(1);
+    s.style.cssText='position:absolute;border-radius:50%;background:white;'
+      +'width:'+sz+'px;height:'+sz+'px;'
+      +'top:'+(Math.random()*100)+'%;left:'+(Math.random()*100)+'%;'
+      +'animation:spTwinkle '+(2.5+Math.random()*3).toFixed(1)+'s '+(Math.random()*4).toFixed(1)+'s ease-in-out infinite;opacity:0;';
+    starsEl.appendChild(s);
+  }
+
+  // Partículas doradas subiendo, tipo motitas/burbujas
+  var particlesEl = document.getElementById('sp-particles');
+  for (var p=0;p<22;p++){
+    var d=document.createElement('div');
+    var psz=(Math.random()*3+2).toFixed(1);
+    var pdur=(7+Math.random()*6).toFixed(1);
+    var pdelay=(Math.random()*10).toFixed(1);
+    var pdrift=(Math.random()*60-30).toFixed(0)+'px';
+    d.style.cssText='position:absolute;bottom:-10px;border-radius:50%;'
+      +'width:'+psz+'px;height:'+psz+'px;left:'+(Math.random()*100)+'%;'
+      +'background:radial-gradient(circle,rgba(250,204,21,.85),rgba(250,204,21,0) 70%);'
+      +'--drift:'+pdrift+';'
+      +'animation:spFloatUp '+pdur+'s '+pdelay+'s linear infinite;opacity:0;';
+    particlesEl.appendChild(d);
+  }
+
+  // La animación completa (blobs, rayos, avioncito) solo tiene sentido la
+  // primera vez. De ahí en más es una PWA de uso diario: se acorta a 1.5s
+  // para no repetir el show en cada apertura.
+  var seenBefore = false;
+  try { seenBefore = localStorage.getItem('splash-seen') === '1'; } catch(e) {}
+  var minEnd = Date.now() + (seenBefore ? 1500 : 4200);
+  try { localStorage.setItem('splash-seen', '1'); } catch(e) {}
+  var pageLoaded = (document.readyState === 'complete');
+  var fbReady = false;
+  var hidden = false;
+
+  // Carrusel de "vibes": emoji + mensaje + color del anillo, todo sincronizado
+  var vibes = [
+    { emoji:'🌴', msg:'Preparando tu viaje...',          a:'#22c55e', b:'#2563eb' },
+    { emoji:'✈️', msg:'Cargando tu itinerario...',        a:'#2563eb', b:'#22d3ee' },
+    { emoji:'☀️', msg:'Trayendo el clima...',             a:'#f59e0b', b:'#ef4444' },
+    { emoji:'🗺️', msg:'Actualizando el mapa...',          a:'#7c3aed', b:'#2563eb' },
+    { emoji:'🍹', msg:'Armando el plan...',               a:'#ec4899', b:'#f59e0b' },
+    { emoji:'🎢', msg:'Repasando las atracciones...',     a:'#ef4444', b:'#7c3aed' },
+    { emoji:'🏖️', msg:'Chequeando el pronóstico...',      a:'#22d3ee', b:'#f59e0b' },
+    { emoji:'🩴', msg:'Últimos detalles...',              a:'#14b8a6', b:'#22c55e' }
+  ];
+  var emojiEl = document.getElementById('sp-emoji');
+  var msgEl = document.getElementById('sp-msg');
+  var stop1 = document.getElementById('spGradStop1');
+  var stop2 = document.getElementById('spGradStop2');
+  var vibeIdx = 0;
+
+  function applyVibe(v){
+    if (emojiEl) emojiEl.textContent = v.emoji;
+    if (msgEl) msgEl.textContent = v.msg;
+    if (stop1) stop1.setAttribute('stop-color', v.a);
+    if (stop2) stop2.setAttribute('stop-color', v.b);
+  }
+
+  var vibeTimer = setInterval(function(){
+    if (!emojiEl) { clearInterval(vibeTimer); return; }
+    emojiEl.style.opacity = '0';
+    emojiEl.style.transform = 'scale(.7) rotate(-8deg)';
+    if (msgEl) { msgEl.style.opacity = '0'; msgEl.style.transform = 'translateY(4px)'; }
+    setTimeout(function(){
+      vibeIdx = (vibeIdx + 1) % vibes.length;
+      applyVibe(vibes[vibeIdx]);
+      emojiEl.style.opacity = '1';
+      emojiEl.style.transform = 'scale(1) rotate(0deg)';
+      if (msgEl) { msgEl.style.opacity = '1'; msgEl.style.transform = 'translateY(0)'; }
+    }, 300);
+  }, 2200);
+
+  function reallyHide(){
+    if (hidden) return;
+    hidden = true;
+    clearInterval(vibeTimer);
+    var splash = document.getElementById('splash-screen');
+    if (!splash) return;
+    splash.style.opacity = '0';
+    setTimeout(function(){ splash.remove(); }, 400);
+  }
+  function tryHide(){
+    if (hidden || !pageLoaded || !fbReady) return;
+    var remaining = minEnd - Date.now();
+    setTimeout(reallyHide, Math.max(0, remaining));
+  }
+
+  // Se llama desde firebase-sync.js cuando terminó de traer los datos —
+  // así el splash lindo se queda en pantalla hasta que todo esté listo,
+  // en vez de taparse con la pantalla de "Sincronizando..." antigua.
+  window._splashFbReady = function(){ fbReady = true; tryHide(); };
+
+  if (pageLoaded) tryHide();
+  else window.addEventListener('load', function(){ pageLoaded = true; tryHide(); });
+
+  // Red de seguridad: si Firebase tarda mucho u ofline, no dejar el splash
+  // pegado para siempre.
+  setTimeout(function(){ fbReady = true; pageLoaded = true; tryHide(); }, 7500);
+})();
+</script>
+
+<header class="header">
+  <div class="hdr-row">
+    <a class="brand-back" href="https://taxfly.github.io/taxfly/index.html" title="Volver a TaxUSA" aria-label="Volver a TaxUSA">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="tg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#2563eb"/></linearGradient><clipPath id="tc1"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="url(#tg1)"/><g clip-path="url(#tc1)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
+        <span class="bb-wm">Tax<b>USA</b></span>
+      </a>
+    <div class="hdr-right">
+      <div class="sync-dot" id="sync-dot" title="Estado de sincronización"></div>
+      <a class="brand-back brand-viaje app-link" href="./Mis_cosas_de_viaje.html" title="Abrir Mis cosas de viaje" aria-label="Abrir Mis cosas de viaje">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="vgv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#vgv)"/><path d="M12 9.2V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.2" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/><rect x="6" y="9.2" width="20" height="15.6" rx="3.6" fill="#fff"/><path d="M6 17.2 C10 14.4 13 14.4 16 17.2 S22 20 26 17.2" stroke="url(#vgv)" stroke-width="2.4" stroke-linecap="round" fill="none"/><rect x="9.4" y="24.8" width="2.4" height="1.8" rx=".9" fill="#fff"/><rect x="20.2" y="24.8" width="2.4" height="1.8" rx=".9" fill="#fff"/></svg>
+        <span class="bb-wm">Mis <b>cosas</b></span>
+      </a>
+    </div>
+  </div>
+  <div class="hdr-title-row">
+    <div class="header-title" id="main-title">Outlets <span class="ht-accent">Orlando</span></div>
+    <div class="global-counter" id="global-counter" title="Paradas visitadas">—</div>
+  </div>
+  <div class="header-subtitle" id="main-subtitle" hidden>Cronograma de compras</div>
+  <div class="hdr-meta">
+    <div class="trip-chip-slot" id="trip-chip-slot"></div>
+    <div class="budget-pill-slot" id="budget-pill-slot"></div>
+  </div>
+  <div class="today-card-slot" id="today-card-slot" style="display:none"></div>
+</header>
+
+<div class="nav-bar-wrap">
+  <div class="nav-bar">
+    <div class="tabs">
+      <button class="tab active" id="nav-outlets" onclick="switchSection('outlets')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-2-6"/><path d="M4 8h16"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></span><span class="nav-date">Outlets</span></button>
+      <button class="tab" id="nav-comidas" onclick="switchSection('comidas')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v6a2 2 0 0 0 4 0V2"/><path d="M9 8v14"/><path d="M17 2c-1.5 0-3 1.5-3 4v4a2 2 0 0 0 2 2h1v10"/></svg></span><span class="nav-date">Comidas</span></button>
+      <button class="tab" id="nav-walmart" onclick="switchSection('walmart')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 3h2l2.6 12.4A2 2 0 0 0 9.55 17H18a2 2 0 0 0 1.96-1.6L21.5 8H6"/></svg></span><span class="nav-date">Supermercado</span></button>
+      <button class="tab" id="nav-parques" onclick="switchSection('parques')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/><path d="M12 20v2M8 22h8"/></svg></span><span class="nav-date">Parques</span></button>
+    </div>
+    <button class="btn-nav-set" id="btnSettings" onclick="openSettingsDrawer()" title="Ajustes"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V19a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V10a1.7 1.7 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+</div>
+
+<div id="panel-outlets" class="panel active"></div>
+<div id="panel-comidas" class="panel"></div>
+<div id="panel-walmart" class="panel"></div>
+<div id="panel-parques" class="panel"></div>
+
+<div class="confetti-wrap" id="confetti-wrap"></div>
+
+<div class="menu-overlay" id="settingsOverlay" onclick="closeSettingsDrawer()"></div>
+<div class="settings-drawer" id="settingsDrawer">
+  <div class="sx-head"><span class="sx-title">Ajustes</span><button type="button" class="sx-x" onclick="closeSettingsDrawer()" aria-label="Cerrar"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+  <div class="sx-scroll">
+    <div class="sx-me">
+      <div class="sx-av settings-profile-avatar" id="settings-profile-avatar"></div>
+      <div class="sx-me-txt"><div class="sx-me-lbl">Perfil activo</div><div class="sx-me-name settings-profile-name" id="settings-profile-name">—</div><div class="sx-mail">Orlando Planning</div></div>
+      <button type="button" class="sx-chip" onclick="changeProfile()" title="Cambiar perfil" aria-label="Cambiar perfil"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></svg></button>
+    </div>
+
+    <span class="sx-sec">Preferencias</span>
+    <div class="sx-card">
+      <div class="sx-row"><span class="sx-ico" style="--c:#0ea5e9"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span><span class="sx-lbl">Idioma</span><div class="sx-lang"><button type="button" class="lang-opt" data-lang="es"><svg width="18" height="13" viewBox="0 0 18 13" xmlns="http://www.w3.org/2000/svg"><rect width="18" height="4.3" y="0" fill="#74acdf"/><rect width="18" height="4.4" y="4.3" fill="#fff"/><rect width="18" height="4.3" y="8.7" fill="#74acdf"/><circle cx="9" cy="6.5" r="1.5" fill="#f6b40e"/></svg> ES</button><button type="button" class="lang-opt" data-lang="en"><svg width="18" height="13" viewBox="0 0 18 13" xmlns="http://www.w3.org/2000/svg"><rect width="18" height="13" fill="#B22234"/><rect width="18" height="1" y="1" fill="#fff"/><rect width="18" height="1" y="3" fill="#fff"/><rect width="18" height="1" y="5" fill="#fff"/><rect width="18" height="1" y="7" fill="#fff"/><rect width="18" height="1" y="9" fill="#fff"/><rect width="18" height="1" y="11" fill="#fff"/><rect width="7" height="7" fill="#3C3B6E"/></svg> EN</button><button type="button" class="lang-opt" data-lang="pt"><svg width="18" height="13" viewBox="0 0 18 13" xmlns="http://www.w3.org/2000/svg"><rect width="18" height="13" fill="#009c3b"/><polygon points="9,1 17,6.5 9,12 1,6.5" fill="#FEDF00"/><circle cx="9" cy="6.5" r="2.6" fill="#002776"/></svg> PT</button></div></div>
+      <button type="button" class="sx-row" id="sxTheme"><span class="sx-ico" style="--c:#7c3aed"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="sx-lbl">Modo oscuro</span><span class="sx-sw" id="sxSwitch" role="switch" aria-checked="false"></span></button>
+    </div>
+
+    <span class="sx-sec">Presupuesto del viaje</span>
+    <div class="budget-box" id="budget-box"></div>
+
+    <span class="sx-sec">Datos y respaldo</span>
+    <div class="sx-bk">
+      <div class="sx-bk-h"><span class="sx-ico"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.2 8 8 9 4.8-1 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Respaldo de Orlando</span></div>
+      <p>Guardá una copia de tu cronograma, comidas, supermercado y parques en un archivo JSON, y restaurala cuando la necesites.</p>
+      <div class="sx-bk-btns">
+        <button type="button" class="sx-btn pri" onclick="exportAllData()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13m0 0-4-4m4 4 4-4"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><span>Exportar</span></button>
+        <button type="button" class="sx-btn" onclick="document.getElementById('importFileInput').click()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m0 0 4 4m-4-4-4 4"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><span>Importar</span></button>
+      </div>
+      <input type="file" id="importFileInput" accept="application/json" style="display:none" onchange="importAllData(event)">
+    </div>
+
+    <span class="sx-sec">Empezar de cero</span>
+    <div class="sx-card">
+      <button class="sx-row" onclick="wipeSection('outlets')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-2-6"/><path d="M4 8h16"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></span><span class="sx-lbl">Vaciar Outlets</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('comidas')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2v6a2 2 0 0 0 4 0V2"/><path d="M9 8v14"/><path d="M17 2c-1.5 0-3 1.5-3 4v4a2 2 0 0 0 2 2h1v10"/></svg></span><span class="sx-lbl">Vaciar Comidas</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('walmart')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 3h2l2.6 12.4A2 2 0 0 0 9.55 17H18a2 2 0 0 0 1.96-1.6L21.5 8H6"/></svg></span><span class="sx-lbl">Vaciar Supermercado</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('parques')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/><path d="M12 20v2M8 22h8"/></svg></span><span class="sx-lbl">Vaciar Parques</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
+    </div>
+
+    <span class="sx-sec">Cuenta</span>
+    <div class="sx-card">
+      <button type="button" class="sx-row" onclick="changeProfile()"><span class="sx-ico" style="--c:#2563eb"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></svg></span><span class="sx-lbl">Cambiar perfil</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></button>
+      <a class="sx-row" href="./Mis_cosas_de_viaje.html"><span class="sx-ico" style="--c:#7c3aed"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V4h6v3M9 11v6M15 11v6"/></svg></span><span class="sx-lbl">Mis cosas de viaje</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
+      <a class="sx-row" href="https://taxfly.github.io/taxfly/index.html"><span class="sx-ico" style="--c:#6366f1"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg></span><span class="sx-lbl">Volver a TaxUSA</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
+    </div>
+
+    <span class="sx-sec">Aplicación</span>
+    <div class="sx-card">
+      <button type="button" class="sx-row" id="sxInstall" hidden><span class="sx-ico" style="--c:#10b981"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span><span class="sx-lbl">Instalar app</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></button>
+      <button type="button" class="sx-row" onclick="hardRefresh()"><span class="sx-ico" style="--c:#0ea5e9"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg></span><span class="sx-lbl">Actualizar app</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></button>
+    </div>
+    <div class="sx-foot">
+      <button type="button" class="sx-btn sx-out" onclick="window._fbSignOut && window._fbSignOut()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4M16 17l5-5-5-5M21 12H9"/></svg><span>Cerrar sesión</span></button>
+    </div>
+  </div>
+</div>
+
+
+<script src="i18n.js"></script>
+<script src="i18n-orlando.js"></script>
+<script src="sx-ui.js"></script>
+<script src="theme.js"></script>
+
+<script src="app.js"></script>
+
+
+<button class="add-day-fab" id="addDayFab" onclick="openMealModal()">+ Agregar día</button>
+<div class="modal-bg" id="mealModal">
+  <div class="modal-box">
+    <h2>Agregar día</h2>
+    <div class="mform-group">
+      <label>Fecha</label>
+      <input type="text" id="mDate" placeholder="ej: 29 ene" oninput="this.classList.remove('error');document.getElementById('mDate-err').classList.remove('show')">
+      <div class="field-error" id="mDate-err">Completá la fecha</div>
+    </div>
+    <div class="mform-group">
+      <label>Título</label>
+      <input type="text" id="mTitle" placeholder="ej: Disney extra" oninput="this.classList.remove('error');document.getElementById('mTitle-err').classList.remove('show')">
+      <div class="field-error" id="mTitle-err">Completá el título del día</div>
+    </div>
+    <div class="mform-group"><label>Tipo</label>
+      <select id="mType">
+        <option value="disney">Disney 🏰</option>
+        <option value="universal">Universal 🎢</option>
+        <option value="free">Libre</option>
+        <option value="arrival">Llegada</option>
+        <option value="walmart">Walmart</option>
+      </select>
+    </div>
+    <div class="mform-group"><label>Desayuno</label><input type="text" id="mBreakfast"></div>
+    <div class="mform-group"><label>Almuerzo</label><input type="text" id="mLunch"></div>
+    <div class="mform-group"><label>Cena</label><input type="text" id="mDinner"></div>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="closeMealModal()">Cancelar</button>
+      <button class="mbtn-primary" onclick="addMealDay()">Agregar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="outletDayModal">
+  <div class="modal-box">
+    <h2>Agregar día al cronograma</h2>
+    <div class="mform-group">
+      <label>Fecha</label>
+      <input type="text" id="outlet-day-date" placeholder="ej: Jue 28/01" oninput="this.classList.remove('error');document.getElementById('outlet-day-date-err').classList.remove('show')">
+      <div class="field-error" id="outlet-day-date-err">Completá la fecha</div>
+    </div>
+    <div class="mform-group">
+      <label>Nombre corto (para la pestaña)</label>
+      <input type="text" id="outlet-day-name" placeholder="ej: Día 4">
+    </div>
+    <div class="mform-group">
+      <label>Zona / descripción</label>
+      <input type="text" id="outlet-day-label" placeholder="ej: Zona Orlando Sur — outlets nuevos">
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="closeOutletDayModal()">Cancelar</button>
+      <button class="mbtn-primary" onclick="addOutletDay()">Agregar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="hotelEditModal">
+  <div class="modal-box">
+    <h2 style="display:flex;align-items:center;gap:8px"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg> Editar punto de partida</h2>
+    <div class="mform-group">
+      <label>Dirección</label>
+      <input type="text" id="hotel-edit-addr" placeholder="ej: 324 Newcastle Dr, Kissimmee FL">
+    </div>
+    <div class="mform-group">
+      <label>Link de Google Maps</label>
+      <input type="text" id="hotel-edit-url" placeholder="https://maps.google.com/...">
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="closeHotelEdit()">Cancelar</button>
+      <button class="mbtn-primary" onclick="saveHotelEdit()">Guardar</button>
+    </div>
+  </div>
+</div>
+<div class="mtoast" id="mtoast"></div>
+<div class="undo-toast" id="undoToast">
+  <span class="undo-toast-msg"></span>
+  <button class="undo-toast-btn" onclick="undoLastAction()">Deshacer</button>
+</div>
+
+<!-- Custom confirm/alert modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="confirm-btn-cancel" id="confirmCancel">Cancelar</button>
+      <button class="confirm-btn-ok" id="confirmOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+<!-- Custom alert modal -->
+<div class="confirm-overlay" id="alertOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="alertTitle">Atención</div>
+    <div class="confirm-msg" id="alertMsg"></div>
+    <div class="confirm-actions" style="justify-content:center">
+      <button class="confirm-btn-ok safe" id="alertOk" style="flex:unset;min-width:120px" onclick="closeAlert()">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="wmAddModal">
+  <div class="modal-box">
+    <h2>Agregar producto</h2>
+    <div class="mform-group">
+      <label>Nombre</label>
+      <input type="text" id="wm-add-name" placeholder="ej: Mantequilla de maní" oninput="this.classList.remove('error');document.getElementById('wm-add-name-err').classList.remove('show')">
+      <div class="field-error" id="wm-add-name-err">Escribí el nombre del producto</div>
+    </div>
+    <div class="mform-group">
+      <label>Categoría</label>
+      <select id="wm-add-cat">
+        <option value="pan">🥖 Panadería y Snacks</option>
+        <option value="lacteos">🥚 Lácteos y Huevos</option>
+        <option value="carnes">🥩 Carnes y Fiambres</option>
+        <option value="secos">🍝 Secos y Enlatados</option>
+        <option value="congelados">🧊 Congelados</option>
+        <option value="desayuno">☕ Desayuno y Bebidas</option>
+        <option value="extras">🎒 Extras</option>
+      </select>
+    </div>
+    <div class="mform-group">
+      <label>Cantidad</label>
+      <input type="number" id="wm-add-qty" placeholder="1" min="0.1" step="0.1" value="1">
+    </div>
+    <div class="mform-group">
+      <label>Unidad de medida</label>
+      <input type="text" id="wm-add-unit" placeholder="ej: bolsa 16oz, caja, lb…">
+    </div>
+    <div class="mform-group">
+      <label>Precio unitario (USD)</label>
+      <input type="number" id="wm-add-price" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="wmCloseAddModal()">Cancelar</button>
+      <button class="mbtn-primary" onclick="wmAddItem()">Agregar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="shopAddModal">
+  <div class="modal-box">
+    <h2>Agregar prenda / accesorio</h2>
+    <div class="mform-group">
+      <label>¿Qué querés comprar?</label>
+      <input type="text" id="shop-add-name" placeholder="ej: Zapatillas Nike Air Max" oninput="this.classList.remove('error');document.getElementById('shop-add-name-err').classList.remove('show')">
+      <div class="field-error" id="shop-add-name-err">Escribí qué querés comprar</div>
+    </div>
+    <div class="mform-group">
+      <label>Categoría</label>
+      <select id="shop-add-cat">
+        <option value="remeras">👕 Remeras / T-Shirts</option>
+        <option value="pantalones">👖 Pantalones / Jeans</option>
+        <option value="ropa-deportiva">🏃 Ropa Deportiva</option>
+        <option value="calzado">👟 Calzado / Zapatillas</option>
+        <option value="accesorios">🎒 Accesorios / Bolsos</option>
+        <option value="varios">🛍️ Varios</option>
+      </select>
+    </div>
+    <div class="mform-group">
+      <label>Talle</label>
+      <input type="text" id="shop-add-size" placeholder="ej: M, 42, 32x30, único…">
+    </div>
+    <div class="mform-group">
+      <label>Tienda sugerida</label>
+      <input type="text" id="shop-add-store" placeholder="ej: Ross, T.J. Maxx, Nike Clearance…">
+    </div>
+    <div class="mform-group">
+      <label>Prioridad</label>
+      <select id="shop-add-prio">
+        <option value="alta">🔴 Alta</option>
+        <option value="media" selected>🟡 Media</option>
+        <option value="baja">🟢 Baja</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="shopCloseAddModal()">Cancelar</button>
+      <button class="mbtn-primary" onclick="shopAddItem()">Agregar</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="itin-xlsx-input" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none" onchange="itinArchivoElegido(event)">
+<div class="modal-bg" id="itinImportModal">
+  <div class="modal-box">
+    <h2>Actualizar itinerario</h2>
+    <p class="itin-imp-help">Elegí qué días traer del archivo. Cada día seleccionado se reemplaza completo, así que se pierden los bloques que le hayas agregado a mano. Lo que ya tildaste se mantiene si el bloque sigue con el mismo nombre.</p>
+    <div id="itin-import-list" class="itin-imp-list"></div>
+    <p class="itin-imp-help" id="itin-import-count"></p>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="itinCloseImport()">Cancelar</button>
+      <button class="mbtn-ghost" onclick="itinAplicarImport('reemplazar')">Reemplazar todo</button>
+      <button class="mbtn-primary" onclick="itinAplicarImport('merge')">Actualizar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="addParkModal">
+  <div class="modal-box">
+    <h2>Agregar parque</h2>
+    <div class="mform-group">
+      <label>Nombre del parque</label>
+      <input type="text" id="pk-add-name" placeholder="ej: SeaWorld Orlando, Busch Gardens Tampa…" oninput="this.classList.remove('error');document.getElementById('pk-add-name-err').classList.remove('show')">
+      <div class="field-error" id="pk-add-name-err">Escribí el nombre del parque</div>
+    </div>
+    <div class="mform-group">
+      <label>Color</label>
+      <div class="pk-color-swatches" id="pk-color-swatches"></div>
+    </div>
+    <div class="mform-group">
+      <button type="button" class="mbtn-ghost" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px" onclick="pkWikiSearchClick()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Buscar atracciones automáticamente</button>
+      <div class="pk-wiki-status" id="pk-wiki-status"></div>
+      <div class="pk-wiki-results" id="pk-wiki-results" style="display:none"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="pkCloseAddParkModal()">Cancelar</button>
+      <button class="mbtn-primary" onclick="pkCreateCustomPark()">Crear parque</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="addAttrModal">
+  <div class="modal-box">
+    <h2>Agregar atracción</h2>
+    <div class="mform-group">
+      <label>Nombre de la atracción</label>
+      <input type="text" id="pk-attr-add-name" placeholder="ej: Journey to Atlantis" oninput="this.classList.remove('error');document.getElementById('pk-attr-add-name-err').classList.remove('show')">
+      <div class="field-error" id="pk-attr-add-name-err">Escribí el nombre de la atracción</div>
+    </div>
+    <div class="mform-group">
+      <label>Altura mínima (opcional)</label>
+      <input type="text" id="pk-attr-add-height" placeholder="ej: 40&quot;/ 102 cm">
+    </div>
+    <div class="mform-group">
+      <label>Ubicación (opcional, para que salga en el mapa)</label>
+      <button type="button" class="mbtn-ghost" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:6px" onclick="pkAttrLocSearchAuto()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Buscar automáticamente en Wikipedia</button>
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" id="pk-attr-add-address" placeholder="o escribí una dirección…" style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none">
+        <button type="button" class="mbtn-ghost" onclick="pkAttrLocSearchAddress()">Buscar</button>
+      </div>
+      <div class="pk-wiki-status" id="pk-attr-loc-status"></div>
+      <div class="wm-edit-row" style="grid-template-columns:1fr 1fr">
+        <input type="number" step="any" id="pk-attr-add-lat" placeholder="Latitud" style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none">
+        <input type="number" step="any" id="pk-attr-add-lng" placeholder="Longitud" style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="pkCloseAddAttrModal()">Cancelar</button>
+      <button class="mbtn-primary" onclick="pkAddAttraction()">Agregar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="locationModal">
+  <div class="modal-box">
+    <h2 id="pk-loc-title">Ubicación</h2>
+    <div class="drawer-sub" id="pk-loc-subtitle" style="margin-bottom:14px"></div>
+    <div class="mform-group">
+      <button type="button" class="mbtn-ghost" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px" onclick="pkLocSearchAuto()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Buscar automáticamente en Wikipedia</button>
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" id="pk-loc-address" placeholder="o escribí una dirección…" style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none">
+        <button type="button" class="mbtn-ghost" onclick="pkLocSearchAddress()">Buscar</button>
+      </div>
+      <div class="pk-wiki-status" id="pk-loc-status"></div>
+    </div>
+    <div class="mform-group">
+      <label>Coordenadas</label>
+      <div class="wm-edit-row" style="grid-template-columns:1fr 1fr">
+        <input type="number" step="any" id="pk-loc-lat" placeholder="Latitud" style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none">
+        <input type="number" step="any" id="pk-loc-lng" placeholder="Longitud" style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="pkCloseLocationModal()">Cancelar</button>
+      <button class="mbtn-primary" onclick="pkSaveLocation()">Guardar ubicación</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="sizeGuideModal">
+  <div class="modal-box modal-box-wide">
+    <h2 style="display:flex;align-items:center;gap:8px">Guía de talles US ↔ ARG</h2>
+    <div class="drawer-sub" style="margin-top:-8px">Conversión aproximada — puede variar por marca</div>
+    <div id="size-guide-content"></div>
+    <div class="modal-actions">
+      <button class="mbtn-primary" onclick="closeSizeGuide()" style="width:100%">Cerrar</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

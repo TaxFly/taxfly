@@ -1,56 +1,213 @@
+// ── TaxFly — Worker de Cloudflare ────────────────────────────────────────────
+// Seguridad:
+//  · Las rutas que gastan crédito de Anthropic exigen un ID token de Firebase
+//    válido (Authorization: Bearer <token>). El worker lo verifica contra las
+//    claves públicas de Google, así solo gastan crédito usuarios logueados en
+//    el proyecto de TaxFly. El rate limit de esas rutas es por usuario (uid).
+//  · verify_recaptcha sigue abierto (se usa en el login, antes de tener
+//    sesión), con rate limit por IP. No gasta crédito.
+//  · CORS solo para los orígenes de ALLOWED_ORIGINS (wrangler.toml).
+//  · Ya no existe APP_SECRET: vivía en el cliente, no protegía nada.
+
+const FIREBASE_PROJECT_ID = 'viajes-db538';
+const JWKS_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
+const AI_TYPES = ['invoice_ocr', 'insurance_analysis', 'moderate_image', 'optimize_route', 'taxie_chat'];
+
 export default {
   async fetch(request, env) {
-    // CORS
+    const origin = request.headers.get('Origin') || '';
+    const allowed = isAllowedOrigin(origin, env);
+
     if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, X-App-Secret',
-        },
-      });
-    }
-    if (request.method !== 'POST') {
-      return json({ error: 'Method not allowed' }, 405);
+      if (!allowed) return new Response(null, { status: 403 });
+      return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
 
-    // Secreto compartido: frena bots/scrapers que solo copian la URL del
-    // worker sin mirar el JS de la app. No es autenticación real (el valor
-    // vive en el cliente), la protección de fondo contra abuso masivo es
-    // el rate limiting de más abajo.
-    const providedSecret = request.headers.get('X-App-Secret');
-    if (!env.APP_SHARED_SECRET || providedSecret !== env.APP_SHARED_SECRET) {
-      return json({ error: 'Unauthorized' }, 401);
-    }
+    // Un navegador desde otro sitio: no respondemos. (Sin header Origin, por
+    // ej. curl, igual tiene que pasar las mismas validaciones de abajo.)
+    if (origin && !allowed) return json({ error: 'Origin not allowed' }, 403);
 
-    let body;
+    const res = await handle(request, env);
+    if (allowed) {
+      const h = new Headers(res.headers);
+      for (const [k, v] of Object.entries(corsHeaders(origin))) h.set(k, v);
+      return new Response(res.body, { status: res.status, headers: h });
+    }
+    return res;
+  },
+};
+
+async function handle(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return json({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const isCostRoute = AI_TYPES.includes(body.type);
+
+  // ── Rutas con costo: requieren usuario logueado ──
+  if (isCostRoute) {
+    const auth = request.headers.get('Authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+    if (!token) return json({ error: 'Login required' }, 401);
+
+    let user;
     try {
-      body = await request.json();
+      user = await verifyFirebaseToken(token);
     } catch (e) {
-      return json({ error: 'Invalid JSON body' }, 400);
+      return json({ error: 'Invalid or expired session', detail: String(e.message || e) }, 401);
     }
 
-    // Rate limiting: límite más estricto para las rutas que gastan crédito de
-    // Anthropic (facturas/seguro/moderación de fotos), más amplio para reCAPTCHA.
-    const ip = request.headers.get('cf-connecting-ip') || 'unknown';
-    const isCostRoute = body.type === 'invoice_ocr' || body.type === 'insurance_analysis' || body.type === 'moderate_image';
-    const limiter = isCostRoute ? env.COST_LIMITER : env.GENERAL_LIMITER;
-    if (limiter) {
-      const { success } = await limiter.limit({ key: `${ip}:${body.type}` });
+    if (env.COST_LIMITER) {
+      const { success } = await env.COST_LIMITER.limit({ key: `uid:${user.uid}` });
       if (!success) return json({ error: 'Too many requests, try again in a bit' }, 429);
     }
 
-    if (body.type === 'invoice_ocr' || body.type === 'insurance_analysis' || body.type === 'moderate_image') {
-      const apiKey = env.ANTHROPIC_API_KEY;
-      if (!apiKey) return json({ error: 'Anthropic API key not configured' }, 500);
-      if (body.type === 'invoice_ocr') return handleInvoice(body, apiKey);
-      if (body.type === 'insurance_analysis') return handleInsurance(body, apiKey);
-      return handleModerate(body, apiKey);
-    }
-    if (body.type === 'verify_recaptcha') return handleRecaptcha(body, env);
-    return json({ error: 'Unknown or missing "type" (expected invoice_ocr, insurance_analysis, verify_recaptcha or moderate_image)' }, 400);
-  },
-};
+    const apiKey = env.ANTHROPIC_API_KEY;
+    if (!apiKey) return json({ error: 'Anthropic API key not configured' }, 500);
+    if (body.type === 'invoice_ocr') return handleInvoice(body, apiKey);
+    if (body.type === 'insurance_analysis') return handleInsurance(body, apiKey);
+    if (body.type === 'moderate_image') return handleModerate(body, apiKey);
+    // optimize_route usa Sonnet (mejor razonamiento geográfico, temperatura
+    // baja para consistencia). taxie_chat sigue en Haiku.
+    if (body.type === 'optimize_route') return handleAIChat(body, apiKey, 'claude-sonnet-5', 800, 0.2);
+    return handleAIChat(body, apiKey, 'claude-haiku-4-5-20251001', 800, 0.7); // taxie_chat
+  }
+
+  // ── Rutas abiertas ──
+  if (env.GENERAL_LIMITER) {
+    const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+    const { success } = await env.GENERAL_LIMITER.limit({ key: `${ip}:${body.type}` });
+    if (!success) return json({ error: 'Too many requests, try again in a bit' }, 429);
+  }
+  if (body.type === 'verify_recaptcha') return handleRecaptcha(body, env);
+  return json({ error: 'Unknown or missing "type"' }, 400);
+}
+
+// ── CORS ─────────────────────────────────────────────────
+function isAllowedOrigin(origin, env) {
+  if (!origin) return false;
+  const list = String(env.ALLOWED_ORIGINS || 'https://taxfly.github.io')
+    .split(',').map(s => s.trim()).filter(Boolean);
+  if (list.includes(origin)) return true;
+  // Para probar en tu compu (Live Server, python -m http.server, etc.)
+  return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+}
+
+function corsHeaders(origin) {
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
+  };
+}
+
+// ── Verificación del ID token de Firebase ────────────────
+// Es un JWT RS256 firmado por Google. Se valida firma + aud + iss + tiempos,
+// tal como indica la doc de Firebase para verificar tokens sin el Admin SDK.
+let _jwks = null;        // { keys: Map<kid, CryptoKey>, exp: ms }
+
+async function getGoogleKeys() {
+  if (_jwks && _jwks.exp > Date.now()) return _jwks.keys;
+  const res = await fetch(JWKS_URL);
+  if (!res.ok) throw new Error('Could not fetch Google keys');
+  const data = await res.json();
+  const maxAge = Number((res.headers.get('Cache-Control') || '').match(/max-age=(\d+)/)?.[1] || 3600);
+  const keys = new Map();
+  for (const jwk of data.keys || []) {
+    const key = await crypto.subtle.importKey(
+      'jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+    keys.set(jwk.kid, key);
+  }
+  _jwks = { keys, exp: Date.now() + maxAge * 1000 };
+  return keys;
+}
+
+function b64urlToBytes(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function verifyFirebaseToken(token) {
+  const parts = token.split('.');
+  if (parts.length !== 3) throw new Error('malformed token');
+  const dec = new TextDecoder();
+  const header = JSON.parse(dec.decode(b64urlToBytes(parts[0])));
+  const payload = JSON.parse(dec.decode(b64urlToBytes(parts[1])));
+
+  if (header.alg !== 'RS256') throw new Error('bad alg');
+
+  let keys = await getGoogleKeys();
+  let key = keys.get(header.kid);
+  if (!key) { _jwks = null; keys = await getGoogleKeys(); key = keys.get(header.kid); } // rotaron las claves
+  if (!key) throw new Error('unknown kid');
+
+  const ok = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5', key, b64urlToBytes(parts[2]),
+    new TextEncoder().encode(parts[0] + '.' + parts[1]));
+  if (!ok) throw new Error('bad signature');
+
+  const now = Math.floor(Date.now() / 1000);
+  const skew = 60;
+  if (payload.aud !== FIREBASE_PROJECT_ID) throw new Error('bad aud');
+  if (payload.iss !== `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`) throw new Error('bad iss');
+  if (!payload.sub || typeof payload.sub !== 'string') throw new Error('no sub');
+  if (typeof payload.exp !== 'number' || payload.exp < now - skew) throw new Error('expired');
+  if (typeof payload.iat !== 'number' || payload.iat > now + skew) throw new Error('iat in future');
+  if (typeof payload.auth_time !== 'number' || payload.auth_time > now + skew) throw new Error('bad auth_time');
+
+  return { uid: payload.sub, email: payload.email || null };
+}
+
+// ── Optimización de rutas / chat Taxie ──────────────────
+// Handler genérico: recibe { messages: [{role, content}, ...], max_tokens }
+// en formato "estilo OpenAI" (incluyendo un mensaje role:"system" opcional
+// al principio, como ya mandaba el cliente), lo traduce al formato de Claude
+// (system aparte) y devuelve la respuesta con la MISMA forma que ya
+// consumía el cliente (choices[0].message.content), para no tener que
+// reescribir el parseo en rutas.html.
+async function handleAIChat(body, apiKey, model, defaultMaxTokens, defaultTemperature) {
+  const { messages } = body;
+  if (!Array.isArray(messages) || !messages.length) {
+    return json({ error: 'Missing required field: messages' }, 400);
+  }
+
+  let system;
+  const chatMessages = [];
+  for (const m of messages) {
+    if (!m || typeof m.content !== 'string') continue;
+    if (m.role === 'system') system = system ? `${system}\n\n${m.content}` : m.content;
+    else chatMessages.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content });
+  }
+  if (!chatMessages.length) return json({ error: 'No user/assistant messages provided' }, 400);
+
+  const maxTokens = Math.min(Number(body.max_tokens) || defaultMaxTokens, 1500);
+  const temperature = typeof body.temperature === 'number' ? body.temperature : defaultTemperature;
+
+  const claudeRes = await callClaude(apiKey, {
+    model,
+    max_tokens: maxTokens,
+    ...(temperature !== undefined ? { temperature } : {}),
+    ...(system ? { system } : {}),
+    messages: chatMessages,
+  });
+
+  if (claudeRes.error) return json({ error: 'Upstream API error', detail: claudeRes.error }, 502);
+
+  return json({
+    choices: [{ message: { role: 'assistant', content: claudeRes.text } }],
+  });
+}
 
 // ── Facturas / tickets ──────────────────────────────────
 async function handleInvoice(body, apiKey) {
@@ -271,7 +428,6 @@ function json(obj, status = 200) {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
     },
   });
 }

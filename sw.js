@@ -1,7 +1,17 @@
-// TaxFly Service Worker — v13 (recordá bumpear CACHE acá cada vez que cambies
-// un archivo que esté en PRECACHE, para forzar el refresco completo)
-const CACHE = 'taxfly-v32';
+// TaxFly Service Worker — único para todo el sitio (Tax + Maps/Orlando +
+// Mis cosas de viaje), scope raíz. Antes Maps/ tenía su propio sw.js con su
+// propio cache; ahora comparten éste, así una sola versión (CACHE) controla
+// el refresco de todo. Recordá bumpear CACHE acá cada vez que cambies algo
+// que esté en PRECACHE, para forzar el refresco completo.
+const CACHE = 'taxfly-v33';
+// Cache aparte para los tiles del mapa (OpenStreetMap) en Maps/itinerario:
+// así el mapa del día funciona sin señal. Se recorta solo por cantidad de
+// tiles, para no crecer sin límite.
+const TILES_CACHE = 'taxfly-tiles-v1';
+const MAX_TILES = 600;
+
 const PRECACHE = [
+    // ── TaxFly / TaxUSA ──
     './login.html',
     './selector.html',
     './profiles.html',
@@ -27,6 +37,24 @@ const PRECACHE = [
     './manifest.json',
     './assets/icon-512.png',
     './assets/icon-192.png',
+    // ── Maps / Orlando Planning / Mis cosas de viaje ──
+    './Maps/index.html',
+    './Maps/Mis_cosas_de_viaje.html',
+    './Maps/styles.css',
+    './Maps/sx.css',
+    './Maps/app.js',
+    './Maps/theme.js',
+    './Maps/firebase-sync.js',
+    './Maps/mis-cosas-firebase.js',
+    './Maps/sx-ui.js',
+    './Maps/i18n.js',
+    './Maps/i18n-orlando.js',
+    './Maps/i18n-mis.js',
+    './Maps/vendor-xlsx.min.js',
+    './Maps/manifest.json',
+    './Maps/favicon.png',
+    './Maps/apple-touch-icon-viaje.png',
+    './Maps/favicon-viaje.png',
     // Firebase SDK — necesario para que las páginas con sesión funcionen offline
     'https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js',
     'https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js',
@@ -54,10 +82,20 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
     e.waitUntil(
         caches.keys().then(keys =>
-            Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+            Promise.all(keys.filter(k => k !== CACHE && k !== TILES_CACHE).map(k => caches.delete(k)))
         ).then(() => self.clients.claim())
     );
 });
+
+// Recorta el cache de tiles cuando se pasa de MAX_TILES, borrando las
+// entradas más viejas (el orden de caches.keys() sigue el de inserción).
+async function trimTileCache() {
+    const cache = await caches.open(TILES_CACHE);
+    const keys = await cache.keys();
+    if (keys.length <= MAX_TILES) return;
+    const toDelete = keys.slice(0, keys.length - MAX_TILES);
+    await Promise.all(toDelete.map(k => cache.delete(k)));
+}
 
 // ── Fetch ──
 self.addEventListener('fetch', e => {
@@ -69,19 +107,39 @@ self.addEventListener('fetch', e => {
     // Ignorar extensiones de Chrome
     if (url.protocol === 'chrome-extension:') return;
 
-    // ── 1. APIs externas — siempre red, sin interceptar ──
+    // ── 1. APIs externas y Firebase (Auth/Firestore) — siempre red ──
     const networkOnly = [
         'dolarapi.com', 'open.er-api.com', 'queue-times.com',
         'firebaseapp.com', 'googleapis.com',
-        'securetoken.googleapis.com', 'firebaseio.com',
+        'securetoken.googleapis.com', 'firebaseio.com', 'firestore.googleapis.com',
         'corsproxy.io', 'recaptcha',
-        'taxusa-proxy', 'taxusa.juanbria18.workers.dev',
+        'taxfly-claude', 'taxusa-proxy', 'taxusa.juanbria18.workers.dev',
         'groq', 'llama', 'anthropic',
+        'osrm', // servicio de rutas de Maps: siempre fresco
         'generate_204',   // probe de conectividad — nunca cachear
     ];
     if (networkOnly.some(d => url.href.includes(d))) return;
 
-    // ── 2. Google Fonts → Stale While Revalidate ──
+    // ── 2. Tiles del mapa (OpenStreetMap, usado en Maps/itinerario) →
+    //    Cache First + refresco en background, para verse sin señal ──
+    if (/(^|\.)tile\.openstreetmap\.org$/.test(url.hostname)) {
+        e.respondWith(
+            caches.open(TILES_CACHE).then(cache =>
+                cache.match(e.request).then(cached => {
+                    const network = fetch(e.request).then(res => {
+                        if (res && (res.ok || res.type === 'opaque')) {
+                            cache.put(e.request, res.clone()).then(trimTileCache);
+                        }
+                        return res;
+                    }).catch(() => cached);
+                    return cached || network;
+                })
+            )
+        );
+        return;
+    }
+
+    // ── 3. Google Fonts → Stale While Revalidate ──
     if (url.href.includes('fonts.googleapis.com') || url.href.includes('fonts.gstatic.com')) {
         e.respondWith(
             caches.open(CACHE).then(cache =>
@@ -99,7 +157,7 @@ self.addEventListener('fetch', e => {
         return;
     }
 
-    // ── 3b. Firebase SDK (gstatic) → Cache First con actualización en background ──
+    // ── 4. Firebase SDK (gstatic) → Cache First con actualización en background ──
     // CRÍTICO para el modo offline: todas las páginas hacen `import ... from
     // "https://www.gstatic.com/firebasejs/..."` de forma estática. Si ese fetch
     // falla (sin red y sin este cacheo), el módulo entero no se ejecuta y
@@ -122,7 +180,7 @@ self.addEventListener('fetch', e => {
         return;
     }
 
-    // ── 3. Flags CDN → Cache agresivo ──
+    // ── 5. Flags CDN → Cache agresivo ──
     if (url.href.includes('flagcdn.com') || url.href.includes('flagpedia.net')) {
         e.respondWith(
             caches.open(CACHE).then(cache =>
@@ -137,7 +195,7 @@ self.addEventListener('fetch', e => {
         return;
     }
 
-    // ── 4. HTML propio → Network First con fallback a caché ──
+    // ── 6. HTML propio → Network First con fallback a caché ──
     if (
         url.origin === self.location.origin &&
         e.request.headers.get('accept')?.includes('text/html')
@@ -152,14 +210,16 @@ self.addEventListener('fetch', e => {
                 })
                 .catch(() =>
                     caches.match(e.request).then(cached =>
-                        cached || caches.match(OFFLINE_FALLBACK)
+                        cached
+                        || caches.match(e.request, { ignoreSearch: true }) // ej. Mis_cosas_de_viaje.html?sec=dia sin señal
+                        || caches.match(OFFLINE_FALLBACK)
                     )
                 )
         );
         return;
     }
 
-    // ── 5. CSS, JS, imágenes locales → Cache First ──
+    // ── 7. CSS, JS, imágenes locales → Cache First ──
     if (url.origin === self.location.origin) {
         e.respondWith(
             caches.open(CACHE).then(cache =>
@@ -183,7 +243,20 @@ self.addEventListener('fetch', e => {
                 })
             )
         );
+        return;
     }
+
+    // ── 8. Otros recursos externos (Leaflet, fuentes sueltas, etc.) →
+    //    Network First con fallback a cache ──
+    e.respondWith(
+        fetch(e.request).then(res => {
+            if (res && (res.ok || res.type === 'opaque')) {
+                const resToCache = res.clone();
+                caches.open(CACHE).then(c => c.put(e.request, resToCache));
+            }
+            return res;
+        }).catch(() => caches.match(e.request))
+    );
 });
 
 // ── Mensajes desde la app ──

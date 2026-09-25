@@ -2662,16 +2662,11 @@ If you cannot find a field, use null for that field. Do not invent data.`;
             { type: 'text', text: prompt }
           ];
 
-    const CLAUDE_WORKER = window.TAXFLY_CONFIG.WORKER_URL;
-    const res = await fetch(CLAUDE_WORKER, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-App-Secret': window.TAXFLY_CONFIG.APP_SECRET },
-        body: JSON.stringify({
-            type: 'insurance_analysis',
-            fileBase64: b64,
-            mediaType,
-            docName,
-        })
+    const res = await window.taxflyWorker({
+        type: 'insurance_analysis',
+        fileBase64: b64,
+        mediaType,
+        docName,
     });
 
     if (!res.ok) throw new Error('analyze-insurance error: ' + res.status);

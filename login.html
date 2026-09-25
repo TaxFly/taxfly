@@ -995,7 +995,7 @@ async function verifyRecaptchaToken(token, action) {
     try {
         const res = await fetch(RECAPTCHA_VERIFY_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-App-Secret': window.TAXFLY_CONFIG.APP_SECRET },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: 'verify_recaptcha', token, action })
         });
         if (!res.ok) return true; // backend error → no bloquear al usuario

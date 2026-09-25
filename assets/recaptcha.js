@@ -16,7 +16,7 @@ window._rcCheck = async function (action) {
     try {
         const r = await fetch(window.TAXFLY_CONFIG.WORKER_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-App-Secret': window.TAXFLY_CONFIG.APP_SECRET },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: 'verify_recaptcha', token, action }),
         });
         if (!r.ok) return true;

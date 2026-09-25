@@ -2107,16 +2107,11 @@ async function runOCR(rawCanvas, thumb){
     try{
         // Imagen en JPEG alta calidad para mejor lectura
         const base64=rawCanvas.toDataURL('image/jpeg',0.92).split(',')[1];
-        const CLAUDE_WORKER=window.TAXFLY_CONFIG.WORKER_URL;
 
-        const resp=await fetch(CLAUDE_WORKER,{
-            method:'POST',
-            headers:{'Content-Type':'application/json','X-App-Secret':window.TAXFLY_CONFIG.APP_SECRET},
-            body:JSON.stringify({
-                type:'invoice_ocr',
-                image_base64:base64,
-                image_media_type:'image/jpeg'
-            })
+        const resp=await window.taxflyWorker({
+            type:'invoice_ocr',
+            image_base64:base64,
+            image_media_type:'image/jpeg'
         });
 
         if(!resp.ok) throw new Error('API error: '+resp.status);

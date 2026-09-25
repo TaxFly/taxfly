@@ -565,7 +565,7 @@ async function _rcCheck(action) {
     const token = await _rcToken(action);
     if (!token) return true;
     try {
-        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json','X-App-Secret':window.TAXFLY_CONFIG.APP_SECRET}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
         if (!r.ok) return true;
         const d = await r.json();
         return d.success !== false;

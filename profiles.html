@@ -500,7 +500,7 @@ async function _rcCheck(action) {
     const token = await _rcToken(action);
     if (!token) return true;
     try {
-        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json','X-App-Secret':window.TAXFLY_CONFIG.APP_SECRET}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
+        const r = await fetch(_RC_VERIFY_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'verify_recaptcha', token, action}) });
         if (!r.ok) return true;
         const d = await r.json();
         return d.success !== false;
@@ -901,11 +901,7 @@ async function checkRealConnectivity() {
 
         try {
             const base64 = dataUrl.split(',')[1];
-            const response = await fetch(window.TAXFLY_CONFIG.WORKER_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-App-Secret": window.TAXFLY_CONFIG.APP_SECRET },
-                body: JSON.stringify({ type: 'moderate_image', imageBase64: base64, mediaType: "image/jpeg" })
-            });
+            const response = await window.taxflyWorker({ type: 'moderate_image', imageBase64: base64, mediaType: "image/jpeg" });
 
             const result = await response.json();
             if (!response.ok) {
