@@ -31,3 +31,9 @@ body {
     transition: background .3s, color .3s;
     -webkit-font-smoothing: antialiased;
 }
+
+/* Badge de reCAPTCHA v3 — antes estaba repetido inline en 8 páginas, con dos
+   variantes distintas (algunas con display:none, otras con visibility+opacity
+   +pointer-events). Se unifica acá (todas las páginas cargan style.css) con
+   la versión más completa. */
+.grecaptcha-badge { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
