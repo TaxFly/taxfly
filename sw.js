@@ -3,7 +3,7 @@
 // propio cache; ahora comparten éste, así una sola versión (CACHE) controla
 // el refresco de todo. Recordá bumpear CACHE acá cada vez que cambies algo
 // que esté en PRECACHE, para forzar el refresco completo.
-const CACHE = 'taxfly-v33';
+const CACHE = 'taxfly-v34';
 // Cache aparte para los tiles del mapa (OpenStreetMap) en Maps/itinerario:
 // así el mapa del día funciona sin señal. Se recorta solo por cantidad de
 // tiles, para no crecer sin límite.

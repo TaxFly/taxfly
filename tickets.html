@@ -490,7 +490,7 @@
 // ── reCAPTCHA v3 helper ──
 // _rcToken/_rcCheck ahora viven en assets/recaptcha.js (compartido)
 
-const FB = { apiKey:"AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0", authDomain:"viajes-db538.firebaseapp.com", projectId:"viajes-db538", storageBucket:"viajes-db538.firebasestorage.app", messagingSenderId:"237311739178", appId:"1:237311739178:web:333e468b184c0402a98a53" };
+const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
 // ── Carga del SDK de Firebase con fallback offline (ver sw.js + tax.html) ──
 let initializeApp, getAuth, onAuthStateChanged, signOut, deleteUser,

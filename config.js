@@ -1,6 +1,18 @@
 window.TAXFLY_CONFIG = {
     WORKER_URL: 'https://taxfly-claude.juanbria18.workers.dev',
     FIREBASE_SDK: 'https://www.gstatic.com/firebasejs/12.12.1',
+    // Config del proyecto de Firebase — antes estaba copiada y pegada en 12
+    // archivos (todas las páginas de TaxFly + Maps). Si alguna vez hay que
+    // rotar la apiKey o cambiar de proyecto, esto se toca en un solo lugar.
+    FIREBASE_CONFIG: {
+        apiKey: "AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0",
+        authDomain: "viajes-db538.firebaseapp.com",
+        projectId: "viajes-db538",
+        storageBucket: "viajes-db538.firebasestorage.app",
+        messagingSenderId: "237311739178",
+        appId: "1:237311739178:web:333e468b184c0402a98a53",
+        measurementId: "G-WYF0L0YSYJ",
+    },
 };
 
 // ── Llamada al worker ────────────────────────────────────────────────────────
