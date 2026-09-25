@@ -3,15 +3,9 @@ import { getFirestore, doc, setDoc, onSnapshot, getDoc, collection } from "https
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 // Proyecto de Firebase de TaxUSA/Taxfly — unificado (antes Maps tenía su
-// propio proyecto, orlando-planning-5c1e1).
-const firebaseConfig = {
-  apiKey: "AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0",
-  authDomain: "viajes-db538.firebaseapp.com",
-  projectId: "viajes-db538",
-  storageBucket: "viajes-db538.firebasestorage.app",
-  messagingSenderId: "237311739178",
-  appId: "1:237311739178:web:333e468b184c0402a98a53"
-};
+// propio proyecto, orlando-planning-5c1e1). La config vive en config.js
+// (../config.js, cargado desde el <head> antes de este módulo).
+const firebaseConfig = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
