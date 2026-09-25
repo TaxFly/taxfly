@@ -1,60 +1,53 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
-// Mismo proyecto de Firebase que Taxfly y Orlando Planning (mismo origen,
-// taxfly.github.io): la sesión de Auth ya es compartida, así que si ya
-// estabas logueado para usar Orlando Planning, esto ni se nota. Cada
-// perfil de Taxfly tiene SU PROPIO "Mis cosas de viaje" — los datos viven
-// bajo usuarios/{uid}/perfiles/{perfilId}/misCosas/root/..., igual que
-// Orlando vive bajo .../orlando/{docId}.
-// Config centralizada en config.js (../config.js, cargado antes de este módulo).
 const firebaseConfig = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
-const TAXFLY_LOGIN_URL = 'https://taxfly.github.io/taxfly/login.html';
-const TAXFLY_PROFILES_URL = 'https://taxfly.github.io/taxfly/profiles.html';
-const PENDING_REDIRECT_KEY = 'taxusa_pending_redirect';
+
+const TAXFLY_LOGIN_URL = "https://taxfly.github.io/taxfly/login.html";
+
+const TAXFLY_PROFILES_URL = "https://taxfly.github.io/taxfly/profiles.html";
+
+const PENDING_REDIRECT_KEY = "taxusa_pending_redirect";
 
 const app = initializeApp(firebaseConfig);
-// Persistencia local (IndexedDB): los datos ya cargados quedan disponibles
-// sin conexión, y lo que se escribe offline se sincroniza solo al volver la
-// señal. tabManager multi-pestaña porque TaxFly y Maps pueden estar abiertos
-// al mismo tiempo en pestañas distintas del mismo origen. Si falla (ya se
-// había inicializado Firestore antes en esta pestaña, o el navegador no
-// soporta IndexedDB), se cae a la versión sin persistencia.
-// cacheSizeBytes tope en 200MB: sin esto, las pólizas/fotos de Documentos
-// (guardadas en trozos de 800KB) irían acumulando espacio en el dispositivo
-// sin límite. Con el tope, Firestore borra solo lo más viejo que no esté
-// activamente abierto cuando se pasa de 200MB — nunca se pierde de la nube,
-// solo deja de estar cacheado localmente hasta la próxima vez que haya red.
-const db = (() => {
-    try {
-        return initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager(), cacheSizeBytes: 200 * 1024 * 1024 }) });
-    } catch (e) {
-        return getFirestore(app);
-    }
-})();
-const auth = getAuth(app);
-// App Check — mismo patrón que el resto de TaxFly (antes esta página no lo
-// hacía; si algún día se pasa App Check a modo "Enforce" en la consola, se
-// habría quedado sin acceso de un día para el otro sin este bloque).
-if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
 
-// El script principal (no es un módulo) no puede hacer `import`, así que
-// se comunican con esta promesa: la crea ANTES de arrancar el login para
-// que exista apenas el script principal empiece a buscarla (sondea con
-// un pequeño polling, ver esperarFirebaseReady en el HTML), sin importar
-// en qué orden termine ejecutando el navegador los dos scripts.
-window._misCosasReady = new Promise(resolve => { window._misCosasResolve = resolve; });
+const db = (() => {
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+        cacheSizeBytes: 200 * 1024 * 1024
+      })
+    });
+  } catch (e) {
+    return getFirestore(app);
+  }
+})();
+
+const auth = getAuth(app);
+
+if (navigator.onLine) {
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider("6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME"),
+      isTokenAutoRefreshEnabled: true
+    });
+  } catch (e) {}
+}
+
+window._misCosasReady = new Promise(resolve => {
+  window._misCosasResolve = resolve;
+});
 
 function rootPath(uid, perfilId) {
   return `usuarios/${uid}/perfiles/${perfilId}/misCosas/root`;
 }
 
-// Imita la forma en que el HTML ya usa DB.collection()/DB.doc() (viene de
-// cuando esto corría sobre la capacidad "db" de un artefacto de Claude),
-// para no tener que tocar el resto del archivo — solo lo que arma este
-// objeto cambia.
 function buildDB(uid, perfilId) {
   const base = rootPath(uid, perfilId);
   return {
@@ -63,9 +56,14 @@ function buildDB(uid, perfilId) {
       return {
         onSnapshot(cb, errCb) {
           return onSnapshot(ref, snap => {
-            cb({ docs: snap.docs.map(d => ({ id: d.id, data: () => d.data() })) });
+            cb({
+              docs: snap.docs.map(d => ({
+                id: d.id,
+                data: () => d.data()
+              }))
+            });
           }, errCb);
-        },
+        }
       };
     },
     doc(path) {
@@ -73,38 +71,50 @@ function buildDB(uid, perfilId) {
       return {
         onSnapshot(cb, errCb) {
           return onSnapshot(ref, snap => {
-            cb({ exists: snap.exists(), data: () => snap.data() });
+            cb({
+              exists: snap.exists(),
+              data: () => snap.data()
+            });
           }, errCb);
         },
-        set(data) { return setDoc(ref, data); },
-        delete() { return deleteDoc(ref); },
+        set(data) {
+          return setDoc(ref, data);
+        },
+        delete() {
+          return deleteDoc(ref);
+        }
       };
-    },
+    }
   };
 }
 
-// Sin Storage: las fotos ahora viven como data URI adentro de cada
-// documento de Firestore (ver comprimirParaNube en el HTML), así que no
-// hace falta ninguna capacidad de subida de archivos acá.
-
-// Cierra la sesión (mismo Auth que TaxUSA y Orlando) y vuelve al login de Taxfly.
-window._misCosasSignOut = async function () {
-  try { await signOut(auth); } catch (e) {}
+window._misCosasSignOut = async function() {
+  try {
+    await signOut(auth);
+  } catch (e) {}
   window.location.replace(TAXFLY_LOGIN_URL);
 };
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, user => {
   if (!user) {
-    try { localStorage.setItem(PENDING_REDIRECT_KEY, location.href); } catch (e) {}
+    try {
+      localStorage.setItem(PENDING_REDIRECT_KEY, location.href);
+    } catch (e) {}
     window.location.replace(TAXFLY_LOGIN_URL);
     return;
   }
   let perfilId = null;
-  try { perfilId = localStorage.getItem('perfilActivoId'); } catch (e) {}
+  try {
+    perfilId = localStorage.getItem("perfilActivoId");
+  } catch (e) {}
   if (!perfilId) {
-    try { localStorage.setItem(PENDING_REDIRECT_KEY, location.href); } catch (e) {}
+    try {
+      localStorage.setItem(PENDING_REDIRECT_KEY, location.href);
+    } catch (e) {}
     window.location.replace(TAXFLY_PROFILES_URL);
     return;
   }
-  window._misCosasResolve({ DB: buildDB(user.uid, perfilId) });
+  window._misCosasResolve({
+    DB: buildDB(user.uid, perfilId)
+  });
 });

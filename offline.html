@@ -15,11 +15,10 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800;900&display=swap" rel="stylesheet"></noscript>
     <script>
-        const _t = localStorage.getItem('theme');
-        if (_t) document.documentElement.setAttribute('data-theme', _t);
-        else if (window.matchMedia('(prefers-color-scheme: dark)').matches)
-            document.documentElement.setAttribute('data-theme', 'dark');
-    </script>
+const _t = localStorage.getItem("theme");
+
+if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.setAttribute("data-theme", "dark");
+</script>
     <style>
         :root {
             --primary:#2563eb; --primary-dim:rgba(37,99,235,0.1);
@@ -57,7 +56,7 @@
 
         .wrap { width: 100%; max-width: 460px; }
 
-        /* ── Header ── */
+        
         .app-header {
             display: flex;
             align-items: center;
@@ -75,7 +74,7 @@
         }
         .logo svg { width: 28px; height: 28px; flex-shrink: 0; }
 
-        /* ── Hero card ── */
+        
         .hero-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -120,7 +119,7 @@
             margin-bottom: 28px;
         }
 
-        /* Status pill */
+        
         .status-pill {
             display: inline-flex;
             align-items: center;
@@ -148,7 +147,7 @@
             50%      { opacity: .4; transform: scale(.7); }
         }
 
-        /* Retry button */
+        
         .btn-retry {
             width: 100%;
             padding: 14px;
@@ -183,7 +182,7 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Cached pages section ── */
+        
         .section-label {
             font-size: .6rem;
             font-weight: 800;
@@ -250,7 +249,7 @@
             color: var(--text-dim);
         }
 
-        /* ── Tips section ── */
+        
         .tip-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -299,7 +298,7 @@
         </div>
     </header>
 
-    <!-- Hero -->
+    
     <div class="hero-card">
         <div class="plane-wrap">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -323,13 +322,13 @@
         </button>
     </div>
 
-    <!-- Cached pages -->
+    
     <div class="section-label" id="label-pages">Disponible sin internet</div>
     <div class="pages-grid" id="pagesGrid">
-        <!-- populated by JS -->
+        
     </div>
 
-    <!-- Tips -->
+    
     <div class="tip-card">
         <div class="tip-header">
             <span>💡</span>
@@ -344,169 +343,211 @@
 </div>
 
 <script>
-// ── i18n ──
-const LANG = (localStorage.getItem('taxfly_lang') || navigator.language || 'es').substring(0,2);
+const LANG = (localStorage.getItem("taxfly_lang") || navigator.language || "es").substring(0, 2);
 
 const T = {
-    es: {
-        pill:      'Sin conexión',
-        title:     'Estás en modo avión',
-        sub:       'No hay internet disponible, pero podés seguir usando las secciones guardadas en tu dispositivo.',
-        retry:     '🔄 Reintentar conexión',
-        retrying:  'Verificando…',
-        pages:     'Disponible sin internet',
-        tips:      'Qué podés hacer sin internet',
-        tip1:      'Revisá tus gastos cargados y el resumen de presupuesto.',
-        tip2:      'Consultá tu itinerario completo con todos los eventos.',
-        tip3:      'Calculá impuestos con el último tipo de cambio guardado.',
-        tip4:      'Activá el Wi-Fi del hotel o comprá datos locales para retomar.',
-        cached:    'En caché',
-        notCached: 'No disponible',
-        pages_list: [
-            { emoji:'🏠', label:'Inicio',      href:'./index.html' },
-            { emoji:'🧾', label:'Gastos',      href:'./compras.html' },
-            { emoji:'🗓️', label:'Itinerario', href:'./itinerario.html' },
-            { emoji:'🧮', label:'Tax',         href:'./tax.html' },
-            { emoji:'👥', label:'Grupo',       href:'./grupo.html' },
-            { emoji:'📐', label:'Unidades',    href:'./unidades.html' },
-        ],
-    },
-    en: {
-        pill:      'No connection',
-        title:     'You\'re in airplane mode',
-        sub:       'No internet available, but you can still use the sections saved on your device.',
-        retry:     '🔄 Retry connection',
-        retrying:  'Checking…',
-        pages:     'Available offline',
-        tips:      'What you can do without internet',
-        tip1:      'Review your logged expenses and budget summary.',
-        tip2:      'Check your full itinerary with all events.',
-        tip3:      'Calculate taxes using the last saved exchange rate.',
-        tip4:      'Connect to hotel Wi-Fi or buy local data to resume.',
-        cached:    'Cached',
-        notCached: 'Not available',
-        pages_list: [
-            { emoji:'🏠', label:'Home',       href:'./index.html' },
-            { emoji:'🧾', label:'Expenses',   href:'./compras.html' },
-            { emoji:'🗓️', label:'Itinerary', href:'./itinerario.html' },
-            { emoji:'🧮', label:'Tax',        href:'./tax.html' },
-            { emoji:'👥', label:'Group',      href:'./grupo.html' },
-            { emoji:'📐', label:'Units',      href:'./unidades.html' },
-        ],
-    },
-    pt: {
-        pill:      'Sem conexão',
-        title:     'Você está no modo avião',
-        sub:       'Sem internet disponível, mas você pode continuar usando as seções salvas no seu dispositivo.',
-        retry:     '🔄 Tentar novamente',
-        retrying:  'Verificando…',
-        pages:     'Disponível sem internet',
-        tips:      'O que você pode fazer sem internet',
-        tip1:      'Revise seus gastos registrados e o resumo do orçamento.',
-        tip2:      'Consulte seu itinerário completo com todos os eventos.',
-        tip3:      'Calcule impostos com a última cotação salva.',
-        tip4:      'Conecte-se ao Wi-Fi do hotel ou compre dados locais.',
-        cached:    'Em cache',
-        notCached: 'Indisponível',
-        pages_list: [
-            { emoji:'🏠', label:'Início',     href:'./index.html' },
-            { emoji:'🧾', label:'Gastos',     href:'./compras.html' },
-            { emoji:'🗓️', label:'Itinerário',href:'./itinerario.html' },
-            { emoji:'🧮', label:'Tax',        href:'./tax.html' },
-            { emoji:'👥', label:'Grupo',      href:'./grupo.html' },
-            { emoji:'📐', label:'Unidades',   href:'./unidades.html' },
-        ],
-    },
+  es: {
+    pill: "Sin conexión",
+    title: "Estás en modo avión",
+    sub: "No hay internet disponible, pero podés seguir usando las secciones guardadas en tu dispositivo.",
+    retry: "🔄 Reintentar conexión",
+    retrying: "Verificando…",
+    pages: "Disponible sin internet",
+    tips: "Qué podés hacer sin internet",
+    tip1: "Revisá tus gastos cargados y el resumen de presupuesto.",
+    tip2: "Consultá tu itinerario completo con todos los eventos.",
+    tip3: "Calculá impuestos con el último tipo de cambio guardado.",
+    tip4: "Activá el Wi-Fi del hotel o comprá datos locales para retomar.",
+    cached: "En caché",
+    notCached: "No disponible",
+    pages_list: [ {
+      emoji: "🏠",
+      label: "Inicio",
+      href: "./index.html"
+    }, {
+      emoji: "🧾",
+      label: "Gastos",
+      href: "./compras.html"
+    }, {
+      emoji: "🗓️",
+      label: "Itinerario",
+      href: "./itinerario.html"
+    }, {
+      emoji: "🧮",
+      label: "Tax",
+      href: "./tax.html"
+    }, {
+      emoji: "👥",
+      label: "Grupo",
+      href: "./grupo.html"
+    }, {
+      emoji: "📐",
+      label: "Unidades",
+      href: "./unidades.html"
+    } ]
+  },
+  en: {
+    pill: "No connection",
+    title: "You're in airplane mode",
+    sub: "No internet available, but you can still use the sections saved on your device.",
+    retry: "🔄 Retry connection",
+    retrying: "Checking…",
+    pages: "Available offline",
+    tips: "What you can do without internet",
+    tip1: "Review your logged expenses and budget summary.",
+    tip2: "Check your full itinerary with all events.",
+    tip3: "Calculate taxes using the last saved exchange rate.",
+    tip4: "Connect to hotel Wi-Fi or buy local data to resume.",
+    cached: "Cached",
+    notCached: "Not available",
+    pages_list: [ {
+      emoji: "🏠",
+      label: "Home",
+      href: "./index.html"
+    }, {
+      emoji: "🧾",
+      label: "Expenses",
+      href: "./compras.html"
+    }, {
+      emoji: "🗓️",
+      label: "Itinerary",
+      href: "./itinerario.html"
+    }, {
+      emoji: "🧮",
+      label: "Tax",
+      href: "./tax.html"
+    }, {
+      emoji: "👥",
+      label: "Group",
+      href: "./grupo.html"
+    }, {
+      emoji: "📐",
+      label: "Units",
+      href: "./unidades.html"
+    } ]
+  },
+  pt: {
+    pill: "Sem conexão",
+    title: "Você está no modo avião",
+    sub: "Sem internet disponível, mas você pode continuar usando as seções salvas no seu dispositivo.",
+    retry: "🔄 Tentar novamente",
+    retrying: "Verificando…",
+    pages: "Disponível sem internet",
+    tips: "O que você pode fazer sem internet",
+    tip1: "Revise seus gastos registrados e o resumo do orçamento.",
+    tip2: "Consulte seu itinerário completo com todos os eventos.",
+    tip3: "Calcule impostos com a última cotação salva.",
+    tip4: "Conecte-se ao Wi-Fi do hotel ou compre dados locais.",
+    cached: "Em cache",
+    notCached: "Indisponível",
+    pages_list: [ {
+      emoji: "🏠",
+      label: "Início",
+      href: "./index.html"
+    }, {
+      emoji: "🧾",
+      label: "Gastos",
+      href: "./compras.html"
+    }, {
+      emoji: "🗓️",
+      label: "Itinerário",
+      href: "./itinerario.html"
+    }, {
+      emoji: "🧮",
+      label: "Tax",
+      href: "./tax.html"
+    }, {
+      emoji: "👥",
+      label: "Grupo",
+      href: "./grupo.html"
+    }, {
+      emoji: "📐",
+      label: "Unidades",
+      href: "./unidades.html"
+    } ]
+  }
 };
 
 const t = T[LANG] || T.es;
 
-// Apply translations
-document.getElementById('pill-text').textContent   = t.pill;
-document.getElementById('hero-title').textContent  = t.title;
-document.getElementById('hero-sub').textContent    = t.sub;
-document.getElementById('retry-label').textContent = t.retry;
-document.getElementById('label-pages').textContent = t.pages;
-document.getElementById('tips-label').textContent  = t.tips;
-document.getElementById('tip1').textContent = t.tip1;
-document.getElementById('tip2').textContent = t.tip2;
-document.getElementById('tip3').textContent = t.tip3;
-document.getElementById('tip4').textContent = t.tip4;
+document.getElementById("pill-text").textContent = t.pill;
 
-// ── Build pages grid, checking cache availability ──
+document.getElementById("hero-title").textContent = t.title;
+
+document.getElementById("hero-sub").textContent = t.sub;
+
+document.getElementById("retry-label").textContent = t.retry;
+
+document.getElementById("label-pages").textContent = t.pages;
+
+document.getElementById("tips-label").textContent = t.tips;
+
+document.getElementById("tip1").textContent = t.tip1;
+
+document.getElementById("tip2").textContent = t.tip2;
+
+document.getElementById("tip3").textContent = t.tip3;
+
+document.getElementById("tip4").textContent = t.tip4;
+
 async function buildPagesGrid() {
-    const grid = document.getElementById('pagesGrid');
-    grid.innerHTML = '';
-
-    for (const page of t.pages_list) {
-        let isCached = false;
-        try {
-            const keys   = await caches.keys();
-            for (const key of keys) {
-                const cache  = await caches.open(key);
-                const match  = await cache.match(page.href);
-                if (match) { isCached = true; break; }
-            }
-        } catch(e) { /* caches API not available */ }
-
-        const card = document.createElement('a');
-        card.href      = page.href;
-        card.className = 'page-card' + (isCached ? '' : ' disabled');
-
-        card.innerHTML = `
-            <span class="pc-emoji">${page.emoji}</span>
-            <span class="pc-label">${page.label}</span>
-            <span class="pc-badge ${isCached ? '' : 'na'}">${isCached ? t.cached : t.notCached}</span>
-        `;
-        grid.appendChild(card);
-    }
+  const grid = document.getElementById("pagesGrid");
+  grid.innerHTML = "";
+  for (const page of t.pages_list) {
+    let isCached = false;
+    try {
+      const keys = await caches.keys();
+      for (const key of keys) {
+        const cache = await caches.open(key);
+        const match = await cache.match(page.href);
+        if (match) {
+          isCached = true;
+          break;
+        }
+      }
+    } catch (e) {}
+    const card = document.createElement("a");
+    card.href = page.href;
+    card.className = "page-card" + (isCached ? "" : " disabled");
+    card.innerHTML = `\n            <span class="pc-emoji">${page.emoji}</span>\n            <span class="pc-label">${page.label}</span>\n            <span class="pc-badge ${isCached ? "" : "na"}">${isCached ? t.cached : t.notCached}</span>\n        `;
+    grid.appendChild(card);
+  }
 }
 
 buildPagesGrid();
 
-// ── Retry connection ──
 async function retryConnection() {
-    const btn = document.getElementById('btnRetry');
-    document.getElementById('retry-label').textContent = t.retrying;
-    btn.classList.add('loading');
-
-    try {
-        await fetch('https://www.gstatic.com/generate_204', {
-            method: 'HEAD',
-            cache:  'no-store',
-            mode:   'no-cors',
-            signal: AbortSignal.timeout(4000),
-        });
-        // If we get here, we're back online — go to last page or home
-        const last = sessionStorage.getItem('taxfly_last_page') || './index.html';
-        window.location.replace(last);
-    } catch(e) {
-        btn.classList.remove('loading');
-        document.getElementById('retry-label').textContent = t.retry;
-
-        // Brief shake animation on failure
-        btn.style.animation = 'shake .4s ease';
-        btn.addEventListener('animationend', () => btn.style.animation = '', { once: true });
-    }
+  const btn = document.getElementById("btnRetry");
+  document.getElementById("retry-label").textContent = t.retrying;
+  btn.classList.add("loading");
+  try {
+    await fetch("https://www.gstatic.com/generate_204", {
+      method: "HEAD",
+      cache: "no-store",
+      mode: "no-cors",
+      signal: AbortSignal.timeout(4e3)
+    });
+    const last = sessionStorage.getItem("taxfly_last_page") || "./index.html";
+    window.location.replace(last);
+  } catch (e) {
+    btn.classList.remove("loading");
+    document.getElementById("retry-label").textContent = t.retry;
+    btn.style.animation = "shake .4s ease";
+    btn.addEventListener("animationend", () => btn.style.animation = "", {
+      once: true
+    });
+  }
 }
 
-// ── Auto-retry when connection is restored ──
-window.addEventListener('online', () => {
-    const last = sessionStorage.getItem('taxfly_last_page') || './index.html';
-    window.location.replace(last);
+window.addEventListener("online", () => {
+  const last = sessionStorage.getItem("taxfly_last_page") || "./index.html";
+  window.location.replace(last);
 });
 
-// ── Add shake keyframes dynamically ──
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes shake {
-        0%,100% { transform: translateX(0); }
-        20%      { transform: translateX(-6px); }
-        40%      { transform: translateX(6px); }
-        60%      { transform: translateX(-4px); }
-        80%      { transform: translateX(4px); }
-    }
-`;
+const style = document.createElement("style");
+
+style.textContent = `\n    @keyframes shake {\n        0%,100% { transform: translateX(0); }\n        20%      { transform: translateX(-6px); }\n        40%      { transform: translateX(6px); }\n        60%      { transform: translateX(-4px); }\n        80%      { transform: translateX(4px); }\n    }\n`;
+
 document.head.appendChild(style);
 </script>
 <style>.wm{font-weight:500;letter-spacing:-.045em;color:var(--text,#0f172a)}.wm .wm-usa{font-weight:900;letter-spacing:-.045em;color:#2563eb}[data-theme="dark"] .wm .wm-usa{color:#5b8def}.ui-lead{display:inline-block;vertical-align:-3px;margin-right:5px;flex-shrink:0}.pc-emoji .ui-lead,.tip-icon .ui-lead{margin:0;vertical-align:middle}.pc-emoji,.tip-icon{display:inline-flex;align-items:center;justify-content:center}</style>

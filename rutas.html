@@ -18,9 +18,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <script>
-  const _t = localStorage.getItem('theme');
-  if (_t) document.documentElement.setAttribute('data-theme', _t);
-  else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme','dark');
+const _t = localStorage.getItem("theme");
+
+if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.setAttribute("data-theme", "dark");
 </script>
 <style>
 :root {
@@ -80,7 +80,7 @@ input::placeholder,textarea::placeholder{color:var(--text-dim);font-weight:500;}
 .input-group{margin-bottom:12px;}
 textarea{resize:none;line-height:1.5;}
 
-/* ── AUTOCOMPLETE ── */
+
 .autocomplete-wrap{position:relative;margin-bottom:12px;}
 .autocomplete-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--primary);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:500;max-height:220px;overflow-y:auto;display:none;}
 .autocomplete-list.show{display:block;}
@@ -94,22 +94,22 @@ textarea{resize:none;line-height:1.5;}
 .autocomplete-spinner{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--primary);animation:spin .7s linear infinite;display:none;}
 @keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
 
-/* ── SECCIÓN TITLE ── */
+
 .section-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
 .section-title h2{font-size:1rem;font-weight:900;color:var(--text);}
 .section-badge{font-size:.6rem;font-weight:800;background:var(--primary-dim);color:var(--primary);padding:3px 8px;border-radius:6px;letter-spacing:.5px;text-transform:uppercase;}
 
-/* ── MÉTODOS ── */
+
 .methods-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
 .method-btn{padding:12px 8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--input-bg);font-size:.65rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit;text-transform:uppercase;letter-spacing:.3px;}
 .method-btn .m-icon{font-size:1.3rem;}
 .method-btn.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
 
-/* ── INPUT AREA ── */
+
 .input-area{display:none;}
 .input-area.show{display:block;}
 
-/* ── STOPS LIST ── */
+
 .stops-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
 .stop-row{display:flex;align-items:flex-start;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;position:relative;animation:slideIn .2s ease;}
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
@@ -120,26 +120,26 @@ textarea{resize:none;line-height:1.5;}
 .stop-row-del{background:none;border:none;color:var(--text-dim);font-size:1rem;cursor:pointer;padding:2px 4px;transition:var(--tr);flex-shrink:0;}
 .stop-row-del:hover{color:var(--danger);}
 
-/* ── EMPTY STATE ── */
+
 .empty-stops{text-align:center;padding:24px 0;color:var(--text-dim);font-size:.8rem;font-weight:600;}
 
-/* ── DAYS CONFIG ── */
+
 .days-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .days-btn{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);font-size:1.1rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:var(--tr);}
 .days-btn:hover{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
 .days-count{font-size:1.4rem;font-weight:900;color:var(--primary);min-width:24px;text-align:center;}
 .days-lbl{font-size:.75rem;color:var(--text-sub);font-weight:600;}
 
-/* ── GENERATE BTN ── */
+
 .btn-generate{width:100%;padding:16px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:white;font-family:inherit;font-size:.95rem;font-weight:900;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 14px rgba(37,99,235,.3);letter-spacing:.3px;}
 .btn-generate:active{transform:scale(.97);}
 .btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 
-/* ── SPINNER ── */
+
 .spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.3);border-top-color:white;animation:spin2 .7s linear infinite;flex-shrink:0;}
 @keyframes spin2{to{transform:rotate(360deg)}}
 
-/* ── RESULT ── */
+
 #ruta-result{display:none;}
 .result-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
 .result-title{font-size:1rem;font-weight:900;color:var(--text);}
@@ -149,7 +149,7 @@ textarea{resize:none;line-height:1.5;}
 .action-btn.primary{background:var(--primary);color:white;border-color:var(--primary);}
 .action-btn.primary:hover{background:#1d4ed8;}
 
-/* ── GLOBAL PROGRESS ── */
+
 .global-prog{background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border);padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:14px;}
 .gp-stat{text-align:center;flex:1;}
 .gp-val{font-size:1.4rem;font-weight:900;color:var(--primary);}
@@ -159,18 +159,18 @@ textarea{resize:none;line-height:1.5;}
 .gp-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width .4s;}
 .btn-reset{background:none;border:none;color:var(--text-dim);font-size:.72rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;font-family:inherit;}
 
-/* ── DAY TABS (estilo Maps-main) ── */
+
 .day-tabs-wrap{overflow-x:auto;scrollbar-width:none;margin-bottom:12px;}
 .day-tabs-wrap::-webkit-scrollbar{display:none;}
 .day-tabs{display:flex;gap:6px;padding-bottom:2px;}
 .day-tab{flex-shrink:0;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border);background:transparent;color:var(--text-sub);font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;transition:var(--tr);letter-spacing:.3px;white-space:nowrap;}
 .day-tab.active{background:var(--primary);color:white;border-color:var(--primary);}
 
-/* ── DAY PANELS ── */
+
 .day-panel{display:none;}
 .day-panel.active{display:block;animation:slideIn .2s ease;}
 
-/* ── HOTEL BAR (estilo Maps-main) ── */
+
 .hotel-bar-result{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;text-decoration:none;}
 .hotel-bar-icon{width:32px;height:32px;background:var(--primary-dim);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
 .hotel-bar-info{flex:1;min-width:0;}
@@ -178,10 +178,10 @@ textarea{resize:none;line-height:1.5;}
 .hotel-bar-addr{font-size:.75rem;color:var(--text-sub);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .hotel-bar-arrow{color:var(--text-dim);font-size:.85rem;}
 
-/* ── DAY LABEL ── */
+
 .day-zone-label{font-size:.65rem;color:var(--text-dim);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
 
-/* ── DAY PROGRESS ── */
+
 .day-prog-wrap{margin-bottom:12px;}
 .day-prog-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .day-prog-stats{display:flex;gap:14px;}
@@ -192,7 +192,7 @@ textarea{resize:none;line-height:1.5;}
 .day-prog-bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
 .day-prog-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1);}
 
-/* ── STOP CARDS (estilo Maps-main) ── */
+
 .ruta-stop{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;cursor:pointer;transition:var(--tr);position:relative;overflow:hidden;}
 .ruta-stop::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .2s;}
 .ruta-stop.visited{background:var(--surface-2);}
@@ -210,14 +210,14 @@ textarea{resize:none;line-height:1.5;}
 .rs-maps:hover{border-color:var(--primary);color:var(--primary);}
 .rs-maps svg{width:11px;height:11px;}
 
-/* ── ALL DONE STATE ── */
+
 .all-done-state{text-align:center;padding:28px 20px;display:none;}
 .all-done-state.show{display:block;}
 .all-done-emoji{font-size:2.5rem;margin-bottom:8px;}
 .all-done-title{font-size:1rem;font-weight:900;color:var(--primary);margin-bottom:6px;}
 .all-done-sub{font-size:.78rem;color:var(--text-sub);font-weight:500;}
 
-/* ── BOTTOM NAV (estilo Maps-main adaptado) ── */
+
 #day-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:1px solid var(--border);display:none;padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:6px;box-shadow:0 -4px 20px rgba(0,0,0,.08);}
 #day-bottom-nav.show{display:flex;}
 .day-nav-btn{flex:1;padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:transparent;color:var(--text-sub);font-family:inherit;font-size:.65rem;font-weight:700;cursor:pointer;transition:var(--tr);text-align:center;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -225,7 +225,7 @@ textarea{resize:none;line-height:1.5;}
 .day-nav-btn .dnb-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--success);margin-left:3px;vertical-align:middle;}
 .day-nav-btn.active{background:var(--primary);color:white;border-color:var(--primary);}
 
-/* ── MENU OVERLAY + SETTINGS ── */
+
 .menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:1000;backdrop-filter:blur(4px);}
 .settings-drawer{position:fixed;top:0;right:-300px;width:290px;height:100%;background:var(--surface);z-index:1001;transition:.3s ease;padding:28px 20px;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.15);border-left:1px solid var(--border);overflow-y:auto;}
 .settings-drawer.open{right:0;}
@@ -239,25 +239,32 @@ textarea{resize:none;line-height:1.5;}
 .drawer-btn:hover{background:var(--surface-2);border-color:var(--primary);}
 .btn-danger{color:var(--danger)!important;border-color:rgba(239,68,68,.3)!important;}
 
-/* ── CONFETTI ── */
+
 .confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
 .confetti-p{position:absolute;width:7px;height:7px;border-radius:2px;top:-20px;animation:cfFall linear forwards;}
 @keyframes cfFall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
 
-/* ── CSV DROP ── */
+
 .drop-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:var(--tr);}
 .drop-zone:hover,.drop-zone.drag{border-color:var(--primary);background:var(--primary-dim);}
 .drop-zone .dz-icon{font-size:2rem;margin-bottom:8px;}
 .drop-zone .dz-text{font-size:.8rem;font-weight:700;color:var(--text-sub);}
 .drop-zone .dz-sub{font-size:.7rem;color:var(--text-dim);margin-top:4px;}
 
-/* ── TOAST ── */
+
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:9998;padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);font-size:.82rem;font-weight:700;color:var(--text);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 @keyframes pinBoxIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
 </style>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});sessionStorage.setItem('taxfly_last_page','./rutas.html');});}</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    sessionStorage.setItem("taxfly_last_page", "./rutas.html");
+  });
+}
+</script>
     <link rel="stylesheet" href="assets/ui.css">
 </head>
 <body>
@@ -267,7 +274,7 @@ textarea{resize:none;line-height:1.5;}
 
 <div class="wrap">
 
-  <!-- HEADER -->
+  
   <div class="app-header">
     <div class="logo">
       <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tg13" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#2563eb"/></linearGradient><clipPath id="tc13"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="url(#tg13)"/><g clip-path="url(#tc13)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
@@ -275,7 +282,7 @@ textarea{resize:none;line-height:1.5;}
     </div>
   </div>
 
-  <!-- NAV -->
+  
   <nav class="nav-bar">
     <a href="index.html"      class="btn-nav"><span class="ni">🏠</span><span data-i18n="nav_home">INICIO</span></a>
     <a href="tax.html"        class="btn-nav"><span class="ni">📊</span><span data-i18n="nav_tax">TAXES</span></a>
@@ -295,14 +302,14 @@ textarea{resize:none;line-height:1.5;}
   </nav>
     <script src="assets/ui.js"></script>
 
-  <!-- ══ BUILDER ══ -->
+  
   <div class="card" id="builder-card">
     <div class="section-title">
       <h2 data-i18n="route_title">🗺️ Generador de Ruta</h2>
       <span class="section-badge" data-i18n="badge_new">Nuevo</span>
     </div>
 
-    <!-- Punto de partida con autocomplete -->
+    
     <span class="slabel" data-i18n="label_hotel">📍 Punto de partida (hotel / alojamiento)</span>
     <div class="autocomplete-wrap">
       <input type="text" id="hotel-input" name="hotel-address-taxusa" placeholder="Ej: 324 Newcastle Dr, Kissimmee FL" autocomplete="new-password" oninput="onHotelInput(this.value)" onkeydown="onHotelKey(event)" onfocus="startPlaceholderRotation()" onblur="stopPlaceholderRotation()">
@@ -310,7 +317,7 @@ textarea{resize:none;line-height:1.5;}
       <div class="autocomplete-list" id="hotel-ac" role="listbox"></div>
     </div>
 
-    <!-- Días -->
+    
     <span class="slabel" data-i18n="label_days">📅 Cantidad de días</span>
     <div class="days-row">
       <button class="days-btn" onclick="changeDays(-1)">−</button>
@@ -321,13 +328,13 @@ textarea{resize:none;line-height:1.5;}
       <button class="days-btn" onclick="changeDays(1)">+</button>
     </div>
 
-    <!-- Fecha de inicio -->
+    
     <div class="input-group">
       <span class="slabel" data-i18n="label_start_date">🗓️ Fecha de inicio (opcional)</span>
       <input type="date" id="start-date">
     </div>
 
-    <!-- Métodos -->
+    
     <span class="slabel" data-i18n="label_add_stops">➕ Agregar paradas</span>
     <div class="methods-grid">
       <button class="method-btn" id="m-link" onclick="setMethod('link')"><span class="m-icon">🔗</span><span data-i18n="method_links">Links</span></button>
@@ -335,7 +342,7 @@ textarea{resize:none;line-height:1.5;}
       <button class="method-btn" id="m-text" onclick="setMethod('text')"><span class="m-icon">✏️</span><span data-i18n="method_manual">Manual</span></button>
     </div>
 
-    <!-- Links -->
+    
     <div class="input-area" id="area-link">
       <div class="input-group">
         <span class="slabel" data-i18n="label_paste_links">Pegá links de Google Maps o Apple Maps (uno por línea)</span>
@@ -344,7 +351,7 @@ textarea{resize:none;line-height:1.5;}
       <button onclick="parseLinks()" style="width:100%;padding:12px;border-radius:var(--radius-sm);border:1.5px solid var(--primary);background:var(--primary-dim);color:var(--primary);font-family:inherit;font-weight:800;font-size:.82rem;cursor:pointer;margin-bottom:12px;" data-i18n="btn_add_links">Agregar links →</button>
     </div>
 
-    <!-- CSV -->
+    
     <div class="input-area" id="area-csv">
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-file').click()">
         <div class="dz-icon">📂</div>
@@ -359,7 +366,7 @@ textarea{resize:none;line-height:1.5;}
       <button onclick="parseCSV()" style="width:100%;padding:12px;border-radius:var(--radius-sm);border:1.5px solid var(--primary);background:var(--primary-dim);color:var(--primary);font-family:inherit;font-weight:800;font-size:.82rem;cursor:pointer;margin-bottom:12px;" data-i18n="btn_add_csv">Agregar desde CSV →</button>
     </div>
 
-    <!-- Manual con autocomplete en nombre/dirección -->
+    
     <div class="input-area" id="area-text">
       <div style="display:flex;gap:8px;margin-bottom:8px;">
         <div style="flex:1">
@@ -380,7 +387,7 @@ textarea{resize:none;line-height:1.5;}
       <button onclick="addManual()" style="width:100%;padding:12px;border-radius:var(--radius-sm);border:1.5px solid var(--primary);background:var(--primary-dim);color:var(--primary);font-family:inherit;font-weight:800;font-size:.82rem;cursor:pointer;margin-bottom:12px;" data-i18n="btn_add_stop">+ Agregar parada</button>
     </div>
 
-    <!-- Lista de paradas -->
+    
     <div id="stops-list" class="stops-list"></div>
     <div id="stops-empty" class="empty-stops" data-i18n="empty_stops">📍 Todavía no agregaste paradas</div>
 
@@ -393,9 +400,9 @@ textarea{resize:none;line-height:1.5;}
     </button>
   </div>
 
-  <!-- ══ RESULTADO ══ -->
+  
   <div id="ruta-result" style="padding-bottom:80px;">
-    <!-- Topbar: título + acciones -->
+    
     <div class="result-topbar">
       <div class="result-title" data-i18n="result_ready">✨ Ruta optimizada con IA</div>
       <div class="result-actions">
@@ -404,7 +411,7 @@ textarea{resize:none;line-height:1.5;}
       </div>
     </div>
 
-    <!-- Global progress -->
+    
     <div class="global-prog">
       <div class="gp-stat">
         <div class="gp-val" id="gp-done">0</div>
@@ -423,28 +430,28 @@ textarea{resize:none;line-height:1.5;}
       </div>
     </div>
 
-    <!-- Day tabs (scroll horizontal si hay muchos días) -->
+    
     <div class="day-tabs-wrap">
       <div class="day-tabs" id="day-tabs"></div>
     </div>
 
-    <!-- Day panels (uno por día) -->
+    
     <div id="days-output"></div>
   </div>
 
-  <!-- Bottom nav fija por días (aparece solo con resultado) -->
+  
   <nav id="day-bottom-nav">
-    <!-- Se llena dinámicamente -->
+    
   </nav>
 
 </div>
 
-<!-- Settings drawer -->
+
 <div id="menuOverlay" class="menu-overlay" onclick="toggleSettings()"></div>
 <div id="settingsDrawer" class="settings-drawer"></div>
 <script src="assets/settings.js"></script>
 
-<!-- PIN Modal -->
+
 <div id="pinModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closePinModal()">
   <div id="pinModalBox" style="background:var(--surface);border-radius:var(--radius);padding:28px 24px;width:calc(100% - 40px);max-width:360px;box-shadow:var(--shadow-lg);border:1px solid var(--border);position:relative;animation:pinBoxIn .28s cubic-bezier(0.34,1.56,0.64,1);">
     <button onclick="closePinModal()" aria-label="Cerrar" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
@@ -469,1137 +476,1317 @@ textarea{resize:none;line-height:1.5;}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
-// ── reCAPTCHA v3 helper ──
-// _rcToken/_rcCheck ahora viven en assets/recaptcha.js (compartido)
-
 const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
-const app  = initializeApp(FB);
+
+const app = initializeApp(FB);
+
 const auth = getAuth(app);
-// Persistencia local (IndexedDB): los datos ya cargados quedan disponibles
-// sin conexión, y lo que se escribe offline se sincroniza solo al volver la
-// señal. tabManager multi-pestaña porque TaxFly y Maps pueden estar abiertos
-// al mismo tiempo en pestañas distintas del mismo origen. Si falla (ya se
-// había inicializado Firestore antes en esta pestaña, o el navegador no
-// soporta IndexedDB), se cae a la versión sin persistencia.
-// cacheSizeBytes tope en 200MB: sin esto, las pólizas/fotos de Documentos
-// (guardadas en trozos de 800KB) irían acumulando espacio en el dispositivo
-// sin límite. Con el tope, Firestore borra solo lo más viejo que no esté
-// activamente abierto cuando se pasa de 200MB — nunca se pierde de la nube,
-// solo deja de estar cacheado localmente hasta la próxima vez que haya red.
+
 const db = (() => {
-    try {
-        return initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager(), cacheSizeBytes: 200 * 1024 * 1024 }) });
-    } catch (e) {
-        return getFirestore(app);
-    }
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+        cacheSizeBytes: 200 * 1024 * 1024
+      })
+    });
+  } catch (e) {
+    return getFirestore(app);
+  }
 })();
-if (navigator.onLine) { try { initializeAppCheck(app, { provider: new ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'), isTokenAutoRefreshEnabled: true }); } catch(e) {} }
+
+if (navigator.onLine) {
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider("6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME"),
+      isTokenAutoRefreshEnabled: true
+    });
+  } catch (e) {}
+}
 
 let currentUser = null;
 
-// ── Cached connectivity probe ─────────────────────────────────────────────────
 async function probeConnectivity() {
-    const cached = sessionStorage.getItem('taxfly_connectivity');
-    if (cached !== null) return cached === '1';
-    try {
-        await fetch('https://www.gstatic.com/generate_204', {
-            method: 'HEAD', cache: 'no-store', mode: 'no-cors',
-            signal: AbortSignal.timeout(1500)
-        });
-        sessionStorage.setItem('taxfly_connectivity', '1');
-        return true;
-    } catch(e) {
-        sessionStorage.setItem('taxfly_connectivity', '0');
-        return false;
-    }
+  const cached = sessionStorage.getItem("taxfly_connectivity");
+  if (cached !== null) return cached === "1";
+  try {
+    await fetch("https://www.gstatic.com/generate_204", {
+      method: "HEAD",
+      cache: "no-store",
+      mode: "no-cors",
+      signal: AbortSignal.timeout(1500)
+    });
+    sessionStorage.setItem("taxfly_connectivity", "1");
+    return true;
+  } catch (e) {
+    sessionStorage.setItem("taxfly_connectivity", "0");
+    return false;
+  }
 }
-window.addEventListener('online',  () => sessionStorage.setItem('taxfly_connectivity', '1'));
-window.addEventListener('offline', () => sessionStorage.setItem('taxfly_connectivity', '0'));
-// ─────────────────────────────────────────────────────────────────────────────
-onAuthStateChanged(auth, async (user) => {
+
+window.addEventListener("online", () => sessionStorage.setItem("taxfly_connectivity", "1"));
+
+window.addEventListener("offline", () => sessionStorage.setItem("taxfly_connectivity", "0"));
+
+onAuthStateChanged(auth, async user => {
   if (!user) {
     try {
-        await probeConnectivity();
-        window.location.replace('login.html'); return;
-    } catch(e) {
-        const pinHash = localStorage.getItem('taxusa_pin_hash');
-        const pinEmail = localStorage.getItem('taxusa_offline_email');
-        if (!pinHash || !pinEmail) { window.location.replace('login.html'); return; }
-        const nombre = localStorage.getItem('perfilActivoNombre') || pinEmail;
-        const el = document.getElementById('userEmail'); if (el) el.innerText = nombre;
-        const foto = localStorage.getItem('perfilActivoFoto') || '';
-        if (foto) { const btn = document.getElementById('btnSettings'); if(btn){ btn.style.backgroundImage=`url('${foto}')`; btn.innerText=''; } }
-        const lang = localStorage.getItem('appLang') || 'es'; window.changeLanguage(lang);
+      await probeConnectivity();
+      window.location.replace("login.html");
+      return;
+    } catch (e) {
+      const pinHash = localStorage.getItem("taxusa_pin_hash");
+      const pinEmail = localStorage.getItem("taxusa_offline_email");
+      if (!pinHash || !pinEmail) {
+        window.location.replace("login.html");
         return;
+      }
+      const nombre = localStorage.getItem("perfilActivoNombre") || pinEmail;
+      const el = document.getElementById("userEmail");
+      if (el) el.innerText = nombre;
+      const foto = localStorage.getItem("perfilActivoFoto") || "";
+      if (foto) {
+        const btn = document.getElementById("btnSettings");
+        if (btn) {
+          btn.style.backgroundImage = `url('${foto}')`;
+          btn.innerText = "";
+        }
+      }
+      const lang = localStorage.getItem("appLang") || "es";
+      window.changeLanguage(lang);
+      return;
     }
   }
   currentUser = user;
-  const perfilNombre = localStorage.getItem('perfilActivoNombre');
-  const el = document.getElementById('userEmail');
+  const perfilNombre = localStorage.getItem("perfilActivoNombre");
+  const el = document.getElementById("userEmail");
   if (el) el.innerText = perfilNombre || user.email;
-  const foto = localStorage.getItem('perfilActivoFoto') || user.photoURL;
+  const foto = localStorage.getItem("perfilActivoFoto") || user.photoURL;
   if (foto) {
-    const btn = document.getElementById('btnSettings');
-    if (btn) { btn.style.backgroundImage = `url('${foto}')`; btn.innerText = ''; }
+    const btn = document.getElementById("btnSettings");
+    if (btn) {
+      btn.style.backgroundImage = `url('${foto}')`;
+      btn.innerText = "";
+    }
   }
-  const lang = localStorage.getItem('appLang') || 'es';
+  const lang = localStorage.getItem("appLang") || "es";
   window.changeLanguage(lang);
 });
 
-window.doLogout = () => signOut(auth).then(() => window.location.replace('login.html'));
+window.doLogout = () => signOut(auth).then(() => window.location.replace("login.html"));
 
-window.doChangeEmail = () => window.confirmAndChangeEmail({ currentUser, verifyBeforeUpdateEmail });
+window.doChangeEmail = () => window.confirmAndChangeEmail({
+  currentUser: currentUser,
+  verifyBeforeUpdateEmail: verifyBeforeUpdateEmail
+});
 
 window.doChangePassword = async () => {
   if (!currentUser) return;
-  const l = localStorage.getItem('appLang') || 'es';
-  const m = { es:{s:"Correo de recuperación enviado.",e:"Error: "}, en:{s:"Recovery email sent.",e:"Error: "}, pt:{s:"E-mail de recuperação enviado.",e:"Erro: "} };
+  const l = localStorage.getItem("appLang") || "es";
+  const m = {
+    es: {
+      s: "Correo de recuperación enviado.",
+      e: "Error: "
+    },
+    en: {
+      s: "Recovery email sent.",
+      e: "Error: "
+    },
+    pt: {
+      s: "E-mail de recuperação enviado.",
+      e: "Erro: "
+    }
+  };
   const t = m[l] || m.es;
-  try { await sendPasswordResetEmail(auth, currentUser.email); showAlert(t.s); } catch(er) { showAlert(t.e + er.message); }
+  try {
+    await sendPasswordResetEmail(auth, currentUser.email);
+    showAlert(t.s);
+  } catch (er) {
+    showAlert(t.e + er.message);
+  }
 };
 
-window.doDeleteAccount = () => window.confirmAndDeleteAccount({ db, doc, deleteDoc, deleteUser, currentUser, rcCheck: _rcCheck });
+window.doDeleteAccount = () => window.confirmAndDeleteAccount({
+  db: db,
+  doc: doc,
+  deleteDoc: deleteDoc,
+  deleteUser: deleteUser,
+  currentUser: currentUser,
+  rcCheck: _rcCheck
+});
 
 window.confirmarPIN = async () => {
-  const lang = localStorage.getItem('appLang') || 'es';
-  const errMsgs = { es:'Los PINs no coinciden o son muy cortos (mín. 4 dígitos).', en:'PINs don\'t match or are too short (min. 4 digits).', pt:'Os PINs não coincidem ou são curtos demais (mín. 4 dígitos).' };
-  const p1 = document.getElementById('pinInput1').value.trim();
-  const p2 = document.getElementById('pinInput2').value.trim();
-  const errEl = document.getElementById('pinError');
+  const lang = localStorage.getItem("appLang") || "es";
+  const errMsgs = {
+    es: "Los PINs no coinciden o son muy cortos (mín. 4 dígitos).",
+    en: "PINs don't match or are too short (min. 4 digits).",
+    pt: "Os PINs não coincidem ou são curtos demais (mín. 4 dígitos)."
+  };
+  const p1 = document.getElementById("pinInput1").value.trim();
+  const p2 = document.getElementById("pinInput2").value.trim();
+  const errEl = document.getElementById("pinError");
   if (p1.length < 4 || p1 !== p2) {
     errEl.textContent = errMsgs[lang] || errMsgs.es;
-    errEl.style.display = 'block';
-    document.getElementById('pinInput1').style.borderColor = 'var(--danger)';
-    document.getElementById('pinInput2').style.borderColor = 'var(--danger)';
+    errEl.style.display = "block";
+    document.getElementById("pinInput1").style.borderColor = "var(--danger)";
+    document.getElementById("pinInput2").style.borderColor = "var(--danger)";
     return;
   }
-  errEl.style.display = 'none';
+  errEl.style.display = "none";
   const pinHash = btoa(p1);
-  localStorage.setItem('taxusa_offline_pin', pinHash);
+  localStorage.setItem("taxusa_offline_pin", pinHash);
   if (currentUser) {
-    try { await setDoc(doc(db,'usuarios',currentUser.uid), { offlinePin: pinHash }, { merge: true }); } catch(e) {}
+    try {
+      await setDoc(doc(db, "usuarios", currentUser.uid), {
+        offlinePin: pinHash
+      }, {
+        merge: true
+      });
+    } catch (e) {}
   }
-  document.getElementById('pinStep1').style.display = 'none';
-  document.getElementById('pinStep2').style.display = 'block';
+  document.getElementById("pinStep1").style.display = "none";
+  document.getElementById("pinStep2").style.display = "block";
   setTimeout(() => window.closePinModal(), 2200);
 };
 </script>
 
 <script>
-// ── i18n ──
 const i18n = {
-  es:{
-    nav_home:"INICIO", nav_tax: "TAXES", nav_shopping:"GASTOS", nav_itinerary:"ITINERARIO", nav_units:"AYUDA Y REFERENCIAS", nav_tickets:"DOCUMENTOS", nav_group:"GRUPO",
-    nav_more:"MÁS", nav_units_desc:"Conversor de unidades y ayudas varias", nav_tickets_desc:"ESTA, seguros, check-in", nav_group_desc:"Gastos compartidos",
-    route_title:"🗺️ Generador de Ruta", badge_new:"Nuevo",
-    label_hotel:"📍 Punto de partida (hotel / alojamiento)",
-    label_days:"📅 Cantidad de días", lbl_days:"días",
-    label_start_date:"🗓️ Fecha de inicio (opcional)",
-    label_add_stops:"➕ Agregar paradas",
-    method_links:"Links", method_csv:"CSV", method_manual:"Manual",
-    label_paste_links:"Pegá links de Google Maps o Apple Maps (uno por línea)",
-    btn_add_links:"Agregar links →",
-    dz_text:"Tocá para subir un CSV", dz_sub:"Columnas: nombre, descripción (opcional), link (opcional)",
-    label_csv_paste:"O pegá el contenido CSV directo",
-    btn_add_csv:"Agregar desde CSV →",
-    label_name:"Nombre", label_desc:"Descripción (opcional)", label_maps_link:"Link o dirección de Maps (opcional)",
-    ph_name:"Nike Clearance Store", ph_desc:"Abre 10am, imperdible", ph_url:"Dirección o https://maps.google.com/...",
-    btn_add_stop:"+ Agregar parada", btn_clear_all:"🗑️ Limpiar todo",
-    btn_generate:"🗺️ Generar Ruta", btn_generate_ai:"✨ Generar Ruta con IA", empty_stops:"📍 Todavía no agregaste paradas",
-    result_ready:"Tu ruta está lista ✅", btn_download:"⬇️ HTML", btn_new:"↺ Nueva",
-    lbl_visited:"visitadas", lbl_total_progress:"PROGRESO TOTAL", btn_restart:"reiniciar", lbl_stops:"paradas",
-    settings_title:"Ajustes", label_language:"Idioma",
-    btn_change_profile:"Cambiar Perfil", btn_theme:"Cambiar Tema", btn_update:"Actualizar App",
-    btn_email:"Cambiar Correo", btn_password:"Cambiar Contraseña", btn_pin:"Cambiar PIN Offline",
-    btn_switch_app:"Cambiar Aplicación", btn_logout:"Cerrar Sesión", btn_delete:"Eliminar Cuenta",
-    ac_searching:"Buscando...", ac_no_results:"Sin resultados para esta búsqueda",
+  es: {
+    nav_home: "INICIO",
+    nav_tax: "TAXES",
+    nav_shopping: "GASTOS",
+    nav_itinerary: "ITINERARIO",
+    nav_units: "AYUDA Y REFERENCIAS",
+    nav_tickets: "DOCUMENTOS",
+    nav_group: "GRUPO",
+    nav_more: "MÁS",
+    nav_units_desc: "Conversor de unidades y ayudas varias",
+    nav_tickets_desc: "ESTA, seguros, check-in",
+    nav_group_desc: "Gastos compartidos",
+    route_title: "🗺️ Generador de Ruta",
+    badge_new: "Nuevo",
+    label_hotel: "📍 Punto de partida (hotel / alojamiento)",
+    label_days: "📅 Cantidad de días",
+    lbl_days: "días",
+    label_start_date: "🗓️ Fecha de inicio (opcional)",
+    label_add_stops: "➕ Agregar paradas",
+    method_links: "Links",
+    method_csv: "CSV",
+    method_manual: "Manual",
+    label_paste_links: "Pegá links de Google Maps o Apple Maps (uno por línea)",
+    btn_add_links: "Agregar links →",
+    dz_text: "Tocá para subir un CSV",
+    dz_sub: "Columnas: nombre, descripción (opcional), link (opcional)",
+    label_csv_paste: "O pegá el contenido CSV directo",
+    btn_add_csv: "Agregar desde CSV →",
+    label_name: "Nombre",
+    label_desc: "Descripción (opcional)",
+    label_maps_link: "Link o dirección de Maps (opcional)",
+    ph_name: "Nike Clearance Store",
+    ph_desc: "Abre 10am, imperdible",
+    ph_url: "Dirección o https://maps.google.com/...",
+    btn_add_stop: "+ Agregar parada",
+    btn_clear_all: "🗑️ Limpiar todo",
+    btn_generate: "🗺️ Generar Ruta",
+    btn_generate_ai: "✨ Generar Ruta con IA",
+    empty_stops: "📍 Todavía no agregaste paradas",
+    result_ready: "Tu ruta está lista ✅",
+    btn_download: "⬇️ HTML",
+    btn_new: "↺ Nueva",
+    lbl_visited: "visitadas",
+    lbl_total_progress: "PROGRESO TOTAL",
+    btn_restart: "reiniciar",
+    lbl_stops: "paradas",
+    settings_title: "Ajustes",
+    label_language: "Idioma",
+    btn_change_profile: "Cambiar Perfil",
+    btn_theme: "Cambiar Tema",
+    btn_update: "Actualizar App",
+    btn_email: "Cambiar Correo",
+    btn_password: "Cambiar Contraseña",
+    btn_pin: "Cambiar PIN Offline",
+    btn_switch_app: "Cambiar Aplicación",
+    btn_logout: "Cerrar Sesión",
+    btn_delete: "Eliminar Cuenta",
+    ac_searching: "Buscando...",
+    ac_no_results: "Sin resultados para esta búsqueda"
   },
-  en:{
-    nav_home:"HOME", nav_tax: "TAXES", nav_shopping:"EXPENSES", nav_itinerary:"ITINERARY", nav_units:"Help & References", nav_tickets:"DOCUMENTS", nav_group:"GROUP",
-    nav_more:"MORE", nav_units_desc:"Unit Converter & Utilities", nav_tickets_desc:"ESTA, insurance, check-in", nav_group_desc:"Shared expenses",
-    route_title:"🗺️ Route Generator", badge_new:"New",
-    label_hotel:"📍 Starting point (hotel / accommodation)",
-    label_days:"📅 Number of days", lbl_days:"days",
-    label_start_date:"🗓️ Start date (optional)",
-    label_add_stops:"➕ Add stops",
-    method_links:"Links", method_csv:"CSV", method_manual:"Manual",
-    label_paste_links:"Paste Google Maps or Apple Maps links (one per line)",
-    btn_add_links:"Add links →",
-    dz_text:"Tap to upload a CSV", dz_sub:"Columns: name, description (optional), link (optional)",
-    label_csv_paste:"Or paste CSV content directly",
-    btn_add_csv:"Add from CSV →",
-    label_name:"Name", label_desc:"Description (optional)", label_maps_link:"Maps link or address (optional)",
-    ph_name:"Nike Clearance Store", ph_desc:"Opens 10am, must visit", ph_url:"Address or https://maps.google.com/...",
-    btn_add_stop:"+ Add stop", btn_clear_all:"🗑️ Clear all",
-    btn_generate:"🗺️ Generate Route", btn_generate_ai:"✨ Generate Route with AI", empty_stops:"📍 No stops added yet",
-    result_ready:"Your route is ready ✅", btn_download:"⬇️ HTML", btn_new:"↺ New",
-    lbl_visited:"visited", lbl_total_progress:"TOTAL PROGRESS", btn_restart:"reset", lbl_stops:"stops",
-    settings_title:"Settings", label_language:"Language",
-    btn_change_profile:"Change Profile", btn_theme:"Toggle Theme", btn_update:"Update App",
-    btn_email:"Change Email", btn_password:"Change Password", btn_pin:"Change Offline PIN",
-    btn_switch_app:"Switch App", btn_logout:"Sign Out", btn_delete:"Delete Account",
-    ac_searching:"Searching...", ac_no_results:"No results found",
+  en: {
+    nav_home: "HOME",
+    nav_tax: "TAXES",
+    nav_shopping: "EXPENSES",
+    nav_itinerary: "ITINERARY",
+    nav_units: "Help & References",
+    nav_tickets: "DOCUMENTS",
+    nav_group: "GROUP",
+    nav_more: "MORE",
+    nav_units_desc: "Unit Converter & Utilities",
+    nav_tickets_desc: "ESTA, insurance, check-in",
+    nav_group_desc: "Shared expenses",
+    route_title: "🗺️ Route Generator",
+    badge_new: "New",
+    label_hotel: "📍 Starting point (hotel / accommodation)",
+    label_days: "📅 Number of days",
+    lbl_days: "days",
+    label_start_date: "🗓️ Start date (optional)",
+    label_add_stops: "➕ Add stops",
+    method_links: "Links",
+    method_csv: "CSV",
+    method_manual: "Manual",
+    label_paste_links: "Paste Google Maps or Apple Maps links (one per line)",
+    btn_add_links: "Add links →",
+    dz_text: "Tap to upload a CSV",
+    dz_sub: "Columns: name, description (optional), link (optional)",
+    label_csv_paste: "Or paste CSV content directly",
+    btn_add_csv: "Add from CSV →",
+    label_name: "Name",
+    label_desc: "Description (optional)",
+    label_maps_link: "Maps link or address (optional)",
+    ph_name: "Nike Clearance Store",
+    ph_desc: "Opens 10am, must visit",
+    ph_url: "Address or https://maps.google.com/...",
+    btn_add_stop: "+ Add stop",
+    btn_clear_all: "🗑️ Clear all",
+    btn_generate: "🗺️ Generate Route",
+    btn_generate_ai: "✨ Generate Route with AI",
+    empty_stops: "📍 No stops added yet",
+    result_ready: "Your route is ready ✅",
+    btn_download: "⬇️ HTML",
+    btn_new: "↺ New",
+    lbl_visited: "visited",
+    lbl_total_progress: "TOTAL PROGRESS",
+    btn_restart: "reset",
+    lbl_stops: "stops",
+    settings_title: "Settings",
+    label_language: "Language",
+    btn_change_profile: "Change Profile",
+    btn_theme: "Toggle Theme",
+    btn_update: "Update App",
+    btn_email: "Change Email",
+    btn_password: "Change Password",
+    btn_pin: "Change Offline PIN",
+    btn_switch_app: "Switch App",
+    btn_logout: "Sign Out",
+    btn_delete: "Delete Account",
+    ac_searching: "Searching...",
+    ac_no_results: "No results found"
   },
-  pt:{
-    nav_home:"INÍCIO", nav_tax: "TAXES", nav_shopping:"GASTOS", nav_itinerary:"ITINERÁRIO", nav_units:"Ajuda e Referências", nav_tickets:"DOCUMENTOS", nav_group:"GRUPO",
-    nav_more:"MAIS", nav_units_desc:"Conversor de Unidades e Utilidades", nav_tickets_desc:"ESTA, seguros, check-in", nav_group_desc:"Despesas compartilhadas",
-    route_title:"🗺️ Gerador de Rota", badge_new:"Novo",
-    label_hotel:"📍 Ponto de partida (hotel / hospedagem)",
-    label_days:"📅 Quantidade de dias", lbl_days:"dias",
-    label_start_date:"🗓️ Data de início (opcional)",
-    label_add_stops:"➕ Adicionar paradas",
-    method_links:"Links", method_csv:"CSV", method_manual:"Manual",
-    label_paste_links:"Cole links do Google Maps ou Apple Maps (um por linha)",
-    btn_add_links:"Adicionar links →",
-    dz_text:"Toque para enviar um CSV", dz_sub:"Colunas: nome, descrição (opcional), link (opcional)",
-    label_csv_paste:"Ou cole o conteúdo CSV diretamente",
-    btn_add_csv:"Adicionar do CSV →",
-    label_name:"Nome", label_desc:"Descrição (opcional)", label_maps_link:"Link ou endereço do Maps (opcional)",
-    ph_name:"Nike Clearance Store", ph_desc:"Abre 10h, imperdível", ph_url:"Endereço ou https://maps.google.com/...",
-    btn_add_stop:"+ Adicionar parada", btn_clear_all:"🗑️ Limpar tudo",
-    btn_generate:"🗺️ Gerar Rota", btn_generate_ai:"✨ Gerar Rota com IA", empty_stops:"📍 Nenhuma parada adicionada ainda",
-    result_ready:"Sua rota está pronta ✅", btn_download:"⬇️ HTML", btn_new:"↺ Nova",
-    lbl_visited:"visitadas", lbl_total_progress:"PROGRESSO TOTAL", btn_restart:"reiniciar", lbl_stops:"paradas",
-    settings_title:"Configurações", label_language:"Idioma",
-    btn_change_profile:"Trocar Perfil", btn_theme:"Alternar Tema", btn_update:"Atualizar App",
-    btn_email:"Alterar E-mail", btn_password:"Alterar Senha", btn_pin:"Alterar PIN Offline",
-    btn_switch_app:"Trocar Aplicativo", btn_logout:"Sair", btn_delete:"Excluir Conta",
-    ac_searching:"Buscando...", ac_no_results:"Sem resultados para esta busca",
+  pt: {
+    nav_home: "INÍCIO",
+    nav_tax: "TAXES",
+    nav_shopping: "GASTOS",
+    nav_itinerary: "ITINERÁRIO",
+    nav_units: "Ajuda e Referências",
+    nav_tickets: "DOCUMENTOS",
+    nav_group: "GRUPO",
+    nav_more: "MAIS",
+    nav_units_desc: "Conversor de Unidades e Utilidades",
+    nav_tickets_desc: "ESTA, seguros, check-in",
+    nav_group_desc: "Despesas compartilhadas",
+    route_title: "🗺️ Gerador de Rota",
+    badge_new: "Novo",
+    label_hotel: "📍 Ponto de partida (hotel / hospedagem)",
+    label_days: "📅 Quantidade de dias",
+    lbl_days: "dias",
+    label_start_date: "🗓️ Data de início (opcional)",
+    label_add_stops: "➕ Adicionar paradas",
+    method_links: "Links",
+    method_csv: "CSV",
+    method_manual: "Manual",
+    label_paste_links: "Cole links do Google Maps ou Apple Maps (um por linha)",
+    btn_add_links: "Adicionar links →",
+    dz_text: "Toque para enviar um CSV",
+    dz_sub: "Colunas: nome, descrição (opcional), link (opcional)",
+    label_csv_paste: "Ou cole o conteúdo CSV diretamente",
+    btn_add_csv: "Adicionar do CSV →",
+    label_name: "Nome",
+    label_desc: "Descrição (opcional)",
+    label_maps_link: "Link ou endereço do Maps (opcional)",
+    ph_name: "Nike Clearance Store",
+    ph_desc: "Abre 10h, imperdível",
+    ph_url: "Endereço ou https://maps.google.com/...",
+    btn_add_stop: "+ Adicionar parada",
+    btn_clear_all: "🗑️ Limpar tudo",
+    btn_generate: "🗺️ Gerar Rota",
+    btn_generate_ai: "✨ Gerar Rota com IA",
+    empty_stops: "📍 Nenhuma parada adicionada ainda",
+    result_ready: "Sua rota está pronta ✅",
+    btn_download: "⬇️ HTML",
+    btn_new: "↺ Nova",
+    lbl_visited: "visitadas",
+    lbl_total_progress: "PROGRESSO TOTAL",
+    btn_restart: "reiniciar",
+    lbl_stops: "paradas",
+    settings_title: "Configurações",
+    label_language: "Idioma",
+    btn_change_profile: "Trocar Perfil",
+    btn_theme: "Alternar Tema",
+    btn_update: "Atualizar App",
+    btn_email: "Alterar E-mail",
+    btn_password: "Alterar Senha",
+    btn_pin: "Alterar PIN Offline",
+    btn_switch_app: "Trocar Aplicativo",
+    btn_logout: "Sair",
+    btn_delete: "Excluir Conta",
+    ac_searching: "Buscando...",
+    ac_no_results: "Sem resultados para esta busca"
   }
 };
 
-window.changeLanguage = (lang) => {
-  localStorage.setItem('appLang', lang);
-  document.documentElement.setAttribute('lang', lang);
-  document.querySelectorAll('.lang-opt').forEach(o => o.classList.remove('active'));
-  document.getElementById('lang-' + lang)?.classList.add('active');
+window.changeLanguage = lang => {
+  localStorage.setItem("appLang", lang);
+  document.documentElement.setAttribute("lang", lang);
+  document.querySelectorAll(".lang-opt").forEach(o => o.classList.remove("active"));
+  document.getElementById("lang-" + lang)?.classList.add("active");
   const t = i18n[lang] || i18n.es;
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.getAttribute('data-i18n');
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const k = el.getAttribute("data-i18n");
     if (t[k]) el.innerText = t[k];
   });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const k = el.getAttribute('data-i18n-ph');
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+    const k = el.getAttribute("data-i18n-ph");
     if (t[k]) el.placeholder = t[k];
   });
   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
 };
 
-// ── STATE ──
 let stops = [];
-let days  = 3;
-let routeData = null;
-const VISITED_KEY = 'rutas_visited_v1';
-let visited = {};
-try { visited = JSON.parse(localStorage.getItem(VISITED_KEY) || '{}'); } catch(e) { visited = {}; }
 
-// ── SETTINGS ──
+let days = 3;
+
+let routeData = null;
+
+const VISITED_KEY = "rutas_visited_v1";
+
+let visited = {};
+
+try {
+  visited = JSON.parse(localStorage.getItem(VISITED_KEY) || "{}");
+} catch (e) {
+  visited = {};
+}
+
 window.toggleSettings = () => {
-  const d = document.getElementById('settingsDrawer');
-  const open = d.classList.toggle('open');
-  document.getElementById('menuOverlay').style.display = open ? 'block' : 'none';
+  const d = document.getElementById("settingsDrawer");
+  const open = d.classList.toggle("open");
+  document.getElementById("menuOverlay").style.display = open ? "block" : "none";
 };
-window.toggleMoreMenu = (e) => {
+
+window.toggleMoreMenu = e => {
   e.stopPropagation();
-  const btn = document.getElementById('btnMore');
-  const dd  = document.getElementById('navDropdown');
-  const isOpen = dd.classList.contains('show');
-  dd.classList.toggle('show', !isOpen);
-  btn.classList.toggle('open', !isOpen);
+  const btn = document.getElementById("btnMore");
+  const dd = document.getElementById("navDropdown");
+  const isOpen = dd.classList.contains("show");
+  dd.classList.toggle("show", !isOpen);
+  btn.classList.toggle("open", !isOpen);
   if (!isOpen) {
-    const close = () => { dd.classList.remove('show'); btn.classList.remove('open'); document.removeEventListener('click', close); };
-    setTimeout(() => document.addEventListener('click', close), 0);
+    const close = () => {
+      dd.classList.remove("show");
+      btn.classList.remove("open");
+      document.removeEventListener("click", close);
+    };
+    setTimeout(() => document.addEventListener("click", close), 0);
   }
 };
+
 window.toggleDarkMode = () => {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const next = isDark ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const next = isDark ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("theme", next);
 };
-window.changeProfile = () => { localStorage.removeItem('perfilActivoId'); window.location.href = 'profiles.html'; };
+
+window.changeProfile = () => {
+  localStorage.removeItem("perfilActivoId");
+  window.location.href = "profiles.html";
+};
+
 window.pinInputFocus = () => {};
-window.closePinModal = () => { document.getElementById('pinModalOverlay').style.display = 'none'; };
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('pinModalOverlay').style.display === 'flex') window.closePinModal(); });
+
+window.closePinModal = () => {
+  document.getElementById("pinModalOverlay").style.display = "none";
+};
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.getElementById("pinModalOverlay").style.display === "flex") window.closePinModal();
+});
 
 window.gestionarPIN = () => {
-  document.getElementById('settingsDrawer').classList.remove('open');
-  document.getElementById('menuOverlay').style.display = 'none';
-  const lang = localStorage.getItem('appLang') || 'es';
+  document.getElementById("settingsDrawer").classList.remove("open");
+  document.getElementById("menuOverlay").style.display = "none";
+  const lang = localStorage.getItem("appLang") || "es";
   const texts = {
-    es:{ title:'Cambiar PIN Offline', sub:'Este PIN se usa para acceder sin conexión', l1:'PIN Nuevo (4–6 dígitos)', l2:'Confirmar PIN', btn:'Guardar PIN', ok:'¡PIN actualizado!', okSub:'Podés usarlo para entrar sin conexión' },
-    en:{ title:'Change Offline PIN', sub:'This PIN is used to access without internet', l1:'New PIN (4–6 digits)', l2:'Confirm PIN', btn:'Save PIN', ok:'PIN updated!', okSub:'You can use it to sign in offline' },
-    pt:{ title:'Alterar PIN Offline', sub:'Este PIN é usado para acessar sem internet', l1:'Novo PIN (4–6 dígitos)', l2:'Confirmar PIN', btn:'Salvar PIN', ok:'PIN atualizado!', okSub:'Você pode usá-lo para entrar sem conexão' }
+    es: {
+      title: "Cambiar PIN Offline",
+      sub: "Este PIN se usa para acceder sin conexión",
+      l1: "PIN Nuevo (4–6 dígitos)",
+      l2: "Confirmar PIN",
+      btn: "Guardar PIN",
+      ok: "¡PIN actualizado!",
+      okSub: "Podés usarlo para entrar sin conexión"
+    },
+    en: {
+      title: "Change Offline PIN",
+      sub: "This PIN is used to access without internet",
+      l1: "New PIN (4–6 digits)",
+      l2: "Confirm PIN",
+      btn: "Save PIN",
+      ok: "PIN updated!",
+      okSub: "You can use it to sign in offline"
+    },
+    pt: {
+      title: "Alterar PIN Offline",
+      sub: "Este PIN é usado para acessar sem internet",
+      l1: "Novo PIN (4–6 dígitos)",
+      l2: "Confirmar PIN",
+      btn: "Salvar PIN",
+      ok: "PIN atualizado!",
+      okSub: "Você pode usá-lo para entrar sem conexão"
+    }
   };
   const t = texts[lang] || texts.es;
-  document.getElementById('pinModalTitle').textContent = t.title;
-  document.getElementById('pinModalSub').textContent = t.sub;
-  document.getElementById('pinLabel1').textContent = t.l1;
-  document.getElementById('pinLabel2').textContent = t.l2;
-  document.getElementById('pinConfirmBtn').textContent = t.btn;
-  document.getElementById('pinSuccessMsg').textContent = t.ok;
-  document.getElementById('pinSuccessSub').textContent = t.okSub;
-  document.getElementById('pinInput1').value = '';
-  document.getElementById('pinInput2').value = '';
-  document.getElementById('pinError').style.display = 'none';
-  document.getElementById('pinStep1').style.display = 'block';
-  document.getElementById('pinStep2').style.display = 'none';
-  document.getElementById('pinModalOverlay').style.display = 'flex';
-  setTimeout(() => document.getElementById('pinInput1').focus(), 100);
+  document.getElementById("pinModalTitle").textContent = t.title;
+  document.getElementById("pinModalSub").textContent = t.sub;
+  document.getElementById("pinLabel1").textContent = t.l1;
+  document.getElementById("pinLabel2").textContent = t.l2;
+  document.getElementById("pinConfirmBtn").textContent = t.btn;
+  document.getElementById("pinSuccessMsg").textContent = t.ok;
+  document.getElementById("pinSuccessSub").textContent = t.okSub;
+  document.getElementById("pinInput1").value = "";
+  document.getElementById("pinInput2").value = "";
+  document.getElementById("pinError").style.display = "none";
+  document.getElementById("pinStep1").style.display = "block";
+  document.getElementById("pinStep2").style.display = "none";
+  document.getElementById("pinModalOverlay").style.display = "flex";
+  setTimeout(() => document.getElementById("pinInput1").focus(), 100);
 };
 
 window.openSwitchApp = async () => {
-  const lang = localStorage.getItem('appLang') || 'es';
-  const dest = { es:'¿A qué destino querés ir?\nEscriba "usa" para TaxUSA o "europe" para TaxEurope:', en:'Which destination?\nType "usa" for TaxUSA or "europe" for TaxEurope:', pt:'Qual destino?\nDigite "usa" para TaxUSA ou "europe" para TaxEurope:' };
+  const lang = localStorage.getItem("appLang") || "es";
+  const dest = {
+    es: '¿A qué destino querés ir?\nEscriba "usa" para TaxUSA o "europe" para TaxEurope:',
+    en: 'Which destination?\nType "usa" for TaxUSA or "europe" for TaxEurope:',
+    pt: 'Qual destino?\nDigite "usa" para TaxUSA ou "europe" para TaxEurope:'
+  };
   const r = await showPrompt(dest[lang] || dest.es);
   if (!r) return;
-  if (r.toLowerCase().includes('europe')) window.location.href = 'europe.html';
-  else window.location.href = 'index.html';
+  if (r.toLowerCase().includes("europe")) window.location.href = "europe.html"; else window.location.href = "index.html";
 };
 
-// ── DAYS ──
 function changeDays(d) {
   days = Math.max(1, Math.min(20, days + d));
-  document.getElementById('days-count').textContent = days;
+  document.getElementById("days-count").textContent = days;
 }
 
-// ── METHOD ──
 let activeMethod = null;
+
 function setMethod(m) {
   activeMethod = m;
-  document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.input-area').forEach(a => a.classList.remove('show'));
-  document.getElementById('m-' + m).classList.add('active');
-  document.getElementById('area-' + m).classList.add('show');
+  document.querySelectorAll(".method-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".input-area").forEach(a => a.classList.remove("show"));
+  document.getElementById("m-" + m).classList.add("active");
+  document.getElementById("area-" + m).classList.add("show");
 }
 
-// ══════════════════════════════════════════
-// ── AUTOCOMPLETE (Nominatim / OpenStreetMap) ──
-// ══════════════════════════════════════════
 let hotelAcTimer = null;
+
 let manualAcTimer = null;
+
 let hotelFocusedIdx = -1;
+
 let manualFocusedIdx = -1;
 
-// ── Placeholders rotativos ──
-const HOTEL_PLACEHOLDERS = [
-  'Ej: 324 Newcastle Dr, Kissimmee FL',
-  'Ej: 7600 Dr Phillips Blvd, Orlando FL',
-  'Ej: 5905 International Dr, Orlando FL',
-  'Ej: 1 Disney Way, Lake Buena Vista FL',
-  'Ej: 8250 International Dr, Orlando FL',
-  'Ej: Marriott Orlando, Lake Buena Vista',
-];
+const HOTEL_PLACEHOLDERS = [ "Ej: 324 Newcastle Dr, Kissimmee FL", "Ej: 7600 Dr Phillips Blvd, Orlando FL", "Ej: 5905 International Dr, Orlando FL", "Ej: 1 Disney Way, Lake Buena Vista FL", "Ej: 8250 International Dr, Orlando FL", "Ej: Marriott Orlando, Lake Buena Vista" ];
+
 let _phIdx = Math.floor(Math.random() * HOTEL_PLACEHOLDERS.length);
+
 let _phTimer = null;
+
 function startPlaceholderRotation() {
-  const inp = document.getElementById('hotel-input');
+  const inp = document.getElementById("hotel-input");
   if (!inp || inp.value) return;
   _phTimer = setInterval(() => {
     _phIdx = (_phIdx + 1) % HOTEL_PLACEHOLDERS.length;
     inp.placeholder = HOTEL_PLACEHOLDERS[_phIdx];
   }, 2200);
 }
+
 function stopPlaceholderRotation() {
-  clearInterval(_phTimer); _phTimer = null;
+  clearInterval(_phTimer);
+  _phTimer = null;
 }
 
-// ── Coordenadas y estado por ciudad destino ──
 const CITY_GEO = {
-  'orlando':         { viewbox: '-81.95,28.35,-81.00,28.75', state: 'FL' },
-  'kissimmee':       { viewbox: '-81.60,28.15,-81.20,28.45', state: 'FL' },
-  'miami':           { viewbox: '-80.50,25.60,-80.10,25.90', state: 'FL' },
-  'tampa':           { viewbox: '-82.65,27.85,-82.30,28.10', state: 'FL' },
-  'fort lauderdale': { viewbox: '-80.30,26.05,-80.05,26.25', state: 'FL' },
-  'new york':        { viewbox: '-74.26,40.48,-73.70,40.92', state: 'NY' },
-  'los angeles':     { viewbox: '-118.67,33.70,-117.90,34.34', state: 'CA' },
-  'las vegas':       { viewbox: '-115.38,36.05,-115.05,36.30', state: 'NV' },
-  'chicago':         { viewbox: '-87.94,41.64,-87.52,42.02', state: 'IL' },
-  'houston':         { viewbox: '-95.67,29.52,-95.05,30.11', state: 'TX' },
-  'san francisco':   { viewbox: '-122.52,37.70,-122.35,37.83', state: 'CA' },
-  'boston':          { viewbox: '-71.19,42.23,-70.92,42.40', state: 'MA' },
-  'washington':      { viewbox: '-77.12,38.79,-76.91,38.99', state: 'DC' },
-  'denver':          { viewbox: '-105.11,39.61,-104.87,39.81', state: 'CO' },
-  'atlanta':         { viewbox: '-84.55,33.65,-84.29,33.89', state: 'GA' },
+  orlando: {
+    viewbox: "-81.95,28.35,-81.00,28.75",
+    state: "FL"
+  },
+  kissimmee: {
+    viewbox: "-81.60,28.15,-81.20,28.45",
+    state: "FL"
+  },
+  miami: {
+    viewbox: "-80.50,25.60,-80.10,25.90",
+    state: "FL"
+  },
+  tampa: {
+    viewbox: "-82.65,27.85,-82.30,28.10",
+    state: "FL"
+  },
+  "fort lauderdale": {
+    viewbox: "-80.30,26.05,-80.05,26.25",
+    state: "FL"
+  },
+  "new york": {
+    viewbox: "-74.26,40.48,-73.70,40.92",
+    state: "NY"
+  },
+  "los angeles": {
+    viewbox: "-118.67,33.70,-117.90,34.34",
+    state: "CA"
+  },
+  "las vegas": {
+    viewbox: "-115.38,36.05,-115.05,36.30",
+    state: "NV"
+  },
+  chicago: {
+    viewbox: "-87.94,41.64,-87.52,42.02",
+    state: "IL"
+  },
+  houston: {
+    viewbox: "-95.67,29.52,-95.05,30.11",
+    state: "TX"
+  },
+  "san francisco": {
+    viewbox: "-122.52,37.70,-122.35,37.83",
+    state: "CA"
+  },
+  boston: {
+    viewbox: "-71.19,42.23,-70.92,42.40",
+    state: "MA"
+  },
+  washington: {
+    viewbox: "-77.12,38.79,-76.91,38.99",
+    state: "DC"
+  },
+  denver: {
+    viewbox: "-105.11,39.61,-104.87,39.81",
+    state: "CO"
+  },
+  atlanta: {
+    viewbox: "-84.55,33.65,-84.29,33.89",
+    state: "GA"
+  }
 };
 
 function getTripCityGeo() {
   try {
-    const cached = localStorage.getItem('taxusa_cached_trip');
+    const cached = localStorage.getItem("taxusa_cached_trip");
     if (!cached) return null;
     const trip = JSON.parse(cached);
-    const dest = (trip.destination || '').toLowerCase().trim();
+    const dest = (trip.destination || "").toLowerCase().trim();
     for (const key of Object.keys(CITY_GEO)) {
-      if (dest.includes(key) || key.includes(dest)) return { city: key, ...CITY_GEO[key] };
+      if (dest.includes(key) || key.includes(dest)) return {
+        city: key,
+        ...CITY_GEO[key]
+      };
     }
-    return { city: dest, viewbox: null, state: 'FL' };
-  } catch(e) { return null; }
+    return {
+      city: dest,
+      viewbox: null,
+      state: "FL"
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
 function parseNominatimResult(item) {
   const a = item.address || {};
-  let name = item.name || '';
-  if (!name && a.road) name = (a.house_number ? a.house_number + ' ' : '') + a.road;
-  if (!name) name = item.display_name.split(',')[0];
+  let name = item.name || "";
+  if (!name && a.road) name = (a.house_number ? a.house_number + " " : "") + a.road;
+  if (!name) name = item.display_name.split(",")[0];
   const parts = [];
-  if (a.road && item.name) parts.push((a.house_number ? a.house_number + ' ' : '') + a.road);
+  if (a.road && item.name) parts.push((a.house_number ? a.house_number + " " : "") + a.road);
   if (a.city || a.town || a.village) parts.push(a.city || a.town || a.village);
   if (a.state) parts.push(a.state);
-  const sub = parts.join(', ');
+  const sub = parts.join(", ");
   const addrParts = [];
   if (a.house_number) addrParts.push(a.house_number);
   if (a.road) addrParts.push(a.road);
   if (a.city || a.town || a.village) addrParts.push(a.city || a.town || a.village);
   if (a.state) addrParts.push(a.state);
-  const address = addrParts.length >= 2 ? addrParts.join(', ') : item.display_name.split(',').slice(0,3).join(',').trim();
-  return { name, sub: sub || address, address, lat: item.lat, lon: item.lon, type: item.type,
-    mapsUrl: `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lon}` };
+  const address = addrParts.length >= 2 ? addrParts.join(", ") : item.display_name.split(",").slice(0, 3).join(",").trim();
+  return {
+    name: name,
+    sub: sub || address,
+    address: address,
+    lat: item.lat,
+    lon: item.lon,
+    type: item.type,
+    mapsUrl: `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lon}`
+  };
 }
 
 async function searchAddress(query) {
   if (!query || query.length < 3) return [];
   try {
-    const lang = localStorage.getItem('appLang') || 'es';
+    const lang = localStorage.getItem("appLang") || "es";
     const base = `https://nominatim.openstreetmap.org/search?format=json&limit=6&countrycodes=us&addressdetails=1&accept-language=${lang}`;
-    const hasState   = /\b([A-Z]{2}|florida|california|texas|new york|nevada|illinois|georgia|massachusetts|colorado)\b/i.test(query);
+    const hasState = /\b([A-Z]{2}|florida|california|texas|new york|nevada|illinois|georgia|massachusetts|colorado)\b/i.test(query);
     const hasCountry = /\b(usa|united states|estados unidos)\b/i.test(query);
-    const hasCity    = /\b(orlando|kissimmee|miami|tampa|chicago|houston|boston|denver|atlanta|las vegas)\b/i.test(query);
+    const hasCity = /\b(orlando|kissimmee|miami|tampa|chicago|houston|boston|denver|atlanta|las vegas)\b/i.test(query);
     const alreadyComplete = hasState || hasCountry || hasCity;
     const tripGeo = getTripCityGeo();
     let q = query;
     if (!alreadyComplete && tripGeo) {
-      q = tripGeo.state
-        ? `${query}, ${tripGeo.city ? tripGeo.city.charAt(0).toUpperCase() + tripGeo.city.slice(1) : ''}, ${tripGeo.state}, USA`
-        : `${query}, USA`;
+      q = tripGeo.state ? `${query}, ${tripGeo.city ? tripGeo.city.charAt(0).toUpperCase() + tripGeo.city.slice(1) : ""}, ${tripGeo.state}, USA` : `${query}, USA`;
     } else if (!alreadyComplete) {
       q = `${query}, FL, USA`;
     }
     let data = [];
     if (tripGeo?.viewbox) {
-      const res1 = await fetch(`${base}&q=${encodeURIComponent(q)}&viewbox=${tripGeo.viewbox}&bounded=1`, { headers: { 'Accept-Language': lang } });
+      const res1 = await fetch(`${base}&q=${encodeURIComponent(q)}&viewbox=${tripGeo.viewbox}&bounded=1`, {
+        headers: {
+          "Accept-Language": lang
+        }
+      });
       if (res1.ok) data = await res1.json();
     }
     if (!data.length) {
-      const res2 = await fetch(`${base}&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': lang } });
+      const res2 = await fetch(`${base}&q=${encodeURIComponent(q)}`, {
+        headers: {
+          "Accept-Language": lang
+        }
+      });
       if (res2.ok) data = await res2.json();
     }
     if (!data.length && q !== query) {
-      const res3 = await fetch(`${base}&q=${encodeURIComponent(query)}`, { headers: { 'Accept-Language': lang } });
+      const res3 = await fetch(`${base}&q=${encodeURIComponent(query)}`, {
+        headers: {
+          "Accept-Language": lang
+        }
+      });
       if (res3.ok) data = await res3.json();
     }
     return data.map(parseNominatimResult);
-  } catch(e) { return []; }
+  } catch (e) {
+    return [];
+  }
 }
 
 function renderAcList(listEl, items, onSelect, focusedIdx) {
-  listEl.innerHTML = '';
-  if (!items.length) { listEl.classList.remove('show'); return; }
+  listEl.innerHTML = "";
+  if (!items.length) {
+    listEl.classList.remove("show");
+    return;
+  }
   items.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = 'autocomplete-item' + (i === focusedIdx ? ' focused' : '');
-    div.setAttribute('role', 'option');
+    const div = document.createElement("div");
+    div.className = "autocomplete-item" + (i === focusedIdx ? " focused" : "");
+    div.setAttribute("role", "option");
     const icon = getAddressIcon(item.type);
     div.innerHTML = `<span class="ac-icon">${icon}</span><div class="ac-body"><div class="ac-main">${escHtml(item.name)}</div><div class="ac-sub">${escHtml(item.sub)}</div></div>`;
-    div.addEventListener('mousedown', e => { e.preventDefault(); onSelect(item); });
+    div.addEventListener("mousedown", e => {
+      e.preventDefault();
+      onSelect(item);
+    });
     listEl.appendChild(div);
   });
-  listEl.classList.add('show');
+  listEl.classList.add("show");
 }
 
 function getAddressIcon(type) {
-  if (['hotel','motel','hostel','guest_house','chalet'].includes(type)) return '🏨';
-  if (['restaurant','fast_food','cafe','bar','food_court'].includes(type)) return '🍽️';
-  if (['shop','mall','supermarket','department_store','clothes'].includes(type)) return '🛍️';
-  if (['attraction','theme_park','museum','zoo','amusement_park'].includes(type)) return '🎡';
-  if (['airport','aerodrome'].includes(type)) return '✈️';
-  if (['house','residential','apartments','detached'].includes(type)) return '🏠';
-  return '📍';
+  if ([ "hotel", "motel", "hostel", "guest_house", "chalet" ].includes(type)) return "🏨";
+  if ([ "restaurant", "fast_food", "cafe", "bar", "food_court" ].includes(type)) return "🍽️";
+  if ([ "shop", "mall", "supermarket", "department_store", "clothes" ].includes(type)) return "🛍️";
+  if ([ "attraction", "theme_park", "museum", "zoo", "amusement_park" ].includes(type)) return "🎡";
+  if ([ "airport", "aerodrome" ].includes(type)) return "✈️";
+  if ([ "house", "residential", "apartments", "detached" ].includes(type)) return "🏠";
+  return "📍";
 }
 
 function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// ── HOTEL autocomplete ──
 let hotelAcItems = [];
+
 function onHotelInput(val) {
   clearTimeout(hotelAcTimer);
   hotelFocusedIdx = -1;
-  const spinner = document.getElementById('hotel-spinner');
-  const listEl  = document.getElementById('hotel-ac');
-  localStorage.setItem('taxusa_hotel_addr', val);
-  if (!val || val.length < 3) { listEl.classList.remove('show'); hotelAcItems = []; return; }
-  spinner.style.display = 'block';
+  const spinner = document.getElementById("hotel-spinner");
+  const listEl = document.getElementById("hotel-ac");
+  localStorage.setItem("taxusa_hotel_addr", val);
+  if (!val || val.length < 3) {
+    listEl.classList.remove("show");
+    hotelAcItems = [];
+    return;
+  }
+  spinner.style.display = "block";
   hotelAcTimer = setTimeout(async () => {
     hotelAcItems = await searchAddress(val);
-    spinner.style.display = 'none';
-    renderAcList(listEl, hotelAcItems, (item) => {
-      document.getElementById('hotel-input').value = item.address;
-      localStorage.setItem('taxusa_hotel_addr', item.address);
-      listEl.classList.remove('show');
+    spinner.style.display = "none";
+    renderAcList(listEl, hotelAcItems, item => {
+      document.getElementById("hotel-input").value = item.address;
+      localStorage.setItem("taxusa_hotel_addr", item.address);
+      listEl.classList.remove("show");
     }, hotelFocusedIdx);
   }, 450);
 }
 
 function onHotelKey(e) {
-  const listEl = document.getElementById('hotel-ac');
-  const items  = listEl.querySelectorAll('.autocomplete-item');
-  if (!listEl.classList.contains('show') || !items.length) return;
-  if (e.key === 'ArrowDown') {
+  const listEl = document.getElementById("hotel-ac");
+  const items = listEl.querySelectorAll(".autocomplete-item");
+  if (!listEl.classList.contains("show") || !items.length) return;
+  if (e.key === "ArrowDown") {
     e.preventDefault();
     hotelFocusedIdx = Math.min(hotelFocusedIdx + 1, items.length - 1);
-    items.forEach((el, i) => el.classList.toggle('focused', i === hotelFocusedIdx));
-  } else if (e.key === 'ArrowUp') {
+    items.forEach((el, i) => el.classList.toggle("focused", i === hotelFocusedIdx));
+  } else if (e.key === "ArrowUp") {
     e.preventDefault();
     hotelFocusedIdx = Math.max(hotelFocusedIdx - 1, 0);
-    items.forEach((el, i) => el.classList.toggle('focused', i === hotelFocusedIdx));
-  } else if (e.key === 'Enter' && hotelFocusedIdx >= 0) {
+    items.forEach((el, i) => el.classList.toggle("focused", i === hotelFocusedIdx));
+  } else if (e.key === "Enter" && hotelFocusedIdx >= 0) {
     e.preventDefault();
     if (hotelAcItems[hotelFocusedIdx]) {
-      document.getElementById('hotel-input').value = hotelAcItems[hotelFocusedIdx].address;
-      listEl.classList.remove('show');
+      document.getElementById("hotel-input").value = hotelAcItems[hotelFocusedIdx].address;
+      listEl.classList.remove("show");
     }
-  } else if (e.key === 'Escape') {
-    listEl.classList.remove('show');
+  } else if (e.key === "Escape") {
+    listEl.classList.remove("show");
   }
 }
 
-// MANUAL URL autocomplete (para cuando escriben una dirección en lugar de link)
 let manualAcItems = [];
+
 function onManualUrlInput(val) {
   clearTimeout(manualAcTimer);
   manualFocusedIdx = -1;
-  const spinner = document.getElementById('manual-spinner');
-  const listEl  = document.getElementById('manual-ac');
-  // Si parece una URL, no buscar
-  if (!val || val.length < 3 || val.startsWith('http')) { listEl.classList.remove('show'); manualAcItems = []; return; }
-  spinner.style.display = 'block';
+  const spinner = document.getElementById("manual-spinner");
+  const listEl = document.getElementById("manual-ac");
+  if (!val || val.length < 3 || val.startsWith("http")) {
+    listEl.classList.remove("show");
+    manualAcItems = [];
+    return;
+  }
+  spinner.style.display = "block";
   manualAcTimer = setTimeout(async () => {
     manualAcItems = await searchAddress(val);
-    spinner.style.display = 'none';
-    renderAcList(listEl, manualAcItems, (item) => {
-      document.getElementById('manual-url').value = item.mapsUrl;
-      // Si no pusieron nombre, autocompletar
-      const nameEl = document.getElementById('manual-name');
+    spinner.style.display = "none";
+    renderAcList(listEl, manualAcItems, item => {
+      document.getElementById("manual-url").value = item.mapsUrl;
+      const nameEl = document.getElementById("manual-name");
       if (!nameEl.value) nameEl.value = item.name;
-      listEl.classList.remove('show');
+      listEl.classList.remove("show");
     }, manualFocusedIdx);
   }, 350);
 }
 
 function onManualUrlKey(e) {
-  const listEl = document.getElementById('manual-ac');
-  const items  = listEl.querySelectorAll('.autocomplete-item');
-  if (!listEl.classList.contains('show') || !items.length) return;
-  if (e.key === 'ArrowDown') {
+  const listEl = document.getElementById("manual-ac");
+  const items = listEl.querySelectorAll(".autocomplete-item");
+  if (!listEl.classList.contains("show") || !items.length) return;
+  if (e.key === "ArrowDown") {
     e.preventDefault();
     manualFocusedIdx = Math.min(manualFocusedIdx + 1, items.length - 1);
-    items.forEach((el, i) => el.classList.toggle('focused', i === manualFocusedIdx));
-  } else if (e.key === 'ArrowUp') {
+    items.forEach((el, i) => el.classList.toggle("focused", i === manualFocusedIdx));
+  } else if (e.key === "ArrowUp") {
     e.preventDefault();
     manualFocusedIdx = Math.max(manualFocusedIdx - 1, 0);
-    items.forEach((el, i) => el.classList.toggle('focused', i === manualFocusedIdx));
-  } else if (e.key === 'Enter' && manualFocusedIdx >= 0) {
+    items.forEach((el, i) => el.classList.toggle("focused", i === manualFocusedIdx));
+  } else if (e.key === "Enter" && manualFocusedIdx >= 0) {
     e.preventDefault();
     if (manualAcItems[manualFocusedIdx]) {
       const item = manualAcItems[manualFocusedIdx];
-      document.getElementById('manual-url').value = item.mapsUrl;
-      const nameEl = document.getElementById('manual-name');
+      document.getElementById("manual-url").value = item.mapsUrl;
+      const nameEl = document.getElementById("manual-name");
       if (!nameEl.value) nameEl.value = item.name;
-      listEl.classList.remove('show');
+      listEl.classList.remove("show");
     }
-  } else if (e.key === 'Escape') {
-    listEl.classList.remove('show');
+  } else if (e.key === "Escape") {
+    listEl.classList.remove("show");
   }
 }
 
-// Cerrar autocomplete al hacer click fuera
-document.addEventListener('click', (e) => {
-  if (!document.getElementById('hotel-ac').contains(e.target) && e.target !== document.getElementById('hotel-input')) {
-    document.getElementById('hotel-ac').classList.remove('show');
+document.addEventListener("click", e => {
+  if (!document.getElementById("hotel-ac").contains(e.target) && e.target !== document.getElementById("hotel-input")) {
+    document.getElementById("hotel-ac").classList.remove("show");
   }
-  if (!document.getElementById('manual-ac').contains(e.target) && e.target !== document.getElementById('manual-url')) {
-    document.getElementById('manual-ac').classList.remove('show');
+  if (!document.getElementById("manual-ac").contains(e.target) && e.target !== document.getElementById("manual-url")) {
+    document.getElementById("manual-ac").classList.remove("show");
   }
 });
 
-// ── PARSE LINKS ──
 function parseLinks() {
-  const raw = document.getElementById('links-input').value.trim();
+  const raw = document.getElementById("links-input").value.trim();
   if (!raw) return;
-  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
   let added = 0;
   lines.forEach(url => {
-    if (!url.startsWith('http')) return;
-    let name = 'Parada ' + (stops.length + 1);
+    if (!url.startsWith("http")) return;
+    let name = "Parada " + (stops.length + 1);
     const placeMatch = url.match(/place\/([^/]+)/);
-    if (placeMatch) name = decodeURIComponent(placeMatch[1].replace(/\+/g,' '));
-    stops.push({ name, desc: '', url });
+    if (placeMatch) name = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+    stops.push({
+      name: name,
+      desc: "",
+      url: url
+    });
     added++;
   });
-  document.getElementById('links-input').value = '';
+  document.getElementById("links-input").value = "";
   renderStops();
-  showToast(`✅ ${added} parada${added>1?'s':''} agregada${added>1?'s':''}`);
+  showToast(`✅ ${added} parada${added > 1 ? "s" : ""} agregada${added > 1 ? "s" : ""}`);
 }
 
-// ── PARSE CSV ──
 function handleCSV(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => { document.getElementById('csv-text').value = e.target.result; parseCSV(); };
+  const reader = new FileReader;
+  reader.onload = e => {
+    document.getElementById("csv-text").value = e.target.result;
+    parseCSV();
+  };
   reader.readAsText(file);
 }
 
 function parseCSV() {
-  const raw = document.getElementById('csv-text').value.trim();
+  const raw = document.getElementById("csv-text").value.trim();
   if (!raw) return;
-  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
   let added = 0;
   lines.forEach(line => {
-    if (line.toLowerCase().startsWith('nombre') || line.toLowerCase().startsWith('name')) return;
-    const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g,''));
-    const name = cols[0] || 'Parada ' + (stops.length + 1);
-    const desc = cols[1] || '';
-    const url  = cols[2] || '';
-    if (name) { stops.push({ name, desc, url }); added++; }
+    if (line.toLowerCase().startsWith("nombre") || line.toLowerCase().startsWith("name")) return;
+    const cols = line.split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+    const name = cols[0] || "Parada " + (stops.length + 1);
+    const desc = cols[1] || "";
+    const url = cols[2] || "";
+    if (name) {
+      stops.push({
+        name: name,
+        desc: desc,
+        url: url
+      });
+      added++;
+    }
   });
-  document.getElementById('csv-text').value = '';
+  document.getElementById("csv-text").value = "";
   renderStops();
-  showToast(`✅ ${added} parada${added>1?'s':''} agregada${added>1?'s':''}`);
+  showToast(`✅ ${added} parada${added > 1 ? "s" : ""} agregada${added > 1 ? "s" : ""}`);
 }
 
-// ── MANUAL ──
 function addManual() {
-  const name = document.getElementById('manual-name').value.trim();
-  if (!name) { showToast('⚠️ Escribí un nombre'); return; }
-  const desc = document.getElementById('manual-desc').value.trim();
-  const url  = document.getElementById('manual-url').value.trim();
-  stops.push({ name, desc, url });
-  document.getElementById('manual-name').value = '';
-  document.getElementById('manual-desc').value = '';
-  document.getElementById('manual-url').value  = '';
-  document.getElementById('manual-ac').classList.remove('show');
+  const name = document.getElementById("manual-name").value.trim();
+  if (!name) {
+    showToast("⚠️ Escribí un nombre");
+    return;
+  }
+  const desc = document.getElementById("manual-desc").value.trim();
+  const url = document.getElementById("manual-url").value.trim();
+  stops.push({
+    name: name,
+    desc: desc,
+    url: url
+  });
+  document.getElementById("manual-name").value = "";
+  document.getElementById("manual-desc").value = "";
+  document.getElementById("manual-url").value = "";
+  document.getElementById("manual-ac").classList.remove("show");
   renderStops();
-  showToast('✅ Parada agregada');
+  showToast("✅ Parada agregada");
 }
 
-// ── RENDER STOPS ──
 function renderStops() {
-  const list   = document.getElementById('stops-list');
-  const empty  = document.getElementById('stops-empty');
-  const acts   = document.getElementById('stops-actions');
-  const genBtn = document.getElementById('btn-gen');
-  list.innerHTML = '';
-  empty.style.display  = stops.length ? 'none' : 'block';
-  acts.style.display   = stops.length ? 'flex' : 'none';
-  genBtn.disabled      = stops.length === 0;
-
+  const list = document.getElementById("stops-list");
+  const empty = document.getElementById("stops-empty");
+  const acts = document.getElementById("stops-actions");
+  const genBtn = document.getElementById("btn-gen");
+  list.innerHTML = "";
+  empty.style.display = stops.length ? "none" : "block";
+  acts.style.display = stops.length ? "flex" : "none";
+  genBtn.disabled = stops.length === 0;
   stops.forEach((s, i) => {
-    const row = document.createElement('div');
-    row.className = 'stop-row';
-    row.innerHTML = `
-      <div class="stop-row-num">${i+1}</div>
-      <div class="stop-row-body">
-        <div class="stop-row-name">${esc(s.name)}</div>
-        ${s.desc ? `<div class="stop-row-addr">${esc(s.desc)}</div>` : ''}
-        ${s.url  ? `<div class="stop-row-addr" style="color:var(--primary)">${s.url.slice(0,45)}…</div>` : ''}
-      </div>
-      <button class="stop-row-del" onclick="removeStop(${i})" aria-label="Eliminar parada">✕</button>`;
+    const row = document.createElement("div");
+    row.className = "stop-row";
+    row.innerHTML = `\n      <div class="stop-row-num">${i + 1}</div>\n      <div class="stop-row-body">\n        <div class="stop-row-name">${esc(s.name)}</div>\n        ${s.desc ? `<div class="stop-row-addr">${esc(s.desc)}</div>` : ""}\n        ${s.url ? `<div class="stop-row-addr" style="color:var(--primary)">${s.url.slice(0, 45)}…</div>` : ""}\n      </div>\n      <button class="stop-row-del" onclick="removeStop(${i})" aria-label="Eliminar parada">✕</button>`;
     list.appendChild(row);
   });
 }
 
-function removeStop(i) { stops.splice(i, 1); renderStops(); }
-function clearStops()  { stops = []; renderStops(); }
+function removeStop(i) {
+  stops.splice(i, 1);
+  renderStops();
+}
 
-// ── CSV DRAG ──
-const dz = document.getElementById('drop-zone');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('drag');
+function clearStops() {
+  stops = [];
+  renderStops();
+}
+
+const dz = document.getElementById("drop-zone");
+
+dz.addEventListener("dragover", e => {
+  e.preventDefault();
+  dz.classList.add("drag");
+});
+
+dz.addEventListener("dragleave", () => dz.classList.remove("drag"));
+
+dz.addEventListener("drop", e => {
+  e.preventDefault();
+  dz.classList.remove("drag");
   const file = e.dataTransfer.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => { document.getElementById('csv-text').value = ev.target.result; parseCSV(); };
+  const reader = new FileReader;
+  reader.onload = ev => {
+    document.getElementById("csv-text").value = ev.target.result;
+    parseCSV();
+  };
   reader.readAsText(file);
 });
 
-// ── GENERATE ROUTE (con IA) ──
 async function generateRoute() {
   if (!stops.length) return;
-  const hotel   = document.getElementById('hotel-input').value.trim() || 'Tu alojamiento';
-  const dateVal = document.getElementById('start-date').value;
-  const lang    = localStorage.getItem('appLang') || 'es';
-  const dayWord = { es:'Día', en:'Day', pt:'Dia' }[lang] || 'Día';
-
-  // Mostrar spinner y deshabilitar botón
-  const btn = document.getElementById('btn-gen');
+  const hotel = document.getElementById("hotel-input").value.trim() || "Tu alojamiento";
+  const dateVal = document.getElementById("start-date").value;
+  const lang = localStorage.getItem("appLang") || "es";
+  const dayWord = {
+    es: "Día",
+    en: "Day",
+    pt: "Dia"
+  }[lang] || "Día";
+  const btn = document.getElementById("btn-gen");
   const originalHTML = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div><span>' + {es:'Optimizando ruta con IA…',en:'Optimizing route with AI…',pt:'Otimizando rota com IA…'}[lang] + '</span>';
-
-  let orderedStops = stops; // fallback al orden original
-
+  btn.innerHTML = '<div class="spinner"></div><span>' + {
+    es: "Optimizando ruta con IA…",
+    en: "Optimizing route with AI…",
+    pt: "Otimizando rota com IA…"
+  }[lang] + "</span>";
+  let orderedStops = stops;
   try {
     const stopsPayload = stops.map((s, i) => ({
       index: i,
       name: s.name,
-      desc: s.desc || '',
-      url: s.url || ''
+      desc: s.desc || "",
+      url: s.url || ""
     }));
-
-    const systemPrompt = `You are a travel route optimization expert with real, detailed knowledge of Central Florida / Orlando geography — including the different areas/clusters: Walt Disney World & Lake Buena Vista, Universal Orlando Resort & International Drive, Kissimmee, downtown Orlando, Winter Garden, Winter Haven, and Cape Canaveral/Kennedy Space Center. Your ONLY task is to return a valid JSON array.
-
-Given a list of stops (places to visit) and a starting point (hotel), group them into ${days} day(s) so the resulting itinerary is realistic and efficient, not just numerically balanced.
-
-Rules:
-- Return ONLY a JSON array of arrays of original stop indexes (0-based), no explanation, no markdown, no backticks.
-- Each inner array = one day's stops, in optimal visit order for that day (minimizing backtracking).
-- Every stop index must appear exactly once across all days.
-- FULL-DAY ANCHORS: major theme parks (e.g. Magic Kingdom, EPCOT, Hollywood Studios, Animal Kingdom, Universal Studios, Islands of Adventure, Epic Universe, Volcano Bay, SeaWorld, Legoland, Busch Gardens, and similar large parks) each realistically take a FULL day by themselves. Never put two of these full-day anchors on the same day — each one gets its own day — unless there are strictly more anchors than available days, in which case distribute them as evenly as possible.
-- Smaller stops (outlets, malls, museums, short attractions, parks, tours, restaurants) CAN be combined 2-3 per day, but only if they are genuinely in the same or adjacent area. Do NOT mix stops from different areas just because they fit numerically — e.g. don't combine something in the Disney/Lake Buena Vista area with something on International Drive/Universal, and don't combine downtown Orlando with Kissimmee, unless there is no other reasonable option.
-- Attractions clearly far from the main Orlando area (e.g. Kennedy Space Center, Legoland in Winter Haven) should be alone on their day — the drive there and back already fills the day.
-- Use your own knowledge of these specific places and their real locations to judge proximity — don't just pattern-match on city names in the address text.
-- If a stop's location is unclear or missing, use its name/description to infer the area as best you can; only fall back to the original order if truly no signal exists.
-- Spread stops as evenly as possible across days ONLY after applying the rules above — realism comes first, balance second.
-
-Example output for 3 stops, 2 days: [[0,2],[1]]`;
-
-    const userMsg = `Hotel/Starting point: ${hotel}
-Number of days: ${days}
-Stops to organize:
-${JSON.stringify(stopsPayload, null, 2)}
-
-Return ONLY the JSON array of arrays of indexes.`;
-
+    const systemPrompt = `You are a travel route optimization expert with real, detailed knowledge of Central Florida / Orlando geography — including the different areas/clusters: Walt Disney World & Lake Buena Vista, Universal Orlando Resort & International Drive, Kissimmee, downtown Orlando, Winter Garden, Winter Haven, and Cape Canaveral/Kennedy Space Center. Your ONLY task is to return a valid JSON array.\n\nGiven a list of stops (places to visit) and a starting point (hotel), group them into ${days} day(s) so the resulting itinerary is realistic and efficient, not just numerically balanced.\n\nRules:\n- Return ONLY a JSON array of arrays of original stop indexes (0-based), no explanation, no markdown, no backticks.\n- Each inner array = one day's stops, in optimal visit order for that day (minimizing backtracking).\n- Every stop index must appear exactly once across all days.\n- FULL-DAY ANCHORS: major theme parks (e.g. Magic Kingdom, EPCOT, Hollywood Studios, Animal Kingdom, Universal Studios, Islands of Adventure, Epic Universe, Volcano Bay, SeaWorld, Legoland, Busch Gardens, and similar large parks) each realistically take a FULL day by themselves. Never put two of these full-day anchors on the same day — each one gets its own day — unless there are strictly more anchors than available days, in which case distribute them as evenly as possible.\n- Smaller stops (outlets, malls, museums, short attractions, parks, tours, restaurants) CAN be combined 2-3 per day, but only if they are genuinely in the same or adjacent area. Do NOT mix stops from different areas just because they fit numerically — e.g. don't combine something in the Disney/Lake Buena Vista area with something on International Drive/Universal, and don't combine downtown Orlando with Kissimmee, unless there is no other reasonable option.\n- Attractions clearly far from the main Orlando area (e.g. Kennedy Space Center, Legoland in Winter Haven) should be alone on their day — the drive there and back already fills the day.\n- Use your own knowledge of these specific places and their real locations to judge proximity — don't just pattern-match on city names in the address text.\n- If a stop's location is unclear or missing, use its name/description to infer the area as best you can; only fall back to the original order if truly no signal exists.\n- Spread stops as evenly as possible across days ONLY after applying the rules above — realism comes first, balance second.\n\nExample output for 3 stops, 2 days: [[0,2],[1]]`;
+    const userMsg = `Hotel/Starting point: ${hotel}\nNumber of days: ${days}\nStops to organize:\n${JSON.stringify(stopsPayload, null, 2)}\n\nReturn ONLY the JSON array of arrays of indexes.`;
     const res = await window.taxflyWorker({
-      type: 'optimize_route',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMsg }
-      ],
-      max_tokens: 2000
+      type: "optimize_route",
+      messages: [ {
+        role: "system",
+        content: systemPrompt
+      }, {
+        role: "user",
+        content: userMsg
+      } ],
+      max_tokens: 2e3
     });
-
     if (res.ok) {
       const data = await res.json();
-      const raw = data.choices?.[0]?.message?.content || '';
-      // Extraer el JSON aunque venga con texto extra
+      const raw = data.choices?.[0]?.message?.content || "";
       const jsonMatch = raw.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        // Validar que es un array de arrays de índices válidos
         const allIndexes = parsed.flat();
-        const valid = Array.isArray(parsed) &&
-          parsed.every(day => Array.isArray(day)) &&
-          allIndexes.length === stops.length &&
-          allIndexes.every(i => typeof i === 'number' && i >= 0 && i < stops.length);
+        const valid = Array.isArray(parsed) && parsed.every(day => Array.isArray(day)) && allIndexes.length === stops.length && allIndexes.every(i => typeof i === "number" && i >= 0 && i < stops.length);
         if (valid) {
-          // Reconstruir stops en el orden sugerido por la IA
           const dayData = [];
           parsed.forEach((dayIndexes, d) => {
             if (!dayIndexes.length) return;
             const chunk = dayIndexes.map(i => stops[i]);
-            let label = `${dayWord} ${d+1}`;
-            let shortLabel = `${dayWord} ${d+1}`;
-            let dateLabel = '';
+            let label = `${dayWord} ${d + 1}`;
+            let shortLabel = `${dayWord} ${d + 1}`;
+            let dateLabel = "";
             if (dateVal) {
-              const date = new Date(dateVal + 'T12:00:00');
+              const date = new Date(dateVal + "T12:00:00");
               date.setDate(date.getDate() + d);
-              const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
-              const shortDate = date.toLocaleDateString(locale, { day:'2-digit', month:'2-digit' });
-              const weekday  = date.toLocaleDateString(locale, { weekday:'short' });
-              label      = `${dayWord} ${d+1} — ${weekday} ${shortDate}`;
-              shortLabel = `${dayWord} ${d+1}`;
-              dateLabel  = `${weekday} ${shortDate}`;
+              const locale = lang === "pt" ? "pt-BR" : lang === "en" ? "en-US" : "es-AR";
+              const shortDate = date.toLocaleDateString(locale, {
+                day: "2-digit",
+                month: "2-digit"
+              });
+              const weekday = date.toLocaleDateString(locale, {
+                weekday: "short"
+              });
+              label = `${dayWord} ${d + 1} — ${weekday} ${shortDate}`;
+              shortLabel = `${dayWord} ${d + 1}`;
+              dateLabel = `${weekday} ${shortDate}`;
             }
-            dayData.push({ label, shortLabel, dateLabel, stops: chunk });
+            dayData.push({
+              label: label,
+              shortLabel: shortLabel,
+              dateLabel: dateLabel,
+              stops: chunk
+            });
           });
-          routeData = { hotel, dayData };
+          routeData = {
+            hotel: hotel,
+            dayData: dayData
+          };
           visited = {};
           activeDay = 0;
           saveVisited();
           btn.innerHTML = originalHTML;
           btn.disabled = stops.length === 0;
-          document.getElementById('builder-card').style.display = 'none';
-          document.getElementById('ruta-result').style.display  = 'block';
+          document.getElementById("builder-card").style.display = "none";
+          document.getElementById("ruta-result").style.display = "block";
           renderResult();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          showToast('✨ ' + {es:'Ruta optimizada con IA',en:'Route optimized with AI',pt:'Rota otimizada com IA'}[lang]);
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+          showToast("✨ " + {
+            es: "Ruta optimizada con IA",
+            en: "Route optimized with AI",
+            pt: "Rota otimizada com IA"
+          }[lang]);
           return;
         }
       }
     }
-  } catch(e) {}
-
-  // Fallback: distribución simple sin IA
+  } catch (e) {}
   btn.innerHTML = originalHTML;
   btn.disabled = stops.length === 0;
   const perDay = Math.ceil(stops.length / days);
   const dayDataFallback = [];
   for (let d = 0; d < days; d++) {
-    const chunk = stops.slice(d * perDay, (d+1) * perDay);
+    const chunk = stops.slice(d * perDay, (d + 1) * perDay);
     if (!chunk.length) continue;
-    let label = `${dayWord} ${d+1}`;
-    let shortLabel = `${dayWord} ${d+1}`;
-    let dateLabel = '';
+    let label = `${dayWord} ${d + 1}`;
+    let shortLabel = `${dayWord} ${d + 1}`;
+    let dateLabel = "";
     if (dateVal) {
-      const date = new Date(dateVal + 'T12:00:00');
+      const date = new Date(dateVal + "T12:00:00");
       date.setDate(date.getDate() + d);
-      const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
-      const shortDate = date.toLocaleDateString(locale, { day:'2-digit', month:'2-digit' });
-      const weekday  = date.toLocaleDateString(locale, { weekday:'short' });
-      label      = `${dayWord} ${d+1} — ${weekday} ${shortDate}`;
-      shortLabel = `${dayWord} ${d+1}`;
-      dateLabel  = `${weekday} ${shortDate}`;
+      const locale = lang === "pt" ? "pt-BR" : lang === "en" ? "en-US" : "es-AR";
+      const shortDate = date.toLocaleDateString(locale, {
+        day: "2-digit",
+        month: "2-digit"
+      });
+      const weekday = date.toLocaleDateString(locale, {
+        weekday: "short"
+      });
+      label = `${dayWord} ${d + 1} — ${weekday} ${shortDate}`;
+      shortLabel = `${dayWord} ${d + 1}`;
+      dateLabel = `${weekday} ${shortDate}`;
     }
-    dayDataFallback.push({ label, shortLabel, dateLabel, stops: chunk });
+    dayDataFallback.push({
+      label: label,
+      shortLabel: shortLabel,
+      dateLabel: dateLabel,
+      stops: chunk
+    });
   }
-  routeData = { hotel, dayData: dayDataFallback };
-  visited   = {};
+  routeData = {
+    hotel: hotel,
+    dayData: dayDataFallback
+  };
+  visited = {};
   activeDay = 0;
   saveVisited();
-  document.getElementById('builder-card').style.display = 'none';
-  document.getElementById('ruta-result').style.display  = 'block';
+  document.getElementById("builder-card").style.display = "none";
+  document.getElementById("ruta-result").style.display = "block";
   renderResult();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  showToast('⚠️ ' + {es:'IA no disponible, ruta generada sin optimizar',en:'AI unavailable, route generated without optimization',pt:'IA indisponível, rota gerada sem otimização'}[lang]);
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+  showToast("⚠️ " + {
+    es: "IA no disponible, ruta generada sin optimizar",
+    en: "AI unavailable, route generated without optimization",
+    pt: "IA indisponível, rota gerada sem otimização"
+  }[lang]);
 }
 
-// ── ACTIVE DAY for tabs ──
 let activeDay = 0;
 
 function switchDay(d) {
   activeDay = d;
-  document.querySelectorAll('.day-tab').forEach((t, i) => t.classList.toggle('active', i === d));
-  document.querySelectorAll('.day-panel').forEach((p, i) => p.classList.toggle('active', i === d));
-  document.querySelectorAll('.day-nav-btn').forEach((b, i) => b.classList.toggle('active', i === d));
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.querySelectorAll(".day-tab").forEach((t, i) => t.classList.toggle("active", i === d));
+  document.querySelectorAll(".day-panel").forEach((p, i) => p.classList.toggle("active", i === d));
+  document.querySelectorAll(".day-nav-btn").forEach((b, i) => b.classList.toggle("active", i === d));
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
 function buildTabs() {
-  const tabsEl  = document.getElementById('day-tabs');
-  const navEl   = document.getElementById('day-bottom-nav');
+  const tabsEl = document.getElementById("day-tabs");
+  const navEl = document.getElementById("day-bottom-nav");
   if (!tabsEl || !navEl) return;
-  tabsEl.innerHTML = '';
-  navEl.innerHTML  = '';
+  tabsEl.innerHTML = "";
+  navEl.innerHTML = "";
   routeData.dayData.forEach((day, i) => {
-    // Tab superior
-    const tab = document.createElement('button');
-    tab.className = 'day-tab' + (i === activeDay ? ' active' : '');
+    const tab = document.createElement("button");
+    tab.className = "day-tab" + (i === activeDay ? " active" : "");
     tab.textContent = day.shortLabel || day.label;
     tab.onclick = () => switchDay(i);
     tabsEl.appendChild(tab);
-    // Botón nav inferior
-    const btn = document.createElement('button');
-    btn.className = 'day-nav-btn' + (i === activeDay ? ' active' : '');
-    btn.id = 'day-nav-' + i;
+    const btn = document.createElement("button");
+    btn.className = "day-nav-btn" + (i === activeDay ? " active" : "");
+    btn.id = "day-nav-" + i;
     const done = routeData.dayData[i].stops.filter((_, si) => visited[`${i}-${si}`]).length;
     const total = routeData.dayData[i].stops.length;
     const hasProgress = done > 0 && done < total;
     const allDone = done === total && total > 0;
-    const dot = hasProgress ? '<span class="dnb-dot"></span>' : allDone ? ' ✓' : '';
-    btn.innerHTML = (day.shortLabel || ('Día ' + (i+1))) + dot + (day.dateLabel ? `<span class="dnb-date">${day.dateLabel}</span>` : '');
+    const dot = hasProgress ? '<span class="dnb-dot"></span>' : allDone ? " ✓" : "";
+    btn.innerHTML = (day.shortLabel || "Día " + (i + 1)) + dot + (day.dateLabel ? `<span class="dnb-date">${day.dateLabel}</span>` : "");
     btn.onclick = () => switchDay(i);
     navEl.appendChild(btn);
   });
-  navEl.classList.add('show');
+  navEl.classList.add("show");
 }
 
 function renderResult() {
-  const out = document.getElementById('days-output');
-  out.innerHTML = '';
+  const out = document.getElementById("days-output");
+  out.innerHTML = "";
   let total = 0, done = 0;
-
   routeData.dayData.forEach((day, di) => {
     total += day.stops.length;
     const dayDone = day.stops.filter((_, si) => visited[`${di}-${si}`]).length;
     done += dayDone;
     const pct = Math.round(dayDone / day.stops.length * 100);
     const allDone = dayDone === day.stops.length && day.stops.length > 0;
-
-    const panel = document.createElement('div');
-    panel.className = 'day-panel' + (di === activeDay ? ' active' : '');
-    panel.id = 'day-panel-' + di;
-
-    let html = `
-      <a class="hotel-bar-result" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(routeData.hotel)}" target="_blank">
-        <div class="hotel-bar-icon">🏠</div>
-        <div class="hotel-bar-info">
-          <div class="hotel-bar-label">Punto de partida</div>
-          <div class="hotel-bar-addr">${escHtml(routeData.hotel)}</div>
-        </div>
-        <div class="hotel-bar-arrow">↗</div>
-      </a>
-      <div class="day-prog-wrap">
-        <div class="day-prog-meta">
-          <div class="day-prog-stats">
-            <div class="dp-stat"><div class="dp-val ${dayDone>0?'accent':''}">${dayDone}</div><div class="dp-lbl">visit.</div></div>
-            <div class="dp-stat"><div class="dp-val">${day.stops.length}</div><div class="dp-lbl">paradas</div></div>
-            <div class="dp-stat"><div class="dp-val ${pct===100?'accent':''}">${pct}%</div><div class="dp-lbl">hecho</div></div>
-          </div>
-          <button class="btn-reset" onclick="resetDay(${di})">↺ reiniciar</button>
-        </div>
-        <div class="day-prog-bar-bg"><div class="day-prog-bar-fill" style="width:${pct}%"></div></div>
-      </div>`;
-
+    const panel = document.createElement("div");
+    panel.className = "day-panel" + (di === activeDay ? " active" : "");
+    panel.id = "day-panel-" + di;
+    let html = `\n      <a class="hotel-bar-result" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(routeData.hotel)}" target="_blank">\n        <div class="hotel-bar-icon">🏠</div>\n        <div class="hotel-bar-info">\n          <div class="hotel-bar-label">Punto de partida</div>\n          <div class="hotel-bar-addr">${escHtml(routeData.hotel)}</div>\n        </div>\n        <div class="hotel-bar-arrow">↗</div>\n      </a>\n      <div class="day-prog-wrap">\n        <div class="day-prog-meta">\n          <div class="day-prog-stats">\n            <div class="dp-stat"><div class="dp-val ${dayDone > 0 ? "accent" : ""}">${dayDone}</div><div class="dp-lbl">visit.</div></div>\n            <div class="dp-stat"><div class="dp-val">${day.stops.length}</div><div class="dp-lbl">paradas</div></div>\n            <div class="dp-stat"><div class="dp-val ${pct === 100 ? "accent" : ""}">${pct}%</div><div class="dp-lbl">hecho</div></div>\n          </div>\n          <button class="btn-reset" onclick="resetDay(${di})">↺ reiniciar</button>\n        </div>\n        <div class="day-prog-bar-bg"><div class="day-prog-bar-fill" style="width:${pct}%"></div></div>\n      </div>`;
     if (allDone) {
-      html += `<div class="all-done-state show">
-        <div class="all-done-emoji">🎉</div>
-        <div class="all-done-title">¡Día completado!</div>
-        <div class="all-done-sub">Visitaste las ${day.stops.length} paradas del día.</div>
-      </div>`;
+      html += `<div class="all-done-state show">\n        <div class="all-done-emoji">🎉</div>\n        <div class="all-done-title">¡Día completado!</div>\n        <div class="all-done-sub">Visitaste las ${day.stops.length} paradas del día.</div>\n      </div>`;
     }
-
     day.stops.forEach((s, si) => {
       const isV = !!visited[`${di}-${si}`];
       const mapsIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`;
-      html += `
-        <div class="ruta-stop${isV?' visited':''}" onclick="toggleVisit(${di},${si})" style="animation-delay:${si*.03}s">
-          <div class="rs-num">${isV ? '✓' : si+1}</div>
-          <div class="rs-body">
-            <div class="rs-name">${escHtml(s.name)}</div>
-            ${s.desc ? `<div class="rs-desc">${escHtml(s.desc)}</div>` : ''}
-            <div class="rs-footer">
-              <span></span>
-              ${s.url ? `<a class="rs-maps" href="${s.url}" onclick="event.stopPropagation()" target="_blank">${mapsIcon} Maps</a>` : ''}
-            </div>
-          </div>
-        </div>`;
+      html += `\n        <div class="ruta-stop${isV ? " visited" : ""}" onclick="toggleVisit(${di},${si})" style="animation-delay:${si * .03}s">\n          <div class="rs-num">${isV ? "✓" : si + 1}</div>\n          <div class="rs-body">\n            <div class="rs-name">${escHtml(s.name)}</div>\n            ${s.desc ? `<div class="rs-desc">${escHtml(s.desc)}</div>` : ""}\n            <div class="rs-footer">\n              <span></span>\n              ${s.url ? `<a class="rs-maps" href="${s.url}" onclick="event.stopPropagation()" target="_blank">${mapsIcon} Maps</a>` : ""}\n            </div>\n          </div>\n        </div>`;
     });
-
     panel.innerHTML = html;
     out.appendChild(panel);
   });
-
-  // Global progress
-  const pct = total ? Math.round(done/total*100) : 0;
-  document.getElementById('gp-done').textContent  = done;
-  document.getElementById('gp-total').textContent = total;
-  document.getElementById('gp-bar').style.width   = pct + '%';
-
-  // Rebuild tabs con dots actualizados
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById("gp-done").textContent = done;
+  document.getElementById("gp-total").textContent = total;
+  document.getElementById("gp-bar").style.width = pct + "%";
   buildTabs();
 }
 
 function toggleVisit(di, si) {
   const key = `${di}-${si}`;
-  if (visited[key]) delete visited[key];
-  else visited[key] = 1;
+  if (visited[key]) delete visited[key]; else visited[key] = 1;
   saveVisited();
   renderResult();
-  // Check si el día está completo
   const day = routeData.dayData[di];
   const allDone = day.stops.every((_, s) => visited[`${di}-${s}`]);
   if (allDone) launchConfetti();
 }
 
 function resetDay(di) {
-  routeData.dayData[di].stops.forEach((_, si) => { delete visited[`${di}-${si}`]; });
+  routeData.dayData[di].stops.forEach((_, si) => {
+    delete visited[`${di}-${si}`];
+  });
   saveVisited();
   renderResult();
 }
 
-function saveVisited()  { try { localStorage.setItem(VISITED_KEY, JSON.stringify(visited)); } catch(e) {} }
-function resetVisited() { visited = {}; saveVisited(); renderResult(); }
-
-function resetAll() {
-  stops = []; routeData = null; visited = {};
-  activeDay = 0;
-  saveVisited(); renderStops();
-  document.getElementById('builder-card').style.display = 'block';
-  document.getElementById('ruta-result').style.display  = 'none';
-  document.getElementById('day-bottom-nav').classList.remove('show');
-  document.getElementById('hotel-input').value = ''; localStorage.removeItem('taxusa_hotel_addr');
-  localStorage.removeItem('taxusa_hotel_addr');
-  document.getElementById('start-date').value  = '';
-  days = 3; document.getElementById('days-count').textContent = '3';
+function saveVisited() {
+  try {
+    localStorage.setItem(VISITED_KEY, JSON.stringify(visited));
+  } catch (e) {}
 }
 
-// ── DOWNLOAD HTML (estilo Maps-main) ──
+function resetVisited() {
+  visited = {};
+  saveVisited();
+  renderResult();
+}
+
+function resetAll() {
+  stops = [];
+  routeData = null;
+  visited = {};
+  activeDay = 0;
+  saveVisited();
+  renderStops();
+  document.getElementById("builder-card").style.display = "block";
+  document.getElementById("ruta-result").style.display = "none";
+  document.getElementById("day-bottom-nav").classList.remove("show");
+  document.getElementById("hotel-input").value = "";
+  localStorage.removeItem("taxusa_hotel_addr");
+  localStorage.removeItem("taxusa_hotel_addr");
+  document.getElementById("start-date").value = "";
+  days = 3;
+  document.getElementById("days-count").textContent = "3";
+}
+
 function downloadHTML() {
   if (!routeData) return;
   const H = JSON.stringify(routeData.hotel);
   const D = JSON.stringify(routeData.dayData);
-  const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>Mi Ruta TaxUSA</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;--text:#0f172a;--sub:#64748b;--dim:#94a3b8;--primary:#2563eb;--success:#10b981;--accent:#7c3aed;--radius:14px;}
-@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--surface:#1e293b;--surface2:#273549;--border:#334155;--text:#f1f5f9;--sub:#94a3b8;--dim:#64748b;}}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px 16px 100px;}
-.wrap{max-width:460px;margin:0 auto;}
-.title{font-size:1.2rem;font-weight:900;color:var(--primary);margin-bottom:2px;}
-.subtitle{font-size:.72rem;color:var(--sub);margin-bottom:14px;}
-/* global prog */
-.prog-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
-.gp-stat{text-align:center;flex:1;}.gp-val{font-size:1.4rem;font-weight:900;color:var(--primary);}.gp-lbl{font-size:.55rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}
-.gp-bw{flex:2;}.gp-row{display:flex;justify-content:space-between;margin-bottom:4px;}.gp-lbl2{font-size:.6rem;font-weight:700;color:var(--dim);}.reset-btn{background:none;border:none;color:var(--dim);font-size:.65rem;cursor:pointer;text-decoration:underline;font-family:inherit;padding:0;}
-.gp-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}.gp-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width .4s;}
-/* tabs */
-.tabs-wrap{overflow-x:auto;scrollbar-width:none;margin-bottom:12px;}.tabs-wrap::-webkit-scrollbar{display:none;}
-.tabs{display:flex;gap:6px;padding-bottom:2px;}
-.tab{flex-shrink:0;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
-/* panels */
-.panel{display:none;}.panel.active{display:block;}
-/* hotel */
-.hotel-bar{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-decoration:none;}
-.h-icon{width:30px;height:30px;background:rgba(37,99,235,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.h-info{flex:1;min-width:0;}.h-lbl{font-size:.55rem;color:var(--primary);font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;}.h-addr{font-size:.72rem;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.h-arr{color:var(--dim);font-size:.8rem;}
-/* day progress */
-.dp-wrap{margin-bottom:12px;}.dp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}.dp-stats{display:flex;gap:12px;}.dp-s{text-align:center;}.dp-v{font-size:1rem;font-weight:900;color:var(--text);}.dp-v.ac{color:var(--primary);}.dp-l{font-size:.55rem;color:var(--dim);font-weight:600;text-transform:uppercase;}
-.dp-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}.dp-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:2px;transition:width .4s;}
-/* stops */
-.stop{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
-.stop::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .2s;}
-.stop.v{background:var(--surface2);}.stop.v::before{background:var(--success);}
-.stop:active{transform:scale(.98);}
-.s-num{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--sub);flex-shrink:0;transition:all .15s;}
-.stop.v .s-num{background:rgba(16,185,129,.12);border-color:var(--success);color:var(--success);}
-.s-body{flex:1;min-width:0;}.s-name{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;}.stop.v .s-name{text-decoration:line-through;color:var(--dim);}
-.s-desc{font-size:.72rem;color:var(--sub);line-height:1.5;margin-bottom:8px;}.stop.v .s-desc{opacity:.5;}
-.s-foot{display:flex;align-items:center;justify-content:flex-end;}
-.s-maps{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:5px 10px;color:var(--sub);font-size:.68rem;font-weight:600;text-decoration:none;}
-/* bottom nav */
-.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:6px;}
-.bn{flex:1;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:.65rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.bn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
-.bn-date{font-size:.55rem;font-weight:500;display:block;margin-top:2px;opacity:.7;}
-/* confetti */
-.cw{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
-.cp{position:absolute;top:-20px;animation:cf linear forwards;}
-@keyframes cf{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
-/* all done */
-.all-done{text-align:center;padding:28px 0;display:none;}
-.all-done.show{display:block;}
-.ad-emoji{font-size:2.5rem;margin-bottom:8px;}.ad-title{font-size:1rem;font-weight:900;color:var(--primary);margin-bottom:4px;}.ad-sub{font-size:.78rem;color:var(--sub);}
-</style>
-</head>
-<body>
-<div class="cw" id="cw"></div>
-<div class="wrap">
-  <div class="title">🗺️ Mi Ruta TaxUSA</div>
-  <div class="subtitle">Tocá cada parada para marcarla como visitada</div>
-  <div class="prog-card">
-    <div class="gp-stat"><div class="gp-val" id="gd">0</div><div class="gp-lbl">visitadas</div></div>
-    <div class="gp-bw">
-      <div class="gp-row"><span class="gp-lbl2">PROGRESO TOTAL</span><button class="reset-btn" onclick="resetAll()">reiniciar</button></div>
-      <div class="gp-bg"><div class="gp-fill" id="gb" style="width:0%"></div></div>
-    </div>
-    <div class="gp-stat"><div class="gp-val" id="gt">0</div><div class="gp-lbl">paradas</div></div>
-  </div>
-  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
-  <div id="panels"></div>
-</div>
-<nav class="bnav" id="bnav"></nav>
-<script>
-var H=${H};
-var D=${D};
-var AD=0;
-var V={};try{V=JSON.parse(localStorage.getItem('rt_v')||'{}')}catch(e){}
-function save(){try{localStorage.setItem('rt_v',JSON.stringify(V))}catch(e){}}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function confetti(){var w=document.getElementById('cw');var c=['#2563eb','#f59e0b','#10b981','#f1f5f9','#ef4444','#7c3aed'];for(var i=0;i<60;i++){var el=document.createElement('div');el.className='cp';el.style.cssText='left:'+Math.random()*100+'%;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px;background:'+c[Math.floor(Math.random()*c.length)]+';border-radius:'+(Math.random()>.5?'50%':'2px')+';animation-duration:'+(1.5+Math.random()*2)+'s;animation-delay:'+(Math.random()*.5)+'s';w.appendChild(el);setTimeout((function(x){return function(){x.remove()}})(el),4000)}}
-function toggle(di,si){var k=di+'-'+si;if(V[k])delete V[k];else V[k]=1;save();render();var day=D[di];if(day.stops.every(function(_,s){return V[di+'-'+s]})){setTimeout(confetti,200)}}
-function resetDay(di){D[di].stops.forEach(function(_,si){delete V[di+'-'+si]});save();render();}
-function resetAll(){V={};save();render();}
-function switchDay(d){AD=d;document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',i===d)});document.querySelectorAll('.panel').forEach(function(p,i){p.classList.toggle('active',i===d)});document.querySelectorAll('.bn').forEach(function(b,i){b.classList.toggle('active',i===d)});window.scrollTo({top:0,behavior:'smooth'});}
-function render(){
-  var tabs=document.getElementById('tabs');var panels=document.getElementById('panels');var bnav=document.getElementById('bnav');
-  tabs.innerHTML='';panels.innerHTML='';bnav.innerHTML='';
-  var total=0,done=0;
-  D.forEach(function(day,di){
-    total+=day.stops.length;
-    var dd=day.stops.filter(function(_,si){return V[di+'-'+si]}).length;done+=dd;
-    var pct=day.stops.length?Math.round(dd/day.stops.length*100):0;
-    var allDone=dd===day.stops.length&&day.stops.length>0;
-    // Tab
-    var tab=document.createElement('button');tab.className='tab'+(di===AD?' active':'');tab.textContent=day.shortLabel||day.label;tab.onclick=(function(i){return function(){switchDay(i)}})(di);tabs.appendChild(tab);
-    // Nav
-    var bn=document.createElement('button');bn.className='bn'+(di===AD?' active':'');
-    var dot=dd>0&&dd<day.stops.length?'<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#10b981;margin-left:3px;vertical-align:middle;"></span>':allDone?' ✓':'';
-    bn.innerHTML=(day.shortLabel||('Día '+(di+1)))+dot+(day.dateLabel?'<span class="bn-date">'+day.dateLabel+'</span>':'');
-    bn.onclick=(function(i){return function(){switchDay(i)}})(di);bnav.appendChild(bn);
-    // Panel
-    var panel=document.createElement('div');panel.className='panel'+(di===AD?' active':'');
-    var html='<a class="hotel-bar" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(H)+'" target="_blank"><div class="h-icon">🏠</div><div class="h-info"><div class="h-lbl">Punto de partida</div><div class="h-addr">'+esc(H)+'</div></div><div class="h-arr">↗</div></a>';
-    html+='<div class="dp-wrap"><div class="dp-row"><div class="dp-stats"><div class="dp-s"><div class="dp-v'+(dd>0?' ac':'')+'">'+dd+'</div><div class="dp-l">visit.</div></div><div class="dp-s"><div class="dp-v">'+day.stops.length+'</div><div class="dp-l">paradas</div></div><div class="dp-s"><div class="dp-v'+(pct===100?' ac':'')+'">'+pct+'%</div><div class="dp-l">hecho</div></div></div><button class="reset-btn" onclick="resetDay('+di+')">↺ reiniciar</button></div><div class="dp-bg"><div class="dp-fill" id="dpf-'+di+'" style="width:'+pct+'%"></div></div></div>';
-    if(allDone){html+='<div class="all-done show"><div class="ad-emoji">🎉</div><div class="ad-title">¡Día completado!</div><div class="ad-sub">Visitaste las '+day.stops.length+' paradas del día.</div></div>';}
-    day.stops.forEach(function(s,si){var v=!!V[di+'-'+si];html+='<div class="stop'+(v?' v':'')+'" onclick="toggle('+di+','+si+')" style="animation-delay:'+(si*.03)+'s"><div class="s-num">'+(v?'✓':si+1)+'</div><div class="s-body"><div class="s-name">'+esc(s.name)+'</div>'+(s.desc?'<div class="s-desc">'+esc(s.desc)+'</div>':'')+'<div class="s-foot">'+(s.url?'<a class="s-maps" href="'+s.url+'" onclick="event.stopPropagation()" target="_blank">📍 Maps</a>':'')+'</div></div></div>';});
-    panel.innerHTML=html;panels.appendChild(panel);
+  const html = `<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<title>Mi Ruta TaxUSA</title>\n<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">\n<style>\n:root{--bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;--text:#0f172a;--sub:#64748b;--dim:#94a3b8;--primary:#2563eb;--success:#10b981;--accent:#7c3aed;--radius:14px;}\n@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--surface:#1e293b;--surface2:#273549;--border:#334155;--text:#f1f5f9;--sub:#94a3b8;--dim:#64748b;}}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}\nbody{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px 16px 100px;}\n.wrap{max-width:460px;margin:0 auto;}\n.title{font-size:1.2rem;font-weight:900;color:var(--primary);margin-bottom:2px;}\n.subtitle{font-size:.72rem;color:var(--sub);margin-bottom:14px;}\n/* global prog */\n.prog-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}\n.gp-stat{text-align:center;flex:1;}.gp-val{font-size:1.4rem;font-weight:900;color:var(--primary);}.gp-lbl{font-size:.55rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}\n.gp-bw{flex:2;}.gp-row{display:flex;justify-content:space-between;margin-bottom:4px;}.gp-lbl2{font-size:.6rem;font-weight:700;color:var(--dim);}.reset-btn{background:none;border:none;color:var(--dim);font-size:.65rem;cursor:pointer;text-decoration:underline;font-family:inherit;padding:0;}\n.gp-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}.gp-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width .4s;}\n/* tabs */\n.tabs-wrap{overflow-x:auto;scrollbar-width:none;margin-bottom:12px;}.tabs-wrap::-webkit-scrollbar{display:none;}\n.tabs{display:flex;gap:6px;padding-bottom:2px;}\n.tab{flex-shrink:0;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}\n.tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}\n/* panels */\n.panel{display:none;}.panel.active{display:block;}\n/* hotel */\n.hotel-bar{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-decoration:none;}\n.h-icon{width:30px;height:30px;background:rgba(37,99,235,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}\n.h-info{flex:1;min-width:0;}.h-lbl{font-size:.55rem;color:var(--primary);font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;}.h-addr{font-size:.72rem;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.h-arr{color:var(--dim);font-size:.8rem;}\n/* day progress */\n.dp-wrap{margin-bottom:12px;}.dp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}.dp-stats{display:flex;gap:12px;}.dp-s{text-align:center;}.dp-v{font-size:1rem;font-weight:900;color:var(--text);}.dp-v.ac{color:var(--primary);}.dp-l{font-size:.55rem;color:var(--dim);font-weight:600;text-transform:uppercase;}\n.dp-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}.dp-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:2px;transition:width .4s;}\n/* stops */\n.stop{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}\n.stop::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .2s;}\n.stop.v{background:var(--surface2);}.stop.v::before{background:var(--success);}\n.stop:active{transform:scale(.98);}\n.s-num{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--sub);flex-shrink:0;transition:all .15s;}\n.stop.v .s-num{background:rgba(16,185,129,.12);border-color:var(--success);color:var(--success);}\n.s-body{flex:1;min-width:0;}.s-name{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;}.stop.v .s-name{text-decoration:line-through;color:var(--dim);}\n.s-desc{font-size:.72rem;color:var(--sub);line-height:1.5;margin-bottom:8px;}.stop.v .s-desc{opacity:.5;}\n.s-foot{display:flex;align-items:center;justify-content:flex-end;}\n.s-maps{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:5px 10px;color:var(--sub);font-size:.68rem;font-weight:600;text-decoration:none;}\n/* bottom nav */\n.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:6px;}\n.bn{flex:1;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:.65rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n.bn.active{background:var(--primary);color:#fff;border-color:var(--primary);}\n.bn-date{font-size:.55rem;font-weight:500;display:block;margin-top:2px;opacity:.7;}\n/* confetti */\n.cw{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}\n.cp{position:absolute;top:-20px;animation:cf linear forwards;}\n@keyframes cf{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}\n/* all done */\n.all-done{text-align:center;padding:28px 0;display:none;}\n.all-done.show{display:block;}\n.ad-emoji{font-size:2.5rem;margin-bottom:8px;}.ad-title{font-size:1rem;font-weight:900;color:var(--primary);margin-bottom:4px;}.ad-sub{font-size:.78rem;color:var(--sub);}\n</style>\n</head>\n<body>\n<div class="cw" id="cw"></div>\n<div class="wrap">\n  <div class="title">🗺️ Mi Ruta TaxUSA</div>\n  <div class="subtitle">Tocá cada parada para marcarla como visitada</div>\n  <div class="prog-card">\n    <div class="gp-stat"><div class="gp-val" id="gd">0</div><div class="gp-lbl">visitadas</div></div>\n    <div class="gp-bw">\n      <div class="gp-row"><span class="gp-lbl2">PROGRESO TOTAL</span><button class="reset-btn" onclick="resetAll()">reiniciar</button></div>\n      <div class="gp-bg"><div class="gp-fill" id="gb" style="width:0%"></div></div>\n    </div>\n    <div class="gp-stat"><div class="gp-val" id="gt">0</div><div class="gp-lbl">paradas</div></div>\n  </div>\n  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>\n  <div id="panels"></div>\n</div>\n<nav class="bnav" id="bnav"></nav>\n<script>\nvar H=${H};\nvar D=${D};\nvar AD=0;\nvar V={};try{V=JSON.parse(localStorage.getItem('rt_v')||'{}')}catch(e){}\nfunction save(){try{localStorage.setItem('rt_v',JSON.stringify(V))}catch(e){}}\nfunction esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nfunction confetti(){var w=document.getElementById('cw');var c=['#2563eb','#f59e0b','#10b981','#f1f5f9','#ef4444','#7c3aed'];for(var i=0;i<60;i++){var el=document.createElement('div');el.className='cp';el.style.cssText='left:'+Math.random()*100+'%;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px;background:'+c[Math.floor(Math.random()*c.length)]+';border-radius:'+(Math.random()>.5?'50%':'2px')+';animation-duration:'+(1.5+Math.random()*2)+'s;animation-delay:'+(Math.random()*.5)+'s';w.appendChild(el);setTimeout((function(x){return function(){x.remove()}})(el),4000)}}\nfunction toggle(di,si){var k=di+'-'+si;if(V[k])delete V[k];else V[k]=1;save();render();var day=D[di];if(day.stops.every(function(_,s){return V[di+'-'+s]})){setTimeout(confetti,200)}}\nfunction resetDay(di){D[di].stops.forEach(function(_,si){delete V[di+'-'+si]});save();render();}\nfunction resetAll(){V={};save();render();}\nfunction switchDay(d){AD=d;document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',i===d)});document.querySelectorAll('.panel').forEach(function(p,i){p.classList.toggle('active',i===d)});document.querySelectorAll('.bn').forEach(function(b,i){b.classList.toggle('active',i===d)});window.scrollTo({top:0,behavior:'smooth'});}\nfunction render(){\n  var tabs=document.getElementById('tabs');var panels=document.getElementById('panels');var bnav=document.getElementById('bnav');\n  tabs.innerHTML='';panels.innerHTML='';bnav.innerHTML='';\n  var total=0,done=0;\n  D.forEach(function(day,di){\n    total+=day.stops.length;\n    var dd=day.stops.filter(function(_,si){return V[di+'-'+si]}).length;done+=dd;\n    var pct=day.stops.length?Math.round(dd/day.stops.length*100):0;\n    var allDone=dd===day.stops.length&&day.stops.length>0;\n    // Tab\n    var tab=document.createElement('button');tab.className='tab'+(di===AD?' active':'');tab.textContent=day.shortLabel||day.label;tab.onclick=(function(i){return function(){switchDay(i)}})(di);tabs.appendChild(tab);\n    // Nav\n    var bn=document.createElement('button');bn.className='bn'+(di===AD?' active':'');\n    var dot=dd>0&&dd<day.stops.length?'<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#10b981;margin-left:3px;vertical-align:middle;"></span>':allDone?' ✓':'';\n    bn.innerHTML=(day.shortLabel||('Día '+(di+1)))+dot+(day.dateLabel?'<span class="bn-date">'+day.dateLabel+'</span>':'');\n    bn.onclick=(function(i){return function(){switchDay(i)}})(di);bnav.appendChild(bn);\n    // Panel\n    var panel=document.createElement('div');panel.className='panel'+(di===AD?' active':'');\n    var html='<a class="hotel-bar" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(H)+'" target="_blank"><div class="h-icon">🏠</div><div class="h-info"><div class="h-lbl">Punto de partida</div><div class="h-addr">'+esc(H)+'</div></div><div class="h-arr">↗</div></a>';\n    html+='<div class="dp-wrap"><div class="dp-row"><div class="dp-stats"><div class="dp-s"><div class="dp-v'+(dd>0?' ac':'')+'">'+dd+'</div><div class="dp-l">visit.</div></div><div class="dp-s"><div class="dp-v">'+day.stops.length+'</div><div class="dp-l">paradas</div></div><div class="dp-s"><div class="dp-v'+(pct===100?' ac':'')+'">'+pct+'%</div><div class="dp-l">hecho</div></div></div><button class="reset-btn" onclick="resetDay('+di+')">↺ reiniciar</button></div><div class="dp-bg"><div class="dp-fill" id="dpf-'+di+'" style="width:'+pct+'%"></div></div></div>';\n    if(allDone){html+='<div class="all-done show"><div class="ad-emoji">🎉</div><div class="ad-title">¡Día completado!</div><div class="ad-sub">Visitaste las '+day.stops.length+' paradas del día.</div></div>';}\n    day.stops.forEach(function(s,si){var v=!!V[di+'-'+si];html+='<div class="stop'+(v?' v':'')+'" onclick="toggle('+di+','+si+')" style="animation-delay:'+(si*.03)+'s"><div class="s-num">'+(v?'✓':si+1)+'</div><div class="s-body"><div class="s-name">'+esc(s.name)+'</div>'+(s.desc?'<div class="s-desc">'+esc(s.desc)+'</div>':'')+'<div class="s-foot">'+(s.url?'<a class="s-maps" href="'+s.url+'" onclick="event.stopPropagation()" target="_blank">📍 Maps</a>':'')+'</div></div></div>';});\n    panel.innerHTML=html;panels.appendChild(panel);\n  });\n  var gPct=total?Math.round(done/total*100):0;\n  document.getElementById('gd').textContent=done;document.getElementById('gt').textContent=total;document.getElementById('gb').style.width=gPct+'%';\n}\nrender();\n<\/script>\n</body>\n</html>`;
+  const blob = new Blob([ html ], {
+    type: "text/html"
   });
-  var gPct=total?Math.round(done/total*100):0;
-  document.getElementById('gd').textContent=done;document.getElementById('gt').textContent=total;document.getElementById('gb').style.width=gPct+'%';
-}
-render();
-<\/script>
-</body>
-</html>`;
-  const blob = new Blob([html], { type: 'text/html' });
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = 'mi-ruta-taxusa.html';
+  a.download = "mi-ruta-taxusa.html";
   a.click();
-  showToast('⬇️ Archivo descargado');
+  showToast("⬇️ Archivo descargado");
 }
 
-// ── CONFETTI ──
 function launchConfetti() {
-  const wrap   = document.getElementById('confetti-wrap');
-  const colors = ['#2563eb','#f59e0b','#10b981','#ef4444','#7c3aed','#f1f5f9'];
+  const wrap = document.getElementById("confetti-wrap");
+  const colors = [ "#2563eb", "#f59e0b", "#10b981", "#ef4444", "#7c3aed", "#f1f5f9" ];
   for (let i = 0; i < 55; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti-p';
-    el.style.cssText = `left:${Math.random()*100}%;width:${5+Math.random()*8}px;height:${5+Math.random()*8}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.4}s`;
+    const el = document.createElement("div");
+    el.className = "confetti-p";
+    el.style.cssText = `left:${Math.random() * 100}%;width:${5 + Math.random() * 8}px;height:${5 + Math.random() * 8}px;background:${colors[Math.floor(Math.random() * colors.length)]};border-radius:${Math.random() > .5 ? "50%" : "2px"};animation-duration:${1.5 + Math.random() * 2}s;animation-delay:${Math.random() * .4}s`;
     wrap.appendChild(el);
-    setTimeout(() => el.remove(), 4000);
+    setTimeout(() => el.remove(), 4e3);
   }
 }
 
-// ── TOAST ──
 function showToast(msg) {
-  const t = document.getElementById('toast');
+  const t = document.getElementById("toast");
   t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
 }
 
-// ── INIT ──
 renderStops();
-document.addEventListener('DOMContentLoaded', () => {
-  const foto = localStorage.getItem('perfilActivoFoto');
-  if (foto) {
-    const btn = document.getElementById('btnSettings');
-    if (btn) { btn.style.backgroundImage = `url('${foto}')`; btn.innerText = ''; }
-  }
-  const lang = localStorage.getItem('appLang') || 'es';
-  window.changeLanguage(lang);
 
-  // Restaurar dirección del hotel guardada
-  const inp = document.getElementById('hotel-input');
+document.addEventListener("DOMContentLoaded", () => {
+  const foto = localStorage.getItem("perfilActivoFoto");
+  if (foto) {
+    const btn = document.getElementById("btnSettings");
+    if (btn) {
+      btn.style.backgroundImage = `url('${foto}')`;
+      btn.innerText = "";
+    }
+  }
+  const lang = localStorage.getItem("appLang") || "es";
+  window.changeLanguage(lang);
+  const inp = document.getElementById("hotel-input");
   if (inp) {
-    const saved = localStorage.getItem('taxusa_hotel_addr');
+    const saved = localStorage.getItem("taxusa_hotel_addr");
     if (saved) inp.value = saved;
     inp.placeholder = HOTEL_PLACEHOLDERS[_phIdx];
   }
 });
 </script>
 
-<!-- ═══════════════ TAXUSA AI CHAT ═══════════════ -->
+
 <style>
 #ai-bubble {
     position: fixed; bottom: 24px; left: 20px; z-index: 3000;
@@ -1684,192 +1871,253 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 (function() {
-    var lang = localStorage.getItem('appLang') || 'es';
-    var perfilId   = localStorage.getItem('perfilActivoId') || 'default';
-    var HISTORY_KEY = 'taxie_history_' + perfilId;
-
-    var chatHistory = [];
-    try { var saved = localStorage.getItem(HISTORY_KEY); if (saved) chatHistory = JSON.parse(saved); } catch(e) { chatHistory = []; }
-
-    var isOpen = false, isLoading = false, hasShownWelcome = false;
-
-    var WELCOME_ES = '¡Hola! Soy **Taxie** 🗽✈️\n\nTu asistente para planificar rutas en USA. Puedo ayudarte con:\n\n• 🗺️ Planificar recorridos por día\n• 🛍️ Outlets y tiendas que no podés perderte\n• 📍 Qué ver cerca de tu hotel\n• 🚗 Distancias y tiempos estimados\n• 🎡 Parques y atracciones\n\n¿En qué puedo ayudarte hoy?';
-    var WELCOME_EN = 'Hi! I am **Taxie** 🗽✈️\n\nYour assistant for planning routes in the USA. I can help you with:\n\n• 🗺️ Plan day-by-day itineraries\n• 🛍️ Outlets and stores you can\'t miss\n• 📍 What to see near your hotel\n• 🚗 Distances and estimated times\n• 🎡 Parks and attractions\n\nWhat can I help you with today?';
-    var WELCOME_PT = 'Olá! Sou o **Taxie** 🗽✈️\n\nSeu assistente para planejar rotas nos EUA. Posso te ajudar com:\n\n• 🗺️ Planejar roteiros por dia\n• 🛍️ Outlets e lojas imperdíveis\n• 📍 O que ver perto do seu hotel\n• 🚗 Distâncias e tempos estimados\n• 🎡 Parques e atrações\n\nComo posso te ajudar hoje?';
-
-    var CHIPS_ES = ['🗺️ Ruta por Orlando', '🛍️ Mejores outlets', '📍 Qué ver en Miami', '🎡 Disney vs Universal', '🚗 Alquilar auto'];
-    var CHIPS_EN = ['🗺️ Route through Orlando', '🛍️ Best outlets', '📍 What to see in Miami', '🎡 Disney vs Universal', '🚗 Rent a car'];
-    var CHIPS_PT = ['🗺️ Roteiro em Orlando', '🛍️ Melhores outlets', '📍 O que ver em Miami', '🎡 Disney vs Universal', '🚗 Alugar carro'];
-
-    var SUB_ES = 'Tu guia de rutas en USA 🗺️';
-    var SUB_EN = 'Your USA Route Guide 🗺️';
-    var SUB_PT = 'Seu guia de rotas nos EUA 🗺️';
-    var PH_ES  = 'Preguntale a Taxie sobre tu ruta...';
-    var PH_EN  = 'Ask Taxie about your route...';
-    var PH_PT  = 'Pergunte ao Taxie sobre sua rota...';
-    var ERR_ES = 'Ups, algo falló. Verificá tu conexión e intentá de nuevo.';
-    var ERR_EN = 'Oops, something went wrong. Check your connection and try again.';
-    var ERR_PT = 'Ops, algo deu errado. Verifique sua conexão e tente novamente.';
-
-    var isPt = (lang === 'pt');
-    var isEs = (lang !== 'en' && lang !== 'pt');
-    var chips  = isPt ? CHIPS_PT  : isEs ? CHIPS_ES  : CHIPS_EN;
-    var sub    = isPt ? SUB_PT    : isEs ? SUB_ES    : SUB_EN;
-    var ph     = isPt ? PH_PT     : isEs ? PH_ES     : PH_EN;
-    var errMsg = isPt ? ERR_PT    : isEs ? ERR_ES    : ERR_EN;
-
-    var SYSTEM = isEs
-        ? 'Eres Taxie, asistente de rutas y viajes a USA. Tu tono es claro, directo y amable. Cuando alguien pregunta por info en tiempo real (distancias, horarios, precios actuales), buscás la información antes de responder. Usás viñetas y **negritas** solo cuando realmente ayudan. Nunca empezás con "¡Claro!" ni frases de relleno. Solo respondés sobre viajes y rutas en USA. Fecha actual: ' + new Date().toLocaleDateString('es-AR') + '.'
-        : isPt
-        ? 'Você é o Taxie, assistente de rotas e viagens aos EUA. Seu tom é claro, direto e amigável. Use marcadores e **negritos** só quando realmente ajudam. Nunca comece com "Claro!" ou frases de preenchimento. Responda apenas sobre viagens e rotas nos EUA. Data atual: ' + new Date().toLocaleDateString('pt-BR') + '.'
-        : 'You are Taxie, a USA travel and route planning assistant. Your tone is clear, direct and warm. Use bullet points and **bold** only when they genuinely help. Never open with "Of course!" or filler phrases. Only answer about USA travel and routes. Today\'s date: ' + new Date().toLocaleDateString('en-US') + '.';
-
-    function saveHistory() { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory.slice(-40))); } catch(e) {} }
-
-    function formatBotText(text) {
-        var html = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        var lines = html.split('\n'), result = [], inList = false;
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
-            var isBullet = /^[•\-\*]\s/.test(line);
-            if (isBullet) {
-                if (!inList) { result.push('<ul>'); inList = true; }
-                result.push('<li>' + line.replace(/^[•\-\*]\s+/,'') + '</li>');
-            } else {
-                if (inList) { result.push('</ul>'); inList = false; }
-                if (line !== '') result.push('<p>' + line + '</p>');
-            }
+  var lang = localStorage.getItem("appLang") || "es";
+  var perfilId = localStorage.getItem("perfilActivoId") || "default";
+  var HISTORY_KEY = "taxie_history_" + perfilId;
+  var chatHistory = [];
+  try {
+    var saved = localStorage.getItem(HISTORY_KEY);
+    if (saved) chatHistory = JSON.parse(saved);
+  } catch (e) {
+    chatHistory = [];
+  }
+  var isOpen = false, isLoading = false, hasShownWelcome = false;
+  var WELCOME_ES = "¡Hola! Soy **Taxie** 🗽✈️\n\nTu asistente para planificar rutas en USA. Puedo ayudarte con:\n\n• 🗺️ Planificar recorridos por día\n• 🛍️ Outlets y tiendas que no podés perderte\n• 📍 Qué ver cerca de tu hotel\n• 🚗 Distancias y tiempos estimados\n• 🎡 Parques y atracciones\n\n¿En qué puedo ayudarte hoy?";
+  var WELCOME_EN = "Hi! I am **Taxie** 🗽✈️\n\nYour assistant for planning routes in the USA. I can help you with:\n\n• 🗺️ Plan day-by-day itineraries\n• 🛍️ Outlets and stores you can't miss\n• 📍 What to see near your hotel\n• 🚗 Distances and estimated times\n• 🎡 Parks and attractions\n\nWhat can I help you with today?";
+  var WELCOME_PT = "Olá! Sou o **Taxie** 🗽✈️\n\nSeu assistente para planejar rotas nos EUA. Posso te ajudar com:\n\n• 🗺️ Planejar roteiros por dia\n• 🛍️ Outlets e lojas imperdíveis\n• 📍 O que ver perto do seu hotel\n• 🚗 Distâncias e tempos estimados\n• 🎡 Parques e atrações\n\nComo posso te ajudar hoje?";
+  var CHIPS_ES = [ "🗺️ Ruta por Orlando", "🛍️ Mejores outlets", "📍 Qué ver en Miami", "🎡 Disney vs Universal", "🚗 Alquilar auto" ];
+  var CHIPS_EN = [ "🗺️ Route through Orlando", "🛍️ Best outlets", "📍 What to see in Miami", "🎡 Disney vs Universal", "🚗 Rent a car" ];
+  var CHIPS_PT = [ "🗺️ Roteiro em Orlando", "🛍️ Melhores outlets", "📍 O que ver em Miami", "🎡 Disney vs Universal", "🚗 Alugar carro" ];
+  var SUB_ES = "Tu guia de rutas en USA 🗺️";
+  var SUB_EN = "Your USA Route Guide 🗺️";
+  var SUB_PT = "Seu guia de rotas nos EUA 🗺️";
+  var PH_ES = "Preguntale a Taxie sobre tu ruta...";
+  var PH_EN = "Ask Taxie about your route...";
+  var PH_PT = "Pergunte ao Taxie sobre sua rota...";
+  var ERR_ES = "Ups, algo falló. Verificá tu conexión e intentá de nuevo.";
+  var ERR_EN = "Oops, something went wrong. Check your connection and try again.";
+  var ERR_PT = "Ops, algo deu errado. Verifique sua conexão e tente novamente.";
+  var isPt = lang === "pt";
+  var isEs = lang !== "en" && lang !== "pt";
+  var chips = isPt ? CHIPS_PT : isEs ? CHIPS_ES : CHIPS_EN;
+  var sub = isPt ? SUB_PT : isEs ? SUB_ES : SUB_EN;
+  var ph = isPt ? PH_PT : isEs ? PH_ES : PH_EN;
+  var errMsg = isPt ? ERR_PT : isEs ? ERR_ES : ERR_EN;
+  var SYSTEM = isEs ? 'Eres Taxie, asistente de rutas y viajes a USA. Tu tono es claro, directo y amable. Cuando alguien pregunta por info en tiempo real (distancias, horarios, precios actuales), buscás la información antes de responder. Usás viñetas y **negritas** solo cuando realmente ayudan. Nunca empezás con "¡Claro!" ni frases de relleno. Solo respondés sobre viajes y rutas en USA. Fecha actual: ' + (new Date).toLocaleDateString("es-AR") + "." : isPt ? 'Você é o Taxie, assistente de rotas e viagens aos EUA. Seu tom é claro, direto e amigável. Use marcadores e **negritos** só quando realmente ajudam. Nunca comece com "Claro!" ou frases de preenchimento. Responda apenas sobre viagens e rotas nos EUA. Data atual: ' + (new Date).toLocaleDateString("pt-BR") + "." : 'You are Taxie, a USA travel and route planning assistant. Your tone is clear, direct and warm. Use bullet points and **bold** only when they genuinely help. Never open with "Of course!" or filler phrases. Only answer about USA travel and routes. Today\'s date: ' + (new Date).toLocaleDateString("en-US") + ".";
+  function saveHistory() {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory.slice(-40)));
+    } catch (e) {}
+  }
+  function formatBotText(text) {
+    var html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    var lines = html.split("\n"), result = [], inList = false;
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      var isBullet = /^[•\-\*]\s/.test(line);
+      if (isBullet) {
+        if (!inList) {
+          result.push("<ul>");
+          inList = true;
         }
-        if (inList) result.push('</ul>');
-        return result.join('');
+        result.push("<li>" + line.replace(/^[•\-\*]\s+/, "") + "</li>");
+      } else {
+        if (inList) {
+          result.push("</ul>");
+          inList = false;
+        }
+        if (line !== "") result.push("<p>" + line + "</p>");
+      }
     }
-
-    function init() {
-        var bubble = document.getElementById('ai-bubble');
-        var chatEl = document.getElementById('ai-chat');
-        var messagesEl = document.getElementById('ai-messages');
-        var inputEl = document.getElementById('ai-input');
-        var sendBtn = document.getElementById('ai-send');
-        var suggestEl = document.getElementById('ai-suggestions');
-        var headerSub = document.getElementById('ai-header-sub');
-        var closeBtn = document.getElementById('ai-close');
-        if (!bubble || !chatEl) return;
-        if (headerSub) headerSub.textContent = sub;
-        if (inputEl) inputEl.placeholder = ph;
-        if (suggestEl) {
-            suggestEl.innerHTML = chips.map(function(c){ return '<button class="ai-chip">' + c + '</button>'; }).join('');
-            suggestEl.querySelectorAll('.ai-chip').forEach(function(btn){
-                btn.addEventListener('click', function(){ if (inputEl) inputEl.value = btn.textContent; sendMessage(); suggestEl.style.display = 'none'; });
-            });
-        }
-        function toggleChat() {
-            isOpen = !isOpen;
-            if (isOpen) {
-                chatEl.style.display = 'flex'; chatEl.offsetHeight; chatEl.classList.add('open');
-                if (!hasShownWelcome) {
-                    hasShownWelcome = true;
-                    if (chatHistory.length > 0) {
-                        chatHistory.forEach(function(m){ addMessage(m.role === 'user' ? 'user' : 'bot', m.content, true); });
-                        if (suggestEl) suggestEl.style.display = 'none';
-                    } else {
-                        var welcome = isPt ? WELCOME_PT : isEs ? WELCOME_ES : WELCOME_EN;
-                        setTimeout(function(){ addMessage('bot', welcome); }, 200);
-                    }
-                }
-                setTimeout(function(){ if (inputEl) inputEl.focus(); }, 300);
-            } else {
-                chatEl.classList.remove('open');
-                setTimeout(function(){ chatEl.style.display = 'none'; }, 250);
-            }
-        }
-        bubble.addEventListener('click', function(e){ e.stopPropagation(); toggleChat(); });
-        if (closeBtn) closeBtn.addEventListener('click', function(e){ e.stopPropagation(); toggleChat(); });
-        document.addEventListener('click', function(e){
-            if (isOpen && !chatEl.contains(e.target) && !bubble.contains(e.target)) {
-                isOpen = false; chatEl.classList.remove('open');
-                setTimeout(function(){ chatEl.style.display = 'none'; }, 250);
-            }
+    if (inList) result.push("</ul>");
+    return result.join("");
+  }
+  function init() {
+    var bubble = document.getElementById("ai-bubble");
+    var chatEl = document.getElementById("ai-chat");
+    var messagesEl = document.getElementById("ai-messages");
+    var inputEl = document.getElementById("ai-input");
+    var sendBtn = document.getElementById("ai-send");
+    var suggestEl = document.getElementById("ai-suggestions");
+    var headerSub = document.getElementById("ai-header-sub");
+    var closeBtn = document.getElementById("ai-close");
+    if (!bubble || !chatEl) return;
+    if (headerSub) headerSub.textContent = sub;
+    if (inputEl) inputEl.placeholder = ph;
+    if (suggestEl) {
+      suggestEl.innerHTML = chips.map(function(c) {
+        return '<button class="ai-chip">' + c + "</button>";
+      }).join("");
+      suggestEl.querySelectorAll(".ai-chip").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          if (inputEl) inputEl.value = btn.textContent;
+          sendMessage();
+          suggestEl.style.display = "none";
         });
-        function addMessage(role, text, silent) {
-            if (!messagesEl) return;
-            var div = document.createElement('div');
-            div.className = 'ai-msg ' + (role === 'user' ? 'user' : 'bot');
-            if (role === 'user') div.textContent = text;
-            else div.innerHTML = formatBotText(text);
-            if (silent) div.style.animation = 'none';
-            messagesEl.appendChild(div);
-            messagesEl.scrollTop = messagesEl.scrollHeight;
-        }
-        function showTyping() {
-            var div = document.createElement('div');
-            div.className = 'ai-msg bot typing'; div.id = 'ai-typing';
-            div.innerHTML = '<div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>';
-            messagesEl.appendChild(div); messagesEl.scrollTop = messagesEl.scrollHeight;
-        }
-        function hideTyping() { var el = document.getElementById('ai-typing'); if (el) el.remove(); }
-        function sendMessage() {
-            window._taxieSend = sendMessage;
-            if (!inputEl) return;
-            var text = inputEl.value.trim();
-            if (!text || isLoading) return;
-            inputEl.value = ''; inputEl.style.height = 'auto';
-            addMessage('user', text);
-            if (suggestEl) suggestEl.style.display = 'none';
-            isLoading = true; if (sendBtn) sendBtn.disabled = true;
-            showTyping();
-            chatHistory.push({ role: 'user', content: text });
-            window.taxflyWorker({ type: 'taxie_chat', messages: [{ role: 'system', content: SYSTEM }].concat(chatHistory.slice(-14)), max_tokens: 800 })
-            .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, data: d }; }); })
-            .then(function(r){
-                if (!r.ok) throw new Error(r.data.error && r.data.error.message || 'API error');
-                var reply = r.data.choices && r.data.choices[0] && r.data.choices[0].message && r.data.choices[0].message.content || errMsg;
-                chatHistory.push({ role: 'assistant', content: reply });
-                saveHistory(); hideTyping(); addMessage('bot', reply);
-            }).catch(function(e){ hideTyping(); addMessage('bot', errMsg); })
-            .finally(function(){ isLoading = false; if (sendBtn) sendBtn.disabled = false; if (inputEl) inputEl.focus(); });
-        }
-        if (sendBtn) sendBtn.addEventListener('click', sendMessage);
-        if (inputEl) {
-            inputEl.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
-            inputEl.addEventListener('input', function(){ this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 80) + 'px'; });
-        }
+      });
     }
-
-    window.taxieUpdateLang = function(newLang) {
-        isEs = (newLang !== 'en' && newLang !== 'pt');
-        isPt = (newLang === 'pt');
-        lang = newLang;
-        SYSTEM = isEs
-            ? 'Eres Taxie, asistente de rutas y viajes a USA. Tu tono es claro, directo y amable. Solo respondés sobre viajes y rutas en USA. Fecha actual: ' + new Date().toLocaleDateString('es-AR') + '.'
-            : isPt
-            ? 'Você é o Taxie, assistente de rotas e viagens aos EUA. Seu tom é claro, direto e amigável. Responda apenas sobre viagens e rotas nos EUA. Data atual: ' + new Date().toLocaleDateString('pt-BR') + '.'
-            : 'You are Taxie, a USA travel and route planning assistant. Only answer about USA travel and routes. Today\'s date: ' + new Date().toLocaleDateString('en-US') + '.';
-        errMsg = isPt ? ERR_PT : isEs ? ERR_ES : ERR_EN;
-        var inputEl   = document.getElementById('ai-input');
-        var headerSub = document.getElementById('ai-header-sub');
-        var suggestEl = document.getElementById('ai-suggestions');
-        if (inputEl)   inputEl.placeholder = isPt ? PH_PT : isEs ? PH_ES : PH_EN;
-        if (headerSub) headerSub.textContent = isPt ? SUB_PT : isEs ? SUB_ES : SUB_EN;
-        if (suggestEl) {
-            var newChips = isPt ? CHIPS_PT : isEs ? CHIPS_ES : CHIPS_EN;
-            suggestEl.innerHTML = newChips.map(function(c){ return '<button class="ai-chip">' + c + '</button>'; }).join('');
-            suggestEl.querySelectorAll('.ai-chip').forEach(function(btn){
-                btn.addEventListener('click', function(){
-                    var inp = document.getElementById('ai-input');
-                    if (inp) inp.value = btn.textContent;
-                    if (window._taxieSend) window._taxieSend();
-                    suggestEl.style.display = 'none';
-                });
+    function toggleChat() {
+      isOpen = !isOpen;
+      if (isOpen) {
+        chatEl.style.display = "flex";
+        chatEl.offsetHeight;
+        chatEl.classList.add("open");
+        if (!hasShownWelcome) {
+          hasShownWelcome = true;
+          if (chatHistory.length > 0) {
+            chatHistory.forEach(function(m) {
+              addMessage(m.role === "user" ? "user" : "bot", m.content, true);
             });
+            if (suggestEl) suggestEl.style.display = "none";
+          } else {
+            var welcome = isPt ? WELCOME_PT : isEs ? WELCOME_ES : WELCOME_EN;
+            setTimeout(function() {
+              addMessage("bot", welcome);
+            }, 200);
+          }
         }
-    };
-
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-    else init();
+        setTimeout(function() {
+          if (inputEl) inputEl.focus();
+        }, 300);
+      } else {
+        chatEl.classList.remove("open");
+        setTimeout(function() {
+          chatEl.style.display = "none";
+        }, 250);
+      }
+    }
+    bubble.addEventListener("click", function(e) {
+      e.stopPropagation();
+      toggleChat();
+    });
+    if (closeBtn) closeBtn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      toggleChat();
+    });
+    document.addEventListener("click", function(e) {
+      if (isOpen && !chatEl.contains(e.target) && !bubble.contains(e.target)) {
+        isOpen = false;
+        chatEl.classList.remove("open");
+        setTimeout(function() {
+          chatEl.style.display = "none";
+        }, 250);
+      }
+    });
+    function addMessage(role, text, silent) {
+      if (!messagesEl) return;
+      var div = document.createElement("div");
+      div.className = "ai-msg " + (role === "user" ? "user" : "bot");
+      if (role === "user") div.textContent = text; else div.innerHTML = formatBotText(text);
+      if (silent) div.style.animation = "none";
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    function showTyping() {
+      var div = document.createElement("div");
+      div.className = "ai-msg bot typing";
+      div.id = "ai-typing";
+      div.innerHTML = '<div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>';
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    function hideTyping() {
+      var el = document.getElementById("ai-typing");
+      if (el) el.remove();
+    }
+    function sendMessage() {
+      window._taxieSend = sendMessage;
+      if (!inputEl) return;
+      var text = inputEl.value.trim();
+      if (!text || isLoading) return;
+      inputEl.value = "";
+      inputEl.style.height = "auto";
+      addMessage("user", text);
+      if (suggestEl) suggestEl.style.display = "none";
+      isLoading = true;
+      if (sendBtn) sendBtn.disabled = true;
+      showTyping();
+      chatHistory.push({
+        role: "user",
+        content: text
+      });
+      window.taxflyWorker({
+        type: "taxie_chat",
+        messages: [ {
+          role: "system",
+          content: SYSTEM
+        } ].concat(chatHistory.slice(-14)),
+        max_tokens: 800
+      }).then(function(res) {
+        return res.json().then(function(d) {
+          return {
+            ok: res.ok,
+            data: d
+          };
+        });
+      }).then(function(r) {
+        if (!r.ok) throw new Error(r.data.error && r.data.error.message || "API error");
+        var reply = r.data.choices && r.data.choices[0] && r.data.choices[0].message && r.data.choices[0].message.content || errMsg;
+        chatHistory.push({
+          role: "assistant",
+          content: reply
+        });
+        saveHistory();
+        hideTyping();
+        addMessage("bot", reply);
+      }).catch(function(e) {
+        hideTyping();
+        addMessage("bot", errMsg);
+      }).finally(function() {
+        isLoading = false;
+        if (sendBtn) sendBtn.disabled = false;
+        if (inputEl) inputEl.focus();
+      });
+    }
+    if (sendBtn) sendBtn.addEventListener("click", sendMessage);
+    if (inputEl) {
+      inputEl.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      inputEl.addEventListener("input", function() {
+        this.style.height = "auto";
+        this.style.height = Math.min(this.scrollHeight, 80) + "px";
+      });
+    }
+  }
+  window.taxieUpdateLang = function(newLang) {
+    isEs = newLang !== "en" && newLang !== "pt";
+    isPt = newLang === "pt";
+    lang = newLang;
+    SYSTEM = isEs ? "Eres Taxie, asistente de rutas y viajes a USA. Tu tono es claro, directo y amable. Solo respondés sobre viajes y rutas en USA. Fecha actual: " + (new Date).toLocaleDateString("es-AR") + "." : isPt ? "Você é o Taxie, assistente de rotas e viagens aos EUA. Seu tom é claro, direto e amigável. Responda apenas sobre viagens e rotas nos EUA. Data atual: " + (new Date).toLocaleDateString("pt-BR") + "." : "You are Taxie, a USA travel and route planning assistant. Only answer about USA travel and routes. Today's date: " + (new Date).toLocaleDateString("en-US") + ".";
+    errMsg = isPt ? ERR_PT : isEs ? ERR_ES : ERR_EN;
+    var inputEl = document.getElementById("ai-input");
+    var headerSub = document.getElementById("ai-header-sub");
+    var suggestEl = document.getElementById("ai-suggestions");
+    if (inputEl) inputEl.placeholder = isPt ? PH_PT : isEs ? PH_ES : PH_EN;
+    if (headerSub) headerSub.textContent = isPt ? SUB_PT : isEs ? SUB_ES : SUB_EN;
+    if (suggestEl) {
+      var newChips = isPt ? CHIPS_PT : isEs ? CHIPS_ES : CHIPS_EN;
+      suggestEl.innerHTML = newChips.map(function(c) {
+        return '<button class="ai-chip">' + c + "</button>";
+      }).join("");
+      suggestEl.querySelectorAll(".ai-chip").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          var inp = document.getElementById("ai-input");
+          if (inp) inp.value = btn.textContent;
+          if (window._taxieSend) window._taxieSend();
+          suggestEl.style.display = "none";
+        });
+      });
+    }
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
 </script>
-<!-- ═══════════════ FIN TAXUSA AI CHAT ═══════════════ -->
+
 
 </body>
 </html>

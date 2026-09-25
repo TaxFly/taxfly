@@ -1,14 +1,6 @@
-/* ── TaxFly — estilos base compartidos ────────────────────────────────────
-   Antes este archivo no lo usaba ninguna página: cada una repetía el mismo
-   reset y la misma base de <body> por su cuenta. Ojo: la app tiene 3
-   identidades visuales a propósito (app principal en azul, onboarding en
-   naranja/crema, perfiles en oscuro fijo) — este archivo NO fuerza una sola
-   paleta de colores, cada página sigue definiendo sus propias variables de
-   tema (:root / [data-theme="dark"]). Solo centraliza lo que es
-   estructuralmente igual en todas o casi todas las páginas.
-*/
 
-/* Reset — idéntico en las 12 páginas */
+
+
 *, *::before, *::after {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -16,10 +8,7 @@
     padding: 0;
 }
 
-/* Base de <body> — común a las páginas de la app principal
-   (compras, tax, tickets, grupo, rutas, itinerario, unidades, index).
-   El padding queda afuera a propósito: es lo único que varía entre ellas,
-   cada página lo define localmente en su propio <style>. */
+
 body {
     font-family: 'DM Sans', -apple-system, system-ui, sans-serif;
     background: var(--bg);
@@ -32,16 +21,10 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* .ui-lead / .ui-arw (íconos al lado de texto en labels/botones) — antes
-   estaba duplicado inline en selector.html, login.html y profiles.html con
-   una versión más simple (margin-right:5px fijo). Se unifica acá (todas las
-   páginas cargan style.css) con la versión completa que ya usaba ui.css. */
+
 .ui-lead { display: inline-block; vertical-align: -3px; color: currentColor; flex-shrink: 0; }
 .ui-lead.has-text, .ui-lead:not(:last-child) { margin-right: 6px; }
 .ui-arw { flex-shrink: 0; vertical-align: -3px; }
 
-/* Badge de reCAPTCHA v3 — antes estaba repetido inline en 8 páginas, con dos
-   variantes distintas (algunas con display:none, otras con visibility+opacity
-   +pointer-events). Se unifica acá (todas las páginas cargan style.css) con
-   la versión más completa. */
+
 .grecaptcha-badge { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }

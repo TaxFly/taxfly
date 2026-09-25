@@ -23,9 +23,7 @@
   --theme-accent2: #7c3aed;
   --glow-soft: 0 8px 24px -8px color-mix(in srgb, var(--theme-accent) 45%, transparent);
   color-scheme: light;
-  /* Escala tipográfica — reemplaza el mosaico de tamaños 10-14px por pasos
-     deliberados. 2xs solo para etiquetas muy secundarias (badges, unidades);
-     todo lo demás sube al menos un escalón para respirar mejor. */
+  
   --fs-2xs: 11px;
   --fs-xs: 13px;
   --fs-sm: 15px;
@@ -46,8 +44,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-/* Set de íconos SVG (ver ICON_PATHS en app.js) — reemplaza los emojis
-   nativos del UI para que se vea igual en todos los sistemas operativos. */
+
 .icon { display: inline-block; vertical-align: -3px; flex-shrink: 0; }
 html { background: var(--bg); transition: background .3s; }
 body { transition: background .4s, color .3s; }
@@ -75,7 +72,7 @@ body {
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 8px; }
 
-/* HEADER */
+
 .header {
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   backdrop-filter: blur(14px) saturate(1.4);
@@ -135,7 +132,7 @@ body {
   transition: var(--tr);
 }
 
-/* NAV BAR — pill container */
+
 .nav-bar-wrap {
   position: sticky;
   top: env(safe-area-inset-top, 0px);
@@ -214,7 +211,7 @@ body {
 }
 .btn-nav-set:hover { border-color: var(--theme-accent); transform: rotate(25deg); }
 
-/* SETTINGS DRAWER */
+
 .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; z-index: 1000; backdrop-filter: blur(4px); }
 .menu-overlay.open { display: block; }
 .settings-drawer {
@@ -252,11 +249,11 @@ body {
 .drawer-action-btn.drawer-danger { color: #ef4444; }
 .drawer-action-btn.drawer-danger:hover { border-color: #ef4444; background: rgba(239,68,68,.08); }
 
-/* PANELS */
+
 .panel { display: none; padding: 0 16px; }
 .panel.active { display: block; }
 
-/* HOTEL BAR */
+
 .hotel-bar {
   display: flex;
   align-items: center;
@@ -284,7 +281,7 @@ body {
 .hotel-addr { font-size: 12px; color: var(--muted); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hotel-arrow { color: var(--muted); font-size: 14px; }
 
-/* DAY LABEL */
+
 .day-label {
   font-size: 11px;
   color: var(--muted);
@@ -294,7 +291,7 @@ body {
   margin-bottom: 14px;
 }
 
-/* PROGRESS */
+
 .progress-wrap { margin-bottom: 16px; }
 .progress-meta {
   display: flex;
@@ -333,7 +330,7 @@ body {
   box-shadow: 0 0 8px color-mix(in srgb, var(--theme-accent) 50%, transparent);
 }
 
-/* STOP CARDS */
+
 .stop-card {
   display: flex;
   align-items: flex-start;
@@ -349,9 +346,7 @@ body {
   overflow: hidden;
   box-shadow: var(--shadow);
 }
-/* Marca de agua: un ícono grande y muy sutil de fondo por sección, para que
-   outlets/comidas/compras no se sientan intercambiables entre sí más allá
-   del color del acento. */
+
 .stop-card::after, .park-card::after, .day-meal-card::after, .wm-item::after {
   content: '';
   position: absolute;
@@ -369,21 +364,19 @@ body {
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5'%3E%3Cpath d='M6 2 4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-2-6'/%3E%3Cpath d='M4 8h16'/%3E%3Cpath d='M9 12a3 3 0 0 0 6 0'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5'%3E%3Cpath d='M6 2 4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-2-6'/%3E%3Cpath d='M4 8h16'/%3E%3Cpath d='M9 12a3 3 0 0 0 6 0'/%3E%3C/svg%3E");
 }
-/* Comidas: tenedor/cuchillo de fondo */
+
 .day-meal-card::after {
   width: 60px; height: 60px;
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5'%3E%3Cpath d='M7 2v6a2 2 0 0 0 4 0V2'/%3E%3Cpath d='M9 8v14'/%3E%3Cpath d='M17 2c-1.5 0-3 1.5-3 4v4a2 2 0 0 0 2 2h1v10'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5'%3E%3Cpath d='M7 2v6a2 2 0 0 0 4 0V2'/%3E%3Cpath d='M9 8v14'/%3E%3Cpath d='M17 2c-1.5 0-3 1.5-3 4v4a2 2 0 0 0 2 2h1v10'/%3E%3C/svg%3E");
 }
-/* Walmart: carrito de fondo, un poco más chico porque la fila es más baja */
+
 .wm-item::after {
   width: 44px; height: 44px;
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5'%3E%3Ccircle cx='9' cy='20' r='1.4'/%3E%3Ccircle cx='18' cy='20' r='1.4'/%3E%3Cpath d='M3 3h2l2.6 12.4A2 2 0 0 0 9.55 17H18a2 2 0 0 0 1.96-1.6L21.5 8H6'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5'%3E%3Ccircle cx='9' cy='20' r='1.4'/%3E%3Ccircle cx='18' cy='20' r='1.4'/%3E%3Cpath d='M3 3h2l2.6 12.4A2 2 0 0 0 9.55 17H18a2 2 0 0 0 1.96-1.6L21.5 8H6'/%3E%3C/svg%3E");
 }
-/* Parques: cada card usa el ícono de SU parque (castillo, globo, clapper,
-   dino, máscaras, sparkles) en vez de un ícono genérico, así conservan la
-   identidad que ya tenían por color pero ahora también por forma. */
+
 .park-card::after { width: 64px; height: 64px; }
 .pk-mk::after {
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5'%3E%3Cpath d='M3 21V9l3-2v3l3-2v-2l3 3 3-3v2l3-2v3l3 2v10Z'/%3E%3Cpath d='M3 21h18'/%3E%3Cpath d='M10 21v-5a2 2 0 0 1 4 0v5'/%3E%3C/svg%3E");
@@ -503,7 +496,7 @@ body {
 .maps-btn:active { opacity: 0.7; }
 .maps-btn svg { width: 11px; height: 11px; }
 
-/* CONFETTI overlay */
+
 .confetti-wrap {
   position: fixed;
   inset: 0;
@@ -522,7 +515,7 @@ body {
   to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
 
-/* MAP */
+
 .day-map-wrap {
   margin-top: 14px;
   border-radius: var(--radius);
@@ -557,12 +550,12 @@ body {
 .day-map-chevron { font-size: 13px; color: var(--muted); transition: transform .25s; }
 .day-map-wrap.open .day-map-chevron { transform: rotate(180deg); }
 .day-map-container { height: 280px; isolation: isolate; }
-/* Contener los z-indexes de Leaflet dentro del mapa */
+
 .day-map-wrap { position: relative; z-index: 1; }
 .day-map-container .leaflet-pane,
 .day-map-container .leaflet-top,
 .day-map-container .leaflet-bottom { z-index: auto; }
-/* Leaflet popup dark theme */
+
 .leaflet-popup-content-wrapper {
   background: var(--surface2) !important;
   color: var(--text) !important;
@@ -579,7 +572,7 @@ body {
 .map-popup-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
 .map-pin-visited { filter: grayscale(1) opacity(0.5); }
 
-/* DRAG & DROP */
+
 .stop-card[draggable="true"] { cursor: grab; }
 .stop-card[draggable="true"]:active { cursor: grabbing; }
 .stop-drag-handle {
@@ -604,7 +597,7 @@ body {
   border-color: var(--theme-accent);
 }
 
-/* EMPTY STATE */
+
 .all-done {
   text-align: center;
   padding: 48px 20px;
@@ -614,14 +607,14 @@ body {
 .all-done-title { font-family: 'DM Sans', sans-serif; font-size: var(--fs-lg); font-weight: 800; color: var(--theme-accent); margin-bottom: 8px; }
 .all-done-sub { font-size: var(--fs-sm); color: var(--muted); font-weight: 500; }
 
-/* ANIMATIONS */
+
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.stop-card { /* animation applied by JS on first render only */ }
+.stop-card {  }
 
-/* ═══════════════ COMIDAS SECTION ═══════════════ */
+
 .comidas-panel { padding: 12px 0 20px; }
 .day-meal-card {
   background: var(--surface);
@@ -709,7 +702,7 @@ body {
 .del-day-row { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
 .del-day-row .mbtn[disabled] { opacity: .35; cursor: default; }
 
-/* ═══════════════ WALMART REDESIGN ═══════════════ */
+
 .wm-panel { padding: 12px 0 20px; }
 .wm-summary-bar { display: flex; gap: 1px; margin-bottom: 14px; background: var(--border); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); }
 .wm-stat { flex: 1; background: var(--surface); padding: 12px 10px; text-align: center; }
@@ -803,11 +796,7 @@ body {
   padding: 22px;
   width: 100%;
   max-width: 420px;
-  /* Antes no tenía tope de altura ni scroll propio: un modal con contenido
-     largo (ej. la Guía de talles, con varias tablas) quedaba más alto que
-     la pantalla, y como el fondo tampoco scrollea, la parte de abajo —
-     incluido el botón "Cerrar"— quedaba inalcanzable: no dejaba ni scrollear
-     ni salir. Con esto, el modal scrollea internamente en vez de desbordar. */
+  
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -921,7 +910,7 @@ body {
   padding: 4px 6px;
 }
 
-/* OUTLETS SUB-TABS */
+
 .outlets-panel { padding: 0 0 16px; }
 .outlets-subtabs {
   display: flex;
@@ -996,22 +985,22 @@ body {
   margin-bottom: 16px;
 }
 
-/* DYNAMIC HEADER THEMES */
+
 .header { transition: border-color .3s; }
 .header-title { transition: color .3s; }
 .header-title .ht-accent { transition: color .3s; }
 
-/* Outlets theme — azul (default / primary) */
+
 body.theme-outlets { --theme-accent: #2563eb; --theme-accent2: #7c3aed; }
 body.theme-outlets .header { border-bottom-color: rgba(37,99,235,0.18); }
 body.theme-outlets .header-title .ht-accent { color: #2563eb; }
 
-/* Comidas theme — verde cálido */
+
 body.theme-comidas { --theme-accent: #10b981; --theme-accent2: #059669; }
 body.theme-comidas .header { border-bottom-color: rgba(16,185,129,0.2); }
 body.theme-comidas .header-title .ht-accent { color: #10b981; }
 
-/* Walmart theme — celeste */
+
 body.theme-walmart { --theme-accent: #0ea5e9; --theme-accent2: #0284c7; }
 body.theme-walmart .header { border-bottom-color: rgba(14,165,233,0.2); }
 body.theme-walmart .header-title .ht-accent { color: #0ea5e9; }
@@ -1031,7 +1020,7 @@ body.theme-comidas .mform-group input:focus, body.theme-comidas .mform-group sel
 
 body.theme-comidas .outlets-stab.active { background: #10b981; color: #fff; border-color: #10b981; }
 
-/* Parques theme — violeta/índigo */
+
 body.theme-parques { --theme-accent: #8b5cf6; --theme-accent2: #7c3aed; }
 body.theme-parques .header { border-bottom-color: rgba(139,92,246,0.2); }
 body.theme-parques .header-title .ht-accent { color: #8b5cf6; }
@@ -1039,7 +1028,7 @@ body.theme-parques .tab.active { background: #8b5cf6; color: #fff; border-color:
 body.theme-parques .nav-btn.active { background: #8b5cf6; color: #fff; border-color: #8b5cf6; }
 body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,246,0.25); }
 
-/* ═══════════════ PARQUES SECTION ═══════════════ */
+
 .parques-panel { padding: 12px 0 20px; }
 .parques-global-bar {
   background: var(--surface);
@@ -1266,7 +1255,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 .pk-loc-btn.pk-loc-missing:hover { opacity: 1; }
 .parques-reset-row { display: flex; justify-content: center; margin-top: 14px; }
 
-/* Parque personalizado: usa --pk-color en vez de una clase fija por parque */
+
 .park-card.pk-custom .park-card-header::before { background: var(--pk-color, #8b5cf6); }
 .park-card.pk-custom .park-card-name { color: var(--pk-color, #8b5cf6); }
 .park-card.pk-custom .park-card-count { color: var(--pk-color, #8b5cf6); }
@@ -1279,7 +1268,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 
 .park-add-attr-row { padding: 10px 16px 14px; display: flex; justify-content: center; border-top: 1px solid var(--border); }
 
-/* Selector de color para crear un parque */
+
 .pk-color-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
 .pk-color-swatch {
   width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent;
@@ -1287,7 +1276,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 }
 .pk-color-swatch.active { border-color: var(--text); transform: scale(1.1); }
 
-/* Resultado de la búsqueda automática en Wikipedia */
+
 .pk-wiki-status { font-size: var(--fs-2xs); color: var(--muted); margin-top: 8px; line-height: 1.5; }
 .pk-wiki-results {
   margin-top: 8px; max-height: 220px; overflow-y: auto;
@@ -1297,7 +1286,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 .pk-wiki-item:last-child { border-bottom: none; }
 .pk-wiki-item input { flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--theme-accent); }
 
-/* ═══════ CONFIRM / ALERT MODALS ═══════ */
+
 .confirm-overlay {
   display: none;
   position: fixed;
@@ -1317,9 +1306,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
   width: 100%;
   max-width: 320px;
   text-align: center;
-  /* Mismo arreglo que .modal-box: sin esto, un mensaje largo (o con lista)
-     podía quedar más alto que la pantalla, sin scroll y sin forma de llegar
-     a los botones. */
+  
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -1366,7 +1353,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
   color: #fff;
 }
 
-/* ═══════ FIELD ERROR MESSAGES ═══════ */
+
 .field-error {
   font-size: 11px;
   color: #ef4444;
@@ -1376,7 +1363,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 .field-error.show { display: block; }
 .mform-group input.error, .mform-group select.error { border-color: #ef4444 !important; }
 
-/* ═══════ SYNC STATUS INDICATOR ═══════ */
+
 .sync-dot {
   width: 7px;
   height: 7px;
@@ -1389,7 +1376,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 .sync-dot.saved  { background: var(--green); }
 .sync-dot.error  { background: #ef4444; }
 @keyframes syncPulse { to { opacity: 0.4; } }
-/* ═══ POLISH: sombras y elevación ═══ */
+
 .wm-section-header, .wm-total-bar, .wm-summary-bar,
 .parques-global-bar, .hotel-bar, .day-map-wrap, .outlets-day-tab {
   box-shadow: var(--shadow);
@@ -1400,7 +1387,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 }
 .hotel-bar { transition: var(--tr); }
 
-/* ═══════ HOY: mini card en el header (Outlets/Comidas/Market/Parques) ═══════ */
+
 .header-top { flex-wrap: wrap; }
 .today-card-slot { flex: 1 0 100%; order: 3; margin-top: 10px; display: none; }
 .today-card {
@@ -1431,12 +1418,11 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 .today-card-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .today-card-weather { font-size: 12px; font-weight: 700; color: var(--muted); flex-shrink: 0; white-space: nowrap; }
 @media (min-width: 720px) {
-  /* En pantallas anchas la fila del header sobra de espacio (ver captura):
-     la mini card acompaña al título en la misma fila en vez de bajar. */
+  
   .today-card-slot { flex: 1 1 260px; order: 0; margin-top: 0; margin: 0 16px; max-width: 380px; }
 }
 
-/* ═══════ COTIZACIÓN USD → ARS (Walmart/Market) ═══════ */
+
 .wm-total-bar-ars { cursor: pointer; opacity: .9; transition: opacity .15s; }
 .wm-total-bar-ars:hover { opacity: 1; }
 .wm-total-bar-ars .wm-total-val-ars { color: var(--muted); font-size: var(--fs-sm); }
@@ -1451,7 +1437,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 }
 .wm-fx-loading { font-size: 11px; color: var(--muted); text-align: center; padding: 6px 0 10px; }
 
-/* ═══════ RUTEO ENTRE PARADAS (mapa del día, Outlets) ═══════ */
+
 .day-route-info {
   padding: 8px 14px;
   background: var(--surface2);
@@ -1469,7 +1455,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
   white-space: nowrap;
 }
 
-/* ═══════ PRESUPUESTO DEL VIAJE (cajón de Ajustes) ═══════ */
+
 .budget-box { margin-bottom: 20px; }
 .budget-set-row { display: flex; gap: 6px; }
 .budget-set-row .wm-edit-input { margin-bottom: 0; }
@@ -1520,10 +1506,10 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 }
 .budget-add-cat-btn:hover { border-style: solid; border-color: var(--theme-accent); color: var(--theme-accent); }
 
-/* ═══════ CLIMA por día (badge en las pestañas de Outlets) ═══════ */
+
 .odt-weather { margin-left: 5px; font-size: 9px; font-weight: 700; white-space: nowrap; }
 
-/* ═══════ GUÍA DE TALLES US ↔ ARG ═══════ */
+
 .modal-box-wide { max-width: 420px; }
 @media (min-width: 760px) {
   .modal-box-wide { max-width: 760px; }
@@ -1541,7 +1527,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 .size-guide-table td { border-top: 1px solid var(--border); color: var(--text); }
 .size-guide-table tr:nth-child(even) td { background: color-mix(in srgb, var(--surface2) 55%, transparent); }
 
-/* ═══════ TARJETA DE PERFIL (cajón de Ajustes) ═══════ */
+
 .settings-profile-card {
   display: flex;
   align-items: center;
@@ -1571,7 +1557,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 .settings-profile-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
 .settings-profile-name { font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 700; color: var(--text); }
 
-/* ─── Link a "Mis cosas de viaje" ─── */
+
 a.app-link { text-decoration: none; }
 a.app-link:active { transform: scale(0.92); opacity: 0.7; }
 .pk-mochila-link {
@@ -1592,7 +1578,7 @@ a.app-link:active { transform: scale(0.92); opacity: 0.7; }
 .pk-mochila-txt small { font-size: var(--fs-xs); color: var(--muted); }
 .pk-mochila-arrow { color: var(--muted); font-size: 16px; }
 
-/* ─── Itinerario por día ─── */
+
 .itin-daybar {
   display: flex; align-items: center; gap: 12px;
   background: var(--surface); border: 1px solid var(--border);
@@ -1665,7 +1651,7 @@ a.app-link:active { transform: scale(0.92); opacity: 0.7; }
 .itin-imp-body strong { font-size: var(--fs-sm); }
 .itin-imp-body small { font-size: var(--fs-xs); color: var(--muted); }
 
-/* ═══════ Presupuesto restante (píldora del header + detalle en Ajustes) ═══════ */
+
 .budget-pill-slot { flex: 1 0 100%; order: 4; margin-top: 8px; display: flex; }
 .budget-pill {
   display: inline-flex;
@@ -1708,7 +1694,7 @@ a.app-link:active { transform: scale(0.92); opacity: 0.7; }
 .budget-market-toggle input { margin-top: 3px; accent-color: var(--theme-accent); flex-shrink: 0; }
 .budget-market-toggle small { display: block; color: var(--muted); font-size: 11px; line-height: 1.4; margin-top: 2px; }
 
-/* ═══════ Cajón de Ajustes — mismo lenguaje que Taxfly ═══════ */
+
 #settingsDrawer.settings-drawer {
   width: min(370px, 92vw); right: calc(-1 * min(370px, 92vw) - 24px);
   padding: 0; gap: 0; overflow: hidden; background: var(--surface);
@@ -1768,11 +1754,11 @@ a.app-link:active { transform: scale(0.92); opacity: 0.7; }
 #settingsDrawer .sx-foot { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
 #settingsDrawer .sx-out { width: 100%; }
 #settingsDrawer .sx-out:hover { border-color: #ef4444; color: #ef4444; }
-/* el presupuesto ya es una tarjeta: mismo aire que el resto */
+
 #settingsDrawer .budget-box { margin-bottom: 0; }
 #settingsDrawer .budget-summary { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 16px; }
 
-/* Marca TaxUSA en el header: es la misma app, se nota */
+
 .brand-back {
   display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
   font-family: 'DM Sans', sans-serif; font-size: 11.5px; font-weight: 800; letter-spacing: -.1px;
@@ -1787,7 +1773,7 @@ a.app-link:active { transform: scale(0.92); opacity: 0.7; }
 [data-theme="dark"] .brand-back b, body.dark .brand-back b { color: #5b8def; }
 .brand-back .bb-chev { color: var(--muted); }
 
-/* ═══════ Header simplificado: marca + acciones / título / una sola línea de datos ═══════ */
+
 .header { padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px; }
 .hdr-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .hdr-row .brand-back { margin: 0 0 0 -5px; }
@@ -1795,7 +1781,7 @@ a.app-link:active { transform: scale(0.92); opacity: 0.7; }
 .hdr-right .refresh-btn { width: 34px; height: 34px; }
 .hdr-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .hdr-title-row .header-title { min-width: 0; }
-/* el contador pasa de píldora a dato discreto */
+
 .header .global-counter {
   background: none; border: 0; padding: 0; box-shadow: none;
   font-size: 12.5px; font-weight: 700; color: var(--muted); letter-spacing: 0;
@@ -1820,19 +1806,17 @@ body.theme-parques .header .global-counter { color: var(--muted); border: 0; }
 .header .budget-pill-label { font-weight: 600; }
 .header .today-card-slot { flex: none; order: 0; margin: 10px 0 0; max-width: none; }
 
-/* Sin marcas de agua: quedaban cortadas y detrás de los botones de cada fila */
+
 .stop-card::after, .day-meal-card::after, .wm-item::after { display: none; }
 .mbtn { display: inline-flex; align-items: center; gap: 4px; }
 
-/* Tiras de días (Outlets/Parques/Itinerario): con 6-7 días se desbordaban de la pantalla.
-   Ahora deslizan de costado sin agrandar la página. */
+
 .outlets-day-tabs { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
 .outlets-day-tabs::-webkit-scrollbar { display: none; }
 .outlets-day-tab { flex: 1 0 auto; min-width: 64px; white-space: nowrap; }
 .outlets-day-tabs > .btn-nav-set { flex-shrink: 0; align-self: center; }
 
-/* Parques: sin marca de agua detrás de los botones; y en modo claro los nombres
-   usan una versión más oscura de cada color (los pasteles no se leían sobre blanco). */
+
 .park-card::after { display: none; }
 html:not([data-theme="dark"]) .pk-mk .park-card-name, html:not([data-theme="dark"]) .pk-mk .park-card-count { color: #7e22ce; }
 html:not([data-theme="dark"]) .pk-epcot .park-card-name, html:not([data-theme="dark"]) .pk-epcot .park-card-count { color: #0f766e; }
@@ -1842,14 +1826,12 @@ html:not([data-theme="dark"]) .pk-usf .park-card-name, html:not([data-theme="dar
 html:not([data-theme="dark"]) .pk-epic .park-card-name, html:not([data-theme="dark"]) .pk-epic .park-card-count { color: #a21caf; }
 html:not([data-theme="dark"]) .park-card.pk-custom .park-card-name, html:not([data-theme="dark"]) .park-card.pk-custom .park-card-count { color: color-mix(in srgb, var(--pk-color, #8b5cf6) 68%, #000); }
 
-/* Acceso a "Mis cosas de viaje": mismo formato que la marca TaxUSA, con su logo */
+
 .hdr-right .brand-viaje { margin: 0; padding: 4px 10px 4px 5px; box-shadow: var(--shadow); }
 .brand-viaje b { color: #7c3aed; }
 [data-theme="dark"] .brand-viaje b { color: #a78bfa; }
 
-/* Barra de estado del celular: la página usa toda la pantalla (viewport-fit=cover). Se reserva ese
-   espacio arriba y se lo tapa con el color de fondo para que nada se vea pasar por detrás de la hora
-   ni de la barra de pestañas fija. */
+
 body::before {
   content: ''; position: fixed; top: 0; left: 0; right: 0;
   height: env(safe-area-inset-top, 0px);

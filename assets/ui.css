@@ -1,12 +1,6 @@
-/* ── Taxfly UI — capa visual compartida ───────────────────────────────────
-   Se carga DESPUÉS del <style> de cada página, así que unifica sin tener que
-   tocar cada pantalla: mismos colores en modo oscuro, mismo fondo, misma
-   barra de navegación, mismas pestañas, tarjetas y botones. Es el mismo
-   lenguaje visual que Orlando Planning (fondo con degradé suave, barra
-   con pestaña activa rellena, íconos de línea, esquinas de 16–20px).
-   Los íconos los pone assets/ui.js. */
 
-/* ═══ 1. Tokens: un solo modo oscuro y un solo fondo ═══ */
+
+
 :root {
     --ui-accent: #2563eb;
     --ui-accent2: #7c3aed;
@@ -36,7 +30,7 @@ body {
     background-attachment: fixed;
 }
 
-/* ═══ 2. Encabezado y barra de navegación ═══ */
+
 .app-header { margin-bottom: 12px; }
 .logo { letter-spacing: -.6px; }
 .nav-bar {
@@ -46,13 +40,11 @@ body {
     border-radius: var(--ui-radius-md);
     padding: 6px;
     gap: 2px;
-    /* opaca: al scrollear no se ve el contenido por detrás del menú */
+    
     background: var(--surface);
     box-shadow: var(--shadow), 0 -8px 0 var(--bg);
 }
-/* Zona de la barra de estado del celular: la página usa toda la pantalla (viewport-fit=cover),
-   así que se deja ese espacio libre arriba y se lo tapa con el color de fondo para que
-   el contenido no se vea pasar por detrás de la hora/batería ni del menú fijo. */
+
 html { padding-top: env(safe-area-inset-top, 0px); }
 body::before {
     content: '';
@@ -90,7 +82,7 @@ body::before {
 }
 .btn-nav-set:hover { border-color: var(--primary); transform: rotate(20deg); }
 
-/* menú "Más": íconos en cuadradito de color */
+
 .nav-dropdown { border-radius: var(--ui-radius-md); padding: 6px; width: 238px; }
 .dd-item { gap: 12px; padding: 9px 10px; border-radius: 12px; }
 .dd-icon {
@@ -103,7 +95,7 @@ body::before {
 .dd-item.current { background: var(--primary-dim); }
 .dd-item.current .dd-name { color: var(--primary); }
 
-/* tonos por destino (cuadraditos de íconos en inicio y menú) */
+
 .ui-slot[data-tone="blue"]   { --tone: #2563eb; }
 .ui-slot[data-tone="violet"] { --tone: #7c3aed; }
 .ui-slot[data-tone="green"]  { --tone: #10b981; }
@@ -114,7 +106,7 @@ body::before {
 .ui-slot[data-tone="teal"]   { --tone: #14b8a6; }
 .dd-icon.ui-slot[data-tone] { background: color-mix(in srgb, var(--tone) 13%, transparent); color: var(--tone); }
 
-/* ═══ 3. Inicio: accesos rápidos ═══ */
+
 .section-card, .quick-item {
     border-radius: var(--ui-radius-md);
     padding: 12px 4px 10px;
@@ -145,12 +137,12 @@ body::before {
 .ne-dot.ui-slot, #ne-dot.ui-slot { color: var(--accent); }
 .tip-icon.ui-slot { color: var(--accent); display: flex; }
 
-/* ═══ 4. Tarjetas, pestañas, botones, campos ═══ */
+
 .card { border-radius: var(--ui-radius-lg); }
 .budget-card { border-radius: var(--ui-radius-lg); }
 .budget-label { font-size: .68rem; }
 
-/* Todas las pestañas iguales: barra suave con la activa rellena */
+
 .tab-bar, .tabs:not(.tabs-wrap > .tabs) {
     background: var(--surface-2);
     border: 1px solid var(--border);
@@ -175,7 +167,7 @@ body::before {
     color: #fff !important;
     box-shadow: var(--ui-glow) !important;
 }
-/* rutas: chips deslizables (otro uso), mismo color de acento */
+
 .tab.active { box-shadow: var(--ui-glow); }
 
 .btn, .btn-compare, .btn-export, .btn-generate, .btn-add { border-radius: var(--ui-radius-sm); }
@@ -184,19 +176,19 @@ body::before {
 input, select, textarea { border-radius: var(--ui-radius-sm); }
 input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
 
-/* Títulos de pantalla con ícono */
+
 .ui-title { display: inline-flex; align-items: center; gap: 8px; }
 .ui-title .ui-ic { color: var(--primary); flex-shrink: 0; }
 h1.ui-title { font-size: 1.35rem; letter-spacing: -.4px; }
 
-/* ═══ 5. Animación de entrada pareja ═══ */
+
 @keyframes uiRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .card, .budget-card { animation: uiRise .35s ease both; }
 @media (prefers-reduced-motion: reduce) {
     .card, .budget-card, .greeting-banner, .quick-grid, .section-card { animation: none !important; }
 }
 
-/* Emoji inicial de etiquetas/botones → ícono de línea */
+
 .ui-lead.has-text, .ui-lead:not(:last-child) { margin-right: 6px; }
 label .ui-lead, .w-label .ui-lead { color: var(--primary); }
 .ui-lead.big { color: var(--text-dim); opacity: .85; vertical-align: middle; }
@@ -204,7 +196,7 @@ label .ui-lead, .w-label .ui-lead { color: var(--primary); }
 .nav-dropdown, .nav-dropdown .dd-item { text-align: left; cursor: pointer; }
 .dd-item > div { flex: 1; min-width: 0; }
 
-/* ═══ 6. Marca TaxUSA: estrella sobre franjas (misma en todas las pantallas) ═══ */
+
 .logo { gap: 9px; font-size: 1.32rem; }
 .logo > svg { width: 32px; height: 32px; border-radius: 10px; box-shadow: 0 4px 12px -3px rgba(30,58,138,.55); }
 .wm { font-weight: 500; color: var(--text); letter-spacing: -.045em; line-height: 1; }
@@ -213,29 +205,29 @@ label .ui-lead, .w-label .ui-lead { color: var(--primary); }
 .wm-card .wm-usa { color: #93c5fd; }
 .ec-logo > svg { border-radius: 8px; }
 
-/* ═══ 7. Revisión Inicio + Taxes ═══ */
-/* flechas de desplegables: chevron de línea (.ui-arw base vive en style.css) */
+
+
 .tip-toggle-lbl, .split-toggle, .med-toggle, .cart-toggle { display: inline-flex; align-items: center; gap: 3px; }
-/* tarjeta colapsada: sin el hueco del encabezado abierto */
+
 .split-header:has(+ .split-body:not(.open)),
 .med-header:has(+ .med-body:not(.open)) { margin-bottom: 0; }
-/* los <select> no tenían indicador: flechita para que se note que se abren */
+
 select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     padding-right: 36px;
 }
-/* etiqueta de la cuenta regresiva */
+
 .ui-lead-end { vertical-align: -2px; margin-left: 2px; color: var(--primary); }
-/* Inicio */
+
 .section-grid .sc-name, .quick-grid .sc-name { font-size: .57rem !important; letter-spacing: 0; padding: 0 1px; overflow-wrap: normal; word-break: normal; }
 .widget-budget.is-empty { padding: 14px 18px; }
 .widget-budget.is-empty .wb-value { font-size: 1.05rem; letter-spacing: 0; font-weight: 800; }
 .widget-budget.is-empty .wb-pct, .widget-budget.is-empty .wb-bar-track { display: none; }
 .greeting-banner { padding: 18px 20px 16px; }
 
-/* Gastos / Itinerario */
+
 .budget-card #notif-banner { margin-bottom: 10px; }
 .budget-card .budget-set { margin-top: 10px; }
 .rate-divider { line-height: 1; }
@@ -243,13 +235,13 @@ select {
 [id$="chevron-a"], [id$="chevron-b"], #ip-chevron { display: inline-flex; align-items: center; }
 #act-form-toggle, #adaptador-toggle { display: inline-flex; align-items: center; gap: 3px; }
 
-/* mismo margen superior en todas las pantallas */
+
 body { padding-top: 16px; }
 
 .ui-swap { transform: rotate(90deg); color: var(--text-dim); opacity: .8; }
 .conv-divider, .rate-divider { display: flex; justify-content: center; align-items: center; }
 .ui-search-ic { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; }
-/* buscador de medicamentos: no tenía estilo propio (se veía como input crudo) */
+
 #farma-search {
     width: 100%; padding: 12px 40px 12px 40px !important;
     background: var(--surface); border: 1.5px solid var(--border);
@@ -259,7 +251,7 @@ body { padding-top: 16px; }
 }
 #farma-search::placeholder { color: var(--text-dim); font-weight: 500; }
 
-/* Tickets / Grupo */
+
 .empty-state > svg.ui-ic { display: block; margin: 0 auto 12px; }
 @media (max-width: 520px) { .lobby-grid { grid-template-columns: 1fr; } }
 .empty-state { flex-direction: column; align-items: center; }
