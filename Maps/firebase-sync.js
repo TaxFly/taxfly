@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, deleteDoc, onSnapshot, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
@@ -122,6 +122,13 @@ window.tripPlanningDelete = async function(id) {
   // Legacy Orlando lives in the original collection and must remain recoverable.
   if (id === "orlando" || !trips.some(t => t.id === id) || !navigator.onLine) return false;
   try {
+    // Keep purchase and itinerary history visible under "Sin viaje".
+    for (const group of ["gastos", "actividades", "notas"]) {
+      const linked = await getDocs(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, group));
+      for (const item of linked.docs) {
+        if (item.data().tripId === id) await updateDoc(item.ref, { tripId: "unassigned" });
+      }
+    }
     const data = await getDocs(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning", id, "data"));
     for (const item of data.docs) await deleteDoc(item.ref);
     await setDoc(tripDocRef(id), { id, status: "deleted", deletedAt: new Date().toISOString() });
@@ -214,6 +221,7 @@ function listenTaxflyGastos(cb) {
     let total = 0, n = 0;
     snap.forEach(d => {
       const x = d.data() || {};
+      if ((x.tripId === undefined ? "orlando" : x.tripId) !== activeTripId) return;
       total += parseFloat(x.valor || x.monto) || 0;
       n++;
     });

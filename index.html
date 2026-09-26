@@ -857,6 +857,10 @@ function updateGreeting() {
 }
 
 function renderBudgetUI(base, gastos) {
+  if (currentUser && perfilId) {
+    const selected = localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando";
+    gastos = gastos.filter(g => (g.tripId === undefined ? "orlando" : g.tripId) === selected);
+  }
   const gastadoPropio = gastos.reduce((s, g) => s + (parseFloat(g.valor || g.monto) || 0), 0);
   const gastado = gastadoPropio + (mapsSpentCache || 0);
   const totalEl = document.getElementById("total-gasto-val");
@@ -1327,7 +1331,7 @@ function loadNextEvent() {
     const upcoming = snap.docs.map(d => ({
       id: d.id,
       ...d.data()
-    })).filter(a => !a.done && new Date(a.date + "T" + (a.time || "00:00")) >= now);
+    })).filter(a => (a.tripId === undefined ? "orlando" : a.tripId) === (localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando") && !a.done && new Date(a.date + "T" + (a.time || "00:00")) >= now);
     if (!upcoming.length) {
       renderNoEvent();
       return;

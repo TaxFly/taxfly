@@ -28,3 +28,9 @@ body {
 
 
 .grecaptcha-badge { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+
+.taxfly-trip-filter { display:flex; align-items:center; gap:9px; margin:12px auto; padding:9px 12px; max-width:720px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--text); font-size:.75rem; }
+.taxfly-trip-filter label { font-weight:800; }
+.taxfly-trip-filter select { flex:1; min-width:0; padding:7px 9px; border:1px solid var(--border); border-radius:8px; background:var(--input-bg); color:var(--text); font:inherit; }
+.taxfly-trip-filter a { color:var(--primary); text-decoration:none; white-space:nowrap; font-weight:700; }
+@media(max-width:480px) { .taxfly-trip-filter a { font-size:.65rem; } }

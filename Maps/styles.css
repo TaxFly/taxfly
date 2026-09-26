@@ -1837,11 +1837,18 @@ body::before {
   height: env(safe-area-inset-top, 0px);
   background: var(--bg); z-index: 999; pointer-events: none;
 }
-.trip-manager { margin:12px 0 4px; padding:13px; border:1px solid rgba(148,163,184,.24); border-radius:16px; background:rgba(125,145,175,.08); font-size:13px; }
+.trip-manager { margin:9px 0 4px; border:1px solid rgba(148,163,184,.24); border-radius:13px; background:rgba(125,145,175,.08); font-size:13px; }
+.trip-manager-toggle { width:100%; display:flex; align-items:center; gap:9px; padding:9px 12px; border:0!important; background:transparent!important; color:var(--text,#fff); text-align:left; cursor:pointer; }
+.trip-manager-toggle span { font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trip-manager-toggle small { opacity:.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trip-manager-toggle b { margin-left:auto; font-size:10px; opacity:.7; }
+.trip-manager-body { padding:4px 13px 13px; border-top:1px solid rgba(148,163,184,.18); }
+.trip-manager-body[hidden] { display:none; }
 .trip-manager-top,.trip-manager-destinations,.trip-manager-links { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .trip-manager-top label,.trip-manager-destinations>span { font-weight:700; opacity:.72; }
 .trip-manager-top select { flex:1; min-width:145px; max-width:300px; }
 .trip-manager select,.trip-manager button { font:inherit; border:1px solid rgba(148,163,184,.35); border-radius:9px; padding:7px 9px; background:var(--surface, #202b3d); color:var(--text, #fff); cursor:pointer; }
+.trip-manager .trip-manager-toggle { padding:9px 12px; }
 .trip-manager-destinations { margin-top:11px; }
 .trip-manager-destinations button.active { background:#2563eb; border-color:#2563eb; color:#fff; }
 .trip-manager-links { justify-content:space-between; margin-top:10px; opacity:.8; }

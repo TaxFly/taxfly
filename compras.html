@@ -519,11 +519,14 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         <button class="btn-nav-set" id="btnSettings" onclick="toggleSettings()"></button>
     </nav>
     <script src="assets/ui.js"></script>
+    <script src="assets/trip-context.js"></script>
 
+    <div class="taxfly-trip-filter"><label for="trip-filter-expenses">Viaje</label><select id="trip-filter-expenses" aria-label="Filtrar por viaje"></select><a href="Maps/index.html">Gestionar viajes ↗</a></div>
     <div class="budget-card">
         <div class="budget-label" data-i18n="label_budget">Presupuesto Restante</div>
         <div class="budget-value" id="disp-fondo">USD 0.00</div>
         <div id="budget-maps-note" style="display:none;font-size:.68rem;font-weight:700;opacity:.8;margin:-4px 0 8px;"></div>
+        <div style="font-size:.65rem;opacity:.8;margin-bottom:8px;">Presupuesto general de TaxFly; el saldo usa los gastos del filtro elegido.</div>
 
         
         <div id="budget-info-row" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px;">
@@ -844,7 +847,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/fireba
 
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
@@ -964,6 +967,38 @@ const perfilFoto = localStorage.getItem("perfilActivoFoto");
 let presupuestoBase = 0;
 
 let mapsSpent = parseFloat(localStorage.getItem("taxusa_maps_budget_cache_" + perfilId)) || 0;
+
+let tripBudgetUnsubs = [];
+function filteredGastos() {
+  return currentUser && perfilId ? window.TripContext.filter(allGastos, currentUser.uid, perfilId) : allGastos;
+}
+function refreshGastosTrip() {
+  if (!currentUser || !perfilId) return;
+  window.TripContext.render(document.getElementById("trip-filter-expenses"), currentUser.uid, perfilId);
+  renderGastosList(allGastos);
+  listenTripPlanningSpent();
+}
+function listenTripPlanningSpent() {
+  tripBudgetUnsubs.forEach(stop => stop());
+  tripBudgetUnsubs = [];
+  const tc = window.TripContext;
+  const selection = tc.view(currentUser.uid, perfilId);
+  const trips = tc.readTrips(currentUser.uid, perfilId);
+  const ids = selection === "all" ? ["orlando", ...trips.filter(t => t.id !== "orlando" && t.status !== "deleted").map(t => t.id)] : selection === "unassigned" ? [] : [selection];
+  const totals = new Map();
+  mapsSpent = 0;
+  updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
+  ids.forEach(id => {
+    const path = id === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", id, "data", "budget"];
+    tripBudgetUnsubs.push(onSnapshot(doc(db, ...path), snap => {
+      const d = snap.exists() ? snap.data() : null;
+      const wm = d?.countMarket ? Number(d.walmartSpent) || 0 : 0;
+      totals.set(id, wm + (d?.gastos || []).reduce((s, g) => s + (Number(g.monto) || 0), 0));
+      mapsSpent = [...totals.values()].reduce((a, b) => a + b, 0);
+      updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
+    }, () => {}));
+  });
+}
 
 let lastGastosTotal = 0;
 
@@ -1846,7 +1881,7 @@ window.updateFondo = async () => {
   }
   presupuestoBase = v;
   guardarPresupuestoEnCache(v);
-  const spent = allGastos ? allGastos.reduce((s, g) => s + g.valor, 0) : 0;
+  const spent = filteredGastos().reduce((s, g) => s + (Number(g.valor) || 0), 0);
   updateBudgetDisplay(spent);
   input.value = "";
   input.placeholder = "USD 0";
@@ -1934,6 +1969,7 @@ function catLabel(cat) {
 }
 
 function renderGastosList(gastos) {
+  if (currentUser && perfilId) gastos = window.TripContext.filter(gastos, currentUser.uid, perfilId);
   const c = document.getElementById("listaGastos");
   if (!gastos || !gastos.length) {
     c.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:.85rem;">No hay gastos.</p>';
@@ -1996,16 +2032,7 @@ function listenPresupuestoYOrlando() {
     guardarPresupuestoEnCache(v);
     updateBudgetDisplay(lastGastosTotal);
   }, () => {});
-  onSnapshot(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"), snap => {
-    const d = snap.exists() ? snap.data() : null;
-    const wm = d && d.countMarket ? parseFloat(d.walmartSpent) || 0 : 0;
-    const manual = d ? (d.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0) : 0;
-    mapsSpent = wm + manual;
-    try {
-      localStorage.setItem("taxusa_maps_budget_cache_" + perfilId, String(mapsSpent));
-    } catch (e) {}
-    updateBudgetDisplay(lastGastosTotal);
-  }, () => {});
+  listenTripPlanningSpent();
 }
 
 function updateBudgetDisplay(spent) {
@@ -2016,7 +2043,7 @@ function updateBudgetDisplay(spent) {
   const mn = document.getElementById("budget-maps-note");
   if (mn) {
     if (mapsSpent > 0) {
-      mn.textContent = "incluye USD " + fmt(mapsSpent) + " de Orlando Planning";
+      mn.textContent = "incluye USD " + fmt(mapsSpent) + " de Trip Planning";
       mn.style.display = "block";
     } else mn.style.display = "none";
   }
@@ -2210,6 +2237,7 @@ window.activarNotificaciones = async function() {
 };
 
 function renderDashboard(gastos) {
+  if (currentUser && perfilId) gastos = window.TripContext.filter(gastos, currentUser.uid, perfilId);
   const empty = document.getElementById("dash-empty");
   const content = document.getElementById("dash-content");
   if (!empty || !content) return;
@@ -2259,7 +2287,7 @@ function renderDashboard(gastos) {
 window.abrirExportSheet = function() {
   const lang = localStorage.getItem("appLang") || "es";
   const T = i18n[lang] || i18n.es;
-  if (!allGastos || !allGastos.length) {
+  if (!filteredGastos().length) {
     const msg = {
       es: "No hay gastos para exportar.",
       en: "No expenses to export.",
@@ -2284,10 +2312,11 @@ window.closeExportSheet = function() {
 function poblarExportCard() {
   const lang = localStorage.getItem("appLang") || "es";
   const T = i18n[lang] || i18n.es;
-  const total = allGastos.reduce((s, g) => s + g.valor, 0);
-  const count = allGastos.length;
+  const exportGastos = filteredGastos();
+  const total = exportGastos.reduce((s, g) => s + g.valor, 0);
+  const count = exportGastos.length;
   const avg = total / count;
-  const top = allGastos.reduce((a, b) => b.valor > a.valor ? b : a, allGastos[0]);
+  const top = exportGastos.reduce((a, b) => b.valor > a.valor ? b : a, exportGastos[0]);
   const rest = presupuestoBase > 0 ? presupuestoBase - total - mapsSpent : null;
   const now = new Date;
   const locale = lang === "en" ? "en-US" : lang === "pt" ? "pt-BR" : "es-AR";
@@ -2310,7 +2339,7 @@ function poblarExportCard() {
   document.getElementById("ec-avg").textContent = "$" + fmt(avg);
   document.getElementById("ec-top-val").textContent = top.nombre.length > 14 ? top.nombre.substring(0, 14) + "…" : top.nombre;
   const bycat = {};
-  allGastos.forEach(g => {
+  exportGastos.forEach(g => {
     const c = g.cat || "📦 Otros";
     bycat[c] = (bycat[c] || 0) + g.valor;
   });
@@ -2827,7 +2856,8 @@ window.addGastoWithThumb = async thumb => {
     valor: v,
     cat: cat,
     fecha: Date.now(),
-    thumb: thumb || ""
+    thumb: thumb || "",
+    tripId: currentUser && perfilId ? window.TripContext.assign(currentUser.uid, perfilId) : "orlando"
   };
   const localId = "local_" + Date.now();
   const cached = cargarGastosDesdeCache() || [];
@@ -3090,6 +3120,12 @@ onAuthStateChanged(auth, async user => {
     console.error(e);
   }
   fetchRates();
+  const tripSelect = document.getElementById("trip-filter-expenses");
+  tripSelect.addEventListener("change", () => {
+    window.TripContext.select(user.uid, perfilId, tripSelect.value);
+    refreshGastosTrip();
+  });
+  window.TripContext.hydrate(db, user.uid, perfilId, getDocs, collection, refreshGastosTrip);
   listenGastos();
   listenPresupuestoYOrlando();
   setTimeout(refreshBudgetInfoRow, 500);

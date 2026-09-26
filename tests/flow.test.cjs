@@ -42,6 +42,25 @@ test('editing a stop retains its map pin and coordinate links can restore pins',
   assert.equal(c.coordsFromMapsUrl('https://www.google.com/maps/place/X/@28.45,-81.47,14z/!3d28.459!4d-81.475').lat,28.459);
 });
 
+test('trip selection filters legacy and new expenses and activities without rewriting history', () => {
+  const cache=storage({
+    'trip-planning-active::u::p':'orlando',
+    'trip-planning-trips::u::p':JSON.stringify([{id:'orlando',name:'Mi viaje a Orlando'},{id:'trip-1',name:'Nueva York'}])
+  });
+  const w={};
+  context(read('assets/trip-context.js'),{window:w,localStorage:cache,document:{createElement:()=>({})}});
+  const records=[{name:'Viejo'}, {name:'Nuevo',tripId:'trip-1'}, {name:'Desvinculado',tripId:'unassigned'}];
+  assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),['Viejo']);
+  w.TripContext.select('u','p','trip-1');
+  assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),['Nuevo']);
+  assert.equal(w.TripContext.assign('u','p'),'trip-1');
+  w.TripContext.select('u','p','all');
+  assert.equal(w.TripContext.filter(records,'u','p').length,3);
+  assert.equal(w.TripContext.assign('u','p'),'trip-1');
+  w.TripContext.select('u','p','unassigned');
+  assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),['Desvinculado']);
+});
+
 test('login online, offline locked, and offline unlocked choose the correct next screen', async () => {
   const src=between(read('login.html'), 'async function initScreen()', 'let splashExitPromise;');
   async function scenario(online, unlocked) {

@@ -1612,11 +1612,18 @@ function renderTripManager() {
   const archivedTrips = allTrips.filter(t => t.status);
   const destinations = Array.isArray(trip.destinations) ? trip.destinations : [];
   const selected = Math.max(0, Math.min(trip.activeDestination || 0, destinations.length - 1));
-  slot.innerHTML = `<div class="trip-manager-top"><label for="trip-select">Viaje</label><select id="trip-select" aria-label="Elegir viaje" onchange="window.tripPlanningSelect(this.value)">${visibleTrips.map(t => `<option value="${escapeHtml(t.id)}" ${t.id === trip.id ? "selected" : ""}>${escapeHtml(t.name)}${t.status ? " (archivado)" : ""}</option>`).join("")}</select><button type="button" onclick="tripOpenModal()">+ Nuevo viaje</button></div>
+  const expanded = slot.dataset.expanded === "1";
+  slot.innerHTML = `<button type="button" class="trip-manager-toggle" aria-expanded="${expanded}" onclick="tripToggleManager()"><span>✈️ ${escapeHtml(trip.name)}</span><small>${escapeHtml(destinations[selected]?.city || "Elegí un destino")}${destinations.length > 1 ? ` · ${destinations.length} ciudades` : ""}</small><b>${expanded ? "▲" : "▼"}</b></button><div class="trip-manager-body" ${expanded ? "" : "hidden"}><div class="trip-manager-top"><label for="trip-select">Viaje</label><select id="trip-select" aria-label="Elegir viaje" onchange="window.tripPlanningSelect(this.value)">${visibleTrips.map(t => `<option value="${escapeHtml(t.id)}" ${t.id === trip.id ? "selected" : ""}>${escapeHtml(t.name)}${t.status ? " (archivado)" : ""}</option>`).join("")}</select><button type="button" onclick="tripOpenModal()">+ Nuevo viaje</button></div>
     <div class="trip-manager-destinations"><span>Destino</span>${destinations.map((d, i) => `<button type="button" class="${i === selected ? "active" : ""}" onclick="tripSelectDestination(${i})">${escapeHtml(d.city)}${d.state ? ", " + escapeHtml(d.state) : ""}</button>`).join("")}<button type="button" class="trip-add-destination" onclick="tripOpenModal(true)">+ Ciudad</button></div>
-    <div class="trip-manager-links"><span>${trip.startDate && trip.endDate ? escapeHtml(trip.startDate + " → " + trip.endDate) : "Organizá tu viaje por EE. UU."}</span><a href="../itinerario.html">Itinerario general ↗</a></div>
+    <div class="trip-manager-links"><span>${trip.startDate && trip.endDate ? escapeHtml(trip.startDate + " → " + trip.endDate) : "Organizá tu viaje por EE. UU."}</span><a href="../itinerario.html">Itinerario del viaje ↗</a></div>
     <div class="trip-manager-actions">${!trip.status ? `<button type="button" onclick="tripArchive('completed')">✓ Finalizar</button><button type="button" onclick="tripArchive('suspended')">⏸ Suspender</button>` : `<button type="button" onclick="tripRestore('${escapeHtml(trip.id)}')">Restaurar este viaje</button>`}
-    ${archivedTrips.length ? `<details><summary>Archivados (${archivedTrips.length})</summary>${archivedTrips.map(t => `<div class="trip-archived-item"><span>${escapeHtml(t.name)} · ${t.status === "completed" ? "Finalizado" : "Suspendido"}</span><button type="button" onclick="tripRestore('${escapeHtml(t.id)}')">Restaurar</button>${t.id !== "orlando" ? `<button type="button" onclick="tripDelete('${escapeHtml(t.id)}')">Eliminar</button>` : ""}</div>`).join("")}</details>` : ""}</div>`;
+    ${archivedTrips.length ? `<details><summary>Archivados (${archivedTrips.length})</summary>${archivedTrips.map(t => `<div class="trip-archived-item"><span>${escapeHtml(t.name)} · ${t.status === "completed" ? "Finalizado" : "Suspendido"}</span><button type="button" onclick="tripRestore('${escapeHtml(t.id)}')">Restaurar</button>${t.id !== "orlando" ? `<button type="button" onclick="tripDelete('${escapeHtml(t.id)}')">Eliminar</button>` : ""}</div>`).join("")}</details>` : ""}</div></div>`;
+}
+
+function tripToggleManager() {
+  const slot = document.getElementById("trip-manager");
+  slot.dataset.expanded = slot.dataset.expanded === "1" ? "0" : "1";
+  renderTripManager();
 }
 
 async function tripArchive(status) {
@@ -1631,7 +1638,7 @@ async function tripRestore(id) {
 
 async function tripDelete(id) {
   const trip = window._tripList?.find(t => t.id === id);
-  if (!trip || !await showConfirm(`Se eliminarán definitivamente «${trip.name}» y sus datos de Trip Planning. Esta acción no se puede deshacer. Exportá un respaldo antes si querés conservarlos.`, "¿Eliminar viaje?", "Eliminar", false)) return;
+  if (!trip || !await showConfirm(`Se eliminarán definitivamente «${trip.name}» y sus datos de Trip Planning. Los gastos y actividades quedarán en «Sin viaje». Esta acción no se puede deshacer. Exportá un respaldo antes si querés conservar el plan.`, "¿Eliminar viaje?", "Eliminar", false)) return;
   if (!await window.tripPlanningDelete(id)) showMToast("No se pudo eliminar. Revisá tu conexión y volvé a intentar.");
 }
 

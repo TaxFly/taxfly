@@ -709,8 +709,10 @@ if ("serviceWorker" in navigator) {
         <button class="btn-nav-set" id="btnSettings" onclick="toggleSettings()"></button>
     </nav>
     <script src="assets/ui.js"></script>
+    <script src="assets/trip-context.js"></script>
 
     
+    <div class="taxfly-trip-filter"><label for="trip-filter-itinerary">Viaje</label><select id="trip-filter-itinerary" aria-label="Filtrar por viaje"></select><a href="Maps/index.html">Gestionar viajes ↗</a></div>
     <div class="tab-bar">
         <button class="tab-btn active" onclick="switchTab('lugares')" id="tab-lugares">
             <span class="ti">📍</span><span data-i18n="tab_places">LUGARES</span>
@@ -1710,7 +1712,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/fireba
 
 import { getAuth, onAuthStateChanged, signOut, reauthenticateWithCredential, EmailAuthProvider, updateEmail, updatePassword, sendEmailVerification, sendPasswordResetEmail, verifyBeforeUpdateEmail, deleteUser } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, getDoc, getDocs, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
@@ -1784,6 +1786,29 @@ if (navigator.onLine) {
 let currentUser = null;
 
 const perfilId = localStorage.getItem("perfilActivoId");
+
+function refreshItineraryTrip() {
+  if (!currentUser || !perfilId) return;
+  const tc = window.TripContext;
+  tc.render(document.getElementById("trip-filter-itinerary"), currentUser.uid, perfilId);
+  renderActivities(localActivities);
+  renderNotes(localNotes);
+  const trip = tc.readTrips(currentUser.uid, perfilId).find(t => t.id === tc.view(currentUser.uid, perfilId));
+  const city = trip?.destinations?.[trip.activeDestination || 0]?.city;
+  const cityMap = {"Orlando":"orlando", "Nueva York":"nyc", "New York":"nyc", "Miami":"miami", "Las Vegas":"vegas", "Los Ángeles":"la", "Los Angeles":"la", "San Francisco":"sf", "Chicago":"chicago", "Washington D.C.":"dc"};
+  const selector = document.getElementById("citySelector");
+  if (selector && city) {
+    selector.querySelector('option[value="custom"]')?.remove();
+    if (!cityMap[city]) {
+      const option = document.createElement("option");
+      option.value = "custom";
+      option.textContent = city;
+      selector.appendChild(option);
+    }
+    selector.value = cityMap[city] || "custom";
+    renderCityData();
+  }
+}
 
 const perfilFoto = localStorage.getItem("perfilActivoFoto");
 
@@ -2287,6 +2312,10 @@ window.renderCityData = async () => {
   const cityKey = document.getElementById("citySelector").value;
   const container = document.getElementById("dynamicQueues");
   const cityData = citiesConfig[cityKey];
+  if (!cityData) {
+    container.textContent = "Todavía no hay datos en vivo para esta ciudad. Tus actividades y notas sí se guardan en este viaje.";
+    return;
+  }
   container.innerHTML = cityData.spots.map((s, i) => `\n            <div class="queue-card">\n                <div class="queue-name">${esc(s.name)}</div>\n                <div id="spot-${i}" class="queue-status q-off">...</div>\n            </div>\n        `).join("");
   if (typeof requestIdleCallback !== "undefined") {
     requestIdleCallback(() => updateStatusDisplay(cityKey), {
@@ -2478,7 +2507,8 @@ window.addActivity = async () => {
     time: time || "",
     type: type,
     done: false,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    tripId: currentUser && perfilId ? window.TripContext.assign(currentUser.uid, perfilId) : "orlando"
   };
   if (currentUser && perfilId) {
     if (!navigator.onLine) {
@@ -2566,6 +2596,7 @@ window.deleteActivity = async id => {
 };
 
 function renderActivities(acts) {
+  if (currentUser && perfilId) acts = window.TripContext.filter(acts, currentUser.uid, perfilId);
   const lang = localStorage.getItem("appLang") || "es";
   const container = document.getElementById("activitiesList");
   const progressCard = document.getElementById("progressCard");
@@ -2660,7 +2691,8 @@ window.addNote = async () => {
   if (!text || !currentUser || !perfilId) return;
   const data = {
     text: text,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    tripId: currentUser && perfilId ? window.TripContext.assign(currentUser.uid, perfilId) : "orlando"
   };
   if (!navigator.onLine) {
     const tempId = "tmp_note_" + Date.now();
@@ -2687,6 +2719,7 @@ window.addNote = async () => {
 };
 
 function renderNotes(notes) {
+  if (currentUser && perfilId) notes = window.TripContext.filter(notes, currentUser.uid, perfilId);
   const lang = localStorage.getItem("appLang") || "es";
   const notesList = document.getElementById("notesList");
   if (!notes.length) {
@@ -3122,6 +3155,12 @@ onAuthStateChanged(auth, async user => {
       }
     } catch (e) {}
     renderCityData();
+    const tripSelect = document.getElementById("trip-filter-itinerary");
+    tripSelect.addEventListener("change", () => {
+      window.TripContext.select(user.uid, perfilId, tripSelect.value);
+      refreshItineraryTrip();
+    });
+    window.TripContext.hydrate(db, user.uid, perfilId, getDocs, collection, refreshItineraryTrip);
     listenNotes();
     listenActivities();
     const lang = localStorage.getItem("appLang") || "es";
@@ -3728,8 +3767,8 @@ window.updateInlineTransport = function() {
   const isOrlando = selectorVal === "orlando";
   const blockA = document.getElementById("inline-transport-nonOrlando");
   const blockB = document.getElementById("inline-transport-orlando");
-  if (blockA) blockA.style.display = isOrlando ? "none" : "block";
-  if (blockB) blockB.style.display = isOrlando ? "block" : "none";
+  if (blockA) blockA.style.display = city && !isOrlando ? "block" : "none";
+  if (blockB) blockB.style.display = city && isOrlando ? "block" : "none";
   if (!city) return;
   const html = buildTransportHTML(city, lang);
   if (isOrlando) {
