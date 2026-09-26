@@ -1865,3 +1865,8 @@ body::before {
 .trip-archived-item { display:flex; align-items:center; flex-wrap:wrap; gap:7px; padding:8px 0; border-top:1px solid rgba(148,163,184,.22); }
 .trip-archived-item span { flex:1; min-width:130px; }
 .trip-archived-item button:last-child:not(:first-child) { color:#fca5a5; }
+.stop-map-recovery { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:12px 0; padding:12px; border:1px solid var(--border2); border-radius:var(--radius); background:var(--surface); font-size:12px; }
+.stop-map-recovery>span { flex:1; min-width:180px; font-weight:700; }
+.stop-map-recovery button { border:1px solid var(--accent); border-radius:9px; background:transparent; color:var(--accent); padding:8px 10px; font:inherit; font-weight:700; cursor:pointer; }
+.stop-map-recovery button:disabled { opacity:.6; cursor:wait; }
+.stop-map-recovery small { width:100%; color:var(--muted); }

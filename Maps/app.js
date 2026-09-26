@@ -1900,7 +1900,7 @@ function renderDayContent(d) {
     if (isEditingThis) {
       const badgeVal = s.badge || "";
       const badgeText = escapeHtml(s.badgeText || "");
-      html += `\n        <div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n          <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--accent);display:flex;align-items:center;gap:6px">${ic("pencil", 13)} Editar parada</div>\n          <div class="wm-edit-form" style="width:100%">\n            <input class="wm-edit-input" id="stop-edit-name" placeholder="Nombre del lugar" value="${escapeHtml(s.name)}" style="margin-bottom:6px;width:100%">\n            <textarea class="wm-edit-input" id="stop-edit-desc" placeholder="Descripción (horarios, tips…)" style="margin-bottom:6px;width:100%;min-height:56px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${s.desc}</textarea>\n            <input class="wm-edit-input" id="stop-edit-url" placeholder="URL de Google Maps" value="${escapeHtml(s.url || "")}" style="margin-bottom:6px;width:100%">\n            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n              <select class="wm-edit-input" id="stop-edit-badge">\n                <option value=""${badgeVal === "" ? " selected" : ""}>Sin badge</option>\n                <option value="star"${badgeVal === "star" ? " selected" : ""}>⭐ Imperdible</option>\n                <option value="rec"${badgeVal === "rec" ? " selected" : ""}>✅ Recomendado</option>\n              </select>\n              <input class="wm-edit-input" id="stop-edit-badgetext" placeholder="Texto badge (ej: N°1)" value="${badgeText}">\n            </div>\n            <div class="wm-edit-actions">\n              <button class="mbtn" onclick="stopCancelEdit()">Cancelar</button>\n              <button class="mbtn msave" onclick="stopSaveEdit(${d},${i})">Guardar</button>\n            </div>\n          </div>\n        </div>`;
+      html += `\n        <div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n          <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--accent);display:flex;align-items:center;gap:6px">${ic("pencil", 13)} Editar parada</div>\n          <div class="wm-edit-form" style="width:100%">\n            <input class="wm-edit-input" id="stop-edit-name" placeholder="Nombre del lugar" value="${escapeHtml(s.name)}" style="margin-bottom:6px;width:100%">\n            <textarea class="wm-edit-input" id="stop-edit-desc" placeholder="Descripción (horarios, tips…)" style="margin-bottom:6px;width:100%;min-height:56px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${s.desc}</textarea>\n            <input class="wm-edit-input" id="stop-edit-url" placeholder="URL de Google Maps" value="${escapeHtml(s.url || "")}" style="margin-bottom:6px;width:100%">\n            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n              <input class="wm-edit-input" id="stop-edit-lat" type="number" step="any" placeholder="Latitud (opcional)" aria-label="Latitud" value="${s.lat ?? ""}">\n              <input class="wm-edit-input" id="stop-edit-lng" type="number" step="any" placeholder="Longitud (opcional)" aria-label="Longitud" value="${s.lng ?? ""}">\n            </div>\n            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n              <select class="wm-edit-input" id="stop-edit-badge">\n                <option value=""${badgeVal === "" ? " selected" : ""}>Sin badge</option>\n                <option value="star"${badgeVal === "star" ? " selected" : ""}>⭐ Imperdible</option>\n                <option value="rec"${badgeVal === "rec" ? " selected" : ""}>✅ Recomendado</option>\n              </select>\n              <input class="wm-edit-input" id="stop-edit-badgetext" placeholder="Texto badge (ej: N°1)" value="${badgeText}">\n            </div>\n            <div class="wm-edit-actions">\n              <button class="mbtn" onclick="stopCancelEdit()">Cancelar</button>\n              <button class="mbtn msave" onclick="stopSaveEdit(${d},${i})">Guardar</button>\n            </div>\n          </div>\n        </div>`;
     } else {
       let badge = "";
       if (s.badge === "star") badge = `<span class="badge badge-star">${escapeHtml(s.badgeText)}</span>`;
@@ -1914,6 +1914,10 @@ function renderDayContent(d) {
     html += `<button onclick="stopStartAdd(${d})" style="width:100%;padding:12px;border:1px dashed var(--border2);border-radius:var(--radius);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:2px" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">+ Agregar parada</button>`;
   }
   const stopsWithCoords = day.stops.filter(s => s.lat && s.lng);
+  const missingCoords = day.stops.length - stopsWithCoords.length;
+  if (missingCoords) {
+    html += `<div class="stop-map-recovery"><span>${missingCoords} parada${missingCoords === 1 ? "" : "s"} sin ubicación en el mapa.</span><button type="button" id="recover-stops-${d}" onclick="recoverStopLocations(${d})">↻ Recuperar ubicaciones</button><small>Busca las direcciones guardadas. Comprobá los pines recuperados antes de usarlos para navegar.</small></div>`;
+  }
   if (stopsWithCoords.length > 0) {
     const canOptimize = stopsWithCoords.length === day.stops.length && stopsWithCoords.length >= 3;
     html += `\n      <div class="day-map-wrap" style="margin-top:14px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);">\n        <div class="day-map-header" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);">\n          <div class="day-map-title">${ic("map", 13)} Mapa del día · ${stopsWithCoords.length} paradas</div>\n          ${canOptimize ? `<button class="mbtn" id="optimize-btn-${d}" onclick="optimizeDayOrder(${d})" title="Reordena las paradas para viajar menos entre ellas">↻ Optimizar orden</button>` : ""}\n        </div>\n        ${stopsWithCoords.length > 1 ? `<div class="day-route-info" id="day-route-info-${d}">Calculando ruta…</div>` : ""}\n        <div id="day-map-container-${d}" class="day-map-container"></div>\n      </div>`;
@@ -2106,17 +2110,82 @@ function stopSaveEdit(dayIdx, stopIdx) {
     }, 2e3);
     return;
   }
+  // Keep coordinates and any future metadata when editing only the visible fields.
+  const original = days[dayIdx].stops[stopIdx];
+  const latitude = document.getElementById("stop-edit-lat")?.value.trim();
+  const longitude = document.getElementById("stop-edit-lng")?.value.trim();
+  if ((latitude || longitude) && !validStopCoords(Number(latitude), Number(longitude))) {
+    showMToast("Revisá la latitud y longitud de la parada");
+    return;
+  }
   days[dayIdx].stops[stopIdx] = {
+    ...original,
     name: name,
     desc: document.getElementById("stop-edit-desc").value.trim(),
     url: document.getElementById("stop-edit-url").value.trim(),
     badge: document.getElementById("stop-edit-badge").value || undefined,
     badgeText: document.getElementById("stop-edit-badgetext").value.trim() || undefined
   };
+  if (latitude && longitude) {
+    days[dayIdx].stops[stopIdx].lat = Number(latitude);
+    days[dayIdx].stops[stopIdx].lng = Number(longitude);
+  }
+  _routeCache = {};
   stopEditingIdx = null;
   saveState();
   renderOutlets();
   showMToast("Parada guardada ✓");
+}
+
+function validStopCoords(lat, lng) {
+  return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && !(lat === 0 && lng === 0);
+}
+
+function coordsFromMapsUrl(raw) {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (!/(^|\.)google\.[a-z.]+$|(^|\.)maps\.app\.goo\.gl$/.test(url.hostname)) return null;
+    const at = url.href.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+    const place = url.href.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+    const q = (url.searchParams.get("q") || url.searchParams.get("query") || "").match(/^(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)$/);
+    const pair = place || q || at;
+    if (!pair) return null;
+    const lat = Number(pair[1]), lng = Number(pair[2]);
+    return validStopCoords(lat, lng) ? { lat, lng } : null;
+  } catch (e) { return null; }
+}
+
+function stopSearchAddress(stop) {
+  // Descriptions often end with business hours, which confuse address lookup.
+  const address = (stop.desc || "").split(/[·•]/)[0].replace(/\b(?:Abre|Cierra)\b.*$/i, "").replace(/\b(?:Ste|Suite|Unit)\s*[A-Za-z0-9-]+$/i, "").trim();
+  const destination = window._trip?.destinations?.[window._trip.activeDestination || 0];
+  const area = [destination?.city || "Orlando", destination?.state || "Florida", "USA"].join(", ");
+  return (address || stop.name) + ", " + area;
+}
+
+async function recoverStopLocations(dayIdx) {
+  const day = days[dayIdx];
+  if (!day) return;
+  const missing = day.stops.map((s, index) => ({ s, index })).filter(({ s }) => !validStopCoords(Number(s.lat), Number(s.lng)));
+  const btn = document.getElementById("recover-stops-" + dayIdx);
+  if (btn) btn.disabled = true;
+  let restored = 0;
+  for (let i = 0; i < missing.length; i++) {
+    const { s, index } = missing[i];
+    if (btn) btn.textContent = `Buscando ${i + 1}/${missing.length}…`;
+    const found = coordsFromMapsUrl(s.url) || await geoNominatimAddress(stopSearchAddress(s));
+    if (found && validStopCoords(found.lat, found.lng) && days[dayIdx] === day && day.stops[index] === s) {
+      s.lat = found.lat;
+      s.lng = found.lng;
+      saveState();
+      restored++;
+    }
+    if (i < missing.length - 1) await geoSleep(1100);
+  }
+  _routeCache = {};
+  renderOutlets();
+  showMToast(restored ? `${restored} ubicación${restored === 1 ? "" : "es"} recuperada${restored === 1 ? "" : "s"}. Revisá los pines en el mapa.` : "No se encontraron ubicaciones; podés ingresar coordenadas al editar cada parada.");
 }
 
 function stopSaveDayLabel(dayIdx) {

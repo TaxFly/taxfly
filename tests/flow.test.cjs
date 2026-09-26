@@ -24,6 +24,24 @@ test('Trip Planning keeps the Orlando data path and isolates new trips', () => {
   assert.equal(context(keyCode,{window:{_perfilId:'profile',_tripId:'trip-123'}}).scopedKey('days'), 'days::profile::trip-123');
 });
 
+test('editing a stop retains its map pin and coordinate links can restore pins', () => {
+  const src=between(read('Maps/app.js'), 'function stopSaveEdit(dayIdx, stopIdx)', 'function stopSaveDayLabel(dayIdx)');
+  const original={name:'Dólar Tree',desc:'Old',url:'',lat:28.459,lng:-81.475,custom:'keep'};
+  const days=[{stops:[original]}];
+  const values={'stop-edit-name':'Dollar Tree','stop-edit-desc':'8910 Turkey Lake Rd · Abre 8:00','stop-edit-url':'',
+    'stop-edit-badge':'','stop-edit-badgetext':'','stop-edit-lat':'28.459','stop-edit-lng':'-81.475'};
+  let saves=0;
+  const c=context(src,{days,document:{getElementById:id=>({value:values[id],style:{},focus(){},setAttribute(){}})},
+    saveState:()=>saves++,renderOutlets:()=>{},showMToast:()=>{},URL,Number,window:{},_routeCache:{}});
+  c.stopSaveEdit(0,0);
+  assert.equal(saves,1);
+  assert.equal(days[0].stops[0].name,'Dollar Tree');
+  assert.equal(days[0].stops[0].lat,28.459);
+  assert.equal(days[0].stops[0].lng,-81.475);
+  assert.equal(days[0].stops[0].custom,'keep');
+  assert.equal(c.coordsFromMapsUrl('https://www.google.com/maps/place/X/@28.45,-81.47,14z/!3d28.459!4d-81.475').lat,28.459);
+});
+
 test('login online, offline locked, and offline unlocked choose the correct next screen', async () => {
   const src=between(read('login.html'), 'async function initScreen()', 'let splashExitPromise;');
   async function scenario(online, unlocked) {
