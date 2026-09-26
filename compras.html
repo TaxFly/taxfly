@@ -226,6 +226,8 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .comp-store-tag{font-size:.55rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
         .comp-store-arrow{font-size:.85rem;color:var(--store-color,var(--primary));font-weight:900;flex-shrink:0;transition:transform .2s;}
         .comp-store-card:hover .comp-store-arrow{transform:translate(2px,-2px);}
+        .comp-store-highlight{border-color:var(--store-color,var(--primary));box-shadow:0 0 0 2px var(--store-color,var(--primary)) inset;}
+        .comp-store-highlight::before{opacity:1;height:4px;}
         
         #comp-ai-panel{display:none;margin-bottom:14px;}
         .comp-ai-loading{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 16px;display:flex;align-items:center;gap:12px;}
@@ -242,6 +244,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .comp-ai-body ul{margin:6px 0;padding-left:16px;}
         .comp-ai-body li{margin:3px 0;font-size:.82rem;}
         .comp-ai-body p{margin:4px 0;}
+        .comp-ai-disclaimer{margin-top:10px;font-size:.68rem;color:var(--text-dim);opacity:.75;line-height:1.4;}
 
         
         
@@ -3323,15 +3326,44 @@ const COMP_STORES = [ {
   url: q => `https://pricespy.com/search?search=${encodeURIComponent(q)}`
 } ];
 
-const GROQ_COMP_URL = "https://taxusa.juanbria18.workers.dev";
+// --- Detección simple de categoría por palabra clave (para destacar tiendas afines) ---
+function compNormalize(s) {
+  return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+const COMP_CATEGORY_KEYWORDS = {
+  "Deportivo": [ "zapatilla", "zapatillas", "nike", "adidas", "running", "futbol", "botines", "deportiv" ],
+  "Foto / Video": [ "camara", "foto", "lente", "lentes", "gopro", "dron", "drone", "video" ],
+  "Electrónica": [ "notebook", "laptop", "iphone", "celular", "telefono", "tablet", "ipad", "auricular", "auriculares", "smartwatch", "televisor" ],
+  "Apple oficial": [ "macbook", "airpods", "apple watch" ],
+  "PC / Gaming": [ "placa de video", "gpu", "gabinete gamer", "teclado gamer", "mouse gamer" ],
+  "PC / Hardware": [ "procesador", "memoria ram", "motherboard", "disco ssd" ],
+  "Videojuegos": [ "ps5", "playstation", "xbox", "nintendo", "switch", "videojuego" ],
+  "Cosmética": [ "maquillaje", "perfume", "skincare", "labial" ],
+  "Calzado": [ "zapatos", "botas", "sandalias" ],
+  "Outdoor": [ "mochila", "carpa", "camping", "trekking" ],
+  "Hogar / Herram.": [ "herramienta", "herramientas", "taladro" ],
+  "Muebles / Hogar": [ "mueble", "muebles", "sofa" ]
+};
+
+function compDetectCategory(q) {
+  const norm = compNormalize(q);
+  for (const [ tag, keywords ] of Object.entries(COMP_CATEGORY_KEYWORDS)) {
+    if (keywords.some(k => norm.includes(compNormalize(k)))) return tag;
+  }
+  return null;
+}
 
 function compRenderGrid(q) {
   const grid = document.getElementById("comp-stores-grid");
   if (!grid) return;
-  grid.innerHTML = COMP_STORES.map(s => {
+  const category = q ? compDetectCategory(q) : null;
+  const stores = category ? [ ...COMP_STORES.filter(s => s.tag === category), ...COMP_STORES.filter(s => s.tag !== category) ] : COMP_STORES;
+  grid.innerHTML = stores.map(s => {
     const href = q ? s.url(q) : "#";
     const dimmed = q ? "" : "opacity:.45;pointer-events:none;";
-    return `<a class="comp-store-card" href="${href}" target="_blank" rel="noopener"\n            style="--store-color:${s.color};${dimmed}">\n            <div class="comp-store-inner">\n                <div class="comp-store-emoji">${s.emoji}</div>\n                <div class="comp-store-info">\n                    <div class="comp-store-name">${esc(s.name)}</div>\n                    <div class="comp-store-tag">${s.tag}</div>\n                </div>\n                <div class="comp-store-arrow">↗</div>\n            </div>\n        </a>`;
+    const highlighted = category && s.tag === category ? " comp-store-highlight" : "";
+    return `<a class="comp-store-card${highlighted}" href="${href}" target="_blank" rel="noopener"\n            style="--store-color:${s.color};${dimmed}">\n            <div class="comp-store-inner">\n                <div class="comp-store-emoji">${s.emoji}</div>\n                <div class="comp-store-info">\n                    <div class="comp-store-name">${esc(s.name)}</div>\n                    <div class="comp-store-tag">${s.tag}</div>\n                </div>\n                <div class="comp-store-arrow">↗</div>\n            </div>\n        </a>`;
   }).join("");
 }
 
@@ -3373,40 +3405,76 @@ window.compActualizarLinks = function() {
   compRenderGrid(q);
 };
 
+// --- Cache simple en localStorage (4hs) para no repetir llamadas a la IA ---
+const COMP_CACHE_PREFIX = "comp_ia_cache_";
+const COMP_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
+
+function compCacheKey(q) {
+  return COMP_CACHE_PREFIX + q.trim().toLowerCase();
+}
+
+function compGetCached(q) {
+  try {
+    const raw = localStorage.getItem(compCacheKey(q));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.reply || !parsed.ts) return null;
+    if (Date.now() - parsed.ts > COMP_CACHE_TTL_MS) return null;
+    return parsed.reply;
+  } catch (e) {
+    return null;
+  }
+}
+
+function compSetCache(q, reply) {
+  try {
+    localStorage.setItem(compCacheKey(q), JSON.stringify({
+      reply: reply,
+      ts: Date.now()
+    }));
+  } catch (e) {}
+}
+
+function compRenderAIResult(q, reply) {
+  const panel = document.getElementById("comp-ai-panel");
+  if (!panel) return;
+  panel.innerHTML = `<div class="comp-ai-result">\n            <div class="comp-ai-header">\n                <span class="comp-ai-icon">🤖</span>\n                <span class="comp-ai-title">Recomendación IA para "${esc(q)}"</span>\n            </div>\n            <div class="comp-ai-body">${compFormatAI(reply)}</div>\n            <div class="comp-ai-disclaimer">Orientación general basada en una búsqueda web al momento de la consulta. No es una cotización garantizada; los precios pueden cambiar.</div>\n        </div>`;
+}
+
 window.compAnalizarIA = async function() {
   const q = (document.getElementById("comp-product")?.value || "").trim();
   if (!q) return;
+  const panel = document.getElementById("comp-ai-panel");
+  if (!panel) return;
+
+  const cached = compGetCached(q);
+  if (cached) {
+    panel.style.display = "block";
+    compRenderAIResult(q, cached);
+    return;
+  }
+
   if (!await _rcCheck("ai_analyze")) {
     return;
   }
-  const panel = document.getElementById("comp-ai-panel");
-  if (!panel) return;
+
   panel.style.display = "block";
-  panel.innerHTML = `<div class="comp-ai-loading">\n        <div class="comp-ai-dots"><div class="comp-ai-dot"></div><div class="comp-ai-dot"></div><div class="comp-ai-dot"></div></div>\n        <span class="comp-ai-loading-txt">Analizando tiendas para "<strong>${q.replace(/</g, "&lt;")}</strong>"...</span>\n    </div>`;
+  panel.innerHTML = `<div class="comp-ai-loading">\n        <div class="comp-ai-dots"><div class="comp-ai-dot"></div><div class="comp-ai-dot"></div><div class="comp-ai-dot"></div></div>\n        <span class="comp-ai-loading-txt">Analizando tiendas para "<strong>${esc(q)}</strong>"...</span>\n    </div>`;
   const storeList = COMP_STORES.filter(s => s.id !== "google" && s.id !== "pricespy").map(s => `${s.name} (${s.tag})`).join(", ");
-  const systemPrompt = `Sos un experto en compras en Estados Unidos ayudando a turistas argentinos. Conocés muy bien los precios y políticas de estas tiendas: ${storeList}. Tu tono es directo, concreto y útil. Usás viñetas y negritas solo si ayudan. Nunca empezás con "Claro!" ni rellenos.`;
-  const userMsg = `El usuario quiere comprar: "${q}". Basándote en tu conocimiento de estas tiendas de USA, respondé:\n1. **¿Dónde recomendás comprarlo y por qué?** (considerá precio habitual, confiabilidad, garantía, si conviene esperar ofertas)\n2. **Alternativas** (1 o 2 opciones más baratas o similares)\n3. **Un tip extra** (promo habitual, tarjeta, cashback, época del año, etc.)\nSé específico. Si es electrónica/foto, mencioná B&H o Adorama. Si es ropa deportiva, Nike/Adidas directo vs Amazon. Formato claro, sin introducción.`;
   try {
-    const res = await fetch(GROQ_COMP_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
-        messages: [ {
-          role: "system",
-          content: systemPrompt
-        }, {
-          role: "user",
-          content: userMsg
-        } ],
-        max_tokens: 600,
-        temperature: .6,
-        stream: false
-      })
+    const resp = await window.taxflyWorker({
+      type: "compare_shopping",
+      product: q,
+      storeList: storeList
     });
-    const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content || "No se pudo obtener la recomendación. Intentá de nuevo.";
-    panel.innerHTML = `<div class="comp-ai-result">\n            <div class="comp-ai-header">\n                <span class="comp-ai-icon">🤖</span>\n                <span class="comp-ai-title">Recomendación IA para "${q.replace(/</g, "&lt;")}"</span>\n            </div>\n            <div class="comp-ai-body">${compFormatAI(reply)}</div>\n        </div>`;
+    if (!resp.ok) throw new Error("API error: " + resp.status);
+    const data = await resp.json();
+    const reply = data.choices?.[0]?.message?.content;
+    if (!reply) throw new Error("Respuesta vacía del worker");
+    compSetCache(q, reply);
+    compRenderAIResult(q, reply);
   } catch (e) {
+    console.error("compare_shopping error:", e);
     panel.innerHTML = `<div class="comp-ai-result" style="border-color:var(--danger);background:rgba(239,68,68,.06);">\n            <div class="comp-ai-body"><p>❌ No se pudo conectar con la IA. Verificá tu conexión e intentá de nuevo.</p></div>\n        </div>`;
   }
 };
