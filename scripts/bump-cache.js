@@ -1,60 +1,43 @@
 #!/usr/bin/env node
-const fs = require("fs");
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const ROOT = path.resolve(__dirname, '..');
+const SW_PATH = path.join(ROOT, 'sw.js');
 
-const path = require("path");
-
-const crypto = require("crypto");
-
-const ROOT = path.resolve(__dirname, "..");
-
-const SW_PATH = path.join(ROOT, "sw.js");
-
-function readSw() {
-  return fs.readFileSync(SW_PATH, "utf8");
+function extractPrecachePaths(source) {
+  const match = source.match(/const PRECACHE = (\[[\s\S]*?\]);/);
+  if (!match) throw new Error('No se encontró PRECACHE en sw.js');
+  const values = JSON.parse(match[1]);
+  if (!Array.isArray(values) || !values.length) throw new Error('PRECACHE vacío');
+  return values.filter(value => value.startsWith('./'));
 }
 
-function extractPrecachePaths(swSource) {
-  const match = swSource.match(/const PRECACHE = \[([\s\S]*?)\];/);
-  if (!match) throw new Error("No encontré el array PRECACHE en sw.js");
-  const entries = [ ...match[1].matchAll(/'(\.\/[^']+)'/g) ].map(m => m[1]);
-  if (!entries.length) throw new Error("PRECACHE está vacío o no lo pude leer");
-  return entries;
-}
-
-function hashPrecachedFiles(paths) {
-  const hash = crypto.createHash("sha256");
-  for (const p of paths.slice().sort()) {
-    const filePath = path.join(ROOT, p);
-    hash.update(p);
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-      hash.update(fs.readFileSync(filePath));
-    } else {
-      console.warn(`[bump-cache] aviso: ${p} está en PRECACHE pero no existe en el repo`);
-      hash.update("__missing__");
-    }
+function cacheVersion(source, root = ROOT) {
+  const hash = crypto.createHash('sha256');
+  hash.update(source.replace(/^const CACHE = [\"'][^\"']+[\"'];/m, 'const CACHE = \"<version>\";'));
+  for (const url of extractPrecachePaths(source).sort()) {
+    const file = path.resolve(root, url);
+    if (!file.startsWith(root + path.sep) || !fs.statSync(file).isFile()) throw new Error(`Falta el archivo precargado: ${url}`);
+    hash.update(url).update(fs.readFileSync(file));
   }
-  return hash.digest("hex").slice(0, 12);
+  return `taxfly-${hash.digest('hex').slice(0, 12)}`;
 }
 
 function main() {
-  const checkOnly = process.argv.includes("--check");
-  const swSource = readSw();
-  const paths = extractPrecachePaths(swSource);
-  const newHash = hashPrecachedFiles(paths);
-  const newCacheLine = `const CACHE = 'taxfly-${newHash}';`;
-  const currentMatch = swSource.match(/const CACHE = '([^']+)';/);
-  const currentValue = currentMatch ? currentMatch[1] : null;
-  if (currentValue === `taxfly-${newHash}`) {
-    console.log(`[bump-cache] sw.js ya está al día (${currentValue})`);
+  const source = fs.readFileSync(SW_PATH, 'utf8');
+  const expected = cacheVersion(source);
+  const current = source.match(/^const CACHE = ["']([^"']+)["'];/m)?.[1];
+  if (!current) throw new Error('No se encontró CACHE en sw.js');
+  if (current === expected) { console.log(`Caché al día: ${current}`); return; }
+  if (process.argv.includes('--check')) {
+    console.error(`Caché desactualizada: ${current} → ${expected}`);
+    process.exitCode = 1;
     return;
   }
-  if (checkOnly) {
-    console.error(`[bump-cache] sw.js desactualizado: dice '${currentValue}', debería ser 'taxfly-${newHash}'`);
-    process.exit(1);
-  }
-  const updated = swSource.replace(/const CACHE = '[^']+';/, newCacheLine);
-  fs.writeFileSync(SW_PATH, updated);
-  console.log(`[bump-cache] CACHE actualizado: '${currentValue}' → 'taxfly-${newHash}'`);
+  fs.writeFileSync(SW_PATH, source.replace(/^const CACHE = ["'][^"']+["'];/m, `const CACHE = "${expected}";`));
+  console.log(`Caché actualizada: ${current} → ${expected}`);
 }
 
-main();
+if (require.main === module) main();
+module.exports = {extractPrecachePaths, cacheVersion};

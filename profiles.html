@@ -102,8 +102,11 @@ if (navigator.onLine) {
         .profile-item {
             display: flex; flex-direction: column;
             align-items: center; cursor: pointer;
+            border: 0; background: transparent; padding: 0;
+            color: inherit; font: inherit; text-align: center;
             transition: var(--transition);
         }
+        .profile-item:focus-visible { outline: 3px solid var(--primary); outline-offset: 7px; border-radius: 18px; }
 
         .avatar-wrapper {
             position: relative; width: 120px; height: 120px; margin-bottom: 12px;
@@ -113,6 +116,7 @@ if (navigator.onLine) {
             width: 120px; height: 120px;
             border-radius: 18px;
             background: var(--surface-2) no-repeat center/cover;
+            object-fit: cover; display: block;
             border: 2.5px solid transparent;
             transition: var(--transition);
             box-shadow: var(--shadow);
@@ -754,15 +758,75 @@ onAuthStateChanged(auth, async user => {
   render();
 });
 
+function safeProfilePhoto(url) {
+  if (typeof url !== "string") return photos[0];
+  if (/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(url)) return url;
+  try {
+    const parsed = new URL(url, location.href);
+    return parsed.protocol === "https:" ? parsed.href : photos[0];
+  } catch (e) { return photos[0]; }
+}
+
 function render() {
   const activeId = localStorage.getItem("perfilActivoId");
   const grid = document.getElementById("profilesGrid");
-  grid.innerHTML = profiles.map(p => {
+  grid.replaceChildren();
+  profiles.forEach(p => {
     const isActive = p.id === activeId;
-    return `\n            <div class="profile-item" onclick="handleClick('${p.id}','${p.nombre}','${encodeURIComponent(p.foto)}')">\n                <div class="avatar-wrapper">\n                    <div class="avatar${isActive ? " is-active" : ""}" style="background-image:url('${p.foto}')"></div>\n                    ${isActive ? `<div class="active-badge">${t.active}</div>` : ""}\n                    <div class="edit-overlay">\n                        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>\n                    </div>\n                </div>\n                <div class="profile-name"${isActive ? ' style="color:var(--text);font-weight:800;"' : ""}>${p.nombre}</div>\n            </div>`;
-  }).join("");
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "profile-item";
+    item.setAttribute("aria-label", p.nombre);
+    item.addEventListener("click", () => handleClick(p.id, p.nombre, p.foto));
+    const wrapper = document.createElement("span");
+    wrapper.className = "avatar-wrapper";
+    const avatar = document.createElement("img");
+    avatar.className = "avatar" + (isActive ? " is-active" : "");
+    avatar.src = safeProfilePhoto(p.foto);
+    avatar.alt = "";
+    avatar.addEventListener("error", () => { if (avatar.src !== photos[0]) avatar.src = photos[0]; }, { once: true });
+    wrapper.appendChild(avatar);
+    if (isActive) {
+      const badge = document.createElement("span");
+      badge.className = "active-badge";
+      badge.textContent = t.active;
+      wrapper.appendChild(badge);
+    }
+    const overlay = document.createElement("span");
+    overlay.className = "edit-overlay";
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
+    wrapper.appendChild(overlay);
+    item.appendChild(wrapper);
+    const name = document.createElement("span");
+    name.className = "profile-name";
+    name.textContent = p.nombre;
+    if (isActive) { name.style.color = "var(--text)"; name.style.fontWeight = "800"; }
+    item.appendChild(name);
+    grid.appendChild(item);
+  });
   if (profiles.length < 5) {
-    grid.innerHTML += `\n                <div class="profile-item" onclick="openEditor(null)">\n                    <div class="avatar-wrapper"><div class="add-avatar"><span>+</span><span class="add-label">${t.addLabel}</span></div></div>\n                    <div class="profile-name">${t.newProfile}</div>\n                </div>`;
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "profile-item";
+    item.addEventListener("click", () => openEditor(null));
+    const wrapper = document.createElement("span");
+    wrapper.className = "avatar-wrapper";
+    const avatar = document.createElement("span");
+    avatar.className = "add-avatar";
+    const plus = document.createElement("span");
+    plus.textContent = "+";
+    const label = document.createElement("span");
+    label.className = "add-label";
+    label.textContent = t.addLabel;
+    avatar.append(plus, label);
+    wrapper.appendChild(avatar);
+    item.appendChild(wrapper);
+    const name = document.createElement("span");
+    name.className = "profile-name";
+    name.textContent = t.newProfile;
+    item.appendChild(name);
+    grid.appendChild(item);
   }
 }
 
@@ -778,7 +842,7 @@ window.handleClick = (id, nombre, fotoEnc) => {
     openEditor(id);
     return;
   }
-  const foto = decodeURIComponent(fotoEnc);
+  const foto = safeProfilePhoto(fotoEnc);
   localStorage.setItem("perfilActivoId", id);
   localStorage.setItem("perfilActivoNombre", nombre);
   localStorage.setItem("perfilActivoFoto", foto);
@@ -859,7 +923,7 @@ window.saveProfile = async () => {
   profiles = updatedProfiles;
   localStorage.setItem("taxfly_cached_profiles", JSON.stringify(profiles));
   if (isNew) {
-    handleClick(newProfile.id, newProfile.nombre, encodeURIComponent(newProfile.foto || ""));
+    handleClick(newProfile.id, newProfile.nombre, newProfile.foto || "");
     return;
   }
   closeModal();

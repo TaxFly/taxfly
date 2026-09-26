@@ -1,4 +1,4 @@
-const CACHE = "taxfly-flow-20260926-v7";
+const CACHE = "taxfly-d01ef971942a";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 
@@ -8,14 +8,22 @@ const PRECACHE = [ "./login.html", "./selector.html", "./profiles.html", "./inde
 
 const OFFLINE_FALLBACK = "./offline.html";
 
+// Keep the previous worker active if the essential offline shell cannot be cached.
+const CORE = ["./login.html", "./selector.html", "./profiles.html", "./index.html", "./offline.html", "./config.js", "./assets/security.js", "./assets/style.css", "./assets/splash.css", "./assets/ui.css", "./manifest.json"];
+
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(cache => Promise.allSettled(PRECACHE.map(url => cache.add(url).catch(err => {
-    console.warn("[SW] No se pudo cachear:", url, err);
-  })))).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(async cache => {
+    await cache.addAll(CORE);
+    const optional = PRECACHE.filter(url => !CORE.includes(url));
+    await Promise.allSettled(optional.map(url => cache.add(url).catch(err => {
+      console.warn("[SW] No se pudo cachear:", url, err);
+    })));
+    await self.skipWaiting();
+  }));
 });
 
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== TILES_CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith("taxfly-") && k !== CACHE && k !== TILES_CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
 async function trimTileCache() {
