@@ -66,7 +66,7 @@ test('login online, offline locked, and offline unlocked choose the correct next
   async function scenario(online, unlocked) {
     const events=[];
     const c=context(src, {
-      currentLang:'es', applyLanguage:()=>{}, checkRealConnectivity:async()=>{}, isOnline:()=>online,
+      currentLang:'es', installRequested:false, applyLanguage:()=>{}, checkRealConnectivity:async()=>{}, isOnline:()=>online,
       localStorage:storage({'taxusa_pin_hash':'saved','taxusa_offline_email':'a@example.com'}),
       hasRecentActivity:()=>unlocked, showScreen:id=>events.push(id),
       showOfflinePinScreen:()=>events.push('PIN'),
@@ -78,6 +78,25 @@ test('login online, offline locked, and offline unlocked choose the correct next
   assert.deepEqual(await scenario(true,false), ['screen-login','splash']);
   assert.deepEqual(await scenario(false,false), ['PIN','splash']);
   assert.deepEqual(await scenario(false,true), ['splash','app']);
+});
+
+test('all settings install the main TaxFly PWA', () => {
+  const manifest=JSON.parse(read('manifest.json'));
+  assert.equal(manifest.short_name,'TaxFly');
+  assert.equal(manifest.start_url,'./login.html');
+  assert.equal(manifest.scope,'./');
+  for (const page of ['index.html','compras.html','itinerario.html','unidades.html','tickets.html','grupo.html','rutas.html','tax.html']) {
+    assert.match(read(page), /rel="manifest" href="manifest.json"/);
+    assert.match(read(page), /assets\/settings\.js/);
+  }
+  assert.match(read('assets/settings.js'), /row\("install", "phone"/);
+  for (const page of ['Maps/index.html','Maps/Mis_cosas_de_viaje.html']) {
+    const html=read(page);
+    assert.match(html, /rel="manifest" href="\.\.\/manifest.json"/);
+    assert.match(html, /id="sxInstall"(?! hidden)/);
+    assert.match(html, /apple-mobile-web-app-title" content="TaxFly"/);
+  }
+  assert.match(read('Maps/sx-ui.js'), /\.\.\/login\.html\?install=1/);
 });
 
 test('profile name is text, image URL is constrained, and buttons retain click behavior', () => {

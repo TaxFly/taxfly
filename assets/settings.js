@@ -26,6 +26,7 @@
       pin: "PIN offline",
       switch_app: "Cambiar aplicación",
       app: "Aplicación",
+      install: "Instalar TaxFly",
       update: "Actualizar app",
       logout: "Cerrar sesión",
       danger: "Zona de peligro",
@@ -98,6 +99,7 @@
       pin: "Offline PIN",
       switch_app: "Switch app",
       app: "App",
+      install: "Install TaxFly",
       update: "Update app",
       logout: "Log out",
       danger: "Danger zone",
@@ -170,6 +172,7 @@
       pin: "PIN offline",
       switch_app: "Trocar aplicativo",
       app: "Aplicativo",
+      install: "Instalar TaxFly",
       update: "Atualizar app",
       logout: "Sair",
       danger: "Zona de perigo",
@@ -258,6 +261,7 @@
     key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
     lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
     refresh: '<path d="M21 12a9 9 0 0 0-15.5-6.2L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15.5 6.2L21 16"/><path d="M16 16h5v5"/>',
+    phone: '<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/>',
     logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
     trash: '<path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
     chev: '<polyline points="9 18 15 12 9 6"/>',
@@ -280,7 +284,7 @@
   function row(act, icon, color, key, extra) {
     return '<button type="button" class="sx-row" data-act="' + act + '"><span class="sx-ico" style="--c:' + color + '">' + ic(icon) + '</span><span class="sx-lbl" data-t="' + key + '"></span>' + (extra || '<span class="sx-go">' + ic("chev", 16) + "</span>") + "</button>";
   }
-  drawer.innerHTML = '<div class="sx-head"><span class="sx-title" data-t="title"></span><button type="button" class="sx-x" data-act="close" data-tl="close" aria-label="Cerrar">' + ic("close", 16) + "</button></div>" + '<div class="sx-scroll">' + '<div class="sx-me">' + '<div class="sx-av" id="sxAvatar">' + ic("users", 22) + "</div>" + '<div class="sx-me-txt"><div class="sx-me-lbl" data-t="profile"></div><p id="userEmail" class="drawer-email"></p><div class="sx-mail" id="sxMail"></div></div>' + '<button type="button" class="sx-chip" data-act="profile" data-tl="switch_profile">' + ic("users", 18) + "</button>" + "</div>" + '<span class="sx-sec" data-t="prefs"></span>' + '<div class="sx-card">' + '<div class="sx-row"><span class="sx-ico" style="--c:#0ea5e9">' + ic("globe") + '</span><span class="sx-lbl" data-t="language"></span>' + '<div class="sx-lang">' + '<button type="button" class="lang-opt" id="lang-es" data-lang="es">' + FLAG.es + " ES</button>" + '<button type="button" class="lang-opt" id="lang-en" data-lang="en">' + FLAG.en + " EN</button>" + '<button type="button" class="lang-opt" id="lang-pt" data-lang="pt">' + FLAG.pt + " PT</button>" + "</div></div>" + row("theme", "moon", "#7c3aed", "dark", '<span class="sx-sw" id="sxSwitch" role="switch" aria-checked="false"></span>') + "</div>" + '<span class="sx-sec" data-t="data"></span>' + '<div class="sx-bk">' + '<div class="sx-bk-h"><span class="sx-ico">' + ic("shield") + '</span><span data-t="bk_title"></span></div>' + '<p data-t="bk_desc"></p>' + '<div class="sx-bk-btns">' + '<button type="button" class="sx-btn pri" data-act="export">' + ic("download", 16) + '<span data-t="export"></span></button>' + '<button type="button" class="sx-btn" data-act="import">' + ic("upload", 16) + '<span data-t="import"></span></button>' + "</div>" + '<div class="sx-last" id="sxLast"></div>' + "</div>" + '<span class="sx-sec" data-t="account"></span>' + '<div class="sx-card">' + row("email", "mail", "#2563eb", "email") + row("password", "key", "#f59e0b", "password") + row("pin", "lock", "#14b8a6", "pin") + row("switchapp", "globe", "#6366f1", "switch_app") + "</div>" + '<span class="sx-sec" data-t="app"></span>' + '<div class="sx-card">' + row("reload", "refresh", "#0ea5e9", "update") + "</div>" + '<div class="sx-foot">' + '<button type="button" class="sx-btn sx-out" data-act="logout">' + ic("logout", 16) + '<span data-t="logout"></span></button>' + '<div class="sx-danger"><span class="sx-danger-l" data-t="danger"></span>' + '<button type="button" class="sx-del" data-act="delete">' + ic("trash", 15) + '<span data-t="del"></span></button></div>' + "</div>" + "</div>" + '<input type="file" id="sxFile" accept="application/json,.json" style="display:none">';
+  drawer.innerHTML = '<div class="sx-head"><span class="sx-title" data-t="title"></span><button type="button" class="sx-x" data-act="close" data-tl="close" aria-label="Cerrar">' + ic("close", 16) + "</button></div>" + '<div class="sx-scroll">' + '<div class="sx-me">' + '<div class="sx-av" id="sxAvatar">' + ic("users", 22) + "</div>" + '<div class="sx-me-txt"><div class="sx-me-lbl" data-t="profile"></div><p id="userEmail" class="drawer-email"></p><div class="sx-mail" id="sxMail"></div></div>' + '<button type="button" class="sx-chip" data-act="profile" data-tl="switch_profile">' + ic("users", 18) + "</button>" + "</div>" + '<span class="sx-sec" data-t="prefs"></span>' + '<div class="sx-card">' + '<div class="sx-row"><span class="sx-ico" style="--c:#0ea5e9">' + ic("globe") + '</span><span class="sx-lbl" data-t="language"></span>' + '<div class="sx-lang">' + '<button type="button" class="lang-opt" id="lang-es" data-lang="es">' + FLAG.es + " ES</button>" + '<button type="button" class="lang-opt" id="lang-en" data-lang="en">' + FLAG.en + " EN</button>" + '<button type="button" class="lang-opt" id="lang-pt" data-lang="pt">' + FLAG.pt + " PT</button>" + "</div></div>" + row("theme", "moon", "#7c3aed", "dark", '<span class="sx-sw" id="sxSwitch" role="switch" aria-checked="false"></span>') + "</div>" + '<span class="sx-sec" data-t="data"></span>' + '<div class="sx-bk">' + '<div class="sx-bk-h"><span class="sx-ico">' + ic("shield") + '</span><span data-t="bk_title"></span></div>' + '<p data-t="bk_desc"></p>' + '<div class="sx-bk-btns">' + '<button type="button" class="sx-btn pri" data-act="export">' + ic("download", 16) + '<span data-t="export"></span></button>' + '<button type="button" class="sx-btn" data-act="import">' + ic("upload", 16) + '<span data-t="import"></span></button>' + "</div>" + '<div class="sx-last" id="sxLast"></div>' + "</div>" + '<span class="sx-sec" data-t="account"></span>' + '<div class="sx-card">' + row("email", "mail", "#2563eb", "email") + row("password", "key", "#f59e0b", "password") + row("pin", "lock", "#14b8a6", "pin") + row("switchapp", "globe", "#6366f1", "switch_app") + "</div>" + '<span class="sx-sec" data-t="app"></span>' + '<div class="sx-card">' + row("install", "phone", "#10b981", "install") + row("reload", "refresh", "#0ea5e9", "update") + "</div>" + '<div class="sx-foot">' + '<button type="button" class="sx-btn sx-out" data-act="logout">' + ic("logout", 16) + '<span data-t="logout"></span></button>' + '<div class="sx-danger"><span class="sx-danger-l" data-t="danger"></span>' + '<button type="button" class="sx-del" data-act="delete">' + ic("trash", 15) + '<span data-t="del"></span></button></div>' + "</div>" + "</div>" + '<input type="file" id="sxFile" accept="application/json,.json" style="display:none">';
   function applyText() {
     drawer.querySelectorAll("[data-t]").forEach(function(el) {
       el.textContent = t(el.getAttribute("data-t"));
@@ -382,6 +386,23 @@
     if (typeof window[name] === "function") return window[name].apply(window, [].slice.call(arguments, 1));
     console.warn("[settings] falta window." + name);
   }
+  var installPrompt = null;
+  window.addEventListener("beforeinstallprompt", function(e) {
+    e.preventDefault();
+    installPrompt = e;
+  });
+  window.addEventListener("appinstalled", function() { installPrompt = null; });
+  function installTaxFly() {
+    if (installPrompt) {
+      var prompt = installPrompt;
+      installPrompt = null;
+      prompt.prompt();
+      return;
+    }
+    // Safari has no install prompt; the main entry page gives the correct
+    // TaxFly name and icon when added to the home screen.
+    location.href = new URL("login.html?install=1", document.baseURI).href;
+  }
   drawer.addEventListener("click", function(e) {
     var lb = e.target.closest("[data-lang]");
     if (lb) {
@@ -403,6 +424,10 @@
      case "theme":
       call("toggleDarkMode");
       applyTheme();
+      break;
+
+     case "install":
+      installTaxFly();
       break;
 
      case "reload":

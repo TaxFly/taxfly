@@ -550,12 +550,13 @@ const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isAndroid = /android/i.test(navigator.userAgent);
 
 const isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+const installRequested = new URLSearchParams(location.search).has("install");
 
 function showInstallButtons() {
   if (isStandalone) return;
   const wrap = document.getElementById("installWrap");
   if (!wrap) return;
-  if (isAndroid) {
+  if (isAndroid || installRequested && !isIos) {
     wrap.style.display = "flex";
     document.getElementById("btnIos").style.display = "none";
   } else if (isIos) {
@@ -571,7 +572,10 @@ window.addEventListener("beforeinstallprompt", e => {
 });
 
 window.installAndroid = async () => {
-  if (!deferredPrompt) return;
+  if (!deferredPrompt) {
+    alert("Para instalar TaxFly, abrí el menú del navegador y elegí ‘Instalar app’ o ‘Agregar a pantalla de inicio’. Si ya está instalada, abrila desde el ícono de TaxFly.");
+    return;
+  }
   deferredPrompt.prompt();
   const {outcome: outcome} = await deferredPrompt.userChoice;
   deferredPrompt = null;
@@ -1140,6 +1144,7 @@ if (firebaseOk) onAuthStateChanged(auth, async user => {
 });
 
 function goToApp() {
+  if (installRequested) return;
   const requested = new URLSearchParams(location.search).get("next");
   const allowed = new Set(["index.html", "compras.html", "itinerario.html", "grupo.html"]);
   if (requested && allowed.has(requested)) {
@@ -1173,6 +1178,14 @@ function goToApp() {
 
 async function initScreen() {
   applyLanguage(currentLang);
+  if (installRequested) {
+    showScreen("screen-login");
+    hideSplash(() => {
+      showInstallButtons();
+      if (isIos) showIosModal();
+    });
+    return;
+  }
   await checkRealConnectivity();
   if (isOnline()) {
     showScreen("screen-login");
