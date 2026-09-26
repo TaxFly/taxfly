@@ -2061,7 +2061,22 @@ function isVapidConfigured() {
   return VAPID_PUBLIC_KEY.length === 87 && !VAPID_PUBLIC_KEY.endsWith("abcdefg");
 }
 
-let _lastAlertedPct = null;
+const BUDGET_ALERT_KEY = "taxusa_budget_alerted_pct_" + (perfilId || "default");
+
+function getLastAlertedPct() {
+  try {
+    const v = localStorage.getItem(BUDGET_ALERT_KEY);
+    return v ? Number(v) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setLastAlertedPct(pct) {
+  try {
+    if (pct === null) localStorage.removeItem(BUDGET_ALERT_KEY); else localStorage.setItem(BUDGET_ALERT_KEY, String(pct));
+  } catch (e) {}
+}
 
 async function requestPushPermission() {
   if (!("Notification" in window) || !("serviceWorker" in navigator)) return false;
@@ -2180,11 +2195,11 @@ function checkBudgetAlerts(spent) {
   let threshold = null;
   if (pct >= 100) threshold = 100; else if (pct >= 90) threshold = 90; else if (pct >= 70) threshold = 70;
   if (!threshold) {
-    _lastAlertedPct = null;
+    setLastAlertedPct(null);
     return;
   }
-  if (_lastAlertedPct === threshold) return;
-  _lastAlertedPct = threshold;
+  if (getLastAlertedPct() === threshold) return;
+  setLastAlertedPct(threshold);
   showLocalBudgetNotification(threshold, spent, presupuestoBase);
 }
 
