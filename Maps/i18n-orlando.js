@@ -1,4 +1,12 @@
 I18N.add({
+  "Cronograma de": [ "Shopping", "Cronograma de" ],
+  "compras": [ "schedule", "compras" ],
+  "Plan de": [ "Meal", "Plano de" ],
+  "comidas": [ "planning", "refeições" ],
+  "Lista de": [ "Shopping", "Lista de" ],
+  "supermercado": [ "list", "compras" ],
+  "Parques y": [ "Parks &", "Parques e" ],
+  "atracciones": [ "attractions", "atrações" ],
   Mis: [ "My", "Minhas" ],
   cosas: [ "stuff", "coisas" ],
   "Tu próximo viaje, planeado": [ "Your next trip, planned", "Sua próxima viagem, planejada" ],

@@ -40,7 +40,8 @@ const ICON_PATHS = {
   chevronDown: '<path d="M6 9l6 6 6-6"/>',
   chevronLeft: '<path d="M15 6l-6 6 6 6"/>',
   chevronRight: '<path d="M9 6l6 6-6 6"/>',
-  ban: '<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>'
+  ban: '<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>',
+  download: '<path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>'
 };
 
 function ic(name, size) {
@@ -391,8 +392,9 @@ const typeConf = {
 function renderComidas() {
   const panel = document.getElementById("panel-comidas");
   let html = '<div class="comidas-panel">';
+  html += `<div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:10px">\n      <button class="wm-reset-btn" onclick="mealOpenImport()">${ic("file", 12)} ${mealData.length ? "Actualizar" : "Importar"} desde Excel</button>\n      ${mealData.length ? `<button class="wm-reset-btn" onclick="mealExportExcel()">${ic("download", 12)} Exportar a Excel</button>` : ""}\n    </div>`;
   if (mealData.length === 0) {
-    html += `<div class="all-done" style="display:block">\n        <div class="all-done-emoji">${ic("calendar", 44)}</div>\n        <div class="all-done-title">Sin días cargados</div>\n        <div class="all-done-sub">Agregá el primer día del viaje con el botón + para armar tu plan de comidas.</div>\n      </div>`;
+    html += `<div class="all-done" style="display:block">\n        <div class="all-done-emoji">${ic("calendar", 44)}</div>\n        <div class="all-done-title">Sin días cargados</div>\n        <div class="all-done-sub">Agregá el primer día del viaje con el botón + o importalo desde un Excel con una pestaña llamada «Menú».</div>\n      </div>`;
   }
   mealData.forEach(day => {
     const tc = typeConf[day.type];
@@ -1715,8 +1717,8 @@ async function tripSelectDestination(index) {
 
 const sectionMeta = {
   outlets: {
-    title: "Compras",
-    accent: "",
+    title: "Cronograma de",
+    accent: "compras",
     subtitle: "Cronograma de compras",
     theme: "theme-outlets"
   },
@@ -3677,6 +3679,224 @@ function itinFechaOrden(f) {
   if (!m) return 9999;
   const mes = ITIN_MESES.indexOf(itinNorm(m[2]).slice(0, 3));
   return (mes === -1 ? 11 : mes) * 100 + parseInt(m[1], 10);
+}
+
+const MEAL_TIPO_MATCH = [ {
+  id: "arrival",
+  match: [ "llegada" ]
+}, {
+  id: "walmart",
+  match: [ "supermercado", "walmart", "compras" ]
+}, {
+  id: "universal",
+  match: [ "universal", "islands of adventure", "epic universe" ]
+}, {
+  id: "disney",
+  match: [ "magic kingdom", "epcot", "hollywood studios", "animal kingdom", "disney" ]
+}, {
+  id: "free",
+  match: [ "libre" ]
+} ];
+
+function mealTituloLimpio(v) {
+  return String(v || "").trim().replace(/^d[ií]a\s*\d+\s*[—-]\s*/i, "").trim();
+}
+
+function mealTipoFromTitulo(v) {
+  const n = itinNorm(v);
+  const hit = MEAL_TIPO_MATCH.find(t => t.match.some(m => n.includes(m)));
+  return hit ? hit.id : "free";
+}
+
+function mealParseWorkbook(wb) {
+  const XLSX = window.XLSX;
+  const hoja = wb.SheetNames.find(n => itinNorm(n).includes("menu"));
+  if (!hoja) throw new Error("hoja");
+  const filas = XLSX.utils.sheet_to_json(wb.Sheets[hoja], {
+    header: 1,
+    raw: true,
+    defval: ""
+  });
+  if (!filas.length) throw new Error("vacio");
+  let hi = -1;
+  for (let i = 0; i < Math.min(filas.length, 20); i++) {
+    const celdas = filas[i].map(itinNorm);
+    if (celdas.some(c => c === "dia") && celdas.some(c => c === "fecha")) {
+      hi = i;
+      break;
+    }
+  }
+  if (hi === -1) throw new Error("encabezados");
+  const head = filas[hi].map(itinNorm);
+  const col = (...claves) => head.findIndex(h => h && claves.some(k => h.includes(k)));
+  const cDia = col("dia");
+  const cFecha = col("fecha");
+  const cDes = col("desayuno");
+  const cAlm = col("almuerzo");
+  const cCena = col("cena");
+  const cSnack = col("snack", "nota");
+  if (cFecha === -1) throw new Error("encabezados");
+  const limpiar = v => {
+    const s = String(v == null ? "" : v).trim();
+    return !s || s === "-" ? "" : s;
+  };
+  const dias = [];
+  for (let i = hi + 1; i < filas.length; i++) {
+    const r = filas[i];
+    if (!r || !r.length) continue;
+    const tituloRaw = cDia > -1 ? limpiar(r[cDia]) : "";
+    const fecha = itinParseFecha(r[cFecha]);
+    if (!fecha) continue;
+    const titulo = mealTituloLimpio(tituloRaw) || fecha;
+    const snackNota = cSnack > -1 ? limpiar(r[cSnack]) : "";
+    dias.push({
+      fecha: fecha,
+      titulo: titulo,
+      tipo: mealTipoFromTitulo(tituloRaw),
+      meals: [ cDes > -1 ? limpiar(r[cDes]) || "—" : "—", cAlm > -1 ? limpiar(r[cAlm]) || "—" : "—", cCena > -1 ? limpiar(r[cCena]) || "—" : "—" ],
+      snacks: snackNota ? [ snackNota ] : [],
+      notes: ""
+    });
+  }
+  if (!dias.length) throw new Error("vacio");
+  dias.sort((a, b) => itinFechaOrden(a.fecha) - itinFechaOrden(b.fecha));
+  return dias;
+}
+
+let mealImportDias = null;
+
+let mealImportSel = new Set;
+
+function mealOpenImport() {
+  document.getElementById("meal-xlsx-input").click();
+}
+
+async function mealArchivoElegido(ev) {
+  const file = ev.target.files[0];
+  ev.target.value = "";
+  if (!file) return;
+  showMToast("Leyendo el archivo…");
+  try {
+    await cargarXLSX();
+  } catch (e) {
+    showAlert("No se pudo cargar el lector de Excel. Probá con señal o wifi, porque la primera vez necesita descargarlo.", "Sin conexión");
+    return;
+  }
+  let wb;
+  try {
+    const buf = await file.arrayBuffer();
+    wb = window.XLSX.read(buf, {
+      type: "array"
+    });
+  } catch (e) {
+    devError("xlsx read", e);
+    showAlert("No pude leer el archivo. Revisá que sea un .xlsx válido.", "No se pudo importar");
+    return;
+  }
+  try {
+    mealImportDias = mealParseWorkbook(wb);
+  } catch (e) {
+    devError("xlsx menu parse", e);
+    const msg = e && e.message === "hoja" ? "No encontré una pestaña llamada «Menú» en el archivo. Fijate que la hoja del menú se llame así." : "No encontré filas válidas en la pestaña «Menú» (necesita columnas Día, Fecha, Desayuno, Almuerzo y Cena). Revisá el archivo.";
+    showAlert(msg, "No se pudo importar");
+    return;
+  }
+  mealImportSel = new Set(mealImportDias.map((d, i) => i));
+  mealRenderImport();
+  document.getElementById("mealImportModal").classList.add("open");
+}
+
+function mealRenderImport() {
+  const cont = document.getElementById("meal-import-list");
+  cont.innerHTML = mealImportDias.map((d, i) => {
+    const existe = mealData.some(x => x.date === d.fecha);
+    return `<label class="itin-imp-row">\n      <input type="checkbox" ${mealImportSel.has(i) ? "checked" : ""} onchange="mealImportToggle(${i},this.checked)">\n      <span class="itin-imp-body">\n        <strong>${escapeHtml(d.titulo)}</strong>\n        <small>${escapeHtml(d.fecha)} · ${existe ? "reemplaza el día que ya tenés" : "día nuevo"}</small>\n      </span>\n    </label>`;
+  }).join("");
+  const n = mealImportSel.size;
+  document.getElementById("meal-import-count").textContent = n === 0 ? "No seleccionaste ningún día." : n === 1 ? "1 día seleccionado." : n + " días seleccionados.";
+}
+
+function mealImportToggle(i, v) {
+  if (v) mealImportSel.add(i); else mealImportSel.delete(i);
+  mealRenderImport();
+}
+
+function mealCloseImport() {
+  document.getElementById("mealImportModal").classList.remove("open");
+  mealImportDias = null;
+  mealImportSel = new Set;
+}
+
+async function mealAplicarImport(modo) {
+  if (!mealImportSel.size) {
+    showAlert("Elegí al menos un día para importar.", "Nada seleccionado");
+    return;
+  }
+  const elegidos = mealImportDias.filter((_, i) => mealImportSel.has(i));
+  if (modo === "reemplazar") {
+    const ok = await showConfirm(`Se borra el plan de comidas actual (${mealData.length} días) y queda solo lo del archivo.`, "¿Reemplazar todo?", "Reemplazar");
+    if (!ok) return;
+  }
+  const nuevos = elegidos.map((d, i) => {
+    const prev = mealData.find(x => x.date === d.fecha);
+    return {
+      id: Date.now() + i,
+      date: d.fecha,
+      title: d.titulo,
+      type: d.tipo,
+      meals: d.meals.slice(),
+      snacks: d.snacks.slice(),
+      notes: prev ? prev.notes : ""
+    };
+  });
+  if (modo === "reemplazar") {
+    mealData = nuevos;
+  } else {
+    const fechas = new Set(nuevos.map(d => d.date));
+    mealData = mealData.filter(d => !fechas.has(d.date)).concat(nuevos);
+    mealData.sort((a, b) => itinFechaOrden(a.date) - itinFechaOrden(b.date));
+  }
+  mealSave();
+  mealCloseImport();
+  renderComidas();
+  showMToast(`Plan de comidas actualizado (${nuevos.length} ${nuevos.length === 1 ? "día" : "días"})`);
+}
+
+async function mealExportExcel() {
+  if (!mealData.length) {
+    showAlert("Todavía no hay días cargados en el plan de comidas.", "Nada para exportar");
+    return;
+  }
+  let XLSX;
+  try {
+    XLSX = await cargarXLSX();
+  } catch (e) {
+    showAlert("No se pudo cargar el lector de Excel. Probá con señal o wifi, porque la primera vez necesita descargarlo.", "Sin conexión");
+    return;
+  }
+  const aoa = [ [ "Día", "Fecha", "Desayuno", "Almuerzo", "Cena", "Snack / Notas" ] ];
+  mealData.forEach((d, i) => {
+    const snackNotas = [ ...(d.snacks || []), d.notes || "" ].filter(Boolean).join(" / ");
+    aoa.push([ d.title || `Día ${i + 1}`, d.date || "", d.meals[0] === "—" ? "" : d.meals[0] || "", d.meals[1] === "—" ? "" : d.meals[1] || "", d.meals[2] === "—" ? "" : d.meals[2] || "", snackNotas ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws["!cols"] = [ {
+    wch: 30
+  }, {
+    wch: 10
+  }, {
+    wch: 30
+  }, {
+    wch: 30
+  }, {
+    wch: 30
+  }, {
+    wch: 32
+  } ];
+  const wbOut = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wbOut, ws, "Menú");
+  XLSX.writeFile(wbOut, "menu-comidas.xlsx");
+  showMToast("Excel exportado ✓");
 }
 
 const TIPS_KEY = "orlando-tips-v1";
