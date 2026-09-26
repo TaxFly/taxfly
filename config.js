@@ -32,22 +32,29 @@ window.taxflyWorker = async function(body) {
 };
 
 (function() {
-  const KEY = "taxfly_last_activity";
-  function touch() {
+  const KEY = "taxfly_offline_unlocked_at";
+  const SUBJECT = "taxfly_offline_unlocked_email";
+  const GRACE_MS = 30 * 60 * 1000;
+  window.taxflyTouchActivity = function() {
     try {
-      localStorage.setItem(KEY, String(Date.now()));
+      const email = localStorage.getItem("taxusa_offline_email");
+      if (!email) return;
+      sessionStorage.setItem(KEY, String(Date.now()));
+      sessionStorage.setItem(SUBJECT, email);
     } catch (e) {}
-  }
-  touch();
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") touch();
-  });
-  setInterval(() => {
-    if (document.visibilityState === "visible") touch();
-  }, 5 * 60 * 1e3);
-  window.taxflyTouchActivity = touch;
+  };
+  window.taxflyOfflineUnlocked = function() {
+    try {
+      const email = localStorage.getItem("taxusa_offline_email");
+      const last = Number(sessionStorage.getItem(KEY));
+      return !!email && sessionStorage.getItem(SUBJECT) === email && last > 0 &&
+        Date.now() >= last && Date.now() - last < GRACE_MS;
+    } catch (e) { return false; }
+  };
   window.taxflyMinutesSinceActivity = function() {
-    const last = parseInt(localStorage.getItem(KEY), 10) || 0;
-    return (Date.now() - last) / 6e4;
+    return window.taxflyOfflineUnlocked() ? (Date.now() - Number(sessionStorage.getItem(KEY))) / 60000 : Infinity;
+  };
+  window.taxflyClearOfflineUnlock = function() {
+    try { sessionStorage.removeItem(KEY); sessionStorage.removeItem(SUBJECT); } catch (e) {}
   };
 })();

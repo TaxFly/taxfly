@@ -32,25 +32,25 @@
     {
       "name": "Calculadora de Tax",
       "short_name": "Tax",
-      "url": "./index.html",
+      "url": "./login.html?next=index.html",
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Gastos",
       "short_name": "Gastos",
-      "url": "./compras.html",
+      "url": "./login.html?next=compras.html",
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Itinerario",
       "short_name": "Itinerario",
-      "url": "./itinerario.html",
+      "url": "./login.html?next=itinerario.html",
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Grupo",
       "short_name": "Grupo",
-      "url": "./grupo.html",
+      "url": "./login.html?next=grupo.html",
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     }
   ],

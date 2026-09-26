@@ -6,6 +6,7 @@
     <script src="assets/recaptcha.js"></script>
     <script src="assets/account.js"></script>
     <script src="config.js"></script>
+    <script src="assets/security.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TaxUSA — Rutas</title>
@@ -544,7 +545,7 @@ onAuthStateChanged(auth, async user => {
     } catch (e) {
       const pinHash = localStorage.getItem("taxusa_pin_hash");
       const pinEmail = localStorage.getItem("taxusa_offline_email");
-      if (!pinHash || !pinEmail) {
+      if (!pinHash || !pinEmail || !window.taxflyOfflineUnlocked()) {
         window.location.replace("login.html");
         return;
       }
@@ -580,7 +581,7 @@ onAuthStateChanged(auth, async user => {
   window.changeLanguage(lang);
 });
 
-window.doLogout = () => signOut(auth).then(() => window.location.replace("login.html"));
+window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
 
 window.doChangeEmail = () => window.confirmAndChangeEmail({
   currentUser: currentUser,
@@ -640,12 +641,13 @@ window.confirmarPIN = async () => {
     return;
   }
   errEl.style.display = "none";
-  const pinHash = btoa(p1);
-  localStorage.setItem("taxusa_offline_pin", pinHash);
+  const pinHash = await window.createPinHash(p1);
+  localStorage.setItem("taxusa_pin_hash", pinHash);
+  localStorage.removeItem("taxusa_offline_pin");
   if (currentUser) {
     try {
       await setDoc(doc(db, "usuarios", currentUser.uid), {
-        offlinePin: pinHash
+        pinHash: pinHash
       }, {
         merge: true
       });
@@ -978,7 +980,7 @@ window.openSwitchApp = async () => {
   };
   const r = await showPrompt(dest[lang] || dest.es);
   if (!r) return;
-  if (r.toLowerCase().includes("europe")) window.location.href = "europe.html"; else window.location.href = "index.html";
+  if (r.toLowerCase().includes("europe")) window.location.href = "selector.html"; else window.location.href = "index.html";
 };
 
 function changeDays(d) {

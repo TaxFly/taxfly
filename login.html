@@ -303,13 +303,7 @@ window._connectivityPromise = (async () => {
 
 document.documentElement.classList.add("splash-loading");
 
-window._splashReturning = false;
-try {
-  window._splashReturning = sessionStorage.getItem("taxfly-intro-seen") === "1";
-  sessionStorage.setItem("taxfly-intro-seen", "1");
-} catch (e) {}
-window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : window._splashReturning ? 180 : 1050);
-if (window._splashReturning) document.documentElement.classList.add("tf-returning");
+window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1250);
 </script>
 </head>
 <body>
@@ -675,7 +669,7 @@ const i18n = {
     noPinOffline: "No hay PIN configurado para esta cuenta. Necesitás conexión para ingresar.",
     pinWrong: "PIN incorrecto. Intentá de nuevo.",
     pinWrongCount: "PIN incorrecto. Quedan %d intentos.",
-    pinLocked: "Demasiados intentos fallidos. Necesitás internet para ingresar.",
+    pinLocked: "Demasiados intentos. Esperá 15 minutos o ingresá con internet.",
     createPinTitle: "Creá tu PIN offline",
     createPinSub: "Este PIN de 4 dígitos te permite entrar sin internet.",
     confirmPinTitle: "Confirmá tu PIN",
@@ -727,7 +721,7 @@ const i18n = {
     noPinOffline: "No PIN configured for this account. You need internet to log in.",
     pinWrong: "Wrong PIN. Try again.",
     pinWrongCount: "Wrong PIN. %d attempts left.",
-    pinLocked: "Too many failed attempts. You need internet to log in.",
+    pinLocked: "Too many attempts. Wait 15 minutes or sign in online.",
     createPinTitle: "Create your offline PIN",
     createPinSub: "This 4-digit PIN lets you sign in without internet.",
     confirmPinTitle: "Confirm your PIN",
@@ -779,7 +773,7 @@ const i18n = {
     noPinOffline: "Nenhum PIN configurado. Você precisa de internet para entrar.",
     pinWrong: "PIN incorreto. Tente novamente.",
     pinWrongCount: "PIN incorreto. %d tentativas restantes.",
-    pinLocked: "Muitas tentativas. Você precisa de internet para entrar.",
+    pinLocked: "Muitas tentativas. Aguarde 15 minutos ou entre com internet.",
     createPinTitle: "Crie seu PIN offline",
     createPinSub: "Este PIN de 4 dígitos permite entrar sem internet.",
     confirmPinTitle: "Confirme seu PIN",
@@ -809,12 +803,35 @@ let currentLang = localStorage.getItem("appLang") || "es";
 let isLoginMode = true;
 
 let pinBuffer = "";
+let pinChecking = false;
 
 let pinStep = 1;
 
 let pinFirst = "";
 
+const PIN_ATTEMPT_KEY = "taxfly_pin_attempts_v2";
+const PIN_LOCK_KEY = "taxfly_pin_locked_until_v2";
 let pinAttempts = 0;
+function pinLockRemaining() {
+  const until = Number(localStorage.getItem(PIN_LOCK_KEY)) || 0;
+  if (until <= Date.now()) {
+    if (until) { localStorage.removeItem(PIN_LOCK_KEY); localStorage.removeItem(PIN_ATTEMPT_KEY); }
+    pinAttempts = Number(localStorage.getItem(PIN_ATTEMPT_KEY)) || 0;
+    return 0;
+  }
+  return until - Date.now();
+}
+function clearPinFailures() {
+  pinAttempts = 0;
+  localStorage.removeItem(PIN_ATTEMPT_KEY);
+  localStorage.removeItem(PIN_LOCK_KEY);
+}
+function recordPinFailure() {
+  pinAttempts = (Number(localStorage.getItem(PIN_ATTEMPT_KEY)) || 0) + 1;
+  localStorage.setItem(PIN_ATTEMPT_KEY, String(pinAttempts));
+  if (pinAttempts >= MAX_PIN_ATTEMPTS) localStorage.setItem(PIN_LOCK_KEY, String(Date.now() + 15 * 60 * 1000));
+}
+
 
 const MAX_PIN_ATTEMPTS = 5;
 
@@ -1092,7 +1109,15 @@ if (firebaseOk) onAuthStateChanged(auth, async user => {
   try {
     const snap = await getDoc(doc(db, "usuarios", user.uid));
     const data = snap.exists() ? snap.data() : {};
-    const pinHash = data.pinHash || null;
+    let pinHash = data.pinHash || null;
+    const pendingHash = localStorage.getItem("taxusa_pin_pending_sync");
+    if (pendingHash) {
+      pinHash = pendingHash;
+      try {
+        await setDoc(doc(db, "usuarios", user.uid), { pinHash: pendingHash }, { merge: true });
+        localStorage.removeItem("taxusa_pin_pending_sync");
+      } catch (e) {}
+    }
     const pinEmail = user.email;
     localStorage.setItem("taxusa_offline_email", pinEmail);
     localStorage.setItem("taxusa_offline_uid", user.uid);
@@ -1115,6 +1140,12 @@ if (firebaseOk) onAuthStateChanged(auth, async user => {
 });
 
 function goToApp() {
+  const requested = new URLSearchParams(location.search).get("next");
+  const allowed = new Set(["index.html", "compras.html", "itinerario.html", "grupo.html"]);
+  if (requested && allowed.has(requested)) {
+    hideSplash(() => window.location.replace(requested));
+    return;
+  }
   const pending = (() => {
     try {
       const r = localStorage.getItem("taxusa_pending_redirect");
@@ -1134,8 +1165,7 @@ function goToApp() {
   const cachedUid = localStorage.getItem("taxusa_offline_uid");
   const online = isOnline();
   if (!online && perfilId && perfilNombre && cachedUid) {
-    const destino = localStorage.getItem("taxfly_destino") || "usa";
-    hideSplash(() => window.location.replace(destino === "europe" ? "europe.html" : "index.html"));
+    hideSplash(() => window.location.replace("index.html"));
   } else {
     hideSplash(() => window.location.replace("selector.html"));
   }
@@ -1157,7 +1187,6 @@ async function initScreen() {
       showOfflinePinScreen();
       hideSplash();
     } else {
-      {
         showScreen("screen-login");
         const badge = document.createElement("div");
         badge.className = "offline-badge show";
@@ -1166,7 +1195,6 @@ async function initScreen() {
         const card = document.querySelector("#screen-login .login-card");
         card.insertBefore(badge, card.firstChild);
         hideSplash();
-      }
     }
   }
 }
@@ -1209,8 +1237,8 @@ function showOfflinePinScreen() {
   document.getElementById("pin-email-display").innerText = email;
   if (foto) document.getElementById("pin-avatar").style.backgroundImage = `url('${foto}')`;
   pinBuffer = "";
-  pinAttempts = 0;
-  document.getElementById("pin-error-offline").innerText = "";
+  const locked = pinLockRemaining();
+  document.getElementById("pin-error-offline").innerText = locked ? t("pinLocked") : "";
   updateDots("pin-dots-offline", 0);
   renderKeypad("pin-keypad-offline", onOfflinePinKey);
   showScreen("screen-pin-offline");
@@ -1219,7 +1247,8 @@ function showOfflinePinScreen() {
 window.showOnlineLogin = () => showScreen("screen-login");
 
 async function onOfflinePinKey(key) {
-  if (pinAttempts >= MAX_PIN_ATTEMPTS) {
+  if (pinChecking) return;
+  if (pinLockRemaining()) {
     document.getElementById("pin-error-offline").innerText = t("pinLocked");
     return;
   }
@@ -1235,15 +1264,22 @@ async function onOfflinePinKey(key) {
     const entered = pinBuffer;
     pinBuffer = "";
     updateDots("pin-dots-offline", 0);
-    const hash = await sha256(entered);
+    pinChecking = true;
     const stored = localStorage.getItem("taxusa_pin_hash");
-    if (hash === stored) {
+    try {
+    if (await window.verifyPin(entered, stored)) {
+      clearPinFailures();
+      if (stored && !stored.startsWith("pbkdf2$")) {
+        const upgraded = await window.createPinHash(entered);
+        localStorage.setItem("taxusa_pin_hash", upgraded);
+        localStorage.setItem("taxusa_pin_pending_sync", upgraded);
+      }
       try {
         window.taxflyTouchActivity && window.taxflyTouchActivity();
       } catch (e) {}
       goToApp();
     } else {
-      pinAttempts++;
+      recordPinFailure();
       const remaining = MAX_PIN_ATTEMPTS - pinAttempts;
       if (remaining <= 0) {
         document.getElementById("pin-error-offline").innerText = t("pinLocked");
@@ -1252,6 +1288,7 @@ async function onOfflinePinKey(key) {
       }
       shakeDotsError("pin-dots-offline");
     }
+    } finally { pinChecking = false; }
   }
 }
 
@@ -1308,7 +1345,7 @@ async function onCreatePinKey(key) {
 }
 
 async function savePinToFirestore(pin) {
-  const hash = await sha256(pin);
+  const hash = await window.createPinHash(pin);
   const user = auth.currentUser;
   if (user) {
     try {
@@ -1322,6 +1359,7 @@ async function savePinToFirestore(pin) {
     }
   }
   localStorage.setItem("taxusa_pin_hash", hash);
+  clearPinFailures();
 }
 
 window.skipPinCreation = () => goToApp();

@@ -6,6 +6,7 @@
     <script src="assets/recaptcha.js"></script>
     <script src="assets/account.js"></script>
     <script src="config.js"></script>
+    <script src="assets/security.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TaxUSA — Gastos</title>
@@ -922,6 +923,7 @@ function getPendingGastos() {
 function savePendingGastos(ops) {
   try {
     localStorage.setItem(PENDING_GASTOS_KEY, JSON.stringify(ops));
+    window.dispatchEvent(new Event("taxfly-pending-updated"));
   } catch (e) {}
 }
 
@@ -2989,12 +2991,13 @@ window.confirmarPIN = async () => {
     return;
   }
   errEl.style.display = "none";
-  const pinHash = btoa(p1);
-  localStorage.setItem("taxusa_offline_pin", pinHash);
+  const pinHash = await window.createPinHash(p1);
+  localStorage.setItem("taxusa_pin_hash", pinHash);
+  localStorage.removeItem("taxusa_offline_pin");
   if (currentUser) {
     try {
       await setDoc(doc(db, "usuarios", currentUser.uid), {
-        offlinePin: pinHash
+        pinHash: pinHash
       }, {
         merge: true
       });
@@ -3007,7 +3010,7 @@ window.confirmarPIN = async () => {
   setTimeout(() => window.closePinModal(), 2200);
 };
 
-window.doLogout = () => signOut(auth).then(() => window.location.replace("login.html"));
+window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
 
 window.doChangeEmail = () => window.confirmAndChangeEmail({
   currentUser: currentUser,
@@ -3753,16 +3756,23 @@ window.compInit = function() {
 (function() {
   var toast = document.getElementById("offline-toast");
   function updateStatus() {
-    if (!navigator.onLine) {
-      toast.classList.remove("hide");
-      toast.classList.add("show");
-    } else {
-      toast.classList.remove("show");
-      toast.classList.add("hide");
+    const pending = typeof getPendingGastos === "function" ? getPendingGastos().length : 0;
+    const title = document.querySelector("#offline-label strong");
+    const detail = document.querySelector("#offline-label span");
+    const lang = localStorage.getItem("appLang") || "es";
+    if (pending) {
+      if (title) title.textContent = lang === "en" ? "Pending sync" : lang === "pt" ? "Sincronização pendente" : "Pendiente de sincronizar";
+      if (detail) detail.textContent = lang === "en" ? `${pending} change${pending === 1 ? "" : "s"} saved on this device` : lang === "pt" ? `${pending} alteração${pending === 1 ? "" : "ões"} salva${pending === 1 ? "" : "s"} neste dispositivo` : `${pending} cambio${pending === 1 ? "" : "s"} guardado${pending === 1 ? "" : "s"} en este dispositivo`;
+    } else if (!navigator.onLine) {
+      if (title) title.textContent = lang === "en" ? "Offline" : lang === "pt" ? "Sem conexão" : "Sin conexión";
+      if (detail) detail.textContent = lang === "en" ? "Chat and exchange rates unavailable" : lang === "pt" ? "Chat e cotações indisponíveis" : "El chat y los tipos de cambio no están disponibles";
     }
+    toast.classList.toggle("show", pending > 0 || !navigator.onLine);
+    toast.classList.toggle("hide", pending === 0 && navigator.onLine);
   }
   window.addEventListener("online", updateStatus);
   window.addEventListener("offline", updateStatus);
+  window.addEventListener("taxfly-pending-updated", updateStatus);
   updateStatus();
 })();
 </script>
@@ -3894,12 +3904,13 @@ window.openSwitchApp = function() {
 };
 
 window.doSwitchApp = function(destino) {
+  if (destino === "europe") { window.location.href = "selector.html"; return; }
   localStorage.setItem("taxfly_destino", destino);
   document.getElementById("switchAppModal").style.display = "none";
   if (destino === "usa") {
     window.location.href = "index.html";
   } else {
-    window.location.href = "europe.html";
+    window.location.href = "selector.html";
   }
 };
 </script>

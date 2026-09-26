@@ -1,4 +1,4 @@
-const CACHE = "taxfly-splash-20260926-v1";
+const CACHE = "taxfly-flow-20260926-v7";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 

@@ -404,7 +404,7 @@ if ("serviceWorker" in navigator) {
 }
 
 (function() {
-  const destino = localStorage.getItem("taxfly_destino") || "usa";
+  const destino = "usa";
   document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("tema-" + destino);
     if (destino === "europe") {
@@ -569,7 +569,7 @@ if (navigator.onLine) {
   } catch (e) {}
 }
 
-const destino = localStorage.getItem("taxfly_destino") || "usa";
+const destino = "usa";
 
 const destinoLabel = destino === "europe" ? "TaxEurope" : "TaxUSA";
 
@@ -724,10 +724,11 @@ function enterOfflineMode() {
 onAuthStateChanged(auth, async user => {
   const online = await checkRealConnectivity();
   if (!online) {
+    if (!window.taxflyOfflineUnlocked()) { window.location.replace("login.html"); return; }
     enterOfflineMode();
     return;
   }
-  if (!user) {
+  if (!user || (!navigator.onLine && !window.taxflyOfflineUnlocked())) {
     window.location.replace("login.html");
     return;
   }
@@ -790,8 +791,8 @@ window.handleClick = (id, nombre, fotoEnc) => {
     window.location.replace(pending);
     return;
   }
-  const destino = localStorage.getItem("taxfly_destino") || "usa";
-  window.location.replace(destino === "europe" ? "europe.html" : "index.html");
+  const destino = "usa";
+  window.location.replace("index.html");
 };
 
 window.openEditor = id => {
@@ -822,6 +823,7 @@ window.closeModal = () => document.getElementById("editModal").classList.remove(
 window.doLogout = async () => {
   try {
     await signOut(auth);
+    window.taxflyClearOfflineUnlock();
     localStorage.removeItem("perfilActivoId");
     localStorage.removeItem("perfilActivoNombre");
     localStorage.removeItem("perfilActivoFoto");

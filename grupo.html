@@ -671,6 +671,7 @@ function shake(id) {
 
 onAuthStateChanged(auth, async user => {
   if (user) {
+    if (!navigator.onLine && !window.taxflyOfflineUnlocked()) { window.location.replace("login.html"); return; }
     currentUser = {
       uid: user.uid,
       name: user.displayName || user.email.split("@")[0]
@@ -780,6 +781,7 @@ window.gestionarPIN = () => {
 
 window.doLogout = () => {
   signOut(auth).then(() => {
+    window.taxflyClearOfflineUnlock();
     window.location.replace("login.html");
   }).catch(er => showToast("❌ " + er.message));
 };
@@ -2410,12 +2412,13 @@ window.openSwitchApp = function() {
 };
 
 window.doSwitchApp = function(destino) {
+  if (destino === "europe") { window.location.href = "selector.html"; return; }
   localStorage.setItem("taxfly_destino", destino);
   document.getElementById("switchAppModal").style.display = "none";
   if (destino === "usa") {
     window.location.href = "index.html";
   } else {
-    window.location.href = "europe.html";
+    window.location.href = "selector.html";
   }
 };
 </script>

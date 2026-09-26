@@ -1841,7 +1841,7 @@ window.confirmarPIN = async () => {
     return;
   }
   errEl.style.display = "none";
-  const hashHex = await window.hashPin(p1);
+  const hashHex = await window.createPinHash(p1);
   localStorage.setItem("taxusa_pin_hash", hashHex);
   localStorage.removeItem("taxusa_offline_pin");
   document.getElementById("pinStep1").style.display = "none";
@@ -1849,7 +1849,7 @@ window.confirmarPIN = async () => {
   setTimeout(() => window.closePinModal(), 2200);
 };
 
-window.doLogout = () => signOut(auth).then(() => window.location.replace("login.html"));
+window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
 
 window.doChangeEmail = () => window.confirmAndChangeEmail({
   currentUser: currentUser,
@@ -1879,8 +1879,7 @@ async function handleAuthState(user) {
   if (!user) {
     const pinHash = localStorage.getItem("taxusa_pin_hash");
     const pinEmail = localStorage.getItem("taxusa_offline_email");
-    const unlocked = sessionStorage.getItem("offline_unlocked");
-    if (pinHash && pinEmail) {
+    if (pinHash && pinEmail && window.taxflyOfflineUnlocked()) {
       const perfilNombre = localStorage.getItem("perfilActivoNombre");
       const emailEl = document.getElementById("userEmail");
       if (emailEl) emailEl.innerText = perfilNombre || pinEmail;
@@ -4048,10 +4047,9 @@ window.changeLanguage = function(lang) {
       const entered = buf;
       buf = "";
       updateDots(0);
-      const hash = await sha256(entered);
       const stored = localStorage.getItem("taxusa_pin_hash");
-      if (hash === stored) {
-        sessionStorage.setItem("offline_unlocked", "1");
+      if (await window.verifyPin(entered, stored)) {
+        window.taxflyTouchActivity();
         document.getElementById("pinOfflineOverlay").classList.remove("show");
       } else {
         attempts++;
@@ -4069,7 +4067,9 @@ window.changeLanguage = function(lang) {
   async function init() {
     const offline = await checkOffline();
     if (!offline) return;
-    if (sessionStorage.getItem("offline_unlocked")) return;
+    if (window.taxflyOfflineUnlocked()) return;
+    window.location.replace("login.html");
+    return;
     const hash = localStorage.getItem("taxusa_pin_hash");
     if (!hash) return;
     const overlay = document.getElementById("pinOfflineOverlay");
@@ -4161,12 +4161,13 @@ window.openSwitchApp = function() {
 };
 
 window.doSwitchApp = function(destino) {
+  if (destino === "europe") { window.location.href = "selector.html"; return; }
   localStorage.setItem("taxfly_destino", destino);
   document.getElementById("switchAppModal").style.display = "none";
   if (destino === "usa") {
     window.location.href = "index.html";
   } else {
-    window.location.href = "europe.html";
+    window.location.href = "selector.html";
   }
 };
 </script>

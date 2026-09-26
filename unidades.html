@@ -1021,7 +1021,7 @@ window.confirmarPIN = async () => {
     return;
   }
   errEl.style.display = "none";
-  const hash = await window.hashPin(p1);
+  const hash = await window.createPinHash(p1);
   localStorage.setItem("taxusa_pin_hash", hash);
   if (currentUser) {
     if (!navigator.onLine) {
@@ -1045,7 +1045,7 @@ window.confirmarPIN = async () => {
   setTimeout(() => window.closePinModal(), 2200);
 };
 
-window.doLogout = () => signOut(auth).then(() => window.location.replace("login.html"));
+window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
 
 window.doChangeEmail = () => window.confirmAndChangeEmail({
   currentUser: currentUser,
@@ -1111,7 +1111,7 @@ onAuthStateChanged(auth, async user => {
     } catch (e) {
       const pinHash = localStorage.getItem("taxusa_pin_hash");
       const pinEmail = localStorage.getItem("taxusa_offline_email");
-      if (!pinHash || !pinEmail) {
+      if (!pinHash || !pinEmail || !window.taxflyOfflineUnlocked()) {
         window.location.replace("login.html");
         return;
       }
@@ -1618,12 +1618,13 @@ window.openSwitchApp = function() {
 };
 
 window.doSwitchApp = function(destino) {
+  if (destino === "europe") { window.location.href = "selector.html"; return; }
   localStorage.setItem("taxfly_destino", destino);
   document.getElementById("switchAppModal").style.display = "none";
   if (destino === "usa") {
     window.location.href = "index.html";
   } else {
-    window.location.href = "europe.html";
+    window.location.href = "selector.html";
   }
 };
 </script>

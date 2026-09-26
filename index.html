@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .ww-error{font-size:.75rem;color:var(--text-dim);font-weight:600;text-align:center;padding:8px 0;}
 
         
-        .next-event-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px;cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:14px;}
+        .next-event-card{text-decoration:none;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px;cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:14px;}
         .next-event-card:hover{border-color:var(--accent);transform:translateY(-1px);}
         .ne-dot{width:42px;height:42px;border-radius:12px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
         .ne-info{flex:1;min-width:0;}
@@ -255,6 +255,16 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 
     
+    <a class="next-event-card" href="itinerario.html">
+        <div class="ne-dot" id="ne-dot">📅</div>
+        <div class="ne-info">
+            <div class="ne-label" data-i18n="next_event_label">Próximo evento</div>
+            <div class="ne-title" id="ne-title" data-i18n="next_event_empty">Sin eventos próximos</div>
+            <div class="ne-time" id="ne-time"></div>
+        </div>
+        <div class="ne-arrow">›</div>
+    </a>
+
     <div class="section-grid" id="sectionList"></div>
 
     
@@ -318,15 +328,7 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 
     
-    <div class="next-event-card" onclick="location.href='itinerario.html'">
-        <div class="ne-dot" id="ne-dot">📅</div>
-        <div class="ne-info">
-            <div class="ne-label" data-i18n="next_event_label">Próximo evento</div>
-            <div class="ne-title" id="ne-title" data-i18n="next_event_empty">Sin eventos próximos</div>
-            <div class="ne-time" id="ne-time"></div>
-        </div>
-        <div class="ne-arrow">›</div>
-    </div>
+
 
     
     <div class="tip-card" onclick="nextTip()">
@@ -1452,16 +1454,20 @@ window.changeProfile = () => {
   window.location.href = "profiles.html";
 };
 
-window.doLogout = () => signOut(auth).then(() => window.location.replace("login.html"));
+window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
 
 window.openSwitchApp = () => {
   document.getElementById("switchAppModal").style.display = "flex";
 };
 
 window.doSwitchApp = function(d) {
+  if (d === "europe") {
+    document.getElementById("switchAppModal").style.display = "none";
+    return;
+  }
   localStorage.setItem("taxfly_destino", d);
   document.getElementById("switchAppModal").style.display = "none";
-  window.location.href = d === "usa" ? "tax.html" : "europe.html";
+  window.location.href = d === "usa" ? "tax.html" : "selector.html";
 };
 
 async function probeConnectivity() {
@@ -1488,19 +1494,15 @@ window.addEventListener("offline", () => sessionStorage.setItem("taxfly_connecti
 
 async function guardOfflineAuth(user, onOnlineUser, onOfflineUser) {
   if (user) {
-    onOnlineUser(user);
+    if (!navigator.onLine && !window.taxflyOfflineUnlocked()) { window.location.replace("login.html"); return; }
+    onOnlineUser(user); return;
+  }
+  const online = await probeConnectivity();
+  if (!online && localStorage.getItem("taxusa_pin_hash") && localStorage.getItem("taxusa_offline_email") && window.taxflyOfflineUnlocked()) {
+    if (onOfflineUser) onOfflineUser();
     return;
   }
-  try {
-    await probeConnectivity();
-    window.location.replace("login.html");
-  } catch (e) {
-    const pinHash = localStorage.getItem("taxusa_pin_hash");
-    const pinEmail = localStorage.getItem("taxusa_offline_email");
-    if (pinHash && pinEmail) {
-      if (onOfflineUser) onOfflineUser();
-    } else window.location.replace("login.html");
-  }
+  window.location.replace("login.html");
 }
 
 function loadOfflineUI() {
