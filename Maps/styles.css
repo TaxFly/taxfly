@@ -552,9 +552,6 @@ body {
 .day-map-container { height: 280px; isolation: isolate; }
 
 .day-map-wrap { position: relative; z-index: 1; }
-.day-map-container .leaflet-pane,
-.day-map-container .leaflet-top,
-.day-map-container .leaflet-bottom { z-index: auto; }
 
 .leaflet-popup-content-wrapper {
   background: var(--surface2) !important;
