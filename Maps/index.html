@@ -428,6 +428,20 @@ if ("serviceWorker" in navigator) {
     </div>
   </div>
 </div>
+<input type="file" id="meal-xlsx-input" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none" onchange="mealArchivoElegido(event)">
+<div class="modal-bg" id="mealImportModal">
+  <div class="modal-box">
+    <h2>Actualizar plan de comidas</h2>
+    <p class="itin-imp-help">Se lee siempre la pestaña llamada «Menú» del Excel (columnas Día, Fecha, Desayuno, Almuerzo, Cena y Snack / Notas). Elegí qué días traer del archivo.</p>
+    <div id="meal-import-list" class="itin-imp-list"></div>
+    <p class="itin-imp-help" id="meal-import-count"></p>
+    <div class="modal-actions">
+      <button class="mbtn-ghost" onclick="mealCloseImport()">Cancelar</button>
+      <button class="mbtn-ghost" onclick="mealAplicarImport('reemplazar')">Reemplazar todo</button>
+      <button class="mbtn-primary" onclick="mealAplicarImport('merge')">Actualizar</button>
+    </div>
+  </div>
+</div>
 <div class="modal-bg" id="addParkModal">
   <div class="modal-box">
     <h2>Agregar parque</h2>
