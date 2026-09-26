@@ -2,11 +2,12 @@
 <html lang="es" data-theme="dark">
 <head>
     <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/splash.css">
     <script src="assets/dialogs.js"></script>
     <script src="assets/security.js"></script>
     <script src="config.js"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaxFly — Login</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
@@ -302,60 +303,21 @@ window._connectivityPromise = (async () => {
 
 document.documentElement.classList.add("splash-loading");
 
-window._splashMinEnd = Date.now() + 1200;
+window._splashReturning = false;
+try {
+  window._splashReturning = sessionStorage.getItem("taxfly-intro-seen") === "1";
+  sessionStorage.setItem("taxfly-intro-seen", "1");
+} catch (e) {}
+window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : window._splashReturning ? 180 : 1050);
+if (window._splashReturning) document.documentElement.classList.add("tf-returning");
 </script>
 </head>
 <body>
 
 
-<div id="splash-screen" style="
-    position:fixed;inset:0;z-index:9999;
-    background:#120d04;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:0;
-    transition:opacity 0.4s ease;
-">
-    <style>
-        @keyframes tfGlobeIn {
-            from { opacity:0; transform:scale(1.08); }
-            to   { opacity:1; transform:scale(1); }
-        }
-        @keyframes tfWipe {
-            from { clip-path:inset(0 100% 0 0); opacity:1; }
-            to   { clip-path:inset(0 0% 0 0);   opacity:1; }
-        }
-        @keyframes tfTagIn {
-            from { opacity:0; letter-spacing:8px; }
-            to   { opacity:1; letter-spacing:4px; }
-        }
-        @keyframes tfStarTwinkle {
-            0%,100% { opacity:0; transform:scale(0.4); }
-            50%      { opacity:0.5; transform:scale(1); }
-        }
-        @keyframes tfSweep {
-            0%   { left:-25%; opacity:0; }
-            10%  { opacity:1; }
-            90%  { opacity:1; }
-            100% { left:110%; opacity:0; }
-        }
-    </style>
-
-    
-    <div id="sp-stars" style="position:absolute;inset:0;"></div>
-    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 45%,rgba(239,159,39,0.13) 0%,transparent 70%);pointer-events:none;"></div>
-
-    
-    <div style="position:absolute;top:0;left:-25%;width:25%;height:100%;
-        background:linear-gradient(90deg,transparent 0%,rgba(255,220,120,0.06) 35%,rgba(255,255,255,0.45) 50%,rgba(255,220,120,0.06) 65%,transparent 100%);
-        animation:tfSweep 0.6s ease-in-out 0.72s forwards;pointer-events:none;z-index:2;">
-    </div>
-
-    
-    <div style="position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:0;">
-
-        
-        <div style="opacity:0;animation:tfGlobeIn 0.45s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;margin-bottom:18px;">
-            <svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+<div id="splash-screen" class="tf-splash" role="status" aria-label="Cargando TaxFly">
+  <div class="tf-splash-content">
+    <div class="tf-globe" aria-hidden="true"><svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
                 <path d="M60 5 Q5 5 5 60 Q5 115 60 115 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
                 <path d="M60 5 Q34 34 34 60 Q34 86 60 115" fill="none" stroke="#EF9F27" stroke-width="0.9" opacity="0.5"/>
                 <path d="M60 5 Q12 32 12 60 Q12 88 60 115" fill="none" stroke="#EF9F27" stroke-width="0.6" opacity="0.3"/>
@@ -364,45 +326,18 @@ window._splashMinEnd = Date.now() + 1200;
                 <path d="M60 5 Q108 32 108 60 Q108 88 60 115" fill="none" stroke="#854F0B" stroke-width="0.6" opacity="0.25"/>
                 <line x1="5" y1="60" x2="115" y2="60" stroke="#854F0B" stroke-width="0.8" opacity="0.35"/>
                 <line x1="60" y1="5" x2="60" y2="115" stroke="#854F0B" stroke-width="1.5"/>
-                <g transform="translate(60,48)">
+                <g transform="translate(60,48)"><g class="tf-plane">
                     <polygon points="0,-26 20,9 0,3 -20,9" fill="#633806"/>
                     <polygon points="0,3 -20,9 -10,17" fill="#854F0B"/>
                     <polygon points="0,3 20,9 10,17" fill="#854F0B"/>
                     <polygon points="0,3 -6,21 0,16" fill="#BA7517"/>
                     <polygon points="0,3 6,21 0,16" fill="#BA7517"/>
-                </g>
-            </svg>
-        </div>
-
-        
-        <div style="clip-path:inset(0 100% 0 0);opacity:0;
-            animation:tfWipe 0.38s cubic-bezier(0.16,1,0.3,1) 0.56s forwards;
-            font-family:'DM Sans',-apple-system,system-ui,sans-serif;
-            font-size:2.8rem;font-weight:900;letter-spacing:-1.5px;line-height:1;">
-            <span style="color:#EF9F27">Tax</span><span style="color:#ffffff">Fly</span>
-        </div>
-
-        
-        <div style="font-family:'DM Sans',-apple-system,system-ui,sans-serif;
-            font-size:0.68rem;font-weight:600;
-            color:rgba(255,255,255,0.38);letter-spacing:4px;text-transform:uppercase;
-            opacity:0;animation:tfTagIn 0.45s ease 0.95s forwards;margin-top:10px;">
-            Global Travel Assistance
-        </div>
-    </div>
+                </g></g>
+            <path class="tf-route" d="M22 89 C-5 65 10 13 59 9 C108 5 130 62 97 91" pathLength="1" fill="none" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div class="tf-wordmark"><span>Tax</span>Fly</div>
+    <div class="tf-tagline">Global Travel Assistance</div>
+  </div>
 </div>
-
-<script>
-(function() {
-  var starsEl = document.getElementById("sp-stars");
-  for (var i = 0; i < 60; i++) {
-    var s = document.createElement("div");
-    var sz = (Math.random() * 1.6 + .6).toFixed(1);
-    s.style.cssText = "position:absolute;border-radius:50%;background:white;" + "width:" + sz + "px;height:" + sz + "px;" + "top:" + Math.random() * 100 + "%;left:" + Math.random() * 100 + "%;" + "animation:tfStarTwinkle " + (2.5 + Math.random() * 3).toFixed(1) + "s " + (Math.random() * 5).toFixed(1) + "s ease-in-out infinite;opacity:0;";
-    starsEl.appendChild(s);
-  }
-})();
-</script>
 
 
 <div class="lang-selector-top" id="langSelector" onclick="toggleLangMenu()">
@@ -1210,7 +1145,8 @@ async function initScreen() {
   applyLanguage(currentLang);
   await checkRealConnectivity();
   if (isOnline()) {
-    hideSplash(() => showScreen("screen-login"));
+    showScreen("screen-login");
+    hideSplash();
   } else {
     const cachedHash = localStorage.getItem("taxusa_pin_hash");
     const cachedEmail = localStorage.getItem("taxusa_offline_email");
@@ -1218,9 +1154,10 @@ async function initScreen() {
     if (cachedEmail && hasCachedPin && hasRecentActivity()) {
       hideSplash(() => goToApp());
     } else if (cachedEmail && hasCachedPin) {
-      hideSplash(() => showOfflinePinScreen());
+      showOfflinePinScreen();
+      hideSplash();
     } else {
-      hideSplash(() => {
+      {
         showScreen("screen-login");
         const badge = document.createElement("div");
         badge.className = "offline-badge show";
@@ -1228,27 +1165,27 @@ async function initScreen() {
         badge.innerHTML = "<span>📵</span><span>" + t("noPinOffline") + "</span>";
         const card = document.querySelector("#screen-login .login-card");
         card.insertBefore(badge, card.firstChild);
-      });
+        hideSplash();
+      }
     }
   }
 }
 
+let splashExitPromise;
 function hideSplash(callback) {
-  const remaining = (window._splashMinEnd || 0) - Date.now();
-  const delay = Math.max(0, remaining);
-  setTimeout(() => {
-    document.documentElement.classList.remove("splash-loading");
-    const splash = document.getElementById("splash-screen");
-    if (!splash) {
-      if (callback) callback();
-      return;
-    }
-    splash.style.opacity = "0";
-    setTimeout(() => {
-      splash.style.display = "none";
-      if (callback) callback();
-    }, 420);
-  }, delay);
+  if (!splashExitPromise) {
+    splashExitPromise = new Promise(resolve => {
+      setTimeout(() => {
+        document.documentElement.classList.remove("splash-loading");
+        const splash = document.getElementById("splash-screen");
+        if (!splash) return resolve();
+        splash.classList.add("tf-leaving");
+        const duration = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 260;
+        setTimeout(() => { splash.remove(); resolve(); }, duration);
+      }, Math.max(0, (window._splashMinEnd || 0) - Date.now()));
+    });
+  }
+  return splashExitPromise.then(() => { if (callback) callback(); });
 }
 
 window.addEventListener("online", () => {

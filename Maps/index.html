@@ -21,7 +21,7 @@ function devError(...args) {
 }
 </script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -33,6 +33,7 @@ function devError(...args) {
 <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/Maps/apple-touch-icon.png?v=5">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../assets/splash.css">
 <link rel="stylesheet" href="sx.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -49,288 +50,81 @@ if ("serviceWorker" in navigator) {
 <body class="theme-outlets">
 
 
-<div id="splash-screen" style="
-    position:fixed;inset:0;z-index:9999;
-    background:#0b1220;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    transition:opacity .4s ease;
-">
-  <style>
-    @keyframes spBadgeIn { from{opacity:0;transform:scale(.82);} to{opacity:1;transform:scale(1);} }
-    @keyframes spRingSpin { to{ transform:rotate(360deg); } }
-    @keyframes spWipe { from{clip-path:inset(0 100% 0 0);opacity:1;} to{clip-path:inset(0 0% 0 0);opacity:1;} }
-    @keyframes spTagIn { from{opacity:0;letter-spacing:7px;} to{opacity:1;letter-spacing:2.5px;} }
-    @keyframes spTwinkle { 0%,100%{opacity:0;transform:scale(.4);} 50%{opacity:.55;transform:scale(1);} }
-    @keyframes spSweep { 0%{left:-25%;opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{left:110%;opacity:0;} }
-    @keyframes spBlob1 { 0%,100%{transform:translate(-8%,-6%) scale(1);} 50%{transform:translate(14%,10%) scale(1.25);} }
-    @keyframes spBlob2 { 0%,100%{transform:translate(10%,8%) scale(1.1);} 50%{transform:translate(-14%,-10%) scale(.9);} }
-    @keyframes spBlob3 { 0%,100%{transform:translate(-50%,-50%) rotate(0deg);} 50%{transform:translate(-50%,-50%) rotate(180deg);} }
-    @keyframes spGridDrift { from{background-position:0 0;} to{background-position:60px 60px;} }
-    @keyframes spHueDrift { 0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(26deg);} }
-    @keyframes spRaysSpin { to{ transform:rotate(360deg); } }
-    @keyframes spFloatUp {
-      0%   { transform:translateY(0) translateX(0); opacity:0; }
-      10%  { opacity:1; }
-      88%  { opacity:1; }
-      100% { transform:translateY(-112vh) translateX(var(--drift,20px)); opacity:0; }
-    }
-    @keyframes spPlaneFly {
-      0%   { opacity:0; transform:translate(-58vw,42vh) rotate(-32deg) scale(.85); }
-      8%   { opacity:.9; }
-      92%  { opacity:.9; }
-      100% { opacity:0; transform:translate(58vw,-46vh) rotate(-32deg) scale(1.05); }
-    }
-    .sp-blob{ position:absolute; border-radius:50%; filter:blur(70px); mix-blend-mode:screen; pointer-events:none; will-change:transform; }
-    @media (prefers-reduced-motion: reduce) {
-      #splash-screen *, #splash-screen { animation-duration: .01s !important; animation-delay: 0s !important; }
-    }
-  </style>
-
-  
-  <script>
-(function() {
-  var h = (new Date).getHours(), t;
-  if (h >= 5 && h < 8) t = {
-    bg: "#2a1f3d",
-    b1: "rgba(251,146,60,.5)",
-    b2: "rgba(236,72,153,.45)",
-    b3: "rgba(124,58,237,.4)",
-    b4: "rgba(250,204,21,.2)",
-    glow: "rgba(251,146,60,.22)"
-  }; else if (h >= 8 && h < 18) t = {
-    bg: "#0c1b2e",
-    b1: "rgba(37,99,235,.5)",
-    b2: "rgba(34,211,238,.45)",
-    b3: "rgba(14,165,233,.4)",
-    b4: "rgba(255,255,255,.12)",
-    glow: "rgba(34,211,238,.2)"
-  }; else if (h >= 18 && h < 22) t = {
-    bg: "#241030",
-    b1: "rgba(249,115,22,.5)",
-    b2: "rgba(236,72,153,.45)",
-    b3: "rgba(124,58,237,.4)",
-    b4: "rgba(239,68,68,.18)",
-    glow: "rgba(249,115,22,.22)"
-  }; else t = {
-    bg: "#0b1220",
-    b1: "rgba(37,99,235,.55)",
-    b2: "rgba(124,58,237,.5)",
-    b3: "rgba(34,211,238,.4)",
-    b4: "rgba(245,158,11,.16)",
-    glow: "rgba(37,99,235,.22)"
-  };
-  var el = document.getElementById("splash-screen");
-  if (!el) return;
-  el.style.background = t.bg;
-  el.style.setProperty("--sp-blob1", t.b1);
-  el.style.setProperty("--sp-blob2", t.b2);
-  el.style.setProperty("--sp-blob3", t.b3);
-  el.style.setProperty("--sp-blob4", t.b4);
-  el.style.setProperty("--sp-glow", t.glow);
-})();
-</script>
-
-  <div id="sp-stars" style="position:absolute;inset:0;overflow:hidden;"></div>
-  <div id="sp-particles" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
-
-  
-  <div style="position:absolute;inset:-60px;opacity:.35;pointer-events:none;
-      background-image:linear-gradient(rgba(120,150,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,150,255,.06) 1px,transparent 1px);
-      background-size:60px 60px;animation:spGridDrift 9s linear infinite;"></div>
-
-  
-  <div style="position:absolute;top:50%;left:50%;width:140vmax;height:140vmax;margin:-70vmax 0 0 -70vmax;
-      background:repeating-conic-gradient(rgba(255,255,255,.05) 0deg 1.1deg,transparent 1.1deg 18deg);
-      -webkit-mask-image:radial-gradient(circle,black 0%,black 20%,transparent 55%);
-      mask-image:radial-gradient(circle,black 0%,black 20%,transparent 55%);
-      animation:spRaysSpin 46s linear infinite;pointer-events:none;"></div>
-
-  
-  <div style="position:absolute;inset:0;animation:spHueDrift 24s ease-in-out infinite alternate;pointer-events:none;">
-    <div class="sp-blob" style="width:340px;height:340px;top:8%;left:8%;background:radial-gradient(circle,var(--sp-blob1,rgba(37,99,235,.55)) 0%,transparent 70%);animation:spBlob1 11s ease-in-out infinite;"></div>
-    <div class="sp-blob" style="width:300px;height:300px;bottom:6%;right:10%;background:radial-gradient(circle,var(--sp-blob2,rgba(124,58,237,.5)) 0%,transparent 70%);animation:spBlob2 13s ease-in-out infinite;"></div>
-    <div class="sp-blob" style="width:260px;height:260px;top:55%;left:60%;background:radial-gradient(circle,var(--sp-blob3,rgba(34,211,238,.4)) 0%,transparent 70%);animation:spBlob1 9s ease-in-out infinite reverse;"></div>
-    <div class="sp-blob" style="width:380px;height:380px;top:50%;left:50%;background:radial-gradient(circle,var(--sp-blob4,rgba(245,158,11,.16)) 0%,transparent 70%);animation:spBlob3 20s linear infinite;"></div>
-    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 42%,var(--sp-glow,rgba(37,99,235,0.22)) 0%,transparent 70%);pointer-events:none;"></div>
-  </div>
-
-  <div style="position:absolute;top:0;left:-20%;width:20%;height:100%;
-      background:linear-gradient(90deg,transparent 0%,rgba(180,200,255,0.04) 35%,rgba(255,255,255,0.16) 50%,rgba(180,200,255,0.04) 65%,transparent 100%);
-      animation:spSweep .6s ease-in-out .78s forwards;pointer-events:none;z-index:2;"></div>
-
-  
-  <div style="position:absolute;top:50%;left:50%;font-size:22px;opacity:0;z-index:3;
-      animation:spPlaneFly 3.4s cubic-bezier(.4,0,.2,1) 1.3s 1 both;
-      filter:drop-shadow(0 0 8px rgba(255,255,255,.35));pointer-events:none;">✈️</div>
-
-  <div style="position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:0;">
-    <div style="opacity:0;animation:spBadgeIn .45s cubic-bezier(.16,1,.3,1) .15s forwards;margin-bottom:20px;position:relative;width:96px;height:96px;">
-      <svg width="96" height="96" viewBox="0 0 96 96" style="position:absolute;inset:0;animation:spRingSpin 5.5s linear infinite;">
-        <circle cx="48" cy="48" r="43" fill="none" stroke="url(#spGrad)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="90 180"/>
-        <defs>
-          <linearGradient id="spGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop id="spGradStop1" offset="0%" stop-color="#22c55e"/>
-            <stop id="spGradStop2" offset="100%" stop-color="#2563eb"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <div id="sp-emoji" style="position:absolute;inset:8px;border-radius:50%;background:#141d30;display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 8px 28px -6px rgba(37,99,235,.5);transition:opacity .26s ease,transform .26s ease;">🌴</div>
-    </div>
-
-    <div style="clip-path:inset(0 100% 0 0);opacity:0;
-        animation:spWipe .4s cubic-bezier(.16,1,.3,1) .5s forwards;
-        font-family:'DM Sans',sans-serif;font-size:2.3rem;font-weight:900;letter-spacing:-1px;line-height:1;">
-      <span style="color:#ffffff">Orlando</span> <span style="color:#5b8fd4">Planning</span>
-    </div>
-
-    <div style="font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:600;
-        color:rgba(255,255,255,.4);letter-spacing:2.5px;text-transform:uppercase;
-        text-align:center;white-space:nowrap;
-        opacity:0;animation:spTagIn .45s ease .9s forwards;margin-top:12px;">
-      Tu próximo viaje, planeado
-    </div>
-
-    <div id="sp-msg" style="font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:500;
-        color:rgba(255,255,255,.55);text-align:center;white-space:nowrap;
-        opacity:0;animation:spTagIn .45s ease 1.15s forwards;margin-top:14px;
-        transition:opacity .26s ease,transform .26s ease;">
-      Preparando tu viaje...
-    </div>
+<div id="splash-screen" class="tf-splash" role="status" aria-label="Cargando TaxFly">
+  <div class="tf-splash-content">
+    <div class="tf-globe" aria-hidden="true"><svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60 5 Q5 5 5 60 Q5 115 60 115 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
+                <path d="M60 5 Q34 34 34 60 Q34 86 60 115" fill="none" stroke="#EF9F27" stroke-width="0.9" opacity="0.5"/>
+                <path d="M60 5 Q12 32 12 60 Q12 88 60 115" fill="none" stroke="#EF9F27" stroke-width="0.6" opacity="0.3"/>
+                <path d="M60 5 Q115 5 115 60 Q115 115 60 115 Z" fill="#FAC775" stroke="#BA7517" stroke-width="1.5"/>
+                <path d="M60 5 Q86 34 86 60 Q86 86 60 115" fill="none" stroke="#854F0B" stroke-width="0.9" opacity="0.4"/>
+                <path d="M60 5 Q108 32 108 60 Q108 88 60 115" fill="none" stroke="#854F0B" stroke-width="0.6" opacity="0.25"/>
+                <line x1="5" y1="60" x2="115" y2="60" stroke="#854F0B" stroke-width="0.8" opacity="0.35"/>
+                <line x1="60" y1="5" x2="60" y2="115" stroke="#854F0B" stroke-width="1.5"/>
+                <g transform="translate(60,48)"><g class="tf-plane">
+                    <polygon points="0,-26 20,9 0,3 -20,9" fill="#633806"/>
+                    <polygon points="0,3 -20,9 -10,17" fill="#854F0B"/>
+                    <polygon points="0,3 20,9 10,17" fill="#854F0B"/>
+                    <polygon points="0,3 -6,21 0,16" fill="#BA7517"/>
+                    <polygon points="0,3 6,21 0,16" fill="#BA7517"/>
+                </g></g>
+            <path class="tf-route" d="M22 89 C-5 65 10 13 59 9 C108 5 130 62 97 91" pathLength="1" fill="none" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div class="tf-wordmark"><span>Tax</span>Fly</div>
+    <div class="tf-tagline">Orlando Planning</div>
   </div>
 </div>
 <script>
-(function() {
-  var starsEl = document.getElementById("sp-stars");
-  for (var i = 0; i < 50; i++) {
-    var s = document.createElement("div");
-    var sz = (Math.random() * 1.6 + .6).toFixed(1);
-    s.style.cssText = "position:absolute;border-radius:50%;background:white;" + "width:" + sz + "px;height:" + sz + "px;" + "top:" + Math.random() * 100 + "%;left:" + Math.random() * 100 + "%;" + "animation:spTwinkle " + (2.5 + Math.random() * 3).toFixed(1) + "s " + (Math.random() * 4).toFixed(1) + "s ease-in-out infinite;opacity:0;";
-    starsEl.appendChild(s);
-  }
-  var particlesEl = document.getElementById("sp-particles");
-  for (var p = 0; p < 22; p++) {
-    var d = document.createElement("div");
-    var psz = (Math.random() * 3 + 2).toFixed(1);
-    var pdur = (7 + Math.random() * 6).toFixed(1);
-    var pdelay = (Math.random() * 10).toFixed(1);
-    var pdrift = (Math.random() * 60 - 30).toFixed(0) + "px";
-    d.style.cssText = "position:absolute;bottom:-10px;border-radius:50%;" + "width:" + psz + "px;height:" + psz + "px;left:" + Math.random() * 100 + "%;" + "background:radial-gradient(circle,rgba(250,204,21,.85),rgba(250,204,21,0) 70%);" + "--drift:" + pdrift + ";" + "animation:spFloatUp " + pdur + "s " + pdelay + "s linear infinite;opacity:0;";
-    particlesEl.appendChild(d);
-  }
-  var seenBefore = false;
+(function () {
+  var returning = false;
   try {
-    seenBefore = localStorage.getItem("splash-seen") === "1";
+    returning = sessionStorage.getItem("taxfly-orlando-seen") === "1";
+    sessionStorage.setItem("taxfly-orlando-seen", "1");
   } catch (e) {}
-  var minEnd = Date.now() + (seenBefore ? 1500 : 4200);
-  try {
-    localStorage.setItem("splash-seen", "1");
-  } catch (e) {}
-  var pageLoaded = document.readyState === "complete";
-  var fbReady = false;
+  if (returning) document.documentElement.classList.add("tf-returning");
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var minEnd = Date.now() + (reduced ? 0 : returning ? 120 : 1050);
   var hidden = false;
-  var vibes = [ {
-    emoji: "🌴",
-    msg: "Preparando tu viaje...",
-    a: "#22c55e",
-    b: "#2563eb"
-  }, {
-    emoji: "✈️",
-    msg: "Cargando tu itinerario...",
-    a: "#2563eb",
-    b: "#22d3ee"
-  }, {
-    emoji: "☀️",
-    msg: "Trayendo el clima...",
-    a: "#f59e0b",
-    b: "#ef4444"
-  }, {
-    emoji: "🗺️",
-    msg: "Actualizando el mapa...",
-    a: "#7c3aed",
-    b: "#2563eb"
-  }, {
-    emoji: "🍹",
-    msg: "Armando el plan...",
-    a: "#ec4899",
-    b: "#f59e0b"
-  }, {
-    emoji: "🎢",
-    msg: "Repasando las atracciones...",
-    a: "#ef4444",
-    b: "#7c3aed"
-  }, {
-    emoji: "🏖️",
-    msg: "Chequeando el pronóstico...",
-    a: "#22d3ee",
-    b: "#f59e0b"
-  }, {
-    emoji: "🩴",
-    msg: "Últimos detalles...",
-    a: "#14b8a6",
-    b: "#22c55e"
-  } ];
-  var emojiEl = document.getElementById("sp-emoji");
-  var msgEl = document.getElementById("sp-msg");
-  var stop1 = document.getElementById("spGradStop1");
-  var stop2 = document.getElementById("spGradStop2");
-  var vibeIdx = 0;
-  function applyVibe(v) {
-    if (emojiEl) emojiEl.textContent = v.emoji;
-    if (msgEl) msgEl.textContent = v.msg;
-    if (stop1) stop1.setAttribute("stop-color", v.a);
-    if (stop2) stop2.setAttribute("stop-color", v.b);
-  }
-  var vibeTimer = setInterval(function() {
-    if (!emojiEl) {
-      clearInterval(vibeTimer);
-      return;
-    }
-    emojiEl.style.opacity = "0";
-    emojiEl.style.transform = "scale(.7) rotate(-8deg)";
-    if (msgEl) {
-      msgEl.style.opacity = "0";
-      msgEl.style.transform = "translateY(4px)";
-    }
-    setTimeout(function() {
-      vibeIdx = (vibeIdx + 1) % vibes.length;
-      applyVibe(vibes[vibeIdx]);
-      emojiEl.style.opacity = "1";
-      emojiEl.style.transform = "scale(1) rotate(0deg)";
-      if (msgEl) {
-        msgEl.style.opacity = "1";
-        msgEl.style.transform = "translateY(0)";
-      }
-    }, 300);
-  }, 2200);
-  function reallyHide() {
+  var ready = false;
+  function hide() {
     if (hidden) return;
     hidden = true;
-    clearInterval(vibeTimer);
-    var splash = document.getElementById("splash-screen");
-    if (!splash) return;
-    splash.style.opacity = "0";
-    setTimeout(function() {
-      splash.remove();
-    }, 400);
+    clearTimeout(fallback);
+    setTimeout(function () {
+      var splash = document.getElementById("splash-screen");
+      if (!splash) return;
+      splash.classList.add("tf-leaving");
+      setTimeout(function () { splash.remove(); }, reduced ? 0 : 260);
+    }, Math.max(0, minEnd - Date.now()));
   }
-  function tryHide() {
-    if (hidden || !pageLoaded || !fbReady) return;
-    var remaining = minEnd - Date.now();
-    setTimeout(reallyHide, Math.max(0, remaining));
-  }
-  window._splashFbReady = function() {
-    fbReady = true;
-    tryHide();
+  function maybeHide() { if (ready && window._fbReady) hide(); }
+  var notice;
+  var slowTimer;
+  window._splashFbReady = function () {
+    clearTimeout(slowTimer);
+    if (notice) notice.remove();
+    maybeHide();
   };
-  if (pageLoaded) tryHide(); else window.addEventListener("load", function() {
-    pageLoaded = true;
-    tryHide();
-  });
-  setTimeout(function() {
-    fbReady = true;
-    pageLoaded = true;
-    tryHide();
-  }, 7500);
+  // Release the overlay even if remote sync is unavailable. Existing app handles sync.
+  var fallback = setTimeout(function () {
+    if (!window._fbReady) {
+      notice = document.createElement("div");
+      notice.className = "tf-sync-notice";
+      notice.setAttribute("role", "status");
+      notice.textContent = "Cargando los datos de tu viaje…";
+      document.body.appendChild(notice);
+      slowTimer = setTimeout(function () {
+        if (window._fbReady || !notice) return;
+        notice.textContent = "No se pudo completar la carga. Revisá tu conexión. ";
+        var retry = document.createElement("button");
+        retry.type = "button";
+        retry.textContent = "Reintentar";
+        retry.onclick = function () { window.location.reload(); };
+        notice.appendChild(retry);
+      }, 12000);
+    }
+    hide();
+  }, 2500);
+  document.addEventListener("DOMContentLoaded", function () { ready = true; maybeHide(); }, { once: true });
 })();
 </script>
 
