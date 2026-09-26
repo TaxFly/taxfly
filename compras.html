@@ -2061,7 +2061,12 @@ function isVapidConfigured() {
   return VAPID_PUBLIC_KEY.length === 87 && !VAPID_PUBLIC_KEY.endsWith("abcdefg");
 }
 
+// Guardado en localStorage. La alerta de un umbral (70/90/100) se
+// dispara una sola vez por umbral, y solo se vuelve a evaluar cuando
+// el monto gastado cambia (es decir, cuando se carga/agrega un gasto
+// nuevo), no simplemente por reabrir compras.html con los mismos datos.
 const BUDGET_ALERT_KEY = "taxusa_budget_alerted_pct_" + (perfilId || "default");
+const BUDGET_LAST_SPENT_KEY = "taxusa_budget_last_spent_" + (perfilId || "default");
 
 function getLastAlertedPct() {
   try {
@@ -2076,6 +2081,19 @@ function setLastAlertedPct(pct) {
   try {
     if (pct === null) localStorage.removeItem(BUDGET_ALERT_KEY); else localStorage.setItem(BUDGET_ALERT_KEY, String(pct));
   } catch (e) {}
+}
+
+function getLastCheckedSpent() {
+  try {
+    const v = localStorage.getItem(BUDGET_LAST_SPENT_KEY);
+    return v === null ? null : Number(v);
+  } catch (e) {
+    return null;
+  }
+}
+
+function setLastCheckedSpent(spent) {
+  try { localStorage.setItem(BUDGET_LAST_SPENT_KEY, String(spent)); } catch (e) {}
 }
 
 async function requestPushPermission() {
@@ -2191,6 +2209,10 @@ async function showLocalBudgetNotification(pct, spent, budget) {
 
 function checkBudgetAlerts(spent) {
   if (!presupuestoBase || presupuestoBase <= 0) return;
+  const lastSpent = getLastCheckedSpent();
+  const huboGastoNuevo = lastSpent === null || Math.abs(spent - lastSpent) > 0.009;
+  setLastCheckedSpent(spent);
+  if (!huboGastoNuevo) return;
   const pct = spent / presupuestoBase * 100;
   let threshold = null;
   if (pct >= 100) threshold = 100; else if (pct >= 90) threshold = 90; else if (pct >= 70) threshold = 70;
