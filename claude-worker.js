@@ -2,7 +2,7 @@ const FIREBASE_PROJECT_ID = "viajes-db538";
 
 const JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
 
-const AI_TYPES = [ "invoice_ocr", "insurance_analysis", "moderate_image", "optimize_route", "taxie_chat" ];
+const AI_TYPES = [ "invoice_ocr", "insurance_analysis", "moderate_image", "optimize_route", "taxie_chat", "compare_shopping" ];
 
 export default {
   async fetch(request, env) {
@@ -77,6 +77,7 @@ async function handle(request, env) {
     if (body.type === "insurance_analysis") return handleInsurance(body, apiKey);
     if (body.type === "moderate_image") return handleModerate(body, apiKey);
     if (body.type === "optimize_route") return handleAIChat(body, apiKey, "claude-sonnet-5", 800, .2);
+    if (body.type === "compare_shopping") return handleCompareShopping(body, apiKey);
     return handleAIChat(body, apiKey, "claude-haiku-4-5-20251001", 800, .7);
   }
   if (env.GENERAL_LIMITER) {
@@ -209,6 +210,52 @@ async function handleAIChat(body, apiKey, model, defaultMaxTokens, defaultTemper
   if (claudeRes.error) return json({
     error: "Upstream API error",
     detail: claudeRes.error
+  }, 502);
+  return json({
+    choices: [ {
+      message: {
+        role: "assistant",
+        content: claudeRes.text
+      }
+    } ]
+  });
+}
+
+const DEFAULT_COMP_STORE_LIST = "Amazon (Generalista), Walmart (Generalista), Target (Generalista), Costco (Mayorista), eBay (Marketplace), Best Buy (Electrónica), B&H Photo (Foto / Video), Adorama (Foto / Video), Apple Store (Apple oficial), Newegg (PC / Gaming), Micro Center (PC / Hardware), Nike (Deportivo), Adidas (Deportivo), Nordstrom (Premium), Macy's (Grandes tiendas), Zappos (Calzado), TJ Maxx (Outlet/Descuento), Gap (Ropa casual), Sephora (Cosmética), Ulta Beauty (Cosmética), REI (Outdoor), Home Depot (Hogar / Herram.), IKEA (Muebles / Hogar), GameStop (Videojuegos)";
+
+async function handleCompareShopping(body, apiKey) {
+  const {product: product, storeList: storeList} = body;
+  if (!product || typeof product !== "string" || !product.trim()) {
+    return json({
+      error: "Missing required field: product"
+    }, 400);
+  }
+  const safeProduct = product.trim().slice(0, 200);
+  const safeStoreList = typeof storeList === "string" && storeList.trim() ? storeList.trim().slice(0, 1500) : DEFAULT_COMP_STORE_LIST;
+  const systemPrompt = `Sos un asistente de compras que ayuda a turistas argentinos que están de viaje en Estados Unidos. Conocés estas tiendas disponibles para comprar: ${safeStoreList}. Tenés acceso a búsqueda web: usala siempre para chequear precios, ofertas y disponibilidad ACTUALES antes de responder, no te bases solo en lo que ya sabías de antes. Tu tono es directo, concreto y útil, en español. Usás viñetas y negritas solo si ayudan. Nunca empezás con "Claro!" ni con relleno.`;
+  const userMsg = `El usuario quiere comprar: "${safeProduct}". Buscá en la web información actualizada (precios, ofertas, disponibilidad) y respondé:\n1. **Dónde conviene comprarlo y por qué** (precio habitual, confiabilidad, garantía, si conviene esperar una oferta)\n2. **1-2 alternativas** (opciones más baratas o similares)\n3. **Un tip extra** (promoción, tarjeta, cashback, época del año, etc.)\nBasá tu respuesta en lo que encontraste buscando, no solo en tu conocimiento previo. Formato claro, sin introducción ni relleno.`;
+  const claudeRes = await callClaude(apiKey, {
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 1200,
+    temperature: .6,
+    system: systemPrompt,
+    tools: [ {
+      type: "web_search_20250305",
+      name: "web_search",
+      max_uses: 3
+    } ],
+    messages: [ {
+      role: "user",
+      content: userMsg
+    } ]
+  });
+  if (claudeRes.error) return json({
+    error: "Upstream API error",
+    detail: claudeRes.error
+  }, 502);
+  if (!claudeRes.text) return json({
+    error: "Upstream API error",
+    detail: "empty response from model"
   }, 502);
   return json({
     choices: [ {

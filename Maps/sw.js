@@ -1,7 +1,7 @@
 // Service worker — deja usable el checklist (Outlets/Comidas/Market/Parques)
 // sin señal, típico en un parque con wifi malo o sin datos.
 // Si tocás app.js/styles.css y no ves el cambio reflejado, subí CACHE_VERSION.
-const CACHE_VERSION = 'v31';
+const CACHE_VERSION = 'v32';
 const CACHE_NAME = 'trip-planning-' + CACHE_VERSION;
 // Cache aparte para los tiles del mapa (OpenStreetMap): así el mapa del
 // día funciona sin señal (típico en un parque con wifi malo). Se recorta
@@ -27,6 +27,7 @@ const APP_SHELL = [
   './mis-cosas-firebase.js',
   './sx.css',
   './sx-ui.js',
+  '../assets/trip-context.js',
   './i18n.js',
   './i18n-orlando.js',
   './i18n-mis.js',

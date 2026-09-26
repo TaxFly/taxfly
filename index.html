@@ -348,6 +348,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <div id="menuOverlay" class="menu-overlay" onclick="toggleSettings()"></div>
 <div id="settingsDrawer" class="settings-drawer"></div>
+<script src="assets/trip-context.js"></script>
 <script src="assets/settings.js"></script>
 
 <div id="switchAppModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
@@ -421,7 +422,8 @@ function computeMapsSpent(data) {
 function listenMapsBudget() {
   if (!currentUser || !perfilId) return;
   mapsSpentCache = parseFloat(localStorage.getItem(mapsBudgetCacheKey())) || 0;
-  const tripId = localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando";
+  const tripId = window.TripContext.view(currentUser.uid, perfilId);
+  if (tripId === "unassigned") { mapsSpentCache=0; return; }
   const path = tripId === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", tripId, "data", "budget"];
   onSnapshot(doc(db, ...path), snap => {
     mapsSpentCache = computeMapsSpent(snap.exists() ? snap.data() : null);
@@ -858,8 +860,9 @@ function updateGreeting() {
 
 function renderBudgetUI(base, gastos) {
   if (currentUser && perfilId) {
-    const selected = localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando";
-    gastos = gastos.filter(g => (g.tripId === undefined ? "orlando" : g.tripId) === selected);
+    const tripId=window.TripContext.view(currentUser.uid,perfilId);
+    if (tripId!=="orlando") base=tripId==="unassigned"?0:Number(localStorage.getItem("taxusa_budget_cache_"+perfilId+"::"+currentUser.uid+"::"+tripId))||0;
+    gastos = gastos.filter(g => (g.tripId || "unassigned") === window.TripContext.view(currentUser.uid, perfilId));
   }
   const gastadoPropio = gastos.reduce((s, g) => s + (parseFloat(g.valor || g.monto) || 0), 0);
   const gastado = gastadoPropio + (mapsSpentCache || 0);
@@ -918,10 +921,14 @@ function loadBudget() {
   renderBudgetUI(cachedBase, cachedGastos);
   listenMapsBudget();
   if (!currentUser || !perfilId) return;
-  onSnapshot(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId), snap => {
-    if (snap.exists() && snap.data().presupuesto !== undefined) {
-      const base = parseFloat(snap.data().presupuesto) || 0;
-      localStorage.setItem("taxusa_budget_cache_" + perfilId, String(base));
+  const tripId=window.TripContext.view(currentUser.uid,perfilId);
+  const budgetRef=tripId==="orlando"?doc(db,"usuarios",currentUser.uid,"perfiles",perfilId):tripId==="unassigned"?null:doc(db,"usuarios",currentUser.uid,"perfiles",perfilId,"tripPlanning",tripId);
+  if (budgetRef) onSnapshot(budgetRef, snap => {
+    const field=tripId==="orlando"?"presupuesto":"taxflyBudget";
+    if (snap.exists() && snap.data()[field] !== undefined) {
+      const base = parseFloat(snap.data()[field]) || 0;
+      const key="taxusa_budget_cache_"+perfilId+(tripId==="orlando"?"":"::"+currentUser.uid+"::"+tripId);
+      localStorage.setItem(key, String(base));
       let g = [];
       try {
         g = JSON.parse(localStorage.getItem("taxusa_gastos_cache_" + perfilId) || "[]");
@@ -1331,7 +1338,7 @@ function loadNextEvent() {
     const upcoming = snap.docs.map(d => ({
       id: d.id,
       ...d.data()
-    })).filter(a => (a.tripId === undefined ? "orlando" : a.tripId) === (localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando") && !a.done && new Date(a.date + "T" + (a.time || "00:00")) >= now);
+    })).filter(a => (a.tripId || "unassigned") === window.TripContext.view(currentUser.uid, perfilId) && !a.done && new Date(a.date + "T" + (a.time || "00:00")) >= now);
     if (!upcoming.length) {
       renderNoEvent();
       return;

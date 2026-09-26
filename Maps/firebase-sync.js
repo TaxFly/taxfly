@@ -44,103 +44,54 @@ let currentUid = null;
 
 let currentPerfilId = null;
 
-const legacyTrip = { id: "orlando", name: "Mi viaje a Orlando", destinations: [ { city: "Orlando", state: "Florida" } ] };
-let trips = [ legacyTrip ];
+const legacyTrip = window.TripContext.legacy;
+let trips = [legacyTrip];
 let activeTripId = "orlando";
-const tripCacheKey = () => "trip-planning-trips::" + currentUid + "::" + currentPerfilId;
-const tripActiveKey = () => "trip-planning-active::" + currentUid + "::" + currentPerfilId;
+const tripActiveKey = () => window.TripContext.keys(currentUid,currentPerfilId).active;
 function activeTrip() { return trips.find(t => t.id === activeTripId) || legacyTrip; }
-function tripDocRef(id) { return doc(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning", id); }
-function saveTripCache() {
-  try { localStorage.setItem(tripCacheKey(), JSON.stringify(trips)); localStorage.setItem(tripActiveKey(), activeTripId); } catch (e) {}
+function publishTrip() {
+  trips = window.TripContext.readTrips(currentUid,currentPerfilId);
+  activeTripId = window.TripContext.active(currentUid,currentPerfilId);
+  window._trip = activeTrip(); window._tripId = activeTripId; window._tripList = trips;
 }
+window.addEventListener("storage", e => {
+  if (currentUid && currentPerfilId &&
+      (e.key === tripActiveKey() || e.key === window.TripContext.keys(currentUid,currentPerfilId).list)) location.reload();
+});
 async function loadTrips() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(tripCacheKey()) || "[]");
-    if (Array.isArray(saved)) trips = [ saved.find(t => t && t.id === "orlando") || legacyTrip, ...saved.filter(t => t && t.id && t.id !== "orlando") ];
-    activeTripId = localStorage.getItem(tripActiveKey()) || "orlando";
-  } catch (e) {}
-  try {
-    if (!navigator.onLine) throw new Error("offline");
-    const snap = await Promise.race([getDocs(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning")), new Promise((_, reject) => setTimeout(() => reject(new Error("trip list timeout")), 3000))]);
-    const byId = new Map(trips.map(t => [t.id, t]));
-    snap.forEach(d => byId.set(d.id, { ...d.data(), id: d.id }));
-    trips = [ byId.get("orlando") || legacyTrip, ...[...byId.values()].filter(t => t.id !== "orlando" && t.status !== "deleted") ];
-  } catch (e) { devError("trip list", e); }
-  if (!trips.some(t => t.id === activeTripId)) activeTripId = "orlando";
-  if (activeTrip().status && trips.some(t => !t.status)) activeTripId = trips.find(t => !t.status).id;
-  saveTripCache();
-  window._trip = activeTrip();
-  window._tripId = activeTripId;
-  window._tripList = trips;
+  window._taxflyTripUid=currentUid; window._taxflyTripProfile=currentPerfilId;
+  window.TripContext.configure({db,doc,collection,getDocs,setDoc,updateDoc,deleteDoc});
+  await window.TripContext.hydrate(db,currentUid,currentPerfilId,getDocs,collection,publishTrip);
+  publishTrip();
 }
-
-window.tripPlanningCreate = async function(name, destinations, startDate, endDate) {
-  const id = "trip-" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
-  const trip = { id, name, destinations, startDate: startDate || "", endDate: endDate || "" };
-  trips.push(trip);
-  activeTripId = id;
-  saveTripCache();
-  try { await setDoc(tripDocRef(id), trip); } catch (e) { devError("save trip", e); }
-  location.assign("./index.html?trip=" + encodeURIComponent(id));
+window.tripPlanningCreate = async function(name,destinations,startDate,endDate) {
+  await window.TripContext.create(currentUid,currentPerfilId,{name,destinations,startDate,endDate});
+  publishTrip(); location.assign("./index.html");
 };
 window.tripPlanningUpdate = async function(trip) {
-  if (!trip || !trips.some(t => t.id === trip.id)) return false;
-  try { await setDoc(tripDocRef(trip.id), trip); } catch (e) { devError("update trip", e); return false; }
-  trips = trips.map(t => t.id === trip.id ? trip : t);
-  saveTripCache();
-  window._trip = activeTrip();
-  window._tripList = trips;
+  if(!trip || !trips.some(t=>t.id===trip.id))return false;
+  const saved=await window.TripContext.save(currentUid,currentPerfilId,trip);
+  publishTrip();
+  if(!saved) window.showMToast?.("Guardado en este dispositivo; pendiente de Firebase.");
   return true;
 };
 window.tripPlanningSelect = function(id) {
-  if (!trips.some(t => t.id === id)) return;
-  activeTripId = id;
-  saveTripCache();
-  location.assign("./index.html?trip=" + encodeURIComponent(id));
+  if(!window.TripContext.select(currentUid,currentPerfilId,id))return;
+  location.assign("./index.html");
 };
-
-window.tripPlanningArchive = async function(id, status) {
-  const trip = trips.find(t => t.id === id);
-  if (!trip || !["completed", "suspended"].includes(status)) return false;
-  const updated = { ...trip, status };
-  if (!await window.tripPlanningUpdate(updated)) return false;
-  if (activeTripId === id) activeTripId = trips.find(t => !t.status)?.id || id;
-  saveTripCache();
-  location.assign("./index.html?trip=" + encodeURIComponent(activeTripId));
-  return true;
+window.tripPlanningArchive = async function(id,status) {
+  const saved=await window.TripContext.archive(currentUid,currentPerfilId,id,status);
+  publishTrip();
+  if(!saved) window.showMToast?.("Pendiente de sincronización con Firebase.");
+  location.assign("./index.html"); return true;
 };
-
 window.tripPlanningRestore = async function(id) {
-  const trip = trips.find(t => t.id === id);
-  if (!trip || !await window.tripPlanningUpdate({ ...trip, status: "" })) return false;
-  window.tripPlanningSelect(id);
-  return true;
+  await window.TripContext.archive(currentUid,currentPerfilId,id,"");
+  window.tripPlanningSelect(id); return true;
 };
-
 window.tripPlanningDelete = async function(id) {
-  // Legacy Orlando lives in the original collection and must remain recoverable.
-  if (id === "orlando" || !trips.some(t => t.id === id) || !navigator.onLine) return false;
-  try {
-    // Keep purchase and itinerary history visible under "Sin viaje".
-    for (const group of ["gastos", "actividades", "notas"]) {
-      const linked = await getDocs(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, group));
-      for (const item of linked.docs) {
-        if (item.data().tripId === id) await updateDoc(item.ref, { tripId: "unassigned" });
-      }
-    }
-    const data = await getDocs(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning", id, "data"));
-    for (const item of data.docs) await deleteDoc(item.ref);
-    await setDoc(tripDocRef(id), { id, status: "deleted", deletedAt: new Date().toISOString() });
-  } catch (e) { devError("delete trip", e); return false; }
-  trips = trips.filter(t => t.id !== id);
-  // Existing local keys keep their old names; only the deleted trip suffix is removed.
-  const suffix = "::" + currentPerfilId + "::" + id;
-  try { Object.keys(localStorage).filter(k => k.endsWith(suffix)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
-  if (activeTripId === id) activeTripId = trips.find(t => !t.status)?.id || "orlando";
-  saveTripCache();
-  location.assign("./index.html?trip=" + encodeURIComponent(activeTripId));
-  return true;
+  if(!await window.TripContext.remove(currentUid,currentPerfilId,id))return false;
+  publishTrip(); location.assign("./index.html"); return true;
 };
 
 function orlandoDocRef(docId) {
@@ -200,11 +151,8 @@ function perfilDocRef() {
 
 async function fbSetPresupuesto(v) {
   try {
-    await setDoc(perfilDocRef(), {
-      presupuesto: v
-    }, {
-      merge: true
-    });
+    const ref=activeTripId==="orlando"?perfilDocRef():tripDocRef(activeTripId);
+    await setDoc(ref,{[activeTripId==="orlando"?"presupuesto":"taxflyBudget"]:v},{merge:true});
     return true;
   } catch (e) {
     devError("fbSetPresupuesto error", e);
@@ -213,8 +161,9 @@ async function fbSetPresupuesto(v) {
 }
 
 function listenTaxflyPresupuesto(cb) {
-  return onSnapshot(perfilDocRef(), snap => {
-    const p = snap.exists() ? snap.data().presupuesto : undefined;
+  const ref=activeTripId==="orlando"?perfilDocRef():tripDocRef(activeTripId);
+  return onSnapshot(ref, snap => {
+    const p = snap.exists() ? snap.data()[activeTripId==="orlando"?"presupuesto":"taxflyBudget"] : undefined;
     cb(p === undefined || p === null ? 0 : parseFloat(p) || 0);
   }, () => {});
 }
@@ -224,7 +173,7 @@ function listenTaxflyGastos(cb) {
     let total = 0, n = 0;
     snap.forEach(d => {
       const x = d.data() || {};
-      if ((x.tripId === undefined ? "orlando" : x.tripId) !== activeTripId) return;
+      if ((x.tripId || "unassigned") !== activeTripId) return;
       total += parseFloat(x.valor || x.monto) || 0;
       n++;
     });

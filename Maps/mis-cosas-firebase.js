@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
@@ -44,12 +44,15 @@ window._misCosasReady = new Promise(resolve => {
   window._misCosasResolve = resolve;
 });
 
-function rootPath(uid, perfilId) {
-  return `usuarios/${uid}/perfiles/${perfilId}/misCosas/root`;
+function rootPath(uid, perfilId, tripId) {
+  // The original Mis cosas collection remains the Orlando trip. Other trips
+  // get isolated collections without copying or mutating legacy documents.
+  return tripId === "orlando" ? `usuarios/${uid}/perfiles/${perfilId}/misCosas/root`
+    : `usuarios/${uid}/perfiles/${perfilId}/tripPlanning/${tripId}/misCosas/root`;
 }
 
-function buildDB(uid, perfilId) {
-  const base = rootPath(uid, perfilId);
+function buildDB(uid, perfilId, tripId) {
+  const base = rootPath(uid, perfilId, tripId);
   return {
     collection(name) {
       const ref = collection(db, `${base}/${name}`);
@@ -95,7 +98,7 @@ window._misCosasSignOut = async function() {
   window.location.replace(TAXFLY_LOGIN_URL);
 };
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (!user) {
     try {
       localStorage.setItem(PENDING_REDIRECT_KEY, location.href);
@@ -114,7 +117,13 @@ onAuthStateChanged(auth, user => {
     window.location.replace(TAXFLY_PROFILES_URL);
     return;
   }
-  window._misCosasResolve({
-    DB: buildDB(user.uid, perfilId)
-  });
+  window.TripContext.configure({db,doc,collection,getDocs,setDoc,updateDoc,deleteDoc});
+  window._taxflyTripUid=user.uid; window._taxflyTripProfile=perfilId;
+  await window.TripContext.hydrate(db,user.uid,perfilId,getDocs,collection);
+  const tripId = window.TripContext.active(user.uid, perfilId);
+  window._misCosasScope = `${user.uid}::${perfilId}::${tripId}`;
+  const trip = window.TripContext.readTrips(user.uid, perfilId).find(t => t.id === tripId);
+  const chip = document.getElementById("mis-trip-active");
+  if (chip) chip.textContent = "✈️ " + (trip?.name || "Mi viaje a Orlando");
+  window._misCosasResolve({ DB: buildDB(user.uid, perfilId, tripId) });
 });

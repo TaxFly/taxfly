@@ -6,9 +6,9 @@ import { getFirestore, collection, doc, getDoc, getDocs, setDoc, Timestamp, GeoP
 
 export const FORMAT = "taxfly-backup";
 
-export const VERSION = 1;
+export const VERSION = 2;
 
-export const COLLECTIONS = [ "actividades", "gastos", "notas", "orlando", "misCosas/root/accesorios", "misCosas/root/ropa", "misCosas/root/esenciales", "misCosas/root/estado" ];
+export const COLLECTIONS = [ "actividades", "gastos", "notas", "orlando", "tripPlanning", "misCosas/root/accesorios", "misCosas/root/ropa", "misCosas/root/esenciales", "misCosas/root/estado" ];
 
 export const DOCS = [ "misCosas/root" ];
 
@@ -109,6 +109,13 @@ export async function listProfiles() {
 const okId = id => typeof id === "string" && id.length > 0 && id.length < 1500 && !id.includes("/") && id !== "." && id !== "..";
 
 const isObj = o => o && typeof o === "object" && !Array.isArray(o);
+const TRIP_MIS_GROUPS=["accesorios","ropa","esenciales","estado"];
+function nestedTripPaths(collections) {
+  const ids=isObj(collections?.tripPlanning)?Object.keys(collections.tripPlanning).filter(okId):[];
+  return ids.flatMap(id=>({id,doc:`tripPlanning/${id}/misCosas/root`,
+    collections:[`tripPlanning/${id}/data`,...TRIP_MIS_GROUPS.map(g=>`tripPlanning/${id}/misCosas/root/${g}`)]}));
+}
+
 
 export async function exportBackup({includeTickets: includeTickets = false, onProgress: onProgress = () => {}, pid: pidOverride = null} = {}) {
   const c = ctx();
@@ -200,6 +207,21 @@ export async function exportBackup({includeTickets: includeTickets = false, onPr
       });
     }
   }
+  for (const trip of nestedTripPaths(out.collections)) {
+    tick(trip.doc);
+    try {
+      const d=await getDoc(doc(db,...base,...trip.doc.split("/")));
+      if(d.exists()){out.docs[trip.doc]=enc(d.data());total++}
+    } catch(e){warnings.push({path:trip.doc,error:e.code||e.message})}
+    for(const path of trip.collections){
+      tick(path);
+      try {
+        const snap=await getDocs(collection(db,...base,...path.split("/")));
+        const items={};snap.forEach(d=>{items[d.id]=enc(d.data());total++});
+        out.collections[path]=items;
+      } catch(e){warnings.push({path,error:e.code||e.message})}
+    }
+  }
   if (includeTickets) {
     tick("tickets");
     out.tickets = {
@@ -274,14 +296,14 @@ export function parseBackup(text) {
 export function summarize(d) {
   const counts = {};
   let total = d.profileDoc ? 1 : 0;
-  for (const p of COLLECTIONS) {
+  for (const p of [...COLLECTIONS,...nestedTripPaths(d.collections).flatMap(t=>t.collections)]) {
     const n = isObj(d.collections[p]) ? Object.keys(d.collections[p]).length : 0;
     if (n) {
       counts[p] = n;
       total += n;
     }
   }
-  for (const p of DOCS) if (isObj(d.docs[p])) {
+  for (const p of [...DOCS,...nestedTripPaths(d.collections).map(t=>t.doc)]) if (isObj(d.docs[p])) {
     counts[p] = 1;
     total++;
   }
@@ -351,13 +373,13 @@ export async function importBackup(d, {targetPid: targetPid, includeTickets: inc
     data: d.profileDoc,
     merge: true
   });
-  for (const p of DOCS) {
+  for (const p of [...DOCS,...nestedTripPaths(d.collections).map(t=>t.doc)]) {
     if (isObj(d.docs[p])) writes.push({
       ref: doc(db, ...base, ...p.split("/")),
       data: d.docs[p]
     });
   }
-  for (const p of COLLECTIONS) {
+  for (const p of [...COLLECTIONS,...nestedTripPaths(d.collections).flatMap(t=>t.collections)]) {
     const items = d.collections[p];
     if (!isObj(items)) continue;
     for (const id of Object.keys(items)) {

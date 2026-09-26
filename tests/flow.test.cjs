@@ -85,7 +85,7 @@ test('an older Firebase day snapshot cannot erase recovered local pins', () => {
   assert.equal(w._shouldIgnoreDaysSnapshot({days:[{stops:[{lat:28.445,lng:-81.475}]}],v:5}),false);
 });
 
-test('trip selection filters legacy and new expenses and activities without rewriting history', () => {
+test('trip selection isolates profiles and keeps ambiguous records in Sin viaje', () => {
   const cache=storage({
     'trip-planning-active::u::p':'orlando',
     'trip-planning-trips::u::p':JSON.stringify([{id:'orlando',name:'Mi viaje a Orlando'},{id:'trip-1',name:'Nueva York'}])
@@ -93,15 +93,85 @@ test('trip selection filters legacy and new expenses and activities without rewr
   const w={};
   context(read('assets/trip-context.js'),{window:w,localStorage:cache,document:{createElement:()=>({})}});
   const records=[{name:'Viejo'}, {name:'Nuevo',tripId:'trip-1'}, {name:'Desvinculado',tripId:'unassigned'}];
-  assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),['Viejo']);
+  assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),[]);
   w.TripContext.select('u','p','trip-1');
   assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),['Nuevo']);
   assert.equal(w.TripContext.assign('u','p'),'trip-1');
-  w.TripContext.select('u','p','all');
-  assert.equal(w.TripContext.filter(records,'u','p').length,3);
-  assert.equal(w.TripContext.assign('u','p'),'trip-1');
   w.TripContext.select('u','p','unassigned');
-  assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),['Desvinculado']);
+  assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),['Viejo','Desvinculado']);
+  assert.equal(w.TripContext.assign('u','p'),'unassigned');
+  assert.equal(w.TripContext.active('u','otro'),'orlando');
+});
+
+test('trip registry reuses existing IDs and retries a local edit without duplicating it', async () => {
+  const store=storage({'trip-planning-trips::u::p':JSON.stringify([{id:'orlando',name:'Mi viaje a Orlando'},{id:'trip-1',name:'Nueva York'}])});
+  const w={};let online=false;const written=[];
+  const c=context(read('assets/trip-context.js'),{window:w,localStorage:store,
+    navigator:{get onLine(){return online}},crypto:{randomUUID:()=> 'fixed'},
+    document:{createElement:()=>({})},setTimeout,clearTimeout});
+  assert.equal(w.TripContext.readTrips('u','p').length,2);
+  const first=await w.TripContext.create('u','p',{name:'Miami',destinations:[{city:'Miami',state:'Florida'}]});
+  assert.equal(first.synced,false);
+  assert.equal(w.TripContext.active('u','p'),'trip-fixed');
+  assert.equal(w.TripContext.readTrips('u','p').length,3);
+  online=true;
+  w.TripContext.configure({db:{},doc:(_db,...path)=>path.join('/'),setDoc:async(ref,data)=>written.push({ref,data})});
+  await w.TripContext.flush('u','p');
+  assert.equal(written.length,1);
+  assert.match(written[0].ref,/usuarios\/u\/perfiles\/p\/tripPlanning\/trip-fixed$/);
+  assert.equal(w.TripContext.readTrips('u','p').length,3);
+  assert.deepEqual(Object.keys(w.TripContext.pending('u','p')),[]);
+});
+
+test('Mis cosas reads Orlando in place and new trips from their own branch', () => {
+  const source=between(read('Maps/mis-cosas-firebase.js'),'function rootPath(uid, perfilId, tripId)', 'function buildDB(');
+  const c=context(source,{});
+  assert.equal(c.rootPath('u','p','orlando'),'usuarios/u/perfiles/p/misCosas/root');
+  assert.equal(c.rootPath('u','p','trip-1'),'usuarios/u/perfiles/p/tripPlanning/trip-1/misCosas/root');
+  assert.match(read('assets/backup.js'),/"tripPlanning"/);
+  assert.match(read('assets/backup.js'),/nestedTripPaths/);
+});
+
+test('backup includes each existing trip branch without inventing an ID', () => {
+  const src=between(read('assets/backup.js'),'const TRIP_MIS_GROUPS=', 'export async function exportBackup');
+  const c=context(src,{isObj:o=>o&&typeof o==='object'&&!Array.isArray(o),
+    okId:id=>typeof id==='string'&&!id.includes('/')});
+  const paths=c.nestedTripPaths({tripPlanning:{'trip-1':{name:'Miami'}}});
+  assert.equal(paths.length,1);
+  assert.equal(paths[0].collections[0],'tripPlanning/trip-1/data');
+  assert.ok(paths[0].collections.includes('tripPlanning/trip-1/misCosas/root/accesorios'));
+  assert.equal(c.nestedTripPaths({tripPlanning:{'bad/id':{}}}).length,0);
+});
+
+test('travel tips are hidden in Trip Planning and documents carry a trip ID', () => {
+  assert.doesNotMatch(between(read('Maps/app.js'),'function renderOutlets()', 'function switchOutletTab('),/renderTips\(\)/);
+  assert.match(read('tickets.html'),/tripId: docObj.tripId \|\| "unassigned"/);
+  assert.match(read('tickets.html'),/TripContext\.filter\(allDocs/);
+});
+
+test('archiving and deleting a trip leaves other trips and detaches linked records', async () => {
+  const store=storage({'trip-planning-active::u::p':'trip-1',
+    'trip-planning-trips::u::p':JSON.stringify([{id:'orlando',name:'Orlando'},
+      {id:'trip-1',name:'Miami'},{id:'trip-2',name:'Nueva York'}])});
+  const w={};const writes=[],detached=[],deleted=[];
+  const adapter={db:{},doc:(_db,...segments)=>segments.join('/'),
+    collection:(_db,...segments)=>segments.join('/'),
+    setDoc:async(ref,data)=>writes.push({ref,data}),
+    getDocs:async(ref)=>({docs:ref.endsWith('/gastos')?[{ref:'g1',data:()=>({tripId:'trip-1'})},
+      {ref:'g2',data:()=>({tripId:'trip-2'})}]:[],forEach(){}}),
+    updateDoc:async(ref,value)=>detached.push({ref,value}),deleteDoc:async(ref)=>deleted.push(ref)};
+  context(read('assets/trip-context.js'),{window:w,localStorage:store,navigator:{onLine:true},document:{createElement:()=>({})},setTimeout,clearTimeout});
+  w.TripContext.configure(adapter);
+  assert.equal(await w.TripContext.archive('u','p','trip-1','completed'),true);
+  assert.equal(w.TripContext.active('u','p'),'orlando');
+  assert.equal(w.TripContext.readTrips('u','p').find(t=>t.id==='trip-1').status,'completed');
+  assert.equal(await w.TripContext.archive('u','p','trip-1',''),true);
+  assert.equal(await w.TripContext.remove('u','p','trip-1'),true);
+  assert.deepEqual(JSON.parse(JSON.stringify(detached)),[{ref:'g1',value:{tripId:'unassigned'}}]);
+  assert.equal(w.TripContext.readTrips('u','p').some(t=>t.id==='trip-1'),false);
+  assert.equal(w.TripContext.readTrips('u','p').some(t=>t.id==='trip-2'),true);
+  assert.equal(await w.TripContext.remove('u','p','orlando'),false);
+  assert.ok(writes.some(x=>x.ref.endsWith('/tripPlanning/trip-1')&&x.data.status==='deleted'));
 });
 
 test('login online, offline locked, and offline unlocked choose the correct next screen', async () => {

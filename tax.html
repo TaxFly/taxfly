@@ -489,11 +489,11 @@ if ("serviceWorker" in navigator) {
 
         <div class="input-group">
             <span class="slabel" data-i18n="label_state">Estado</span>
-            <select id="state-select" onchange="loadCities()"></select>
+            <select id="state-select" onchange="loadCities(); saveManualCityChoice();"></select>
         </div>
         <div class="input-group">
             <span class="slabel" data-i18n="label_city">Ciudad / Condado</span>
-            <select id="city-select" onchange="calculate()"></select>
+            <select id="city-select" onchange="calculate(); saveManualCityChoice();"></select>
         </div>
         
         <div class="input-group">
@@ -578,11 +578,11 @@ if ("serviceWorker" in navigator) {
 
         <div class="input-group">
             <span class="slabel" data-i18n="label_state">Estado</span>
-            <select id="cart-state-select" onchange="loadCartCities()"></select>
+            <select id="cart-state-select" onchange="loadCartCities(); saveManualCityChoice('cart-state-select','cart-city-select');"></select>
         </div>
         <div class="input-group">
             <span class="slabel" data-i18n="label_city">Ciudad / Condado</span>
-            <select id="cart-city-select" onchange="renderCart()"></select>
+            <select id="cart-city-select" onchange="renderCart(); saveManualCityChoice('cart-state-select','cart-city-select');"></select>
         </div>
         
         <div class="input-group">
@@ -744,6 +744,7 @@ if ("serviceWorker" in navigator) {
 
 <div id="menuOverlay" class="menu-overlay" onclick="toggleSettings()"></div>
 <div id="settingsDrawer" class="settings-drawer"></div>
+<script src="assets/trip-context.js"></script>
 <script src="assets/settings.js"></script>
 
 
@@ -2584,7 +2585,23 @@ function resolveCityAlias(dest) {
   return null;
 }
 
+window.saveManualCityChoice = (stateId = "state-select", cityId = "city-select") => {
+  const stateSelect = document.getElementById(stateId);
+  const citySelect = document.getElementById(cityId);
+  if (!stateSelect || !citySelect || !citySelect.value) return;
+  const cityName = citySelect.options[citySelect.selectedIndex]?.text || "";
+  try {
+    localStorage.setItem("taxusa_manual_city", JSON.stringify({
+      state: stateSelect.value,
+      cityName
+    }));
+  } catch (e) {}
+};
+
 window.autoSelectTaxByCity = destination => {
+  try {
+    if (localStorage.getItem("taxusa_manual_city")) return;
+  } catch (e) {}
   if (!destination) return;
   const dest = destination.toLowerCase().trim().normalize("NFD").replace(/[̀-ͯ]/g, "");
   const destNorm = dest;
@@ -2678,6 +2695,33 @@ window.onload = () => {
     });
     loadCartCities();
   }
+  try {
+    const savedCity = JSON.parse(localStorage.getItem("taxusa_manual_city") || "null");
+    if (savedCity && taxData[savedCity.state]) {
+      ss.value = savedCity.state;
+      loadCities();
+      const citySelect = document.getElementById("city-select");
+      for (let i = 0; i < citySelect.options.length; i++) {
+        if (citySelect.options[i].text === savedCity.cityName) {
+          citySelect.selectedIndex = i;
+          break;
+        }
+      }
+      calculate();
+      if (css) {
+        css.value = savedCity.state;
+        loadCartCities();
+        const cartCitySelect = document.getElementById("cart-city-select");
+        for (let i = 0; i < cartCitySelect.options.length; i++) {
+          if (cartCitySelect.options[i].text === savedCity.cityName) {
+            cartCitySelect.selectedIndex = i;
+            break;
+          }
+        }
+        renderCart();
+      }
+    }
+  } catch (e) {}
   setInterval(updateCountdown, 1e3);
   const lang = localStorage.getItem("appLang") || "es";
   window.changeLanguage(lang);

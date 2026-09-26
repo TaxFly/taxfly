@@ -188,7 +188,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         
         .viewer-modal{position:fixed;inset:0;background:rgba(0,0,0,.96);display:none;flex-direction:column;z-index:3000;}
         .viewer-modal.show{display:flex;animation:fadeIn .2s ease;}
-        .viewer-header{display:flex;align-items:center;gap:8px;padding:12px 14px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.08);}
+        .viewer-header{display:flex;align-items:center;gap:8px;padding:max(20px, calc(12px + env(safe-area-inset-top, 0px))) 14px 12px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.08);}
         .viewer-title{font-size:.85rem;font-weight:800;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
         .viewer-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);color:white;border:none;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         
@@ -412,6 +412,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 
 <div id="menuOverlay" class="menu-overlay" onclick="toggleSettings()"></div>
 <div id="settingsDrawer" class="settings-drawer"></div>
+<script src="assets/trip-context.js"></script>
 <script src="assets/settings.js"></script>
 
 
@@ -640,6 +641,7 @@ window.fsSave = async (uid, pid, docObj) => {
   await setDoc(ref, {
     id: docObj.id,
     perfilId: docObj.perfilId,
+    tripId: docObj.tripId || "unassigned",
     name: docObj.name,
     type: docObj.type,
     createdAt: docObj.createdAt,
@@ -1279,7 +1281,8 @@ function renderList() {
   const lbl = LABELS[lang] || LABELS.es;
   const list = document.getElementById("doc-list");
   const empty = document.getElementById("empty-state");
-  const filtered = activeFilter === "all" ? allDocs : allDocs.filter(d => d.type === activeFilter);
+  const visible=window._uid?window.TripContext.filter(allDocs,window._uid,perfilId):[];
+  const filtered = activeFilter === "all" ? visible : visible.filter(d => d.type === activeFilter);
   if (!filtered.length) {
     list.innerHTML = "";
     if (activeFilter !== "all" && allDocs.length > 0) {
@@ -1656,6 +1659,7 @@ window.saveDoc = async () => {
   const docObj = {
     id: `doc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     perfilId: perfilId,
+    tripId:window._uid?window.TripContext.assign(window._uid,perfilId):"unassigned",
     name: name,
     type: selType,
     files: [ ...pending ],

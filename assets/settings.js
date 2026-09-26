@@ -14,7 +14,7 @@
       dark: "Modo oscuro",
       data: "Datos y respaldo",
       bk_title: "Respaldo de tu perfil",
-      bk_desc: "Guardá una copia de todo lo de este perfil (gastos, actividades, notas, Orlando y Mis cosas) en un archivo JSON, y restaurala cuando la necesites.",
+      bk_desc: "Guardá una copia de todo lo de este perfil (gastos, actividades, notas, viajes y Mis cosas) en un archivo JSON, y restaurala cuando la necesites.",
       export: "Exportar",
       import: "Importar",
       last: "Último respaldo: {d}",
@@ -36,7 +36,7 @@
       it_gastos: "Gastos",
       it_act: "Actividades",
       it_notas: "Notas",
-      it_orl: "Orlando Planning",
+      it_orl: "Trip Planning",
       it_mis: "Mis cosas de viaje",
       it_prof: "Presupuesto y viaje",
       exp_tickets: "Incluir archivos de Tickets",
@@ -87,7 +87,7 @@
       dark: "Dark mode",
       data: "Data & backup",
       bk_title: "Back up your profile",
-      bk_desc: "Save a copy of everything in this profile (expenses, activities, notes, Orlando and My stuff) as a JSON file, and restore it whenever you need.",
+      bk_desc: "Save a copy of everything in this profile (expenses, activities, notes, trips and My stuff) as a JSON file, and restore it whenever you need.",
       export: "Export",
       import: "Import",
       last: "Last backup: {d}",
@@ -109,7 +109,7 @@
       it_gastos: "Expenses",
       it_act: "Activities",
       it_notas: "Notes",
-      it_orl: "Orlando Planning",
+      it_orl: "Trip Planning",
       it_mis: "My travel stuff",
       it_prof: "Budget & trip",
       exp_tickets: "Include Tickets files",
@@ -160,7 +160,7 @@
       dark: "Modo escuro",
       data: "Dados e backup",
       bk_title: "Backup do seu perfil",
-      bk_desc: "Salve uma cópia de tudo neste perfil (gastos, atividades, notas, Orlando e Minhas coisas) em um arquivo JSON e restaure quando precisar.",
+      bk_desc: "Salve uma cópia de tudo neste perfil (gastos, atividades, notas, viagens e Minhas coisas) em um arquivo JSON e restaure quando precisar.",
       export: "Exportar",
       import: "Importar",
       last: "Último backup: {d}",
@@ -182,7 +182,7 @@
       it_gastos: "Gastos",
       it_act: "Atividades",
       it_notas: "Notas",
-      it_orl: "Orlando Planning",
+      it_orl: "Trip Planning",
       it_mis: "Minhas coisas de viagem",
       it_prof: "Orçamento e viagem",
       exp_tickets: "Incluir arquivos de Tickets",
@@ -355,6 +355,8 @@
     applyProfile();
   }
   refresh();
+  var tripsUiUrl = new URL("trips-ui.js", document.currentScript.src).href;
+  window.addEventListener("load", function() { import(tripsUiUrl).catch(function(e) { console.warn("[trips]", e); }); });
   new MutationObserver(function() {
     if (drawer.classList.contains("open")) refresh();
   }).observe(drawer, {
