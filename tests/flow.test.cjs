@@ -12,7 +12,7 @@ function context(src, values) { const c = vm.createContext(values); vm.runInCont
 function storage(seed={}) { const m=new Map(Object.entries(seed)); return {getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),_map:m}; }
 
 test('Trip Planning keeps the Orlando data path and isolates new trips', () => {
-  const refCode = between(read('Maps/firebase-sync.js'), 'function orlandoDocRef(docId)', 'async function fbSet(');
+  const refCode = between(read('Maps/firebase-sync.js'), 'function orlandoDocRef(docId)', 'const docWriteQueues');
   const makeRef = activeTripId => context(refCode, {
     db:{}, currentUid:'user', currentPerfilId:'profile', activeTripId,
     doc:(_db,...path)=>path.join('/')
@@ -40,6 +40,49 @@ test('editing a stop retains its map pin and coordinate links can restore pins',
   assert.equal(days[0].stops[0].lng,-81.475);
   assert.equal(days[0].stops[0].custom,'keep');
   assert.equal(c.coordsFromMapsUrl('https://www.google.com/maps/place/X/@28.45,-81.47,14z/!3d28.459!4d-81.475').lat,28.459);
+});
+
+test('Orlando day three restores all six pins and saves one complete day', async () => {
+  const names=['Dollar Tree','ICON Park','Ross Dress for Less','Orlando Outlet Marketplace','The Florida Mall','Crazy Hot Buys'];
+  const addresses=['8910 Turkey Lake Rd Ste 500','8375 International Dr','7603 Turkey Lake Rd','5269 International Dr','8001 S Orange Blossom Trl','730 Sand Lake Rd Suite 106'];
+  const days=[{stops:[]},{stops:[]},{label:'Outlets',stops:names.slice(0,5).map((name,i)=>({name,desc:addresses[i]}))}];
+  let saves=0, searches=0;
+  const code=between(read('Maps/app.js'),'const DAY_THREE_OUTLETS = [','function stopSaveDayLabel(');
+  const c=context(code,{days,window:{_tripId:'orlando'},document:{getElementById:()=>({disabled:false,textContent:''})},
+    validStopCoords:(lat,lng)=>Number.isFinite(lat)&&Number.isFinite(lng)&&lat!==0&&lng!==0,
+    coordsFromMapsUrl:()=>null,geoNominatimAddress:async()=>{searches++;return null},stopSearchAddress:()=>'',
+    saveState:()=>saves++,renderOutlets:()=>{},showMToast:()=>{},URL,encodeURIComponent,geoSleep:async()=>{},_routeCache:{}});
+  await c.recoverStopLocations(2);
+  assert.equal(days[2].stops.length,6);
+  assert.equal(days[2].stops.filter(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lng)).length,6);
+  assert.equal(saves,1);
+  assert.equal(searches,0);
+  await c.recoverStopLocations(2);
+  assert.equal(saves,1);
+});
+
+test('Firebase writes the newest day after an earlier pending update', async () => {
+  let release; const writes=[];
+  const code=between(read('Maps/firebase-sync.js'),'const docWriteQueues = new Map();','async function fbGet(');
+  const c=context(code,{orlandoDocRef:()=>({}),setDoc:(_ref,data)=>{writes.push(data);return new Promise(resolve=>{release=resolve})},devError:()=>{}});
+  const first=c.fbSet('days',{days:[1]});
+  const second=c.fbSet('days',{days:[1,2]});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(writes.length,1);
+  release(); await first;
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(writes.length,2);
+  release(); await second;
+  assert.deepEqual(writes.map(x=>x.days.length),[1,2]);
+});
+
+test('an older Firebase day snapshot cannot erase recovered local pins', () => {
+  const local=storage({'days::p::pending':JSON.stringify({days:[{stops:[{lat:28.445,lng:-81.475}]}],v:5})});
+  const src=between(read('Maps/app.js'),'window._shouldIgnoreDaysSnapshot = function(data)', 'function totalDone()');
+  const w={_fb:{stableStringify:v=>JSON.stringify(v)}};
+  context(src,{window:w,localStorage:local,DAYS_KEY:'days',scopedKey:()=> 'days::p'});
+  assert.equal(w._shouldIgnoreDaysSnapshot({days:[{stops:[{}]}],v:5}),true);
+  assert.equal(w._shouldIgnoreDaysSnapshot({days:[{stops:[{lat:28.445,lng:-81.475}]}],v:5}),false);
 });
 
 test('trip selection filters legacy and new expenses and activities without rewriting history', () => {

@@ -65,17 +65,26 @@ function scopedKey(key) {
 }
 
 function syncedSave(localKey, localValue, docId, fbValue) {
+  const payload = fbValue !== undefined ? fbValue : localValue;
+  const pendingKey = scopedKey(localKey) + "::pending";
   try {
     localStorage.setItem(scopedKey(localKey), JSON.stringify(localValue));
+    if (docId === "days") localStorage.setItem(pendingKey, JSON.stringify(payload));
   } catch (e) {}
-  const payload = fbValue !== undefined ? fbValue : localValue;
   if (window._fb && window._fb.stableStringify) {
     window._syncedWriteLog[docId] = {
       at: Date.now(),
       value: window._fb.stableStringify(payload)
     };
   }
-  window._fb && window._fb.fbSet(docId, payload);
+  if (window._fb) window._fb.fbSet(docId, payload).then(() => {
+    if (docId !== "days") return;
+    try {
+      if (localStorage.getItem(pendingKey) === JSON.stringify(payload)) localStorage.removeItem(pendingKey);
+    } catch (e) {}
+  }).catch(() => {
+    if (docId === "days") showMToast("Sin conexión con Firebase: los cambios quedan guardados en este dispositivo y se reintentarán al abrir la app.");
+  });
 }
 
 function localLoad(localKey) {
@@ -88,6 +97,9 @@ function localLoad(localKey) {
 }
 
 function syncedLoad(localKey, fbValue) {
+  if (localKey === "outlets-orlando-days-v2") {
+    try { if (localStorage.getItem(scopedKey(localKey) + "::pending")) return localLoad(localKey) || fbValue; } catch (e) {}
+  }
   return fbValue !== undefined && fbValue !== null ? fbValue : localLoad(localKey);
 }
 
@@ -202,7 +214,20 @@ function loadState() {
   if (Array.isArray(savedVisited)) savedVisited.forEach(arr => visited.push(new Set(Array.isArray(arr) ? arr : [])));
   syncVisitedLength(true);
   if (currentOutletDay >= days.length) currentOutletDay = 0;
+  // A write may have failed during the previous visit; retry the saved day.
+  try {
+    if (localStorage.getItem(scopedKey(DAYS_KEY) + "::pending") && window._fb) {
+      syncedSave(DAYS_KEY, days, "days", { days, v: DAYS_VERSION });
+    }
+  } catch (e) {}
 }
+
+window._shouldIgnoreDaysSnapshot = function(data) {
+  try {
+    const pending = localStorage.getItem(scopedKey(DAYS_KEY) + "::pending");
+    return !!pending && window._fb.stableStringify(JSON.parse(pending)) !== window._fb.stableStringify(data);
+  } catch (e) { return false; }
+};
 
 function totalDone() {
   return visited.reduce((acc, s) => acc + s.size, 0);
@@ -1921,7 +1946,8 @@ function renderDayContent(d) {
     html += `<button onclick="stopStartAdd(${d})" style="width:100%;padding:12px;border:1px dashed var(--border2);border-radius:var(--radius);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:2px" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">+ Agregar parada</button>`;
   }
   const stopsWithCoords = day.stops.filter(s => s.lat && s.lng);
-  const missingCoords = day.stops.length - stopsWithCoords.length;
+  const missingKnown = isOriginalOutletsDay(d, day) ? DAY_THREE_OUTLETS.filter(place => !day.stops.some(s => place.match.test((s.name || "") + " " + (s.desc || "")))).length : 0;
+  const missingCoords = day.stops.length - stopsWithCoords.length + missingKnown;
   if (missingCoords) {
     html += `<div class="stop-map-recovery"><span>${missingCoords} parada${missingCoords === 1 ? "" : "s"} sin ubicación en el mapa.</span><button type="button" id="recover-stops-${d}" onclick="recoverStopLocations(${d})">↻ Recuperar ubicaciones</button><small>Busca las direcciones guardadas. Comprobá los pines recuperados antes de usarlos para navegar.</small></div>`;
   }
@@ -2171,6 +2197,29 @@ function stopSearchAddress(stop) {
   return (address || stop.name) + ", " + area;
 }
 
+// Reference pins for the six stops supplied for the original Orlando day 3.
+// These mark the business or shopping center; entrances can be adjusted in Edit.
+const DAY_THREE_OUTLETS = [
+  { name: "Dollar Tree", address: "8910 Turkey Lake Rd Ste 500", lat: 28.4450, lng: -81.47559, match: /dollar\s*tree|8910\s*turkey\s*lake/i },
+  { name: "ICON Park", address: "8375 International Dr", lat: 28.44335, lng: -81.46877, match: /icon\s*park|8375\s*international/i },
+  { name: "Ross Dress for Less", address: "7603 Turkey Lake Rd", lat: 28.45436, lng: -81.47655, match: /ross(?:\s*dress\s*for\s*less)?|7603\s*turkey\s*lake/i },
+  { name: "Orlando Outlet Marketplace", address: "5269 International Dr", lat: 28.468107, lng: -81.452354, match: /orlando\s*outlet\s*marketplace|5269\s*international/i },
+  { name: "The Florida Mall", address: "8001 S Orange Blossom Trl", lat: 28.44542, lng: -81.39508, match: /(?:the\s*)?florida\s*mall|8001\s*(?:s\s*)?orange\s*blossom/i },
+  { name: "Crazy Hot Buys", address: "730 Sand Lake Rd Suite 106", lat: 28.44899, lng: -81.38795, match: /crazy\s*hot\s*buys|730\s*sand\s*lake/i }
+];
+
+function knownDayThreeStop(dayIdx, stop) {
+  if (dayIdx !== 2 || window._tripId && window._tripId !== "orlando") return null;
+  const text = (stop.name || "") + " " + (stop.desc || "");
+  return DAY_THREE_OUTLETS.find(place => place.match.test(text)) || null;
+}
+
+function isOriginalOutletsDay(dayIdx, day) {
+  return dayIdx === 2 && (!window._tripId || window._tripId === "orlando") &&
+    (/outlet/i.test((day.label || "") + " " + (day.dayName || "")) ||
+      day.stops.filter(s => knownDayThreeStop(dayIdx, s)).length >= 2);
+}
+
 async function recoverStopLocations(dayIdx) {
   const day = days[dayIdx];
   if (!day) return;
@@ -2181,15 +2230,27 @@ async function recoverStopLocations(dayIdx) {
   for (let i = 0; i < missing.length; i++) {
     const { s, index } = missing[i];
     if (btn) btn.textContent = `Buscando ${i + 1}/${missing.length}…`;
-    const found = coordsFromMapsUrl(s.url) || await geoNominatimAddress(stopSearchAddress(s));
+    const known = knownDayThreeStop(dayIdx, s);
+    const found = known || coordsFromMapsUrl(s.url) || await geoNominatimAddress(stopSearchAddress(s));
     if (found && validStopCoords(found.lat, found.lng) && days[dayIdx] === day && day.stops[index] === s) {
       s.lat = found.lat;
       s.lng = found.lng;
-      saveState();
+      if (known && !s.url) s.url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(known.address + ", Orlando, FL")}`;
       restored++;
     }
-    if (i < missing.length - 1) await geoSleep(1100);
+    if (!known && i < missing.length - 1) await geoSleep(1100);
   }
+  if (isOriginalOutletsDay(dayIdx, day) && days[dayIdx] === day) {
+    for (const place of DAY_THREE_OUTLETS) {
+      if (day.stops.some(s => place.match.test((s.name || "") + " " + (s.desc || "")))) continue;
+      day.stops.push({ name: place.name, desc: place.address, lat: place.lat, lng: place.lng,
+        url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.address + ", Orlando, FL")}` });
+      restored++;
+    }
+  }
+  // Save one complete array only after recovery; per-stop writes can resolve
+  // out of order and a listener can otherwise replace the next stop mid-loop.
+  if (restored) saveState();
   _routeCache = {};
   renderOutlets();
   showMToast(restored ? `${restored} ubicación${restored === 1 ? "" : "es"} recuperada${restored === 1 ? "" : "s"}. Revisá los pines en el mapa.` : "No se encontraron ubicaciones; podés ingresar coordenadas al editar cada parada.");

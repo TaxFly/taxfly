@@ -148,15 +148,18 @@ function orlandoDocRef(docId) {
   return doc(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning", activeTripId, "data", docId);
 }
 
-async function fbSet(docId, data) {
-  try {
-    await setDoc(orlandoDocRef(docId), data, {
-      merge: true
-    });
-  } catch (e) {
-    devError("fbSet error", e);
-    throw e;
-  }
+const docWriteQueues = new Map();
+function fbSet(docId, data) {
+  // Keep full-array updates in order: an earlier geocode result must never
+  // replace a later version of the same day after a slow network write.
+  const snapshot = JSON.parse(JSON.stringify(data));
+  const ref = orlandoDocRef(docId);
+  const previous = docWriteQueues.get(docId) || Promise.resolve();
+  const write = previous.catch(() => {}).then(() => setDoc(ref, snapshot, { merge: true }));
+  docWriteQueues.set(docId, write);
+  write.then(() => { if (docWriteQueues.get(docId) === write) docWriteQueues.delete(docId); },
+    e => { devError("fbSet error", e); if (docWriteQueues.get(docId) === write) docWriteQueues.delete(docId); });
+  return write;
 }
 
 async function fbGet(docId) {
@@ -290,6 +293,7 @@ async function startApp() {
   });
   fbListen("days", data => {
     if (data && data.days && window.days) {
+      if (window._shouldIgnoreDaysSnapshot?.(data)) return;
       window.days.length = 0;
       data.days.forEach(d => window.days.push(d));
       window.syncVisitedLength && window.syncVisitedLength();
