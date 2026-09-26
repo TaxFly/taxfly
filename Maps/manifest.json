@@ -1,7 +1,7 @@
 {
-  "name": "Orlando Planning",
-  "short_name": "Orlando",
-  "description": "Cronograma de outlets, comidas, compras y parques para el viaje a Orlando",
+  "name": "Trip Planning",
+  "short_name": "Trip Planning",
+  "description": "Viajes, lugares, comidas, compras y atracciones por Estados Unidos",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -25,9 +25,9 @@ function devError(...args) {
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Orlando Planning">
+<meta name="apple-mobile-web-app-title" content="Trip Planning">
 <meta name="theme-color" content="#0b1220">
-<title>Orlando Planning</title>
+<title>Trip Planning</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="https://taxfly.github.io/taxfly/Maps/favicon.png?v=5">
 <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/Maps/apple-touch-icon.png?v=5">
@@ -70,19 +70,13 @@ if ("serviceWorker" in navigator) {
                 </g></g>
             <path class="tf-route" d="M22 89 C-5 65 10 13 59 9 C108 5 130 62 97 91" pathLength="1" fill="none" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/></svg></div>
     <div class="tf-wordmark"><span>Tax</span>Fly</div>
-    <div class="tf-tagline">Orlando Planning</div>
+    <div class="tf-tagline">Trip Planning</div>
   </div>
 </div>
 <script>
 (function () {
-  var returning = false;
-  try {
-    returning = sessionStorage.getItem("taxfly-orlando-seen") === "1";
-    sessionStorage.setItem("taxfly-orlando-seen", "1");
-  } catch (e) {}
-  if (returning) document.documentElement.classList.add("tf-returning");
   var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var minEnd = Date.now() + (reduced ? 0 : returning ? 120 : 1050);
+  var minEnd = Date.now() + (reduced ? 0 : 1050);
   var hidden = false;
   var ready = false;
   function hide() {
@@ -143,10 +137,11 @@ if ("serviceWorker" in navigator) {
     </div>
   </div>
   <div class="hdr-title-row">
-    <div class="header-title" id="main-title">Outlets <span class="ht-accent">Orlando</span></div>
+    <div class="header-title" id="main-title">Trip <span class="ht-accent">Planning</span></div>
     <div class="global-counter" id="global-counter" title="Paradas visitadas">—</div>
   </div>
   <div class="header-subtitle" id="main-subtitle" hidden>Cronograma de compras</div>
+  <div id="trip-manager" class="trip-manager" aria-label="Viaje activo"></div>
   <div class="hdr-meta">
     <div class="trip-chip-slot" id="trip-chip-slot"></div>
     <div class="budget-pill-slot" id="budget-pill-slot"></div>
@@ -154,10 +149,16 @@ if ("serviceWorker" in navigator) {
   <div class="today-card-slot" id="today-card-slot" style="display:none"></div>
 </header>
 
+<dialog id="trip-modal" class="trip-modal"><form onsubmit="tripSubmit(event)">
+  <h2>Nuevo viaje</h2><div class="trip-new-fields"><label>Nombre del viaje<input name="tripName" maxlength="80" placeholder="Ej: Costa oeste 2027" required></label><div class="trip-dates"><label>Desde<input name="startDate" type="date"></label><label>Hasta<input name="endDate" type="date"></label></div></div>
+  <label>Ciudad<input name="city" list="trip-cities" maxlength="80" placeholder="Ej: Nueva York" required></label><datalist id="trip-cities"><option value="Orlando"><option value="Miami"><option value="Nueva York"><option value="Los Ángeles"><option value="Las Vegas"><option value="San Francisco"><option value="Chicago"><option value="Washington D.C."></datalist>
+  <label>Estado<select name="state" required><option value="">Seleccioná un estado</option><option value="Alabama">Alabama</option><option value="Alaska">Alaska</option><option value="Arizona">Arizona</option><option value="Arkansas">Arkansas</option><option value="California">California</option><option value="Colorado">Colorado</option><option value="Connecticut">Connecticut</option><option value="Delaware">Delaware</option><option value="Florida">Florida</option><option value="Georgia">Georgia</option><option value="Hawaii">Hawái</option><option value="Idaho">Idaho</option><option value="Illinois">Illinois</option><option value="Indiana">Indiana</option><option value="Iowa">Iowa</option><option value="Kansas">Kansas</option><option value="Kentucky">Kentucky</option><option value="Louisiana">Luisiana</option><option value="Maine">Maine</option><option value="Maryland">Maryland</option><option value="Massachusetts">Massachusetts</option><option value="Michigan">Míchigan</option><option value="Minnesota">Minnesota</option><option value="Mississippi">Misisipi</option><option value="Missouri">Misuri</option><option value="Montana">Montana</option><option value="Nebraska">Nebraska</option><option value="Nevada">Nevada</option><option value="New Hampshire">Nuevo Hampshire</option><option value="New Jersey">Nueva Jersey</option><option value="New Mexico">Nuevo México</option><option value="New York">Nueva York</option><option value="North Carolina">Carolina del Norte</option><option value="North Dakota">Dakota del Norte</option><option value="Ohio">Ohio</option><option value="Oklahoma">Oklahoma</option><option value="Oregon">Oregón</option><option value="Pennsylvania">Pensilvania</option><option value="Rhode Island">Rhode Island</option><option value="South Carolina">Carolina del Sur</option><option value="South Dakota">Dakota del Sur</option><option value="Tennessee">Tennessee</option><option value="Texas">Texas</option><option value="Utah">Utah</option><option value="Vermont">Vermont</option><option value="Virginia">Virginia</option><option value="Washington">Washington</option><option value="West Virginia">Virginia Occidental</option><option value="Wisconsin">Wisconsin</option><option value="Wyoming">Wyoming</option><option value="District of Columbia">Distrito de Columbia</option></select></label>
+  <div class="trip-modal-actions"><button type="button" onclick="this.closest('dialog').close()">Cancelar</button><button type="submit">Guardar</button></div>
+</form></dialog>
 <div class="nav-bar-wrap">
   <div class="nav-bar">
     <div class="tabs">
-      <button class="tab active" id="nav-outlets" onclick="switchSection('outlets')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-2-6"/><path d="M4 8h16"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></span><span class="nav-date">Outlets</span></button>
+      <button class="tab active" id="nav-outlets" onclick="switchSection('outlets')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-2-6"/><path d="M4 8h16"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></span><span class="nav-date">Lugares</span></button>
       <button class="tab" id="nav-comidas" onclick="switchSection('comidas')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v6a2 2 0 0 0 4 0V2"/><path d="M9 8v14"/><path d="M17 2c-1.5 0-3 1.5-3 4v4a2 2 0 0 0 2 2h1v10"/></svg></span><span class="nav-date">Comidas</span></button>
       <button class="tab" id="nav-walmart" onclick="switchSection('walmart')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 3h2l2.6 12.4A2 2 0 0 0 9.55 17H18a2 2 0 0 0 1.96-1.6L21.5 8H6"/></svg></span><span class="nav-date">Supermercado</span></button>
       <button class="tab" id="nav-parques" onclick="switchSection('parques')"><span><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/><path d="M12 20v2M8 22h8"/></svg></span><span class="nav-date">Parques</span></button>
@@ -179,7 +180,7 @@ if ("serviceWorker" in navigator) {
   <div class="sx-scroll">
     <div class="sx-me">
       <div class="sx-av settings-profile-avatar" id="settings-profile-avatar"></div>
-      <div class="sx-me-txt"><div class="sx-me-lbl">Perfil activo</div><div class="sx-me-name settings-profile-name" id="settings-profile-name">—</div><div class="sx-mail">Orlando Planning</div></div>
+      <div class="sx-me-txt"><div class="sx-me-lbl">Perfil activo</div><div class="sx-me-name settings-profile-name" id="settings-profile-name">—</div><div class="sx-mail">Trip Planning</div></div>
       <button type="button" class="sx-chip" onclick="changeProfile()" title="Cambiar perfil" aria-label="Cambiar perfil"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></svg></button>
     </div>
 
@@ -194,7 +195,7 @@ if ("serviceWorker" in navigator) {
 
     <span class="sx-sec">Datos y respaldo</span>
     <div class="sx-bk">
-      <div class="sx-bk-h"><span class="sx-ico"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.2 8 8 9 4.8-1 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Respaldo de Orlando</span></div>
+      <div class="sx-bk-h"><span class="sx-ico"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.2 8 8 9 4.8-1 8-4.5 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Respaldo del viaje</span></div>
       <p>Guardá una copia de tu cronograma, comidas, supermercado y parques en un archivo JSON, y restaurala cuando la necesites.</p>
       <div class="sx-bk-btns">
         <button type="button" class="sx-btn pri" onclick="exportAllData()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13m0 0-4-4m4 4 4-4"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><span>Exportar</span></button>
@@ -205,7 +206,7 @@ if ("serviceWorker" in navigator) {
 
     <span class="sx-sec">Empezar de cero</span>
     <div class="sx-card">
-      <button class="sx-row" onclick="wipeSection('outlets')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-2-6"/><path d="M4 8h16"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></span><span class="sx-lbl">Vaciar Outlets</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('comidas')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2v6a2 2 0 0 0 4 0V2"/><path d="M9 8v14"/><path d="M17 2c-1.5 0-3 1.5-3 4v4a2 2 0 0 0 2 2h1v10"/></svg></span><span class="sx-lbl">Vaciar Comidas</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('walmart')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 3h2l2.6 12.4A2 2 0 0 0 9.55 17H18a2 2 0 0 0 1.96-1.6L21.5 8H6"/></svg></span><span class="sx-lbl">Vaciar Supermercado</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('parques')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/><path d="M12 20v2M8 22h8"/></svg></span><span class="sx-lbl">Vaciar Parques</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
+      <button class="sx-row" onclick="wipeSection('outlets')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 4 8v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-2-6"/><path d="M4 8h16"/><path d="M9 12a3 3 0 0 0 6 0"/></svg></span><span class="sx-lbl">Vaciar lugares</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('comidas')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2v6a2 2 0 0 0 4 0V2"/><path d="M9 8v14"/><path d="M17 2c-1.5 0-3 1.5-3 4v4a2 2 0 0 0 2 2h1v10"/></svg></span><span class="sx-lbl">Vaciar Comidas</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('walmart')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 3h2l2.6 12.4A2 2 0 0 0 9.55 17H18a2 2 0 0 0 1.96-1.6L21.5 8H6"/></svg></span><span class="sx-lbl">Vaciar Supermercado</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button><button class="sx-row" onclick="wipeSection('parques')"><span class="sx-ico" style="--c:#ef4444"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/><path d="M12 20v2M8 22h8"/></svg></span><span class="sx-lbl">Vaciar Parques</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
     </div>
 
     <span class="sx-sec">Cuenta</span>
@@ -281,7 +282,7 @@ if ("serviceWorker" in navigator) {
     </div>
     <div class="mform-group">
       <label>Zona / descripción</label>
-      <input type="text" id="outlet-day-label" placeholder="ej: Zona Orlando Sur — outlets nuevos">
+      <input type="text" id="outlet-day-label" placeholder="ej: Zona norte — tiendas nuevas">
     </div>
     <div class="modal-actions">
       <button class="mbtn-ghost" onclick="closeOutletDayModal()">Cancelar</button>
@@ -432,7 +433,7 @@ if ("serviceWorker" in navigator) {
     <h2>Agregar parque</h2>
     <div class="mform-group">
       <label>Nombre del parque</label>
-      <input type="text" id="pk-add-name" placeholder="ej: SeaWorld Orlando, Busch Gardens Tampa…" oninput="this.classList.remove('error');document.getElementById('pk-add-name-err').classList.remove('show')">
+      <input type="text" id="pk-add-name" placeholder="ej: Central Park, Universal Studios…" oninput="this.classList.remove('error');document.getElementById('pk-add-name-err').classList.remove('show')">
       <div class="field-error" id="pk-add-name-err">Escribí el nombre del parque</div>
     </div>
     <div class="mform-group">
@@ -564,9 +565,9 @@ if ("serviceWorker" in navigator) {
   var WELCOME_ES = "¡Hola! Soy **Taxie** 🗽✈️\n\nTu asistente personal para viajes a USA. Puedo ayudarte con:\n\n• 🏰 Destinos y parques tematicos\n• 🛍️ Outlets y compras sin tax\n• 💵 Propinas, impuestos y presupuesto\n• 🏨 Hoteles y transporte\n• 🌤️ Clima y documentacion\n\n¿En que puedo ayudarte hoy?";
   var WELCOME_EN = "Hi! I am **Taxie** 🗽✈️\n\nYour personal USA travel guide. I can help you with:\n\n• 🏰 Destinations & theme parks\n• 🛍️ Outlets & tax-free shopping\n• 💵 Tips, taxes & budgeting\n• 🏨 Hotels & transportation\n• 🌤️ Weather & travel documents\n\nWhat can I help you with today?";
   var WELCOME_PT = "Olá! Sou o **Taxie** 🗽✈️\n\nSeu assistente pessoal para viagens aos EUA. Posso te ajudar com:\n\n• 🏰 Destinos e parques temáticos\n• 🛍️ Outlets e compras sem tax\n• 💵 Gorjetas, impostos e orçamento\n• 🏨 Hotéis e transporte\n• 🌤️ Clima e documentação\n\nComo posso te ajudar hoje?";
-  var CHIPS_ES = [ "🏰 Disney Orlando", "🛍️ Mejores outlets", "💰 Propinas en USA", "🌡️ Clima en Florida", "✈️ Aeropuertos", "🚗 Alquilar auto" ];
-  var CHIPS_EN = [ "🏰 Disney Orlando", "🛍️ Best outlets", "💰 Tipping in USA", "🌡️ Florida weather", "✈️ Airports", "🚗 Rent a car" ];
-  var CHIPS_PT = [ "🏰 Disney Orlando", "🛍️ Melhores outlets", "💰 Gorjetas nos EUA", "🌡️ Clima na Flórida", "✈️ Aeroportos", "🚗 Alugar carro" ];
+  var CHIPS_ES = [ "🗺️ Qué visitar", "🛍️ Compras", "💰 Propinas en USA", "🌡️ Clima del destino", "✈️ Aeropuertos", "🚗 Alquilar auto" ];
+  var CHIPS_EN = [ "🗺️ Places to visit", "🛍️ Shopping", "💰 Tipping in USA", "🌡️ Destination weather", "✈️ Airports", "🚗 Rent a car" ];
+  var CHIPS_PT = [ "🗺️ O que visitar", "🛍️ Compras", "💰 Gorjetas nos EUA", "🌡️ Clima do destino", "✈️ Aeroportos", "🚗 Alugar carro" ];
   var SUB_ES = "Tu guia de viaje a USA 🗺️";
   var SUB_EN = "Your USA Travel Guide 🗺️";
   var SUB_PT = "Seu guia de viagem aos EUA 🗺️";

@@ -406,7 +406,7 @@ if (navigator.onLine) {
 }
 
 function mapsBudgetCacheKey() {
-  return "taxusa_maps_budget_cache_" + perfilId;
+  return "taxusa_maps_budget_cache_" + perfilId + "_" + (localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando");
 }
 
 let mapsSpentCache = 0;
@@ -421,7 +421,9 @@ function computeMapsSpent(data) {
 function listenMapsBudget() {
   if (!currentUser || !perfilId) return;
   mapsSpentCache = parseFloat(localStorage.getItem(mapsBudgetCacheKey())) || 0;
-  onSnapshot(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"), snap => {
+  const tripId = localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando";
+  const path = tripId === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", tripId, "data", "budget"];
+  onSnapshot(doc(db, ...path), snap => {
     mapsSpentCache = computeMapsSpent(snap.exists() ? snap.data() : null);
     try {
       localStorage.setItem(mapsBudgetCacheKey(), String(mapsSpentCache));
@@ -529,7 +531,7 @@ const I18N = {
       color: "ic-teal",
       href: "https://taxfly.github.io/taxfly/Maps/index.html",
       name: "Planificación",
-      desc: "Outlets, comidas, supermercado y parques de Orlando"
+      desc: "Viajes, lugares, comidas, compras y atracciones por EE. UU."
     } ],
     tips: [ {
       icon: "💡",
@@ -650,7 +652,7 @@ const I18N = {
       color: "ic-teal",
       href: "https://taxfly.github.io/taxfly/Maps/index.html",
       name: "Maps",
-      desc: "Orlando outlets, meals, groceries and parks"
+      desc: "Trips, places, meals, shopping and attractions across the USA"
     } ],
     tips: [ {
       icon: "💡",
@@ -771,7 +773,7 @@ const I18N = {
       color: "ic-teal",
       href: "https://taxfly.github.io/taxfly/Maps/index.html",
       name: "Maps",
-      desc: "Outlets, refeições, mercado e parques de Orlando"
+      desc: "Viagens, lugares, refeições, compras e atrações pelos EUA"
     } ],
     tips: [ {
       icon: "💡",
@@ -881,7 +883,7 @@ function renderBudgetUI(base, gastos) {
       mapsNoteEl.textContent = `incluye ${mapsSpentCache.toLocaleString("en-US", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      })} de Maps (Orlando)`;
+      })} de Trip Planning`;
       mapsNoteEl.style.display = "block";
     } else mapsNoteEl.style.display = "none";
   }
@@ -1231,8 +1233,13 @@ window.loadWeather = async function(force = false) {
   const l = lang || localStorage.getItem("appLang") || "es";
   let city = "Orlando";
   try {
+    const tripId = localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando";
+    const trips = JSON.parse(localStorage.getItem("trip-planning-trips::" + currentUser.uid + "::" + perfilId) || "[]");
+    const trip = trips.find(t => t.id === tripId);
+    const destination = trip && trip.destinations && trip.destinations[trip.activeDestination || 0];
+    if (destination) city = destination.city;
     const t = localStorage.getItem("taxusa_cached_trip");
-    if (t) city = JSON.parse(t).destination || city;
+    if (!destination && t) city = JSON.parse(t).destination || city;
   } catch (e) {}
   const body = document.getElementById("ww-body");
   const refreshBtn = document.querySelector(".ww-refresh");

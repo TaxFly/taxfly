@@ -345,7 +345,7 @@
     "Actualizar app": [ "Update app", "Atualizar app" ],
     "Cerrar sesión": [ "Log out", "Sair" ],
     "Volver a TaxUSA": [ "Back to TaxUSA", "Voltar ao TaxUSA" ],
-    "Ir a Orlando Planning": [ "Go to Orlando Planning", "Ir para o Orlando Planning" ],
+    "Ir a Trip Planning": [ "Go to Trip Planning", "Ir para o Trip Planning" ],
     "Estado de sincronización": [ "Sync status", "Status da sincronização" ],
     "Mis cosas de viaje": [ "My travel stuff", "Minhas coisas de viagem" ],
     "Abrir Mis cosas de viaje": [ "Open My travel stuff", "Abrir Minhas coisas de viagem" ],

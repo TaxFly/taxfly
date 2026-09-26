@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Orlando Planning">
+<meta name="apple-mobile-web-app-title" content="Trip Planning">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script>
@@ -561,7 +561,7 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
     <span class="sx-sec">Cuenta</span>
     <div class="sx-card">
       <button type="button" class="sx-row" data-do="perfil"><span class="sx-ico" style="--c:#2563eb"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></svg></span><span class="sx-lbl">Cambiar perfil</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></button>
-      <a class="sx-row" href="https://taxfly.github.io/taxfly/Maps/index.html"><span class="sx-ico" style="--c:#0891b2"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 0 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="sx-lbl">Ir a Orlando Planning</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
+      <a class="sx-row" href="https://taxfly.github.io/taxfly/Maps/index.html"><span class="sx-ico" style="--c:#0891b2"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 0 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="sx-lbl">Ir a Trip Planning</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
       <a class="sx-row" href="https://taxfly.github.io/taxfly/index.html"><span class="sx-ico" style="--c:#6366f1"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg></span><span class="sx-lbl">Volver a TaxUSA</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
     </div>
 
@@ -771,7 +771,7 @@ const ENLACES_DEF = [ {
   nombre: "TaxUSA",
   url: "https://taxfly.github.io/taxfly/index.html"
 }, {
-  nombre: "Orlando Planning",
+  nombre: "Trip Planning",
   url: "https://taxfly.github.io/taxfly/Maps/index.html"
 } ];
 
@@ -2258,9 +2258,9 @@ function esperarFirebaseReady(timeoutMs) {
   var WELCOME_ES = "¡Hola! Soy **Taxie** 🗽✈️\n\nTu asistente personal para viajes a USA. Puedo ayudarte con:\n\n• 🏰 Destinos y parques tematicos\n• 🛍️ Outlets y compras sin tax\n• 💵 Propinas, impuestos y presupuesto\n• 🏨 Hoteles y transporte\n• 🌤️ Clima y documentacion\n\n¿En que puedo ayudarte hoy?";
   var WELCOME_EN = "Hi! I am **Taxie** 🗽✈️\n\nYour personal USA travel guide. I can help you with:\n\n• 🏰 Destinations & theme parks\n• 🛍️ Outlets & tax-free shopping\n• 💵 Tips, taxes & budgeting\n• 🏨 Hotels & transportation\n• 🌤️ Weather & travel documents\n\nWhat can I help you with today?";
   var WELCOME_PT = "Olá! Sou o **Taxie** 🗽✈️\n\nSeu assistente pessoal para viagens aos EUA. Posso te ajudar com:\n\n• 🏰 Destinos e parques temáticos\n• 🛍️ Outlets e compras sem tax\n• 💵 Gorjetas, impostos e orçamento\n• 🏨 Hotéis e transporte\n• 🌤️ Clima e documentação\n\nComo posso te ajudar hoje?";
-  var CHIPS_ES = [ "🏰 Disney Orlando", "🛍️ Mejores outlets", "💰 Propinas en USA", "🌡️ Clima en Florida", "✈️ Aeropuertos", "🚗 Alquilar auto" ];
-  var CHIPS_EN = [ "🏰 Disney Orlando", "🛍️ Best outlets", "💰 Tipping in USA", "🌡️ Florida weather", "✈️ Airports", "🚗 Rent a car" ];
-  var CHIPS_PT = [ "🏰 Disney Orlando", "🛍️ Melhores outlets", "💰 Gorjetas nos EUA", "🌡️ Clima na Flórida", "✈️ Aeroportos", "🚗 Alugar carro" ];
+  var CHIPS_ES = [ "🗺️ Qué visitar", "🛍️ Compras", "💰 Propinas en USA", "🌡️ Clima del destino", "✈️ Aeropuertos", "🚗 Alquilar auto" ];
+  var CHIPS_EN = [ "🗺️ Places to visit", "🛍️ Shopping", "💰 Tipping in USA", "🌡️ Destination weather", "✈️ Airports", "🚗 Rent a car" ];
+  var CHIPS_PT = [ "🗺️ O que visitar", "🛍️ Compras", "💰 Gorjetas nos EUA", "🌡️ Clima do destino", "✈️ Aeroportos", "🚗 Alugar carro" ];
   var SUB_ES = "Tu guia de viaje a USA 🗺️";
   var SUB_EN = "Your USA Travel Guide 🗺️";
   var SUB_PT = "Seu guia de viagem aos EUA 🗺️";

@@ -61,7 +61,7 @@ function escapeHtml(str) {
 window._syncedWriteLog = window._syncedWriteLog || {};
 
 function scopedKey(key) {
-  return key + "::" + (window._perfilId || "sinperfil");
+  return key + "::" + (window._perfilId || "sinperfil") + (window._tripId && window._tripId !== "orlando" ? "::" + window._tripId : "");
 }
 
 function syncedSave(localKey, localValue, docId, fbValue) {
@@ -102,10 +102,20 @@ let hotel = {
 
 function hotelLoad() {
   const d = syncedLoad(HOTEL_KEY, window._hotelFromFb);
-  if (d) hotel = d;
+  if (d) {
+    hotel = d;
+    const destination = window._trip?.destinations?.[window._trip.activeDestination || 0];
+    const key = destination && destination.city + "::" + destination.state;
+    if (key && hotel.locations?.[key]) Object.assign(hotel, hotel.locations[key]);
+  }
 }
 
 function hotelSave() {
+  const destination = window._trip?.destinations?.[window._trip.activeDestination || 0];
+  if (destination) {
+    hotel.locations = hotel.locations || {};
+    hotel.locations[destination.city + "::" + destination.state] = { addr: hotel.addr || "", url: hotel.url || "#" };
+  }
   syncedSave(HOTEL_KEY, hotel, "hotel");
 }
 
@@ -256,6 +266,7 @@ async function resetDay(d) {
 }
 
 window._appInit = function() {
+  renderTripManager();
   hotelLoad();
   loadState();
   mealLoad();
@@ -346,7 +357,7 @@ const typeConf = {
     icon: "plane"
   },
   walmart: {
-    label: "Walmart",
+    label: "Supermercado",
     cls: "mbadge-walmart",
     icon: "cart"
   }
@@ -666,7 +677,11 @@ function sharedCacheSet(key, data) {
   } catch (e) {}
 }
 
-const WEATHER_CITY = "Orlando, FL";
+function weatherCity() {
+  const trip = window._trip;
+  const destination = trip && trip.destinations && trip.destinations[trip.activeDestination || 0];
+  return destination ? [destination.city, destination.state].filter(Boolean).join(", ") : "Orlando, Florida";
+}
 
 const WEATHER_KEY = "orlando-weather-cache-v1";
 
@@ -726,20 +741,26 @@ let weatherCache = localLoad(WEATHER_KEY) || {
 let _cityGeo = null;
 
 async function geocodeWeatherCity() {
-  if (_cityGeo) return _cityGeo;
-  const cacheKey = "shared-geo-cache::" + WEATHER_CITY.trim().toLowerCase();
+  const city = weatherCity();
+  if (_cityGeo && _cityGeo.city === city) return _cityGeo;
+  const cacheKey = "shared-geo-cache::" + city.trim().toLowerCase();
   const cached = sharedCacheGet(cacheKey, 90 * 24 * 36e5);
   if (cached) {
-    _cityGeo = cached;
+    _cityGeo = { ...cached, city };
     return _cityGeo;
   }
   try {
-    const geoRes = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(WEATHER_CITY) + "&count=1&language=es&format=json");
+    const wanted = window._trip?.destinations?.[window._trip.activeDestination || 0];
+    const cityAliases = { "Nueva York": "New York", "Los Ángeles": "Los Angeles", "Washington D.C.": "Washington" };
+    const searchCity = cityAliases[wanted?.city] || wanted?.city || "Orlando";
+    const geoRes = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(searchCity) + "&count=20&countryCode=US&language=en&format=json");
     const geoData = await geoRes.json();
     if (!geoData.results || !geoData.results.length) return null;
+    const match = geoData.results.find(g => g.admin1?.toLowerCase() === wanted?.state?.toLowerCase()) || geoData.results[0];
     _cityGeo = {
-      latitude: geoData.results[0].latitude,
-      longitude: geoData.results[0].longitude
+      latitude: match.latitude,
+      longitude: match.longitude,
+      city
     };
     sharedCacheSet(cacheKey, _cityGeo);
     return _cityGeo;
@@ -751,7 +772,7 @@ async function geocodeWeatherCity() {
 
 async function fetchWeatherForToday(force) {
   const now = Date.now();
-  if (!force && weatherCache.data && now - weatherCache.ts < 18e5) return weatherCache.data;
+  if (!force && weatherCache.data && weatherCache.city === weatherCity() && now - weatherCache.ts < 18e5) return weatherCache.data;
   try {
     const geo = await geocodeWeatherCity();
     if (!geo) return weatherCache.data || null;
@@ -770,7 +791,8 @@ async function fetchWeatherForToday(force) {
     };
     weatherCache = {
       data: result,
-      ts: now
+      ts: now,
+      city: weatherCity()
     };
     try {
       localStorage.setItem(WEATHER_KEY, JSON.stringify(weatherCache));
@@ -791,7 +813,7 @@ let weatherForecast = localLoad(FORECAST_KEY) || {
 
 async function fetchWeatherForecast(force) {
   const now = Date.now();
-  if (!force && weatherForecast.data && now - weatherForecast.ts < 3 * 36e5) return weatherForecast.data;
+  if (!force && weatherForecast.data && weatherForecast.city === weatherCity() && now - weatherForecast.ts < 3 * 36e5) return weatherForecast.data;
   try {
     const geo = await geocodeWeatherCity();
     if (!geo) return weatherForecast.data || null;
@@ -806,7 +828,8 @@ async function fetchWeatherForecast(force) {
     }));
     weatherForecast = {
       data: days,
-      ts: now
+      ts: now,
+      city: weatherCity()
     };
     try {
       localStorage.setItem(FORECAST_KEY, JSON.stringify(weatherForecast));
@@ -1082,7 +1105,7 @@ function budgetMigrateLegacyTotal() {
 
 const budgetCatMeta = {
   outlets: {
-    label: "Outlets",
+    label: "Lugares",
     icon: "bag"
   },
   comidas: {
@@ -1253,7 +1276,7 @@ function renderBudgetBox() {
   } else {
     addForm = `\n      <div class="budget-add-cats">\n        ${Object.keys(budgetCatMeta).map(cat => `<button class="budget-add-cat-btn" onclick="budgetOpenAdd('${cat}')">${ic(budgetCatMeta[cat].icon, 13)} ${budgetCatMeta[cat].label}</button>`).join("")}\n      </div>`;
   }
-  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en Taxfly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en Orlando</span>\n        <span class="budget-summary-val">${budgetUsd(manual)}</span>\n      </div>\n      ${counted ? `<div class="budget-summary-row budget-summary-sub">\n        <span>Market (estimado)</span>\n        <span class="budget-summary-val">${budgetUsd(wmEst)}</span>\n      </div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    <div class="budget-gastos-list">${gastosHtml || '<div class="budget-empty">Sin gastos cargados acá todavía.</div>'}</div>\n    ${addForm}\n    <label class="budget-market-toggle">\n      <input type="checkbox" ${counted ? "checked" : ""} onchange="budgetToggleMarket()">\n      <span>\n        <b>Descontar estimado del Market</b> (${budgetUsd(wmEst)})\n        <small>${counted ? "Activado: usalo solo si el súper NO lo cargás en Taxfly, si no se cuenta dos veces." : "Apagado: se asume que el súper se carga en Taxfly (ticket). Así no se cuenta dos veces."}</small>\n      </span>\n    </label>\n    <div class="budget-note">Compartido con Taxfly: lo que cargues allá se descuenta acá, y los gastos de esta lista también se descuentan en Taxfly. Todo en USD.</div>`;
+  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en este viaje</span>\n        <span class="budget-summary-val">${budgetUsd(manual)}</span>\n      </div>\n      ${counted ? `<div class="budget-summary-row budget-summary-sub">\n        <span>Supermercado (estimado)</span>\n        <span class="budget-summary-val">${budgetUsd(wmEst)}</span>\n      </div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    <div class="budget-gastos-list">${gastosHtml || '<div class="budget-empty">Sin gastos cargados acá todavía.</div>'}</div>\n    ${addForm}\n    <label class="budget-market-toggle">\n      <input type="checkbox" ${counted ? "checked" : ""} onchange="budgetToggleMarket()">\n      <span>\n        <b>Descontar estimado del supermercado</b> (${budgetUsd(wmEst)})\n        <small>${counted ? "Activado: usalo solo si el súper NO lo cargás en Taxfly, si no se cuenta dos veces." : "Apagado: se asume que el súper se carga en Taxfly (ticket). Así no se cuenta dos veces."}</small>\n      </span>\n    </label>\n    <div class="budget-note">Compartido con Taxfly: lo que cargues allá se descuenta acá, y los gastos de esta lista también se descuentan en Taxfly. Todo en USD.</div>`;
 }
 
 window.renderBudgetBox = renderBudgetBox;
@@ -1580,28 +1603,106 @@ function renderWalmart() {
   syncWalmartSpentForTaxfly();
 }
 
+function renderTripManager() {
+  const slot = document.getElementById("trip-manager");
+  if (!slot) return;
+  const trip = window._trip || { id: "orlando", name: "Mi viaje a Orlando", destinations: [{ city: "Orlando", state: "Florida" }] };
+  const allTrips = window._tripList || [trip];
+  const visibleTrips = allTrips.filter(t => !t.status || t.id === trip.id);
+  const archivedTrips = allTrips.filter(t => t.status);
+  const destinations = Array.isArray(trip.destinations) ? trip.destinations : [];
+  const selected = Math.max(0, Math.min(trip.activeDestination || 0, destinations.length - 1));
+  slot.innerHTML = `<div class="trip-manager-top"><label for="trip-select">Viaje</label><select id="trip-select" aria-label="Elegir viaje" onchange="window.tripPlanningSelect(this.value)">${visibleTrips.map(t => `<option value="${escapeHtml(t.id)}" ${t.id === trip.id ? "selected" : ""}>${escapeHtml(t.name)}${t.status ? " (archivado)" : ""}</option>`).join("")}</select><button type="button" onclick="tripOpenModal()">+ Nuevo viaje</button></div>
+    <div class="trip-manager-destinations"><span>Destino</span>${destinations.map((d, i) => `<button type="button" class="${i === selected ? "active" : ""}" onclick="tripSelectDestination(${i})">${escapeHtml(d.city)}${d.state ? ", " + escapeHtml(d.state) : ""}</button>`).join("")}<button type="button" class="trip-add-destination" onclick="tripOpenModal(true)">+ Ciudad</button></div>
+    <div class="trip-manager-links"><span>${trip.startDate && trip.endDate ? escapeHtml(trip.startDate + " → " + trip.endDate) : "Organizá tu viaje por EE. UU."}</span><a href="../itinerario.html">Itinerario general ↗</a></div>
+    <div class="trip-manager-actions">${!trip.status ? `<button type="button" onclick="tripArchive('completed')">✓ Finalizar</button><button type="button" onclick="tripArchive('suspended')">⏸ Suspender</button>` : `<button type="button" onclick="tripRestore('${escapeHtml(trip.id)}')">Restaurar este viaje</button>`}
+    ${archivedTrips.length ? `<details><summary>Archivados (${archivedTrips.length})</summary>${archivedTrips.map(t => `<div class="trip-archived-item"><span>${escapeHtml(t.name)} · ${t.status === "completed" ? "Finalizado" : "Suspendido"}</span><button type="button" onclick="tripRestore('${escapeHtml(t.id)}')">Restaurar</button>${t.id !== "orlando" ? `<button type="button" onclick="tripDelete('${escapeHtml(t.id)}')">Eliminar</button>` : ""}</div>`).join("")}</details>` : ""}</div>`;
+}
+
+async function tripArchive(status) {
+  const label = status === "completed" ? "finalizado" : "suspendido";
+  if (!await showConfirm(`El viaje quedará como ${label} en Archivados y podrás restaurarlo cuando quieras.`, "¿Archivar viaje?", "Archivar", true)) return;
+  if (!await window.tripPlanningArchive(window._tripId, status)) showMToast("No se pudo archivar el viaje");
+}
+
+async function tripRestore(id) {
+  if (!await window.tripPlanningRestore(id)) showMToast("No se pudo restaurar el viaje");
+}
+
+async function tripDelete(id) {
+  const trip = window._tripList?.find(t => t.id === id);
+  if (!trip || !await showConfirm(`Se eliminarán definitivamente «${trip.name}» y sus datos de Trip Planning. Esta acción no se puede deshacer. Exportá un respaldo antes si querés conservarlos.`, "¿Eliminar viaje?", "Eliminar", false)) return;
+  if (!await window.tripPlanningDelete(id)) showMToast("No se pudo eliminar. Revisá tu conexión y volvé a intentar.");
+}
+
+function tripOpenModal(addDestination = false) {
+  const modal = document.getElementById("trip-modal");
+  modal.querySelector("h2").textContent = addDestination ? "Agregar ciudad al viaje" : "Nuevo viaje";
+  modal.querySelector(".trip-new-fields").hidden = addDestination;
+  modal.dataset.addDestination = addDestination ? "1" : "0";
+  modal.querySelector("form").reset();
+  modal.showModal();
+}
+
+async function tripSubmit(event) {
+  event.preventDefault();
+  const form = event.target, city = form.elements.city.value.trim(), state = form.elements.state.value.trim();
+  if (!city || !state) return;
+  const destination = { city, state };
+  if (form.closest("dialog").dataset.addDestination === "1") {
+    const trip = { ...window._trip, destinations: [...window._trip.destinations, destination] };
+    await window.tripPlanningUpdate(trip);
+    window._trip = trip;
+    renderTripManager();
+    form.closest("dialog").close();
+    return;
+  }
+  const name = form.elements.tripName.value.trim();
+  if (!name) return;
+  form.querySelector("button[type=submit]").disabled = true;
+  await window.tripPlanningCreate(name, [destination], form.elements.startDate.value, form.elements.endDate.value);
+}
+
+async function tripSelectDestination(index) {
+  if (!window._trip?.destinations?.[index]) return;
+  hotelSave();
+  const trip = { ...window._trip, activeDestination: index };
+  await window.tripPlanningUpdate(trip);
+  window._trip = trip;
+  const destination = trip.destinations[index];
+  const location = hotel.locations?.[destination.city + "::" + destination.state] || { addr: "", url: "#" };
+  hotel.addr = location.addr;
+  hotel.url = location.url;
+  _cityGeo = null;
+  weatherCache = { data: null, ts: 0 };
+  weatherForecast = { data: null, ts: 0 };
+  renderTripManager();
+  renderTodayCard();
+  loadWeatherForecast(true);
+}
+
 const sectionMeta = {
   outlets: {
-    title: "Outlets",
-    accent: "Orlando",
+    title: "Compras",
+    accent: "",
     subtitle: "Cronograma de compras",
     theme: "theme-outlets"
   },
   comidas: {
-    title: "Orlando",
-    accent: "Meal Planning",
+    title: "Plan de",
+    accent: "comidas",
     subtitle: "Planificación de comidas",
     theme: "theme-comidas"
   },
   walmart: {
-    title: "Orlando",
-    accent: "Market",
+    title: "Lista de",
+    accent: "supermercado",
     subtitle: "Lista de compras",
     theme: "theme-walmart"
   },
   parques: {
-    title: "Orlando",
-    accent: "Theme Parks",
+    title: "Parques y",
+    accent: "atracciones",
     subtitle: "Tracker de atracciones",
     theme: "theme-parques"
   }
@@ -1616,7 +1717,7 @@ function switchSection(section) {
   document.getElementById("panel-" + section).classList.add("active");
   document.getElementById("nav-" + section).classList.add("active");
   const meta = sectionMeta[section];
-  document.getElementById("main-title").innerHTML = meta.title + ' <span class="ht-accent">' + meta.accent + "</span>";
+  document.getElementById("main-title").innerHTML = escapeHtml(meta.title) + ' <span class="ht-accent">' + escapeHtml(meta.accent) + "</span>";
   document.getElementById("main-subtitle").textContent = meta.subtitle;
   {
     const gc = document.getElementById("global-counter");
@@ -4284,8 +4385,9 @@ function pkDeleteAttraction(parkId, zoneIdx, attrIdx, e) {
 
 function exportAllData() {
   const payload = {
-    _app: "orlando-planning",
+    _app: "trip-planning",
     _exportedAt: (new Date).toISOString(),
+    trip: window._trip,
     hotel: hotel,
     days: days,
     visited: visited.map(s => [ ...s ]),
@@ -4309,7 +4411,7 @@ function exportAllData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `orlando-planning-backup-${(new Date).toISOString().slice(0, 10)}.json`;
+  a.download = `trip-planning-backup-${(new Date).toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -4330,11 +4432,12 @@ async function importAllData(event) {
       event.target.value = "";
       return;
     }
-    const ok = await showConfirm(data._app === "orlando-planning" ? "Se van a reemplazar TODOS los datos actuales (outlets, comidas, market, parques) por los del archivo." : "Este archivo no parece un backup de esta app, pero se puede intentar igual. Se van a reemplazar TODOS los datos actuales.", "¿Importar backup?", "Importar", true);
+    const ok = await showConfirm(["orlando-planning", "trip-planning"].includes(data._app) ? "Se van a reemplazar TODOS los datos actuales (outlets, comidas, market, parques) por los del archivo." : "Este archivo no parece un backup de esta app, pero se puede intentar igual. Se van a reemplazar TODOS los datos actuales.", "¿Importar backup?", "Importar", true);
     if (!ok) {
       event.target.value = "";
       return;
     }
+    if (data.trip && data.trip.id === window._tripId) await window.tripPlanningUpdate(data.trip);
     if (data.hotel) Object.assign(hotel, data.hotel);
     if (data.days) {
       days.length = 0;
@@ -4402,7 +4505,7 @@ async function wipeSection(section) {
 }
 
 async function wipeOutlets() {
-  const ok = await showConfirm("Se van a borrar TODOS los días y paradas del cronograma de Outlets (la lista de compras y el checklist no se tocan).", "¿Vaciar cronograma?", "Vaciar", true);
+  const ok = await showConfirm("Se van a borrar TODOS los días y paradas del cronograma de lugares (la lista de compras y el checklist no se tocan).", "¿Vaciar cronograma?", "Vaciar", true);
   if (!ok) return;
   days.length = 0;
   visited.length = 0;
@@ -4424,7 +4527,7 @@ async function wipeComidas() {
 }
 
 async function wipeWalmart() {
-  const ok = await showConfirm("Se van a borrar TODOS los productos de la lista de Market (las categorías quedan, para agregar productos nuevos).", "¿Vaciar Market?", "Vaciar", true);
+  const ok = await showConfirm("Se van a borrar TODOS los productos de la lista de supermercado (las categorías quedan, para agregar productos nuevos).", "¿Vaciar Market?", "Vaciar", true);
   if (!ok) return;
   wmData.forEach(cat => {
     cat.items = [];
@@ -4433,7 +4536,7 @@ async function wipeWalmart() {
   wmSave();
   closeSettingsDrawer();
   switchSection("walmart");
-  showMToast("Market vaciado");
+  showMToast("Supermercado vaciado");
 }
 
 async function wipeParques() {

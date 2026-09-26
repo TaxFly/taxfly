@@ -147,7 +147,7 @@ I18N.add({
   'Se quita "{n}" de tus dispositivos y de los accesorios que lo usan. Los accesorios no se borran.': [ '"{n}" is removed from your devices and from the accessories that use it. The accessories are not deleted.', '"{n}" será removido dos seus dispositivos e dos acessórios que o usam. Os acessórios não são apagados.' ],
   "Eliminar {n}": [ "Delete {n}", "Excluir {n}" ],
   "Quitar {n}": [ "Remove {n}", "Remover {n}" ],
-  "ej: Orlando Planning": [ "e.g. Orlando Planning", "ex.: Orlando Planning" ],
+  "ej: Trip Planning": [ "e.g. Trip Planning", "ex.: Trip Planning" ],
   "Dirección": [ "Address", "Endereço" ],
   "Agregar enlace": [ "Add link", "Adicionar link" ],
   "No hay enlaces todavía.": [ "No links yet.", "Nenhum link ainda." ],

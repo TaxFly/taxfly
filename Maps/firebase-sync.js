@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, onSnapshot, getDoc, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, deleteDoc, onSnapshot, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
@@ -44,8 +44,101 @@ let currentUid = null;
 
 let currentPerfilId = null;
 
+const legacyTrip = { id: "orlando", name: "Mi viaje a Orlando", destinations: [ { city: "Orlando", state: "Florida" } ] };
+let trips = [ legacyTrip ];
+let activeTripId = "orlando";
+const tripCacheKey = () => "trip-planning-trips::" + currentUid + "::" + currentPerfilId;
+const tripActiveKey = () => "trip-planning-active::" + currentUid + "::" + currentPerfilId;
+function activeTrip() { return trips.find(t => t.id === activeTripId) || legacyTrip; }
+function tripDocRef(id) { return doc(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning", id); }
+function saveTripCache() {
+  try { localStorage.setItem(tripCacheKey(), JSON.stringify(trips)); localStorage.setItem(tripActiveKey(), activeTripId); } catch (e) {}
+}
+async function loadTrips() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(tripCacheKey()) || "[]");
+    if (Array.isArray(saved)) trips = [ saved.find(t => t && t.id === "orlando") || legacyTrip, ...saved.filter(t => t && t.id && t.id !== "orlando") ];
+    activeTripId = localStorage.getItem(tripActiveKey()) || "orlando";
+  } catch (e) {}
+  try {
+    if (!navigator.onLine) throw new Error("offline");
+    const snap = await Promise.race([getDocs(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning")), new Promise((_, reject) => setTimeout(() => reject(new Error("trip list timeout")), 3000))]);
+    const byId = new Map(trips.map(t => [t.id, t]));
+    snap.forEach(d => byId.set(d.id, { ...d.data(), id: d.id }));
+    trips = [ byId.get("orlando") || legacyTrip, ...[...byId.values()].filter(t => t.id !== "orlando" && t.status !== "deleted") ];
+  } catch (e) { devError("trip list", e); }
+  if (!trips.some(t => t.id === activeTripId)) activeTripId = "orlando";
+  if (activeTrip().status && trips.some(t => !t.status)) activeTripId = trips.find(t => !t.status).id;
+  saveTripCache();
+  window._trip = activeTrip();
+  window._tripId = activeTripId;
+  window._tripList = trips;
+}
+
+window.tripPlanningCreate = async function(name, destinations, startDate, endDate) {
+  const id = "trip-" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const trip = { id, name, destinations, startDate: startDate || "", endDate: endDate || "" };
+  trips.push(trip);
+  activeTripId = id;
+  saveTripCache();
+  try { await setDoc(tripDocRef(id), trip); } catch (e) { devError("save trip", e); }
+  location.assign("./index.html?trip=" + encodeURIComponent(id));
+};
+window.tripPlanningUpdate = async function(trip) {
+  if (!trip || !trips.some(t => t.id === trip.id)) return false;
+  try { await setDoc(tripDocRef(trip.id), trip); } catch (e) { devError("update trip", e); return false; }
+  trips = trips.map(t => t.id === trip.id ? trip : t);
+  saveTripCache();
+  window._trip = activeTrip();
+  window._tripList = trips;
+  return true;
+};
+window.tripPlanningSelect = function(id) {
+  if (!trips.some(t => t.id === id)) return;
+  activeTripId = id;
+  saveTripCache();
+  location.assign("./index.html?trip=" + encodeURIComponent(id));
+};
+
+window.tripPlanningArchive = async function(id, status) {
+  const trip = trips.find(t => t.id === id);
+  if (!trip || !["completed", "suspended"].includes(status)) return false;
+  const updated = { ...trip, status };
+  if (!await window.tripPlanningUpdate(updated)) return false;
+  if (activeTripId === id) activeTripId = trips.find(t => !t.status)?.id || id;
+  saveTripCache();
+  location.assign("./index.html?trip=" + encodeURIComponent(activeTripId));
+  return true;
+};
+
+window.tripPlanningRestore = async function(id) {
+  const trip = trips.find(t => t.id === id);
+  if (!trip || !await window.tripPlanningUpdate({ ...trip, status: "" })) return false;
+  window.tripPlanningSelect(id);
+  return true;
+};
+
+window.tripPlanningDelete = async function(id) {
+  // Legacy Orlando lives in the original collection and must remain recoverable.
+  if (id === "orlando" || !trips.some(t => t.id === id) || !navigator.onLine) return false;
+  try {
+    const data = await getDocs(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning", id, "data"));
+    for (const item of data.docs) await deleteDoc(item.ref);
+    await setDoc(tripDocRef(id), { id, status: "deleted", deletedAt: new Date().toISOString() });
+  } catch (e) { devError("delete trip", e); return false; }
+  trips = trips.filter(t => t.id !== id);
+  // Existing local keys keep their old names; only the deleted trip suffix is removed.
+  const suffix = "::" + currentPerfilId + "::" + id;
+  try { Object.keys(localStorage).filter(k => k.endsWith(suffix)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  if (activeTripId === id) activeTripId = trips.find(t => !t.status)?.id || "orlando";
+  saveTripCache();
+  location.assign("./index.html?trip=" + encodeURIComponent(activeTripId));
+  return true;
+};
+
 function orlandoDocRef(docId) {
-  return doc(db, "usuarios", currentUid, "perfiles", currentPerfilId, "orlando", docId);
+  if (activeTripId === "orlando") return doc(db, "usuarios", currentUid, "perfiles", currentPerfilId, "orlando", docId);
+  return doc(db, "usuarios", currentUid, "perfiles", currentPerfilId, "tripPlanning", activeTripId, "data", docId);
 }
 
 async function fbSet(docId, data) {
@@ -55,6 +148,7 @@ async function fbSet(docId, data) {
     });
   } catch (e) {
     devError("fbSet error", e);
+    throw e;
   }
 }
 
@@ -145,6 +239,7 @@ window._fbSignOut = async function() {
 };
 
 async function startApp() {
+  await loadTrips();
   const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
   const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 1e4), withTimeout(fbGet("days"), 1e4), withTimeout(fbGet("visited"), 1e4), withTimeout(fbGet("meals"), 1e4), withTimeout(fbGet("walmart"), 1e4), withTimeout(fbGet("wmChecked"), 1e4), withTimeout(fbGet("shopping"), 1e4), withTimeout(fbGet("customParks"), 1e4), withTimeout(fbGet("parquesExtra"), 1e4), withTimeout(fbGet("coordOverrides"), 1e4), withTimeout(fbGet("parques"), 1e4), withTimeout(fbGet("budget"), 1e4), withTimeout(fbGet("itinerario"), 1e4), withTimeout(fbGet("tips"), 1e4), withTimeout(fbGet("parquesExcel"), 1e4) ]);
   const val = r => r.status === "fulfilled" ? r.value : null;
@@ -301,5 +396,10 @@ onAuthStateChanged(auth, user => {
   currentUid = user.uid;
   currentPerfilId = perfilId;
   window._perfilId = perfilId;
+  // A direct link may select an existing trip, but never an unknown ID.
+  try {
+    const requested = new URLSearchParams(location.search).get("trip");
+    if (requested && requested === localStorage.getItem(tripActiveKey())) activeTripId = requested;
+  } catch (e) {}
   startApp();
 });
