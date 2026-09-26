@@ -30,7 +30,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     <style>
         :root{--primary:#2563eb;--primary-dim:rgba(37,99,235,.1);--accent:#7c3aed;--accent-dim:rgba(124,58,237,.1);--danger:#ef4444;--success:#10b981;--cyan:#0ea5e9;--bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--border:#e2e8f0;--input-bg:#f8fafc;--text:#0f172a;--text-sub:#64748b;--text-dim:#94a3b8;--header-color:#1e3a8a;--radius:20px;--radius-sm:12px;--shadow:0 4px 20px rgba(0,0,0,.06);--shadow-lg:0 12px 40px rgba(0,0,0,.1);--tr:all .25s cubic-bezier(.4,0,.2,1);color-scheme:light;}
         [data-theme="dark"]{--bg:#0f172a;--surface:#1e293b;--surface-2:#273549;--border:#334155;--input-bg:#273549;--text:#f1f5f9;--text-sub:#94a3b8;--text-dim:#64748b;--header-color:#2563eb;--shadow:0 4px 20px rgba(0,0,0,.3);--shadow-lg:0 12px 40px rgba(0,0,0,.4);color-scheme:dark;}
-        body{padding:16px 16px 40px;}
+        body{padding:16px 16px 40px;overflow-x:hidden;}
         .wrap{width:100%;max-width:460px;}
         .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
         .logo{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:900;color:var(--header-color);letter-spacing:-.5px;}
@@ -2505,6 +2505,7 @@ window.showSec = s => {
   });
   if (s === "resumen") renderDashboard(allGastos);
   if (s === "comparador") compInit();
+  window.scrollTo(0, 0);
 };
 
 document.addEventListener("DOMContentLoaded", () => {
