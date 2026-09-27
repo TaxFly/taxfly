@@ -1,0 +1,30 @@
+name = "taxfly-claude"
+main = "claude-worker.js"
+# Habilita el comportamiento del runtime de Cloudflare Workers vigente a esta
+# fecha (no afecta a fechas pasadas ya en uso). Conviene bumpearla de vez en
+# cuando — mirá el changelog antes de subirla mucho de golpe, por si algún
+# cambio de comportamiento rompe algo puntual:
+# https://developers.cloudflare.com/workers/configuration/compatibility-dates/
+compatibility_date = "2026-09-25"
+
+# Rate limiting: COST_LIMITER es por usuario logueado (uid), protege el gasto
+# de Anthropic. GENERAL_LIMITER es por IP, para reCAPTCHA (no gasta crédito).
+# namespace_id es solo un identificador tuyo, cualquier entero sirve.
+[[ratelimits]]
+name = "COST_LIMITER"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 8
+  period = 60
+
+[[ratelimits]]
+name = "GENERAL_LIMITER"
+namespace_id = "1002"
+  [ratelimits.simple]
+  limit = 30
+  period = 60
+
+# Orígenes que pueden llamar al worker desde el navegador (separados por coma).
+# localhost / 127.0.0.1 siempre se permiten para probar en tu compu.
+[vars]
+ALLOWED_ORIGINS = "https://taxfly.github.io"
