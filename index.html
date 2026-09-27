@@ -1575,6 +1575,10 @@ loadExchangeRate();
 loadWeather();
 
 if ("serviceWorker" in navigator) {
+  const hadServiceWorker = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadServiceWorker) location.reload();
+  }, { once: true });
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }
 
