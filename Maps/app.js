@@ -1636,8 +1636,11 @@ function renderTripManager() {
   const trip=window._trip || {name:"Mi viaje a Orlando",destinations:[{city:"Orlando",state:"Florida"}]};
   const destinations=Array.isArray(trip.destinations)?trip.destinations:[];
   const selected=Math.max(0,Math.min(trip.activeDestination||0,destinations.length-1));
-  slot.innerHTML=`<div class="trip-manager-toggle"><span>✈️ ${escapeHtml(trip.name)}</span><a href="../index.html#viajes" style="margin-left:auto;color:inherit">Gestionar en TaxFly ↗</a></div>
-    <div class="trip-manager-destinations" style="padding:0 12px 10px"><span>Destino para el clima</span>${destinations.map((d,i)=>`<button type="button" class="${i===selected?'active':''}" onclick="tripSelectDestination(${i})">${escapeHtml(d.city)}${d.state?', '+escapeHtml(d.state):''}</button>`).join('')}</div>`;
+  slot.innerHTML=`<div class="trip-manager-heading">
+      <div class="trip-manager-title"><span class="trip-manager-symbol" aria-hidden="true">${ic('plane',18)}</span><div><span class="trip-manager-kicker">VIAJE ACTIVO</span><strong title="${escapeHtml(trip.name)}">${escapeHtml(trip.name)}</strong></div></div>
+      <a class="trip-manager-edit" href="../index.html#viajes" aria-label="Editar viaje en TaxFly">${ic('pencil',15)}<span>Editar viaje</span></a>
+    </div>
+    ${destinations.length?`<div class="trip-manager-destinations"><span>Clima en</span><div class="trip-manager-options">${destinations.map((d,i)=>`<button type="button" class="${i===selected?'active':''}" aria-pressed="${i===selected}" onclick="tripSelectDestination(${i})">${escapeHtml(d.city)}${d.state?', '+escapeHtml(d.state):''}</button>`).join('')}</div></div>`:''}`;
 }
 
 async function tripSelectDestination(index) {

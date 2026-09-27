@@ -529,7 +529,7 @@ const I18N = {
       name: "Rutas",
       desc: "Planificá tus recorridos y destinos"
     }, {
-      icon: "✍🏼",
+      icon: "🌍",
       color: "ic-teal",
       href: "https://taxfly.github.io/taxfly/Maps/index.html",
       name: "Planificación",
@@ -1404,7 +1404,8 @@ function renderSections() {
     const a = document.createElement("a");
     a.href = sec.href;
     a.className = "section-card";
-    a.innerHTML = `<span class="sc-emoji">${sec.icon}</span><span class="sc-name">${sec.name}</span>`;
+    const planning = sec.href.includes("/Maps/index.html");
+    a.innerHTML = `<span class="sc-emoji${planning ? ' ui-slot' : ''}"${planning ? ' data-tone="teal"' : ''}>${planning ? window.uiIcon('globe', 25) : sec.icon}</span><span class="sc-name">${sec.name}</span>`;
     list.appendChild(a);
   });
 }

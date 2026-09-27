@@ -301,7 +301,9 @@
       tickets: "Documentos",
       tickets_d: "ESTA, seguros, check-in",
       group: "Grupo",
-      group_d: "Gastos compartidos"
+      group_d: "Gastos compartidos",
+      plan: "Planificación",
+      plan_d: "Viajes, lugares, comidas, compras y atracciones"
     },
     en: {
       home: "HOME",
@@ -316,7 +318,9 @@
       tickets: "Documents",
       tickets_d: "ESTA, insurance, check-in",
       group: "Group",
-      group_d: "Shared expenses"
+      group_d: "Shared expenses",
+      plan: "Planning",
+      plan_d: "Trips, places, food, shopping and attractions"
     },
     pt: {
       home: "INÍCIO",
@@ -331,7 +335,9 @@
       tickets: "Documentos",
       tickets_d: "ESTA, seguros, check-in",
       group: "Grupo",
-      group_d: "Gastos compartilhados"
+      group_d: "Gastos compartilhados",
+      plan: "Planejamento",
+      plan_d: "Viagens, lugares, comidas, compras e atrações"
     }
   };
   const curLang = () => {
@@ -342,7 +348,7 @@
     return NAV_T[l] ? l : "es";
   };
   const NAV_MAIN = [ [ "index.html", "home", "home", "home" ], [ "tax.html", "calculator", "taxes", "blue" ], [ "compras.html", "bag", "shopping", "violet" ], [ "itinerario.html", "pin", "itinerary", "green" ] ];
-  const NAV_MORE = [ [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "tickets.html", "file", "tickets", "cyan" ], [ "grupo.html", "users", "group", "indigo" ] ];
+  const NAV_MORE = [ [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "tickets.html", "file", "tickets", "cyan" ], [ "grupo.html", "users", "group", "indigo" ], [ "https://taxfly.github.io/taxfly/Maps/index.html", "globe", "plan", "teal" ] ];
   function buildNav() {
     const nav = document.querySelector(".nav-bar");
     if (!nav || !nav.querySelector(".btn-nav")) return;
