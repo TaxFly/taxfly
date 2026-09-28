@@ -1,4 +1,4 @@
-const CACHE = "taxfly-autofill-fix-20260928";
+const CACHE = "taxfly-8369d7dfd65e";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 
@@ -8,7 +8,6 @@ const PRECACHE = [ "./login.html", "./selector.html", "./profiles.html", "./inde
 
 const OFFLINE_FALLBACK = "./offline.html";
 
-// Keep the previous worker active if the essential offline shell cannot be cached.
 const CORE = ["./login.html", "./selector.html", "./profiles.html", "./index.html", "./offline.html", "./config.js", "./assets/security.js", "./assets/style.css", "./assets/splash.css", "./assets/ui.css", "./manifest.json"];
 
 self.addEventListener("install", e => {
@@ -92,8 +91,6 @@ self.addEventListener("fetch", e => {
     }) || caches.match(OFFLINE_FALLBACK))));
     return;
   }
-  // Scripts and styles must reflect a new deploy on the first reload.
-  // Keep the cached copy only as an offline fallback.
   if (url.origin === self.location.origin && /\.(?:js|css)$/.test(url.pathname)) {
     e.respondWith(fetchWithTimeout(new Request(e.request, { cache: "no-cache" }), 8e3).then(res => {
       if (res && res.ok) caches.open(CACHE).then(cache => cache.put(e.request, res.clone())).catch(() => {});

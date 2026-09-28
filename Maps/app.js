@@ -218,7 +218,6 @@ function loadState() {
   if (Array.isArray(savedVisited)) savedVisited.forEach(arr => visited.push(new Set(Array.isArray(arr) ? arr : [])));
   syncVisitedLength(true);
   if (currentOutletDay >= days.length) currentOutletDay = 0;
-  // A write may have failed during the previous visit; retry the saved day.
   try {
     if (localStorage.getItem(scopedKey(DAYS_KEY) + "::pending") && window._fb) {
       syncedSave(DAYS_KEY, days, "days", { days, v: DAYS_VERSION });
@@ -1784,7 +1783,6 @@ function renderOutlets() {
       html += renderDayContent(currentDay);
       html += `</div>`;
     }
-    // Trip tips are retained in storage/backups but are no longer displayed here.
   } else {
     html += renderShopList();
   }
@@ -2116,7 +2114,6 @@ function stopSaveEdit(dayIdx, stopIdx) {
     }, 2e3);
     return;
   }
-  // Keep coordinates and any future metadata when editing only the visible fields.
   const original = days[dayIdx].stops[stopIdx];
   const latitude = document.getElementById("stop-edit-lat")?.value.trim();
   const longitude = document.getElementById("stop-edit-lng")?.value.trim();
@@ -2163,15 +2160,12 @@ function coordsFromMapsUrl(raw) {
 }
 
 function stopSearchAddress(stop) {
-  // Descriptions often end with business hours, which confuse address lookup.
   const address = (stop.desc || "").split(/[·•]/)[0].replace(/\b(?:Abre|Cierra)\b.*$/i, "").replace(/\b(?:Ste|Suite|Unit)\s*[A-Za-z0-9-]+$/i, "").trim();
   const destination = window._trip?.destinations?.[window._trip.activeDestination || 0];
   const area = [destination?.city || "Orlando", destination?.state || "Florida", "USA"].join(", ");
   return (address || stop.name) + ", " + area;
 }
 
-// Reference pins for the six stops supplied for the original Orlando day 3.
-// These mark the business or shopping center; entrances can be adjusted in Edit.
 const DAY_THREE_OUTLETS = [
   { name: "Dollar Tree", address: "8910 Turkey Lake Rd Ste 500", lat: 28.4450, lng: -81.47559, match: /dollar\s*tree|8910\s*turkey\s*lake/i },
   { name: "ICON Park", address: "8375 International Dr", lat: 28.44335, lng: -81.46877, match: /icon\s*park|8375\s*international/i },
@@ -2221,8 +2215,6 @@ async function recoverStopLocations(dayIdx) {
       restored++;
     }
   }
-  // Save one complete array only after recovery; per-stop writes can resolve
-  // out of order and a listener can otherwise replace the next stop mid-loop.
   if (restored) saveState();
   _routeCache = {};
   renderOutlets();

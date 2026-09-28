@@ -1,5 +1,4 @@
-/* Avoid browser-saved personal information suggestions in TaxFly's app fields.
-   Login is deliberately excluded so password managers keep working. */
+
 (() => {
   if (/\/login\.html$/i.test(location.pathname)) return;
 

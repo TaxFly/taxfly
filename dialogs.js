@@ -1,7 +1,3 @@
-// ── TaxFly — diálogos propios (reemplazo de alert()/confirm() nativos) ─────
-// Usa las variables CSS de la página (--surface, --border, --primary, etc.)
-// así hereda el tema de cada pantalla sin configuración extra: azul en la
-// app principal, naranja en el onboarding, oscuro en profiles.
 (function () {
     let overlay = null;
 
@@ -69,15 +65,10 @@
         });
     }
 
-    // Reemplazo de alert(): mismo uso (showAlert('mensaje')), no bloquea el
-    // hilo (a diferencia del alert nativo) pero eso no afecta ningún caso de
-    // uso existente en la app, ya que siempre iba seguido de un simple return.
     window.showAlert = function (message) {
         return openDialog({ message, okText: 'OK' });
     };
 
-    // Reemplazo de confirm(): usarlo con await, ej:
-    // if (!(await showConfirm('¿Seguro?'))) return;
     window.showConfirm = function (message, opts = {}) {
         return openDialog({
             message,
@@ -86,9 +77,6 @@
             danger: !!opts.danger,
         });
     };
-    // Reemplazo de prompt(): usarlo con await, ej:
-    // const email = await showPrompt('Nuevo correo:'); if (!email) return;
-    // Devuelve el texto ingresado, o null si cancelan (igual que prompt()).
     window.showPrompt = function (message, defaultValue = '', opts = {}) {
         return openDialog({
             message,

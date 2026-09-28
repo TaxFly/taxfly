@@ -101,8 +101,6 @@ function orlandoDocRef(docId) {
 
 const docWriteQueues = new Map();
 function fbSet(docId, data) {
-  // Keep full-array updates in order: an earlier geocode result must never
-  // replace a later version of the same day after a slow network write.
   const snapshot = JSON.parse(JSON.stringify(data));
   const ref = orlandoDocRef(docId);
   const previous = docWriteQueues.get(docId) || Promise.resolve();
@@ -361,7 +359,6 @@ onAuthStateChanged(auth, user => {
   currentUid = user.uid;
   currentPerfilId = perfilId;
   window._perfilId = perfilId;
-  // A direct link may select an existing trip, but never an unknown ID.
   try {
     const requested = new URLSearchParams(location.search).get("trip");
     if (requested && requested === localStorage.getItem(tripActiveKey())) activeTripId = requested;

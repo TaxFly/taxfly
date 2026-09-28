@@ -401,8 +401,6 @@
       prompt.prompt();
       return;
     }
-    // Safari has no install prompt; the main entry page gives the correct
-    // TaxFly name and icon when added to the home screen.
     location.href = new URL("login.html?install=1", document.baseURI).href;
   }
   drawer.addEventListener("click", function(e) {

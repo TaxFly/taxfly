@@ -1,4 +1,4 @@
-/* Reservations belong to the active Trip Planning profile and trip. */
+
 const RESERVATIONS_KEY = "trip-reservations-v1";
 const reservationGroups = [
   { id: "flight", title: "Vuelos", icon: "plane", empty: "Agregá la aerolínea y el acceso a tu reserva." },
@@ -42,8 +42,6 @@ function reservationUrl(value) {
   } catch (_) { return ""; }
 }
 
-// A name can contain more than one carrier ("Avianca / American Airlines").
-// Keep this mapping local: unknown names simply retain their text without a broken image.
 const reservationAirlines = [
   { name: "Aerolíneas Argentinas", code: "AR", aliases: ["aerolineas argentinas", "aerolineas"] },
   { name: "American Airlines", code: "AA", aliases: ["american airlines", "american"] },
@@ -91,7 +89,6 @@ function reservationAirlineMatches(name) {
   const found = new Set();
   for (const part of String(name || "").split(/\s*\/\s*/)) {
     const value = normalize(part);
-    // Longer aliases first so names such as "Air Canada" are not confused with codes.
     const carrier = reservationAirlines.find(airline =>
       airline.aliases.some(alias => value === alias || value.startsWith(alias + " ") ||
         value.startsWith(alias + "-") || value.startsWith(alias + "·") || value.startsWith(alias + "–"))

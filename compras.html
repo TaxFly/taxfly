@@ -2070,10 +2070,6 @@ function isVapidConfigured() {
   return VAPID_PUBLIC_KEY.length === 87 && !VAPID_PUBLIC_KEY.endsWith("abcdefg");
 }
 
-// Guardado en localStorage. La alerta de un umbral (70/90/100) se
-// dispara una sola vez por umbral, y solo se vuelve a evaluar cuando
-// el monto gastado cambia (es decir, cuando se carga/agrega un gasto
-// nuevo), no simplemente por reabrir compras.html con los mismos datos.
 const BUDGET_ALERT_KEY = "taxusa_budget_alerted_pct_" + (perfilId || "default");
 const BUDGET_LAST_SPENT_KEY = "taxusa_budget_last_spent_" + (perfilId || "default");
 
@@ -3376,7 +3372,6 @@ const COMP_STORES = [ {
   url: q => `https://pricespy.com/search?search=${encodeURIComponent(q)}`
 } ];
 
-// --- Detección simple de categoría por palabra clave (para destacar tiendas afines) ---
 function compNormalize(s) {
   return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -3455,7 +3450,6 @@ window.compActualizarLinks = function() {
   compRenderGrid(q);
 };
 
-// --- Cache simple en localStorage (4hs) para no repetir llamadas a la IA ---
 const COMP_CACHE_PREFIX = "comp_ia_cache_";
 const COMP_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
 

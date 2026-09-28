@@ -38,7 +38,6 @@
       deferred = null;
       prompt.prompt();
     } else {
-      // Open the main entry page so Safari saves TaxFly, never this subpage.
       location.href = new URL("../login.html?install=1", document.baseURI).href;
     }
   }

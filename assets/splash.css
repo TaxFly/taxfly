@@ -1,4 +1,4 @@
-/* Shared TaxFly intro: a single flight gesture, no perpetual particles. */
+
 .tf-splash { position:fixed; inset:0; z-index:9999; display:grid; place-items:center; overflow:hidden; background:#120d04; color:#fff; opacity:1; transition:opacity 260ms ease; }
 .tf-splash::before { content:""; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 50% 44%,rgba(239,159,39,.15),transparent 58%); }
 .tf-splash-content { position:relative; display:flex; flex-direction:column; align-items:center; padding:24px; text-align:center; }

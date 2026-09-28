@@ -1,5 +1,3 @@
-// One trip registry for TaxFly, Trip Planning and Mis cosas. The existing
-// tripPlanning paths and localStorage keys remain authoritative; no data copy.
 (function () {
   const legacy = {id:'orlando', name:'Mi viaje a Orlando', destinations:[{city:'Orlando',state:'Florida'}]};
   let sdk = null;
@@ -96,7 +94,7 @@
         snap.forEach(d=>byId.set(d.id,{...d.data(),id:d.id}));
         Object.values(pending(uid,profile)).forEach(t=>byId.set(t.id,t));
         cache(uid,profile,[...byId.values()].filter(t=>t.status!=='deleted'));
-      } catch(e) { /* Local state stays available. */ }
+      } catch(e) {  }
     }
     await flush(uid,profile);
     onChange?.();
@@ -138,7 +136,6 @@
       const base=['usuarios',uid,'perfiles',profile,'tripPlanning',id];
       const data=await sdk.getDocs(sdk.collection(sdk.db,...base,'data'));
       for (const item of data.docs) await sdk.deleteDoc(item.ref);
-      // Firestore does not cascade-delete nested collections.
       for (const group of ['accesorios','ropa','esenciales','estado']) {
         const docs=await sdk.getDocs(sdk.collection(sdk.db,...base,'misCosas','root',group));
         for (const item of docs.docs) await sdk.deleteDoc(item.ref);

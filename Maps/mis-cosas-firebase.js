@@ -45,8 +45,6 @@ window._misCosasReady = new Promise(resolve => {
 });
 
 function rootPath(uid, perfilId, tripId) {
-  // The original Mis cosas collection remains the Orlando trip. Other trips
-  // get isolated collections without copying or mutating legacy documents.
   return tripId === "orlando" ? `usuarios/${uid}/perfiles/${perfilId}/misCosas/root`
     : `usuarios/${uid}/perfiles/${perfilId}/tripPlanning/${tripId}/misCosas/root`;
 }

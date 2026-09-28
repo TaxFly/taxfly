@@ -100,7 +100,6 @@ if ("serviceWorker" in navigator) {
     if (notice) notice.remove();
     maybeHide();
   };
-  // Release the overlay even if remote sync is unavailable. Existing app handles sync.
   var fallback = setTimeout(function () {
     if (!window._fbReady) {
       notice = document.createElement("div");
