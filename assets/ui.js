@@ -268,7 +268,7 @@
       if (!txt || norm(txt).length > 4) return;
       const hit = pick(el, txt);
       if (!hit) return;
-      const size = el.matches(".btn-nav .ni") ? 21 : el.matches(".sc-emoji") ? 22 : el.matches(".tab-btn .ti") ? 16 : el.matches("#ne-dot") ? 22 : el.matches(".tip-icon") ? 20 : 16;
+      const size = el.matches(".btn-nav .ni") ? 27 : el.matches(".sc-emoji") ? 32 : el.matches(".tab-btn .ti") ? 16 : el.matches("#ne-dot") ? 22 : el.matches(".tip-icon") ? 20 : 16;
       el.innerHTML = svg(hit.icon, size);
       el.classList.add("ui-slot");
       if (hit.tone) el.setAttribute("data-tone", hit.tone);
@@ -290,7 +290,7 @@
   const NAV_T = {
     es: {
       home: "INICIO",
-      taxes: "TAXES",
+      taxes: "CALCULADORA",
       taxes_d: "Calculadora de impuestos",
       shopping: "GASTOS",
       itinerary: "ITINERARIO",
@@ -312,7 +312,7 @@
     },
     en: {
       home: "HOME",
-      taxes: "TAXES",
+      taxes: "CALCULATOR",
       taxes_d: "Sales tax calculator",
       shopping: "EXPENSES",
       itinerary: "ITINERARY",
@@ -334,7 +334,7 @@
     },
     pt: {
       home: "INÍCIO",
-      taxes: "TAXES",
+      taxes: "CALCULADORA",
       taxes_d: "Calculadora de impostos",
       shopping: "GASTOS",
       itinerary: "ITINERÁRIO",
@@ -362,8 +362,8 @@
     } catch (e) {}
     return NAV_T[l] ? l : "es";
   };
-  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "Maps/index.html?section=parques", "calendar", "plan" ], [ "compras.html", "bag", "shopping" ], [ "tickets.html", "file", "docs" ] ];
-  const NAV_MORE = [ [ "itinerario.html", "pin", "itinerary", "green" ], [ "rutas.html", "map", "routes", "red" ], [ "tax.html", "calculator", "taxes", "blue" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ], [ "Maps/Mis_cosas_de_viaje.html", "briefcase", "things", "violet" ] ];
+  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "tax.html", "calculator", "taxes" ], [ "Maps/index.html?section=parques", "calendar", "plan" ], [ "compras.html", "bag", "shopping" ] ];
+  const NAV_MORE = [ [ "tickets.html", "file", "tickets", "cyan" ], [ "Maps/Mis_cosas_de_viaje.html", "briefcase", "things", "violet" ], [ "itinerario.html", "pin", "itinerary", "green" ], [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ] ];
   function buildNav() {
     const nav = document.querySelector(".nav-bar");
     if (!nav || !nav.querySelector(".btn-nav")) return;
@@ -371,7 +371,7 @@
     if (nav.getAttribute("data-ui-nav") === lang) return;
     const T = NAV_T[lang];
     const set = nav.querySelector("#btnSettings");
-    const main = NAV_MAIN.map(([href, icon, key]) => `<a href="${href}" class="btn-nav"><span class="ni">${svg(icon, 21)}</span><span>${T[key]}</span></a>`).join("");
+    const main = NAV_MAIN.map(([href, icon, key]) => `<a href="${href}" class="btn-nav"><span class="ni">${svg(icon, 27)}</span><span>${T[key]}</span></a>`).join("");
     const more = NAV_MORE.map(([href, icon, key, tone]) => `<a href="${href}" class="dd-item"><span class="dd-icon ui-slot" data-tone="${tone}">${svg(icon, 18)}</span><div><div class="dd-name">${T[key]}</div><div class="dd-desc">${T[key + "_d"]}</div></div></a>`).join("");
     nav.innerHTML = main + `<button class="btn-nav-more" id="btnMore" onclick="toggleMoreMenu(event)" aria-label="${T.more}">\n                <div class="more-dots"><div class="more-dot"></div><div class="more-dot"></div><div class="more-dot"></div></div>\n                <span class="more-lbl">${T.more}</span>\n                <div class="nav-dropdown" id="navDropdown"><div class="dd-arrow"></div>${more}</div>\n            </button>`;
     if (set) nav.appendChild(set);

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v49';
+const CACHE_VERSION = 'v50';
 const CACHE_NAME = 'trip-planning-' + CACHE_VERSION;
 const TILES_CACHE_NAME = 'orlando-tiles-v1';
 const MAX_TILES = 600;

@@ -371,11 +371,12 @@ test('Maps links offer a choice on iOS, open Google Maps on Android, and a new t
   assert.match(read('Maps/app.js'),/tripMapLink\(hotel\.addr, "hotel-map-link"\)/);
 });
 
-test('native layouts keep the shared four destinations and Trip Planning opens without its splash', () => {
+test('native layouts keep the requested five destinations and Trip Planning opens without its splash', () => {
   const ui=read('assets/ui.js');
+  assert.match(ui,/\[ "index\.html", "home", "home" \], \[ "tax\.html", "calculator", "taxes" \]/);
   assert.match(ui,/\[ "Maps\/index\.html\?section=parques", "calendar", "plan" \]/);
   assert.match(ui,/\[ "compras\.html", "bag", "shopping" \]/);
-  assert.match(ui,/\[ "tickets\.html", "file", "docs" \]/);
+  assert.match(ui,/\[ "tickets\.html", "file", "tickets", "cyan" \]/);
   for (const page of ['compras.html','itinerario.html','tickets.html','tax.html']) {
     assert.match(read(page),/<nav class="nav-bar">/);
     assert.doesNotMatch(read(page),/app-shell\.js/);
@@ -386,15 +387,27 @@ test('native layouts keep the shared four destinations and Trip Planning opens w
   assert.match(read('Maps/Mis_cosas_de_viaje.html'),/Tax<b>Fly<\/b>/);
 });
 
-test('plan shows only the active trip reminders as a linked view', () => {
-  const src=between(read('Maps/app.js'),'function personalReminderSummary()','function switchParquesTab(t)');
-  const ctx=context(src,{window:{_personalReminders:[{name:'Vuelo',date:'2027-01-17',time:'08:00'}]},
-    escapeHtml:s=>String(s).replace(/</g,'&lt;'),ic:()=>'<svg></svg>'});
-  assert.match(ctx.personalReminderSummary(),/Agregar recordatorio/);
-  assert.match(ctx.personalReminderSummary(),/Vuelo/);
-  assert.match(ctx.personalReminderSummary(),/new=reminder/);
-  assert.doesNotMatch(ctx.personalReminderSummary(),/trip-planning\/.*\/data\/itinerario/);
-  assert.match(read('Maps/firebase-sync.js'),/\.filter\(item => item\.tripId === activeTripId\)/);
+test('Trip Planning no longer loads or shows personal reminders', () => {
+  assert.doesNotMatch(read('Maps/app.js'),/personalReminderSummary|_personalReminders/);
+  assert.doesNotMatch(read('Maps/firebase-sync.js'),/_personalReminders/);
+});
+
+test('park data uses real, fresh wait times and never guesses the status of city landmarks', async () => {
+  let time=Date.now();
+  const fetch=async url=>({ok:true,json:async()=>url.endsWith('/destinations')
+    ? {destinations:[{name:'Disneyland Resort',parks:[{id:'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',name:'Disneyland Park'}]}]}
+    : url.endsWith('/children') ? {children:[{id:'ride-a',entityType:'ATTRACTION',name:'Space Mountain'},{id:'ride-b',entityType:'ATTRACTION',name:'Old Ride'}]}
+    : {liveData:[{id:'ride-a',status:'OPERATING',lastUpdated:new Date(time-60000).toISOString(),queue:{STANDBY:{waitTime:35}}},
+      {id:'ride-b',status:'OPERATING',lastUpdated:new Date(time-3600000).toISOString(),queue:{STANDBY:{waitTime:4}}}]}});
+  const c=context(read('assets/park-live.js'),{fetch,AbortSignal,Date,Map,Number});
+  const parks=await c.ParkLive.parksForCity('la');
+  assert.equal(parks.length,1);
+  const rides=await c.ParkLive.ridesForPark(parks[0].id);
+  assert.equal(rides[0].wait,35);
+  assert.equal(rides[1].wait,null);
+  assert.equal(rides[1].status,null);
+  assert.doesNotMatch(read('itinerario.html'),/corsproxy\.io|localHour|updateStatusDisplay/);
+  assert.doesNotMatch(read('itinerario.html'),/city_nyc: "🍎/);
 });
 
 test('a reservation shows the existing voucher from Documents as part of its card', () => {

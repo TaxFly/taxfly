@@ -119,6 +119,14 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .queue-card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;gap:4px;transition:var(--tr);}
         .queue-name{font-size:.62rem;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;}
         .queue-status{font-size:.85rem;font-weight:900;}
+        .city-parks{display:grid;gap:10px;margin-bottom:14px;}
+        .city-parks h3{font-size:.8rem;margin:8px 0 0;color:var(--text);}
+        .park-live-card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;}
+        .park-live-card button{width:100%;background:transparent;border:0;color:var(--primary);font:inherit;font-size:.78rem;font-weight:800;text-align:left;cursor:pointer;padding:8px 0 0;}
+        .park-rides{max-height:290px;overflow:auto;margin-top:8px;}
+        .park-ride{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);padding:8px 0;font-size:.72rem;}
+        .park-source{font-size:.65rem;color:var(--text-sub);margin:2px 0 0;}
+        .park-source a{color:var(--primary);text-decoration:none;}
         .q-low{color:var(--success);} .q-med{color:var(--warn);} .q-high{color:var(--danger);} .q-off{color:var(--text-dim);}
 
         
@@ -366,16 +374,17 @@ if ("serviceWorker" in navigator) {
         <div class="card">
             <span class="slabel" data-i18n="itinerary_title">📍 Planificador de Viaje</span>
             <select id="citySelector" onchange="renderCityData()" style="margin-bottom:14px;">
-                <option value="orlando" data-i18n="city_orlando">🎡 Orlando</option>
-                <option value="nyc" data-i18n="city_nyc">🍎 Nueva York</option>
-                <option value="miami" data-i18n="city_miami">🏖️ Miami</option>
-                <option value="vegas" data-i18n="city_vegas">🎲 Las Vegas</option>
-                <option value="la" data-i18n="city_la">🎬 Los Ángeles</option>
-                <option value="sf" data-i18n="city_sf">🌉 San Francisco</option>
-                <option value="chicago" data-i18n="city_chicago">🏢 Chicago</option>
-                <option value="dc" data-i18n="city_dc">🏛️ Washington D.C.</option>
+                <option value="orlando" data-i18n="city_orlando">Orlando</option>
+                <option value="nyc" data-i18n="city_nyc">Nueva York</option>
+                <option value="miami" data-i18n="city_miami">Miami</option>
+                <option value="vegas" data-i18n="city_vegas">Las Vegas</option>
+                <option value="la" data-i18n="city_la">Los Ángeles</option>
+                <option value="sf" data-i18n="city_sf">San Francisco</option>
+                <option value="chicago" data-i18n="city_chicago">Chicago</option>
+                <option value="dc" data-i18n="city_dc">Washington D.C.</option>
             </select>
             <div class="queues-grid" id="dynamicQueues"></div>
+            <div id="cityParks" class="city-parks"></div>
             <div class="smart-tip" onclick="nextTip()">
                 <span class="st-icon">✨</span>
                 <div>
@@ -620,6 +629,7 @@ if ("serviceWorker" in navigator) {
   </div>
 </div>
 
+<script src="assets/park-live.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
@@ -754,14 +764,14 @@ const i18n = {
     tab_notes: "NOTAS",
     itinerary_title: "📍 Planificador de Viaje",
     tip_label: "✨ Tip de Viaje",
-    city_orlando: "🎡 Orlando",
-    city_nyc: "🍎 Nueva York",
-    city_miami: "🏖️ Miami",
-    city_vegas: "🎲 Las Vegas",
-    city_la: "🎬 Los Ángeles",
-    city_sf: "🌉 San Francisco",
-    city_chicago: "🏢 Chicago",
-    city_dc: "🏛️ Washington D.C.",
+    city_orlando: "Orlando",
+    city_nyc: "Nueva York",
+    city_miami: "Miami",
+    city_vegas: "Las Vegas",
+    city_la: "Los Ángeles",
+    city_sf: "San Francisco",
+    city_chicago: "Chicago",
+    city_dc: "Washington D.C.",
     status_low: "BAJA 🟢",
     status_med: "MED 🟡",
     status_high: "ALTA 🔴",
@@ -861,14 +871,14 @@ const i18n = {
     tab_notes: "NOTES",
     itinerary_title: "📍 Trip Planner",
     tip_label: "✨ Travel Tip",
-    city_orlando: "🎡 Orlando",
-    city_nyc: "🍎 New York",
-    city_miami: "🏖️ Miami",
-    city_vegas: "🎲 Las Vegas",
-    city_la: "🎬 Los Angeles",
-    city_sf: "🌉 San Francisco",
-    city_chicago: "🏢 Chicago",
-    city_dc: "🏛️ Washington D.C.",
+    city_orlando: "Orlando",
+    city_nyc: "New York",
+    city_miami: "Miami",
+    city_vegas: "Las Vegas",
+    city_la: "Los Angeles",
+    city_sf: "San Francisco",
+    city_chicago: "Chicago",
+    city_dc: "Washington D.C.",
     status_low: "LOW 🟢",
     status_med: "MED 🟡",
     status_high: "HIGH 🔴",
@@ -969,14 +979,14 @@ const i18n = {
     itinerary_title: "📍 Planejador de Viagem",
     tip_label: "✨ Dica de Viagem",
     btn_pin: "Alterar PIN Offline",
-    city_orlando: "🎡 Orlando",
-    city_nyc: "🍎 Nova York",
-    city_miami: "🏖️ Miami",
-    city_vegas: "🎲 Las Vegas",
-    city_la: "🎬 Los Angeles",
-    city_sf: "🌉 San Francisco",
-    city_chicago: "🏢 Chicago",
-    city_dc: "🏛️ Washington D.C.",
+    city_orlando: "Orlando",
+    city_nyc: "Nova York",
+    city_miami: "Miami",
+    city_vegas: "Las Vegas",
+    city_la: "Los Angeles",
+    city_sf: "San Francisco",
+    city_chicago: "Chicago",
+    city_dc: "Washington D.C.",
     status_low: "BAIXA 🟢",
     status_med: "MED 🟡",
     status_high: "ALTA 🔴",
@@ -1069,115 +1079,26 @@ const tips = {
 };
 
 const citiesConfig = {
-  orlando: {
-    tz: "America/New_York",
-    spots: [ {
-      name: "Magic Kingdom",
-      parkId: 6
-    }, {
-      name: "EPCOT",
-      parkId: 5
-    }, {
-      name: "Universal Studios",
-      parkId: 13
-    }, {
-      name: "Islands of Adventure",
-      parkId: 14
-    }, {
-      name: "Disney Hollywood",
-      parkId: 7
-    }, {
-      name: "Animal Kingdom",
-      parkId: 8
-    }, {
-      name: "Epic Universe",
-      parkId: 334
-    } ]
-  },
-  nyc: {
-    tz: "America/New_York",
-    spots: [ {
-      name: "Times Square"
-    }, {
-      name: "Central Park"
-    }, {
-      name: "Brooklyn Bridge"
-    }, {
-      name: "The Met"
-    } ]
-  },
-  miami: {
-    tz: "America/New_York",
-    spots: [ {
-      name: "South Beach"
-    }, {
-      name: "Wynwood"
-    }, {
-      name: "Brickell"
-    }, {
-      name: "Bayside"
-    } ]
-  },
-  vegas: {
-    tz: "America/Los_Angeles",
-    spots: [ {
-      name: "The Strip"
-    }, {
-      name: "Fremont St."
-    }, {
-      name: "High Roller"
-    }, {
-      name: "Bellagio"
-    } ]
-  },
-  la: {
-    tz: "America/Los_Angeles",
-    spots: [ {
-      name: "Hollywood"
-    }, {
-      name: "Santa Monica"
-    }, {
-      name: "Beverly Hills"
-    }, {
-      name: "Griffith Park"
-    } ]
-  },
-  sf: {
-    tz: "America/Los_Angeles",
-    spots: [ {
-      name: "Golden Gate"
-    }, {
-      name: "Fisherman's Wharf"
-    }, {
-      name: "Alcatraz"
-    }, {
-      name: "Union Square"
-    } ]
-  },
-  chicago: {
-    tz: "America/Chicago",
-    spots: [ {
-      name: "Millennium Park"
-    }, {
-      name: "Navy Pier"
-    }, {
-      name: "The Mag Mile"
-    }, {
-      name: "Art Institute"
-    } ]
-  },
-  dc: {
-    tz: "America/New_York",
-    spots: [ {
-      name: "National Mall"
-    }, {
-      name: "Smithsonian"
-    }, {
-      name: "Capitol Hill"
-    }, {
-      name: "Georgetown"
-    } ]
-  }
+  orlando: [],
+  nyc: ["Times Square", "Central Park", "Brooklyn Bridge", "The Met"],
+  miami: ["South Beach", "Wynwood", "Brickell", "Bayside"],
+  vegas: ["The Strip", "Fremont Street", "High Roller", "Bellagio"],
+  la: ["Hollywood", "Santa Monica", "Beverly Hills", "Griffith Park"],
+  sf: ["Golden Gate Bridge", "Fisherman's Wharf", "Alcatraz", "Union Square"],
+  chicago: ["Millennium Park", "Navy Pier", "Magnificent Mile", "Art Institute"],
+  dc: ["National Mall", "Smithsonian", "U.S. Capitol", "Georgetown"]
+};
+
+const placesText = {
+  es: {places:"Lugares para explorar", parks:"Parques y atracciones", nearby:"Algunos parques están fuera de la ciudad; comprobá la distancia antes de ir.",
+    open:"Ver atracciones y esperas", loading:"Cargando datos…", unavailable:"Datos en vivo no disponibles", empty:"No hay atracciones publicadas para este parque.",
+    wait:"min de espera", operating:"En funcionamiento", closed:"No disponible", noWait:"Sin espera publicada"},
+  en: {places:"Places to explore", parks:"Parks and attractions", nearby:"Some parks are outside the city; check the distance before visiting.",
+    open:"See attractions and wait times", loading:"Loading data…", unavailable:"Live data unavailable", empty:"No attractions published for this park.",
+    wait:"min wait", operating:"Operating", closed:"Unavailable", noWait:"Wait time unavailable"},
+  pt: {places:"Lugares para conhecer", parks:"Parques e atrações", nearby:"Alguns parques ficam fora da cidade; confira a distância antes de ir.",
+    open:"Ver atrações e esperas", loading:"Carregando dados…", unavailable:"Dados ao vivo indisponíveis", empty:"Não há atrações publicadas para este parque.",
+    wait:"min de espera", operating:"Em operação", closed:"Indisponível", noWait:"Espera indisponível"}
 };
 
 const checklistItems = {
@@ -1204,84 +1125,43 @@ window.renderCityData = async () => {
   if (window._updateParquesTab) window._updateParquesTab();
   if (window.updateInlineTransport) window.updateInlineTransport();
   const cityKey = document.getElementById("citySelector").value;
+  const lang = localStorage.getItem("appLang") || "es";
+  const t = placesText[lang] || placesText.es;
   const container = document.getElementById("dynamicQueues");
-  const cityData = citiesConfig[cityKey];
-  if (!cityData) {
-    container.textContent = "Todavía no hay datos en vivo para esta ciudad. Tus actividades y notas sí se guardan en este viaje.";
-    return;
-  }
-  container.innerHTML = cityData.spots.map((s, i) => `\n            <div class="queue-card">\n                <div class="queue-name">${esc(s.name)}</div>\n                <div id="spot-${i}" class="queue-status q-off">...</div>\n            </div>\n        `).join("");
-  if (typeof requestIdleCallback !== "undefined") {
-    requestIdleCallback(() => updateStatusDisplay(cityKey), {
-      timeout: 2e3
-    });
-  } else {
-    setTimeout(() => updateStatusDisplay(cityKey), 150);
+  const parkBox = document.getElementById("cityParks");
+  const places = citiesConfig[cityKey] || [];
+  container.innerHTML = places.map(name => `<div class="queue-card"><div class="queue-name">${esc(name)}</div></div>`).join("");
+  if (places.length) container.insertAdjacentHTML("afterbegin", `<h3 style="grid-column:1/-1;margin:0">${t.places}</h3>`);
+  parkBox.textContent = "";
+  if (!ParkLive.CITY_DESTINATIONS[cityKey]) return;
+  parkBox.innerHTML = `<h3>${t.parks}</h3><p class="park-source">${t.nearby}</p><p class="park-source">${t.loading}</p>`;
+  try {
+    const parks = await ParkLive.parksForCity(cityKey);
+    if (document.getElementById("citySelector").value !== cityKey) return;
+    parkBox.innerHTML = `<h3>${t.parks}</h3><p class="park-source">${t.nearby} <a href="https://themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a></p>` +
+      (parks.length ? parks.map(park => `<div class="park-live-card"><strong>${esc(park.name)}</strong><button type="button" data-park-id="${esc(park.id)}">${t.open}</button><div class="park-rides" aria-live="polite"></div></div>`).join("") : `<p class="park-source">${t.unavailable}</p>`);
+  } catch (_) {
+    if (document.getElementById("citySelector").value === cityKey)
+      parkBox.innerHTML = `<h3>${t.parks}</h3><p class="park-source">${t.unavailable}</p><p class="park-source"><a href="https://themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a></p>`;
   }
 };
 
-async function updateStatusDisplay(cityKey) {
-  const cityData = citiesConfig[cityKey];
+document.getElementById("cityParks").addEventListener("click", async event => {
+  const button = event.target.closest("button[data-park-id]");
+  if (!button || button.disabled) return;
   const lang = localStorage.getItem("appLang") || "es";
-  const t = i18n[lang];
-  const localHour = parseInt(new Intl.DateTimeFormat("en-US", {
-    timeZone: cityData.tz,
-    hour: "numeric",
-    hour12: false
-  }).format(new Date));
-  for (let i = 0; i < cityData.spots.length; i++) {
-    const el = document.getElementById(`spot-${i}`);
-    if (!el) continue;
-    if (cityKey === "orlando" && cityData.spots[i].parkId) {
-      if (localHour >= 22 || localHour < 8) {
-        el.innerText = t.status_closed;
-        el.className = "queue-status q-off";
-      } else {
-        try {
-          const res = await fetch("https://corsproxy.io/?" + encodeURIComponent(`https://queue-times.com/parks/${cityData.spots[i].parkId}/queue_times.json`), {
-            signal: AbortSignal.timeout(8e3)
-          });
-          const data = await res.json();
-          let tot = 0, c = 0;
-          data.lands?.forEach(l => l.rides.forEach(r => {
-            if (r.is_open) {
-              tot += r.wait_time;
-              c++;
-            }
-          }));
-          const avg = c > 0 ? tot / c : 0;
-          if (avg <= 20) {
-            el.innerText = t.status_low;
-            el.className = "queue-status q-low";
-          } else if (avg <= 45) {
-            el.innerText = t.status_med;
-            el.className = "queue-status q-med";
-          } else {
-            el.innerText = t.status_high;
-            el.className = "queue-status q-high";
-          }
-        } catch (e) {
-          el.innerText = t.status_na;
-          el.className = "queue-status q-off";
-        }
-      }
-    } else {
-      if (localHour >= 23 || localHour < 7) {
-        el.innerText = t.status_closed;
-        el.className = "queue-status q-off";
-      } else if (localHour >= 12 && localHour <= 19) {
-        el.innerText = t.status_high;
-        el.className = "queue-status q-high";
-      } else if (localHour >= 9 && localHour < 12) {
-        el.innerText = t.status_med;
-        el.className = "queue-status q-med";
-      } else {
-        el.innerText = t.status_low;
-        el.className = "queue-status q-low";
-      }
-    }
-  }
-}
+  const t = placesText[lang] || placesText.es;
+  const box = button.nextElementSibling;
+  if (box.dataset.loaded) { box.hidden = !box.hidden; return; }
+  button.disabled = true;
+  box.textContent = t.loading;
+  try {
+    const rides = await ParkLive.ridesForPark(button.dataset.parkId);
+    box.innerHTML = rides.length ? rides.map(ride => `<div class="park-ride"><span>${esc(ride.name)}</span><strong>${ride.wait !== null ? ride.wait + " " + t.wait : ride.status === "OPERATING" ? t.operating + " · " + t.noWait : ride.status ? t.closed : t.noWait}</strong></div>`).join("") : `<p class="park-source">${t.empty}</p>`;
+    box.dataset.loaded = "1";
+  } catch (_) { box.textContent = t.unavailable; }
+  button.disabled = false;
+});
 
 window.toggleActForm = () => {
   const lang = localStorage.getItem("appLang") || "es";
@@ -2269,7 +2149,6 @@ document.addEventListener("visibilitychange", () => {
 const CITIES = [ {
   id: "orlando",
   name: "Orlando",
-  flag: "🎢",
   state: "Florida",
   state_en: "Florida",
   state_pt: "Flórida",
@@ -2295,7 +2174,6 @@ const CITIES = [ {
 }, {
   id: "newyork",
   name: "New York",
-  flag: "🗽",
   state: "Nueva York",
   state_en: "New York",
   state_pt: "Nova Iorque",
@@ -2321,7 +2199,6 @@ const CITIES = [ {
 }, {
   id: "miami",
   name: "Miami",
-  flag: "🌴",
   state: "Florida",
   state_en: "Florida",
   state_pt: "Flórida",
@@ -2341,13 +2218,12 @@ const CITIES = [ {
   mapLabel_en: "MDT System Map",
   mapLabel_pt: "Mapa MDT",
   gmaps: "https://maps.app.goo.gl/4LkZcz1Mwfmr5C56A",
-  tips_es: [ "🆓 Metromover es completamente gratis — conecta el centro", "🏖️ Miami Beach se llega en bus 150 o S desde el centro", "🚗 Para las playas, Uber/Lyft sigue siendo lo más cómodo", "🚴 Citi Bike disponible en Miami Beach y Brickell", "💳 EASY Card recargable en estaciones de Metrorail" ],
+  tips_es: [ "🆓 Metromover es completamente gratis — conecta el centro", "Miami Beach se llega en bus 150 o S desde el centro", "🚗 Para las playas, Uber/Lyft sigue siendo lo más cómodo", "🚴 Citi Bike disponible en Miami Beach y Brickell", "💳 EASY Card recargable en estaciones de Metrorail" ],
   tips_en: [ "🆓 Metromover is completely free — connects downtown", "🏖️ Reach Miami Beach via bus 150 or S from downtown", "🚗 For beaches, Uber/Lyft is still most convenient", "🚴 Citi Bike available in Miami Beach and Brickell", "💳 EASY Card rechargeable at Metrorail stations" ],
-  tips_pt: [ "🆓 O Metromover é completamente gratuito — conecta o centro", "🏖️ Miami Beach pelo ônibus 150 ou S do centro", "🚗 Para as praias, Uber/Lyft ainda é o mais cômodo", "🚴 Citi Bike disponível em Miami Beach e Brickell", "💳 EASY Card recarregável nas estações do Metrorail" ]
+  tips_pt: [ "🆓 O Metromover é completamente gratuito — conecta o centro", "Miami Beach pelo ônibus 150 ou S do centro", "🚗 Para as praias, Uber/Lyft ainda é o mais cômodo", "🚴 Citi Bike disponível em Miami Beach e Brickell", "💳 EASY Card recarregável nas estações do Metrorail" ]
 }, {
   id: "lasvegas",
   name: "Las Vegas",
-  flag: "🎰",
   state: "Nevada",
   state_en: "Nevada",
   state_pt: "Nevada",
@@ -2373,7 +2249,6 @@ const CITIES = [ {
 }, {
   id: "losangeles",
   name: "Los Angeles",
-  flag: "🎬",
   state: "California",
   state_en: "California",
   state_pt: "Califórnia",
@@ -2399,7 +2274,6 @@ const CITIES = [ {
 }, {
   id: "sanfrancisco",
   name: "San Francisco",
-  flag: "🌉",
   state: "California",
   state_en: "California",
   state_pt: "Califórnia",
@@ -2425,7 +2299,6 @@ const CITIES = [ {
 }, {
   id: "chicago",
   name: "Chicago",
-  flag: "🏙️",
   state: "Illinois",
   state_en: "Illinois",
   state_pt: "Illinois",
@@ -2451,7 +2324,6 @@ const CITIES = [ {
 }, {
   id: "washington",
   name: "Washington DC",
-  flag: "🏛️",
   state: "DC",
   state_en: "DC",
   state_pt: "DC",
@@ -2477,7 +2349,6 @@ const CITIES = [ {
 }, {
   id: "boston",
   name: "Boston",
-  flag: "🦞",
   state: "Massachusetts",
   state_en: "Massachusetts",
   state_pt: "Massachusetts",
@@ -2503,7 +2374,6 @@ const CITIES = [ {
 }, {
   id: "seattle",
   name: "Seattle",
-  flag: "☕",
   state: "Washington",
   state_en: "Washington",
   state_pt: "Washington",
@@ -2529,7 +2399,6 @@ const CITIES = [ {
 }, {
   id: "neworleans",
   name: "New Orleans",
-  flag: "🎷",
   state: "Luisiana",
   state_en: "Louisiana",
   state_pt: "Louisiana",
@@ -2555,7 +2424,6 @@ const CITIES = [ {
 }, {
   id: "denver",
   name: "Denver",
-  flag: "🏔️",
   state: "Colorado",
   state_en: "Colorado",
   state_pt: "Colorado",
@@ -2586,7 +2454,7 @@ window.renderCityGrid = function renderCityGrid() {
   const lang = localStorage.getItem("appLang") || "es";
   grid.innerHTML = CITIES.map(c => {
     const cityState = lang !== "es" && c["state_" + lang] ? c["state_" + lang] : c.state;
-    return `\n        <button onclick="showCity('${c.id}')" id="citybtn-${c.id}" style="background:var(--surface-2);border:1.5px solid var(--border);border-radius:12px;padding:10px 8px;cursor:pointer;font-family:inherit;transition:all .2s;text-align:center;">\n            <div style="font-size:1.3rem;">${c.flag}</div>\n            <div style="font-size:.72rem;font-weight:800;color:var(--text);margin-top:3px;">${esc(c.name)}</div>\n            <div style="font-size:.58rem;font-weight:600;color:var(--text-dim);">${cityState}</div>\n        </button>`;
+    return `\n        <button onclick="showCity('${c.id}')" id="citybtn-${c.id}" style="background:var(--surface-2);border:1.5px solid var(--border);border-radius:12px;padding:10px 8px;cursor:pointer;font-family:inherit;transition:all .2s;text-align:center;">\n            <div style="font-size:.72rem;font-weight:800;color:var(--text);margin-top:3px;">${esc(c.name)}</div>\n            <div style="font-size:.58rem;font-weight:600;color:var(--text-dim);">${cityState}</div>\n        </button>`;
   }).join("");
 };
 
@@ -2631,7 +2499,7 @@ window.showCity = function showCity(id) {
   const cityState = lang !== "es" && city["state_" + lang] ? city["state_" + lang] : city.state;
   const cityMapLabel = lang !== "es" && city["mapLabel_" + lang] ? city["mapLabel_" + lang] : city.mapLabel;
   panel.style.display = "block";
-  panel.innerHTML = `\n        <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">\n            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">\n                <span style="font-size:1.8rem;">${city.flag}</span>\n                <div>\n                    <div style="font-size:1rem;font-weight:900;color:var(--text);">${esc(city.name)}</div>\n                    <div style="font-size:.7rem;font-weight:600;color:var(--text-dim);">${cityState}</div>\n                </div>\n            </div>\n            <div style="display:flex;flex-direction:column;gap:10px;">\n                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${sysLabel}</div>\n                    <div style="font-size:.82rem;font-weight:700;color:var(--text);">${citySystem}</div>\n                </div>\n                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">\n                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;">\n                        <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">${priceLabel}</div>\n                        <div style="font-size:.75rem;font-weight:700;color:var(--text);line-height:1.4;">${cityPrice}</div>\n                    </div>\n                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;">\n                        <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">${payLabel}</div>\n                        <div style="font-size:.75rem;font-weight:700;color:var(--text);line-height:1.4;">${cityPayment}</div>\n                    </div>\n                </div>\n                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">\n                    <a href="${city.map}" target="_blank" style="background:var(--primary);color:white;border-radius:12px;padding:12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;">\n                        <span style="font-size:1.2rem;">🗺️</span>\n                        <span style="font-size:.7rem;font-weight:800;">${cityMapLabel}</span>\n                        <span style="font-size:.6rem;opacity:.85;">${officialLabel}</span>\n                    </a>\n                    <a href="${city.gmaps}" target="_blank" style="background:var(--accent);color:white;border-radius:12px;padding:12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;">\n                        <span style="font-size:1.2rem;">📍</span>\n                        <span style="font-size:.7rem;font-weight:800;">Google Maps</span>\n                        <span style="font-size:.6rem;opacity:.85;">${realtimeLabel}</span>\n                    </a>\n                </div>\n                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${appLabel}</div>\n                    <a href="${city.appLink}" target="_blank" style="font-size:.8rem;font-weight:700;color:var(--primary);text-decoration:none;">${city.app}</a>\n                </div>\n                <div style="background:rgba(16,185,129,.08);border:1.5px solid var(--success);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--success);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${tipsLabel}</div>\n                    <div style="display:flex;flex-direction:column;gap:6px;">\n                        ${tips.map(tip => `<div style="font-size:.75rem;font-weight:600;color:var(--text);line-height:1.4;">${tip}</div>`).join("")}\n                    </div>\n                </div>\n            </div>\n        </div>\n    `;
+  panel.innerHTML = `\n        <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">\n            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">\n                <div>\n                    <div style="font-size:1rem;font-weight:900;color:var(--text);">${esc(city.name)}</div>\n                    <div style="font-size:.7rem;font-weight:600;color:var(--text-dim);">${cityState}</div>\n                </div>\n            </div>\n            <div style="display:flex;flex-direction:column;gap:10px;">\n                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${sysLabel}</div>\n                    <div style="font-size:.82rem;font-weight:700;color:var(--text);">${citySystem}</div>\n                </div>\n                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">\n                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;">\n                        <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">${priceLabel}</div>\n                        <div style="font-size:.75rem;font-weight:700;color:var(--text);line-height:1.4;">${cityPrice}</div>\n                    </div>\n                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;">\n                        <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">${payLabel}</div>\n                        <div style="font-size:.75rem;font-weight:700;color:var(--text);line-height:1.4;">${cityPayment}</div>\n                    </div>\n                </div>\n                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">\n                    <a href="${city.map}" target="_blank" style="background:var(--primary);color:white;border-radius:12px;padding:12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;">\n                        <span style="font-size:1.2rem;">🗺️</span>\n                        <span style="font-size:.7rem;font-weight:800;">${cityMapLabel}</span>\n                        <span style="font-size:.6rem;opacity:.85;">${officialLabel}</span>\n                    </a>\n                    <a href="${city.gmaps}" target="_blank" style="background:var(--accent);color:white;border-radius:12px;padding:12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;">\n                        <span style="font-size:1.2rem;">📍</span>\n                        <span style="font-size:.7rem;font-weight:800;">Google Maps</span>\n                        <span style="font-size:.6rem;opacity:.85;">${realtimeLabel}</span>\n                    </a>\n                </div>\n                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${appLabel}</div>\n                    <a href="${city.appLink}" target="_blank" style="font-size:.8rem;font-weight:700;color:var(--primary);text-decoration:none;">${city.app}</a>\n                </div>\n                <div style="background:rgba(16,185,129,.08);border:1.5px solid var(--success);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--success);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${tipsLabel}</div>\n                    <div style="display:flex;flex-direction:column;gap:6px;">\n                        ${tips.map(tip => `<div style="font-size:.75rem;font-weight:600;color:var(--text);line-height:1.4;">${tip}</div>`).join("")}\n                    </div>\n                </div>\n            </div>\n        </div>\n    `;
   panel.scrollIntoView({
     behavior: "smooth",
     block: "nearest"

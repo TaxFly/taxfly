@@ -3041,16 +3041,6 @@ function initOpenParkMaps() {
 
 let parquesSubTab = "itinerario";
 
-function personalReminderSummary() {
-  const reminders = (window._personalReminders || []).filter(item => item?.name)
-    .sort((a, b) => `${a.date || ""} ${a.time || ""}`.localeCompare(`${b.date || ""} ${b.time || ""}`));
-  return `<section class="personal-reminders" aria-label="Recordatorios personales">
-    <div class="personal-reminders-head"><div><strong>Recordatorios personales</strong><p>También aparecen en tu itinerario. Se editan una sola vez.</p></div>
-      <a href="../itinerario.html?tab=actividades&new=reminder">${ic("plus", 14)} Agregar recordatorio</a></div>
-    ${reminders.length ? `<div class="personal-reminders-list">${reminders.map(item => `<div><span>${escapeHtml(item.date || "Sin fecha")}${item.time ? " · " + escapeHtml(item.time) : ""}</span><b>${escapeHtml(item.name)}</b></div>`).join("")}</div>` : ""}
-  </section>`;
-}
-
 function switchParquesTab(t) {
   parquesSubTab = t;
   window.taxflySetPlanSection?.(t === "atracciones" ? "atracciones" : "agenda");
@@ -3062,7 +3052,7 @@ function renderParques() {
   const panel = document.getElementById("panel-parques");
   const subtabs = `<div class="outlets-subtabs">\n      <button class="outlets-stab${parquesSubTab === "itinerario" ? " active" : ""}" onclick="switchParquesTab('itinerario')">${ic("calendar", 13)} Itinerario</button>\n      <button class="outlets-stab${parquesSubTab === "atracciones" ? " active" : ""}" onclick="switchParquesTab('atracciones')">${ic("sparkles", 13)} Atracciones</button>\n    </div>${legacyParksNotice()}`;
   if (parquesSubTab === "itinerario") {
-    panel.innerHTML = `<div class="parques-panel">${subtabs}${personalReminderSummary()}${itinMochilaLink()}${renderItinerario()}</div>`;
+    panel.innerHTML = `<div class="parques-panel">${subtabs}${itinMochilaLink()}${renderItinerario()}</div>`;
     updateParquesCounter();
     return;
   }

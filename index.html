@@ -181,7 +181,9 @@ document.addEventListener("DOMContentLoaded", function() {
         
         
         .section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
-        .home-primary-grid{grid-template-columns:repeat(3,1fr);}
+        .home-primary-grid{grid-template-columns:repeat(2,1fr);}
+        .home-primary-grid .section-card{min-height:132px;aspect-ratio:auto;}
+        .home-primary-grid .section-card:last-child{grid-column:1/-1;min-height:90px;flex-direction:row;gap:14px;}
         .home-section-heading{font-size:.7rem;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}
         .section-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:inherit;transition:var(--tr);cursor:pointer;aspect-ratio:1;position:relative;overflow:hidden;}
         .section-card::before{content:'';position:absolute;inset:0;background:transparent;border-radius:14px;transition:var(--tr);}
@@ -271,8 +273,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     <div class="home-section-heading" id="homePlanHeading">Tu viaje</div>
     <div class="section-grid home-primary-grid" id="sectionList"></div>
-    <div class="home-section-heading" id="homeToolsHeading">Herramientas</div>
-    <div class="section-grid home-primary-grid" id="homeTools"></div>
 
     
     <div class="widget-budget" onclick="location.href='compras.html'">
@@ -1404,23 +1404,24 @@ setInterval(() => {
 function renderSections() {
   const list = document.getElementById("sectionList");
   if (!list) return;
-  const tools = document.getElementById("homeTools");
   const sections = t.sections || I18N.es.sections;
   const lang = localStorage.getItem("appLang") || "es";
-  const heading = { es:["Tu viaje","Herramientas","Plan del viaje"], en:["Your trip","Tools","Trip plan"], pt:["Sua viagem","Ferramentas","Plano da viagem"] }[lang] || ["Tu viaje","Herramientas","Plan del viaje"];
+  const heading = { es:["Tu viaje","Plan del viaje","Mis cosas"], en:["Your trip","Trip plan","My things"], pt:["Sua viagem","Plano da viagem","Minhas coisas"] }[lang] || ["Tu viaje","Plan del viaje","Mis cosas"];
   document.getElementById("homePlanHeading").textContent = heading[0];
-  document.getElementById("homeToolsHeading").textContent = heading[1];
-  list.replaceChildren(); tools.replaceChildren();
-  sections.forEach(sec => {
-    const file = sec.href.split("/").pop();
-    const planning = sec.href.includes("/Maps/index.html");
-    const primary = planning || ["compras.html", "tickets.html"].includes(file);
-    if (!primary && !["tax.html", "unidades.html", "grupo.html"].includes(file)) return;
+  list.replaceChildren();
+  const cards = [
+    {href:"tax.html", icon:"calculator", tone:"blue", name:lang === "en" ? "Calculator" : "Calculadora"},
+    {href:"compras.html", icon:"bag", tone:"violet", name:sections.find(s=>s.href==="compras.html")?.name || "Gastos"},
+    {href:"Maps/index.html?section=parques", icon:"calendar", tone:"teal", name:heading[1]},
+    {href:"unidades.html", icon:"bulb", tone:"amber", name:{es:"Ayudas y referencias", en:"Help & references", pt:"Ajuda e referências"}[lang] || "Ayudas y referencias"},
+    {href:"Maps/Mis_cosas_de_viaje.html", icon:"briefcase", tone:"indigo", name:heading[2]}
+  ];
+  cards.forEach(sec => {
     const a = document.createElement("a");
-    a.href = planning ? "Maps/index.html?section=parques" : sec.href;
+    a.href = sec.href;
     a.className = "section-card";
-    a.innerHTML = `<span class="sc-emoji${planning ? ' ui-slot' : ''}"${planning ? ' data-tone="teal"' : ''}>${planning ? window.uiIcon('globe', 25) : sec.icon}</span><span class="sc-name">${planning ? heading[2] : sec.name}</span>`;
-    (primary ? list : tools).appendChild(a);
+    a.innerHTML = `<span class="sc-emoji ui-slot" data-tone="${sec.tone}">${window.uiIcon(sec.icon, 32)}</span><span class="sc-name">${sec.name}</span>`;
+    list.appendChild(a);
   });
 }
 

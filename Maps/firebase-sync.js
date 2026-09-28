@@ -252,11 +252,6 @@ async function startApp() {
   window._fbReady = true;
   if (window._appInit) window._appInit();
   document.getElementById("trip-loading")?.remove();
-  onSnapshot(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "actividades"), snap => {
-    window._personalReminders = snap.docs.map(item => ({ id:item.id, ...item.data() }))
-      .filter(item => item.tripId === activeTripId);
-    if (window._appInited && document.getElementById("panel-parques")?.classList.contains("active")) window.renderParques?.();
-  }, () => {});
   migrateManualExpenses().catch(e => devError("expense migration", e));
   fbListen("hotel", data => {
     if (window.hotel) {

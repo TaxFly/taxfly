@@ -62,7 +62,7 @@ body::before {
     transition: background .2s, color .2s, transform .2s, box-shadow .2s;
 }
 .btn-nav { font-size: 10px; letter-spacing: .2px; }
-.btn-nav .ni { display: flex; align-items: center; justify-content: center; height: 21px; font-size: 17px; }
+.btn-nav .ni { display: flex; align-items: center; justify-content: center; height: 29px; font-size: 23px; }
 .btn-nav:hover, .btn-nav-more:hover, .btn-nav-more.open { color: var(--primary); background: var(--primary-dim); }
 .btn-nav.active {
     background: var(--primary);
@@ -70,7 +70,7 @@ body::before {
     box-shadow: var(--ui-glow);
 }
 .btn-nav.active .ni { transform: translateY(-1px) scale(1.05); }
-.more-dots { height: 21px; }
+.more-dots { height: 29px; }
 .more-lbl { font-size: 10px; letter-spacing: .2px; }
 .btn-nav-more.is-current { color: var(--primary); background: var(--primary-dim); }
 .btn-nav-more.is-current .more-dot { background: var(--primary); }
@@ -114,15 +114,15 @@ body::before {
     gap: 7px;
 }
 .sc-emoji {
-    width: 40px; height: 40px; border-radius: 13px;
+    width: 58px; height: 58px; border-radius: 16px;
     display: flex !important; align-items: center; justify-content: center;
     background: var(--primary-dim); color: var(--primary);
-    font-size: 1.3rem !important;
+    font-size: 2rem !important;
     transition: transform .25s, background .25s;
 }
 .sc-emoji.ui-slot[data-tone] { background: color-mix(in srgb, var(--tone) 13%, transparent); color: var(--tone); }
 .section-card:hover .sc-emoji { transform: translateY(-1px) scale(1.06); }
-.sc-name { font-size: .62rem !important; }
+.sc-name { font-size: .72rem !important; }
 .greeting-banner::after { content: '' !important; }
 .greeting-banner {
     border-radius: var(--ui-radius-lg);
