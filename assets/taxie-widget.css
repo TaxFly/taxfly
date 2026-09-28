@@ -66,7 +66,7 @@
 .ai-msg.bot p   { margin:4px 0; }
 .ai-msg.bot strong { color:#93c5fd; }
 .ai-msg.bot h3  { font-size:0.85rem; font-weight:700; margin:6px 0 2px; color:#93c5fd; }
-.ai-msg.bot a   { color:#60a5fa; text-decoration:underline; }
+.ai-msg.bot a   { color:#60a5fa; }
 .ai-msg.bot.typing {
     display:flex; gap:5px; align-items:center; padding:10px 14px;
 }

@@ -28,6 +28,7 @@ body {
 
 
 .grecaptcha-badge { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+a, a:visited, a:hover, a:focus, a:active { text-decoration: none !important; }
 
 .taxfly-trip-filter { display:flex; align-items:center; gap:9px; margin:12px auto; padding:9px 12px; max-width:720px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--text); font-size:.75rem; }
 .taxfly-trip-filter label { font-weight:800; }
