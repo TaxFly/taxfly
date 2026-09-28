@@ -62,6 +62,16 @@ function escapeHtml(str) {
   }[ch]));
 }
 
+function tripMapLink(address, className = "reservation-map-link") {
+  if (!address) return "";
+  const query = encodeURIComponent(address);
+  const ios = /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const mobile = ios || /Android/i.test(navigator.userAgent);
+  const url = ios ? `https://maps.apple.com/?q=${query}` : `https://www.google.com/maps/search/?api=1&query=${query}`;
+  return `<a class="${className}" href="${escapeHtml(url)}"${mobile ? "" : ' target="_blank" rel="noopener noreferrer"'}>${ic("pin", 15)} Abrir en Maps</a>`;
+}
+
 window._syncedWriteLog = window._syncedWriteLog || {};
 
 function scopedKey(key) {
@@ -1859,7 +1869,7 @@ function renderDayContent(d) {
   const done = visited[d].size;
   const pct = total > 0 ? Math.round(done / total * 100) : 0;
   const allDone = done === total && total > 0;
-  let html = `\n    <div class="hotel-bar" id="hotel-bar-${d}">\n      <a href="${hotel.url}" style="display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;min-width:0" onclick="event.stopPropagation()">\n        <div class="hotel-icon">${ic("home", 16)}</div>\n        <div class="hotel-info">\n          <div class="hotel-label">Punto de partida</div>\n          <div class="hotel-addr">${hotel.addr ? escapeHtml(hotel.addr) : "Sin definir — tocá el lápiz para agregarlo"}</div>\n        </div>\n        <div class="hotel-arrow">↗</div>\n      </a>\n      <button class="wm-icon-btn" onclick="openHotelEdit()" title="Editar dirección" aria-label="Editar punto de partida" style="flex-shrink:0;opacity:0.5">${ic("pencil", 13)}</button>\n    </div>`;
+  let html = `\n    <div class="hotel-bar" id="hotel-bar-${d}">\n      <div class="hotel-icon">${ic("home", 16)}</div>\n      <div class="hotel-info">\n        <div class="hotel-label">Punto de partida</div>\n        <div class="hotel-addr">${hotel.addr ? escapeHtml(hotel.addr) : "Sin definir — tocá el lápiz para agregarlo"}</div>\n      </div>\n      ${tripMapLink(hotel.addr, "hotel-map-link")}\n      <button class="wm-icon-btn hotel-edit-btn" onclick="openHotelEdit()" title="Editar dirección" aria-label="Editar punto de partida">${ic("pencil", 13)}</button>\n    </div>`;
   if (stopEditingIdx?.dayIdx === d && stopEditingIdx?.stopIdx === "label") {
     html += `<div style="margin-bottom:14px">\n      <input id="stop-edit-label" class="wm-edit-input" style="width:100%;margin-bottom:6px" value="${escapeHtml(day.label)}">\n      <div style="display:flex;gap:6px;justify-content:flex-end">\n        <button class="mbtn" onclick="stopCancelEdit()">Cancelar</button>\n        <button class="mbtn msave" onclick="stopSaveDayLabel(${d})">Guardar</button>\n      </div>\n    </div>`;
   } else {

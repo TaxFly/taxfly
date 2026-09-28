@@ -347,3 +347,28 @@ test('park migration matches attraction names and preserves the legacy marks unt
   assert.equal(JSON.parse(store.getItem('parkTracker_v1_migrated::p')).mk_0_2,true);
   assert.equal(JSON.parse(store.getItem('parkTracker_v1')).mk_0_2,true);
 });
+
+test('Maps links open Apple Maps on iOS, Google Maps on Android, and a new tab on desktop', () => {
+  const src=between(read('Maps/app.js'),'function tripMapLink(address,','window._syncedWriteLog');
+  const setup=userAgent=>context(src,{navigator:{userAgent,platform:'',maxTouchPoints:0},
+    escapeHtml:s=>s,ic:()=>'<pin/>',encodeURIComponent}).tripMapLink('850 Savanna Dr, Kissimmee');
+  assert.match(setup('iPhone'),/maps\.apple\.com/);
+  assert.doesNotMatch(setup('iPhone'),/target="_blank"/);
+  assert.match(setup('Android'),/www\.google\.com\/maps\/search/);
+  assert.doesNotMatch(setup('Android'),/target="_blank"/);
+  assert.match(setup('Windows NT'),/target="_blank" rel="noopener noreferrer"/);
+  assert.equal(context(src,{navigator:{userAgent:'',platform:'',maxTouchPoints:0},escapeHtml:s=>s,ic:()=>'',encodeURIComponent}).tripMapLink(''), '');
+  assert.match(read('Maps/app.js'),/tripMapLink\(hotel\.addr, "hotel-map-link"\)/);
+});
+
+test('a reservation shows the existing voucher from Documents as part of its card', () => {
+  const src=between(read('Maps/reservations.js'),'function reservationCard(item)','function reservationForm(type, item)');
+  const c=context(src,{window:{_tripDocuments:[{id:'doc-pdf',name:'Airbnb Orlando',reservationId:'res-stay'}]},
+    reservationUrl:s=>s,reservationDate:s=>s,reservationAirlineLogos:()=>'',reservationStayLogo:()=>'',
+    reservationMapLink:()=>'<map-link/>',ic:()=>'<icon/>',escapeHtml:s=>s,encodeURIComponent});
+  const card=c.reservationCard({id:'res-stay',type:'stay',name:'Airbnb Orlando',startDate:'2027-01-10',
+    endDate:'',reference:'ABC',address:'850 Savanna Dr',notes:'',url:''});
+  assert.match(card,/tickets\.html\?doc=doc-pdf/);
+  assert.match(card,/Adjuntar documento/);
+  assert.match(card,/<map-link\/>/);
+});

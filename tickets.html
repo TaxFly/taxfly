@@ -117,6 +117,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .doc-view-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-dim);}
         .doc-del-btn{padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface-2);font-size:.75rem;cursor:pointer;font-family:inherit;transition:var(--tr);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
         .doc-del-btn:hover{border-color:var(--danger);background:rgba(239,68,68,.08);}
+        @media (max-width:600px){.doc-top{flex-wrap:wrap}.doc-meta{flex-wrap:wrap}.doc-btns{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}}
 
         
         .doc-thumb{width:100%;height:100px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:block;}
@@ -495,7 +496,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 <script type="module">
 const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
-let initializeApp, getAuth, onAuthStateChanged, signOut, deleteUser, initializeAppCheck, ReCaptchaV3Provider, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, getDocs, query, orderBy, writeBatch;
+let initializeApp, getAuth, onAuthStateChanged, signOut, deleteUser, initializeAppCheck, ReCaptchaV3Provider, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, getDoc, getDocs, query, orderBy, writeBatch;
 
 let app, auth, db;
 
@@ -505,7 +506,7 @@ try {
   ({initializeApp: initializeApp} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js")));
   ({getAuth: getAuth, onAuthStateChanged: onAuthStateChanged, signOut: signOut, deleteUser: deleteUser} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js")));
   ({initializeAppCheck: initializeAppCheck, ReCaptchaV3Provider: ReCaptchaV3Provider} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js")));
-  ({getFirestore: getFirestore, initializeFirestore: initializeFirestore, persistentLocalCache: persistentLocalCache, persistentMultipleTabManager: persistentMultipleTabManager, collection: collection, doc: doc, setDoc: setDoc, deleteDoc: deleteDoc, getDocs: getDocs, query: query, orderBy: orderBy, writeBatch: writeBatch} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js")));
+  ({getFirestore: getFirestore, initializeFirestore: initializeFirestore, persistentLocalCache: persistentLocalCache, persistentMultipleTabManager: persistentMultipleTabManager, collection: collection, doc: doc, setDoc: setDoc, deleteDoc: deleteDoc, getDoc: getDoc, getDocs: getDocs, query: query, orderBy: orderBy, writeBatch: writeBatch} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js")));
   app = initializeApp(FB);
   auth = getAuth(app);
   try {
@@ -1227,6 +1228,7 @@ const I18N = {
 };
 
 async function initDocs() {
+  loadReservationsForDocs();
   const cached = await cargarDocsDesdeCache();
   if (cached && cached.length) {
     allDocs = cached;
@@ -1259,6 +1261,36 @@ async function initDocs() {
   openRequestedDocument();
 }
 
+let linkedReservations = [];
+async function loadReservationsForDocs() {
+  if (!window._uid || !perfilId) return;
+  const tripId = window.TripContext.assign(window._uid, perfilId);
+  const cacheKey = `trip-reservations-v1::${perfilId}${tripId === "orlando" ? "" : "::" + tripId}`;
+  try { linkedReservations = JSON.parse(localStorage.getItem(cacheKey) || "{}").items || []; } catch (_) {}
+  renderList();
+  fillDocumentFromReservation();
+  if (!navigator.onLine || tripId === "unassigned") return;
+  try {
+    const path = tripId === "orlando"
+      ? ["usuarios", window._uid, "perfiles", perfilId, "orlando", "reservations"]
+      : ["usuarios", window._uid, "perfiles", perfilId, "tripPlanning", tripId, "data", "reservations"];
+    const snap = await getDoc(doc(db, ...path));
+    if (snap.exists() && Array.isArray(snap.data().items)) linkedReservations = snap.data().items;
+    renderList();
+    fillDocumentFromReservation();
+  } catch (_) {}
+}
+
+function fillDocumentFromReservation() {
+  const id = new URLSearchParams(location.search).get("reservation");
+  const reservation = linkedReservations.find(r => r.id === id);
+  if (!reservation) return;
+  const nameInput = document.getElementById("inp-name");
+  if (nameInput && !nameInput.value.trim()) nameInput.value = reservation.name;
+  const type = reservation.type === "flight" ? "✈️" : reservation.type === "stay" ? "🏨" : "📦";
+  document.querySelector(`.type-btn[data-type="${type}"]`)?.click();
+}
+
 function openRequestedDocument() {
   const params = new URLSearchParams(location.search);
   const id = params.get("doc");
@@ -1269,6 +1301,7 @@ function openRequestedDocument() {
   }
   if (params.has("reservation") && !document.getElementById("addModal").classList.contains("show")) {
     window.openAddModal();
+    fillDocumentFromReservation();
   }
 }
 
@@ -1316,6 +1349,7 @@ function renderList() {
   }
   empty.style.display = "none";
   list.innerHTML = filtered.map(doc => {
+    const linked = linkedReservations.find(r => r.id === doc.reservationId) || linkedReservations.find(r => r.documentId === doc.id);
     const cfg = TYPE_CFG[doc.type] || TYPE_CFG["📦"];
     const f0 = doc.files?.[0];
     const pages = doc.files?.filter(f => f.kind === "pdf").length || 0;
@@ -1340,7 +1374,7 @@ function renderList() {
     }
     const typeLabel = lbl[doc.type] || "Doc";
     const totalFiles = doc.files?.length || 0;
-    return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${t.lbl_pgs || "pág."}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openViewer('${doc.id}')">${t.lbl_ver || "VER"}</button>\n                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar" aria-label="Eliminar documento">🗑️</button>\n                    </div>\n                </div>\n                ${preview}\n                ${offlineBadge}\n            </div>\n        </div>`;
+    return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            ${linked ? `<span class="doc-meta-dot"></span><span>Reserva: ${esc(linked.name)}</span>` : ""}\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${t.lbl_pgs || "pág."}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        ${linked ? `<a class="doc-view-btn" href="Maps/index.html?section=reservas&reservation=${encodeURIComponent(linked.id)}" onclick="event.stopPropagation()" style="text-decoration:none;">VER RESERVA</a>` : ""}\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openViewer('${doc.id}')">${t.lbl_ver || "VER"}</button>\n                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar" aria-label="Eliminar documento">🗑️</button>\n                    </div>\n                </div>\n                ${preview}\n                ${offlineBadge}\n            </div>\n        </div>`;
   }).join("");
 }
 

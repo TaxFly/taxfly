@@ -135,18 +135,14 @@ function reservationStayLogo(name) {
 }
 
 function reservationMapLink(address) {
-  const query = encodeURIComponent(address);
-  const ios = /iPad|iPhone|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const mobile = ios || /Android/i.test(navigator.userAgent);
-  const url = ios ? `https://maps.apple.com/?q=${query}` : `https://www.google.com/maps/search/?api=1&query=${query}`;
-  return `<a class="reservation-map-link" href="${escapeHtml(url)}"${mobile ? "" : ' target="_blank" rel="noopener noreferrer"'}>${ic("pin", 15)} Abrir en Maps</a>`;
+  return tripMapLink(address);
 }
 
 function reservationCard(item) {
   const href = reservationUrl(item.url);
   const docs = (window._tripDocuments || []).filter(d => d.id === item.documentId || d.reservationId === item.id);
   const dates = [reservationDate(item.startDate), reservationDate(item.endDate)].filter(Boolean).join(" – ");
-  return `<article class="reservation-card">
+  return `<article class="reservation-card" id="reservation-${escapeHtml(item.id)}">
     <div class="reservation-card-top"><div class="reservation-flight-title">${item.type === "flight" ? reservationAirlineLogos(item.name) : item.type === "stay" ? reservationStayLogo(item.name) : ""}<strong>${escapeHtml(item.name)}</strong></div>
       <div class="reservation-actions"><button type="button" data-res-action="edit" data-res-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}">${ic("pencil", 15)}</button><button type="button" data-res-action="delete" data-res-id="${escapeHtml(item.id)}" aria-label="Eliminar ${escapeHtml(item.name)}">${ic("x", 15)}</button></div></div>
     ${dates ? `<div class="reservation-meta">${ic("calendar", 14)} ${escapeHtml(dates)}</div>` : ""}
@@ -206,6 +202,13 @@ function renderReservations() {
     const cancel = () => { reservationFormType = null; reservationEditingId = null; renderReservations(); };
     form.querySelector("#reservation-cancel").addEventListener("click", cancel);
     form.querySelector("#reservation-cancel-bottom").addEventListener("click", cancel);
+  }
+  const params = new URLSearchParams(location.search);
+  const linkedId = params.get("reservation");
+  if (linkedId && reservations.some(r => r.id === linkedId)) {
+    params.delete("reservation");
+    history.replaceState(null, "", location.pathname + (params.size ? "?" + params : ""));
+    setTimeout(() => document.getElementById("reservation-" + linkedId)?.scrollIntoView({ block: "center", behavior: "smooth" }), 250);
   }
 }
 window.renderReservations = renderReservations;
