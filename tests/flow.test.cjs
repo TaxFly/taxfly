@@ -143,10 +143,11 @@ test('backup includes each existing trip branch without inventing an ID', () => 
   assert.equal(c.nestedTripPaths({tripPlanning:{'bad/id':{}}}).length,0);
 });
 
-test('travel tips are hidden in Trip Planning and documents carry a trip ID', () => {
+test('travel tips stay hidden and profile documents remain visible across trips', () => {
   assert.doesNotMatch(between(read('assets/plan-app.js'),'function renderOutlets()', 'function switchOutletTab('),/renderTips\(\)/);
   assert.match(read('tickets.html'),/tripId: docObj.tripId \|\| "unassigned"/);
-  assert.match(read('tickets.html'),/TripContext\.filter\(allDocs/);
+  assert.match(read('tickets.html'),/const visible=window\._uid\?allDocs:\[\]/);
+  assert.doesNotMatch(read('tickets.html'),/TripContext\.filter\(allDocs/);
 });
 
 test('archiving and deleting a trip leaves other trips and detaches linked records', async () => {
