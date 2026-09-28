@@ -144,6 +144,7 @@ function reservationMapLink(address) {
 
 function reservationCard(item) {
   const href = reservationUrl(item.url);
+  const docs = (window._tripDocuments || []).filter(d => d.id === item.documentId || d.reservationId === item.id);
   const dates = [reservationDate(item.startDate), reservationDate(item.endDate)].filter(Boolean).join(" – ");
   return `<article class="reservation-card">
     <div class="reservation-card-top"><div class="reservation-flight-title">${item.type === "flight" ? reservationAirlineLogos(item.name) : item.type === "stay" ? reservationStayLogo(item.name) : ""}<strong>${escapeHtml(item.name)}</strong></div>
@@ -153,6 +154,8 @@ function reservationCard(item) {
     ${item.address ? `<div class="reservation-meta">${ic("pin", 14)} ${escapeHtml(item.address)}</div>` : ""}
     ${item.notes ? `<p class="reservation-notes">${escapeHtml(item.notes)}</p>` : ""}
     <div class="reservation-footer">${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${ic("link", 15)} Abrir reserva</a>` : "<span class=\"reservation-no-link\">Sin enlace cargado</span>"}
+      ${docs.map(d => `<a href="../tickets.html?doc=${encodeURIComponent(d.id)}">📄 ${escapeHtml(d.name || "Documento")}</a>`).join("")}
+      <a href="../tickets.html?reservation=${encodeURIComponent(item.id)}">${ic("plus", 14)} Adjuntar documento</a>
       ${item.type === "stay" && item.address ? `<button type="button" data-res-action="starting-point" data-res-id="${escapeHtml(item.id)}">Usar como punto de partida</button>${reservationMapLink(item.address)}` : ""}
     </div>
   </article>`;
@@ -170,6 +173,7 @@ function reservationForm(type, item) {
     ${stay ? `<label>Dirección del alojamiento (opcional)<input name="lodgingLocation" autocomplete="new-password" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
     <label>Enlace a mi reserva (opcional)<input name="url" type="url" inputmode="url" placeholder="https://…" value="${escapeHtml(item?.url || "")}"><small>Puede ser el enlace de la aerolínea, Airbnb o el sitio del alojamiento.</small></label>
     <label>Notas (opcional)<textarea name="notes" maxlength="400" rows="2" placeholder="Check-in, horario o dato útil">${escapeHtml(item?.notes || "")}</textarea></label>
+    <label>Documento existente (opcional)<select name="documentId"><option value="">Sin documento vinculado</option>${(window._tripDocuments || []).map(d => `<option value="${escapeHtml(d.id)}"${item?.documentId === d.id ? " selected" : ""}>${escapeHtml(d.name || "Documento")}</option>`).join("")}</select><small>Los documentos nuevos se pueden adjuntar después de guardar la reserva.</small></label>
     <div class="reservation-form-actions"><button type="button" id="reservation-cancel-bottom">Cancelar</button><button type="submit">Guardar reserva</button></div>
   </form>`;
 }
@@ -259,7 +263,8 @@ function saveReservation(event) {
     reference: values.reference.trim(),
     address: values.lodgingLocation?.trim() || "",
     url: reservationUrl(url),
-    notes: values.notes.trim()
+    notes: values.notes.trim(),
+    documentId: values.documentId || ""
   };
   reservations = existing ? reservations.map(r => r.id === item.id ? item : r) : [...reservations, item];
   syncedSave(RESERVATIONS_KEY, { items: reservations }, "reservations");

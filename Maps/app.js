@@ -308,6 +308,7 @@ window._appInit = function() {
   coordOverridesLoad();
   parquesLoad();
   itinLoad();
+  importSharedRoute();
   tipsLoad();
   budgetLoad();
   renderOutlets();
@@ -1076,7 +1077,6 @@ let _tfxPresLoaded = false;
 
 let budgetEditingTotal = false;
 
-let budgetAddingCat = null;
 
 function budgetLoad() {
   const d = syncedLoad(BUDGET_KEY, window._budgetFromFb);
@@ -1095,6 +1095,14 @@ function budgetSave() {
   budgetData.walmartSpent = wmTotalChecked();
   syncedSave(BUDGET_KEY, budgetData, "budget", budgetData);
 }
+
+window._getLegacyBudgetExpenses = () => budgetData.gastos || [];
+window._clearLegacyBudgetExpenses = async () => {
+  budgetData.gastos = [];
+  budgetSave();
+  budgetRenderAll();
+  return window._fb?.fbSet?.("budget", { gastos: [] });
+};
 
 window._setBudgetData = function(d) {
   budgetData = Object.assign(budgetDefaults(), d);
@@ -1208,36 +1216,6 @@ function budgetToggleMarket() {
   budgetRenderAll();
 }
 
-function budgetOpenAdd(cat) {
-  budgetAddingCat = cat;
-  renderBudgetBox();
-  setTimeout(() => document.getElementById("budget-add-amount")?.focus(), 30);
-}
-
-function budgetCancelAdd() {
-  budgetAddingCat = null;
-  renderBudgetBox();
-}
-
-function budgetConfirmAdd() {
-  const amountEl = document.getElementById("budget-add-amount");
-  const noteEl = document.getElementById("budget-add-note");
-  const amount = parseFloat(amountEl?.value);
-  if (isNaN(amount) || amount <= 0) {
-    amountEl?.classList.add("error");
-    return;
-  }
-  budgetData.gastos.push({
-    id: "g" + Date.now(),
-    cat: budgetAddingCat,
-    monto: amount,
-    nota: (noteEl?.value || "").trim()
-  });
-  budgetAddingCat = null;
-  budgetSave();
-  budgetRenderAll();
-}
-
 function budgetDeleteGasto(id) {
   budgetData.gastos = budgetData.gastos.filter(g => g.id !== id);
   budgetSave();
@@ -1300,14 +1278,8 @@ function renderBudgetBox() {
     const meta = budgetCatMeta[g.cat] || budgetCatMeta.otros;
     gastosHtml += `\n      <div class="budget-gasto-row">\n        <span class="budget-gasto-cat">${ic(meta.icon, 13)} ${meta.label}${g.nota ? " · " + escapeHtml(g.nota) : ""}</span>\n        <span class="budget-gasto-monto">${budgetUsd(g.monto)}\n          <button class="wm-icon-btn wm-icon-del" onclick="budgetDeleteGasto('${g.id}')" title="Eliminar" aria-label="Eliminar gasto">${ic("x", 14)}</button>\n        </span>\n      </div>`;
   });
-  let addForm;
-  if (budgetAddingCat) {
-    const meta = budgetCatMeta[budgetAddingCat];
-    addForm = `\n      <div class="wm-edit-form" style="margin-top:8px" onclick="event.stopPropagation()">\n        <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--accent);display:flex;align-items:center;gap:6px">${ic(meta.icon, 13)} Nuevo gasto — ${meta.label}</div>\n        <div class="budget-edit-row">\n          <input type="number" min="0" step="0.01" id="budget-add-amount" class="wm-edit-input" placeholder="$ monto" oninput="this.classList.remove('error')">\n          <input type="text" id="budget-add-note" class="wm-edit-input" placeholder="Nota (opcional)">\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn" onclick="budgetCancelAdd()">Cancelar</button>\n          <button class="mbtn msave" onclick="budgetConfirmAdd()">Agregar</button>\n        </div>\n      </div>`;
-  } else {
-    addForm = `\n      <div class="budget-add-cats">\n        ${Object.keys(budgetCatMeta).map(cat => `<button class="budget-add-cat-btn" onclick="budgetOpenAdd('${cat}')">${ic(budgetCatMeta[cat].icon, 13)} ${budgetCatMeta[cat].label}</button>`).join("")}\n      </div>`;
-  }
-  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en este viaje</span>\n        <span class="budget-summary-val">${budgetUsd(manual)}</span>\n      </div>\n      ${counted ? `<div class="budget-summary-row budget-summary-sub">\n        <span>Supermercado (estimado)</span>\n        <span class="budget-summary-val">${budgetUsd(wmEst)}</span>\n      </div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    <div class="budget-gastos-list">${gastosHtml || '<div class="budget-empty">Sin gastos cargados acá todavía.</div>'}</div>\n    ${addForm}\n    <label class="budget-market-toggle">\n      <input type="checkbox" ${counted ? "checked" : ""} onchange="budgetToggleMarket()">\n      <span>\n        <b>Descontar estimado del supermercado</b> (${budgetUsd(wmEst)})\n        <small>${counted ? "Activado: usalo solo si el súper NO lo cargás en Taxfly, si no se cuenta dos veces." : "Apagado: se asume que el súper se carga en Taxfly (ticket). Así no se cuenta dos veces."}</small>\n      </span>\n    </label>\n    <div class="budget-note">Compartido con Taxfly: lo que cargues allá se descuenta acá, y los gastos de esta lista también se descuentan en Taxfly. Todo en USD.</div>`;
+  const addForm = `<a class="budget-add-cat-btn" href="../compras.html">+ Registrar gasto en TaxFly ↗</a>`;
+  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      ${counted ? `<div class="budget-summary-row budget-summary-sub">\n        <span>Supermercado (estimado)</span>\n        <span class="budget-summary-val">${budgetUsd(wmEst)}</span>\n      </div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <label class="budget-market-toggle">\n      <input type="checkbox" ${counted ? "checked" : ""} onchange="budgetToggleMarket()">\n      <span>\n        <b>Descontar estimado del supermercado</b> (${budgetUsd(wmEst)})\n        <small>${counted ? "Activado: usalo solo si el súper NO lo cargás en Taxfly, si no se cuenta dos veces." : "Apagado: se asume que el súper se carga en Taxfly (ticket). Así no se cuenta dos veces."}</small>\n      </span>\n    </label>\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. El estimado de supermercado se suma solo si lo activás. Todo en USD.</div>`;
 }
 
 window.renderBudgetBox = renderBudgetBox;
@@ -2580,6 +2552,51 @@ function parquesLoad() {
   if (d) parquesState = d;
 }
 
+let legacyParquesMigrationPending = false;
+function migrateLegacyParques() {
+  if (legacyParquesMigrationPending) return;
+  if (window._tripId !== "orlando" || !window.TAXFLY_LEGACY_PARK_NAMES) return;
+  let legacy = {}, migrated = {};
+  try { legacy = JSON.parse(localStorage.getItem("parkTracker_v1") || "{}"); } catch (_) {}
+  const key = scopedKey("parkTracker_v1_migrated");
+  try { migrated = JSON.parse(localStorage.getItem(key) || "{}"); } catch (_) {}
+  let changed = false, tracked = false;
+  for (const [oldKey, done] of Object.entries(legacy)) {
+    if (!done || migrated[oldKey]) continue;
+    const names = window.TAXFLY_LEGACY_PARK_NAMES[oldKey];
+    if (!names) continue;
+    const oldParkId = oldKey.split("_")[0];
+    const park = allParksList().find(p => p.id === oldParkId || pkNorm(p.name) === pkNorm(names[0]));
+    if (!park) continue;
+    for (const [zi, zone] of park.zones.entries()) {
+      const ai = zone.attractions.findIndex(a => pkNorm(a.name).trim() === pkNorm(names[1]).trim());
+      if (ai < 0) continue;
+      const newKey = pkKey(park.id, zi, ai);
+      if (!parquesState[newKey]) { parquesState[newKey] = true; changed = true; }
+      migrated[oldKey] = true;
+      tracked = true;
+      break;
+    }
+  }
+  if (changed) parquesSave();
+  if (tracked && window._fb && navigator.onLine) {
+    legacyParquesMigrationPending = true;
+    window._fb.fbSet("parques", { state: parquesState }).then(() => {
+      localStorage.setItem(key, JSON.stringify(migrated));
+    }).catch(() => {}).finally(() => { legacyParquesMigrationPending = false; });
+  }
+}
+
+function legacyParksNotice() {
+  if (window._tripId !== "orlando") return "";
+  let old = {}, migrated = {};
+  try { old = JSON.parse(localStorage.getItem("parkTracker_v1") || "{}"); } catch (_) {}
+  try { migrated = JSON.parse(localStorage.getItem(scopedKey("parkTracker_v1_migrated")) || "{}"); } catch (_) {}
+  const pending = Object.keys(old).filter(key => old[key] && !migrated[key]);
+  if (!pending.length) return "";
+  return `<div class="budget-note" role="status">${pending.length} ${pending.length === 1 ? "atracción anterior pendiente" : "atracciones anteriores pendientes"} de vincular. Se recuperan automáticamente cuando el catálogo de atracciones incluya esos nombres. Las marcas originales siguen guardadas en este dispositivo.</div>`;
+}
+
 function parquesSave() {
   syncedSave(PARQUES_KEY, parquesState, "parques", {
     state: parquesState
@@ -3017,8 +3034,9 @@ function switchParquesTab(t) {
 }
 
 function renderParques() {
+  migrateLegacyParques();
   const panel = document.getElementById("panel-parques");
-  const subtabs = `<div class="outlets-subtabs">\n      <button class="outlets-stab${parquesSubTab === "itinerario" ? " active" : ""}" onclick="switchParquesTab('itinerario')">${ic("calendar", 13)} Itinerario</button>\n      <button class="outlets-stab${parquesSubTab === "atracciones" ? " active" : ""}" onclick="switchParquesTab('atracciones')">${ic("sparkles", 13)} Atracciones</button>\n    </div>`;
+  const subtabs = `<div class="outlets-subtabs">\n      <button class="outlets-stab${parquesSubTab === "itinerario" ? " active" : ""}" onclick="switchParquesTab('itinerario')">${ic("calendar", 13)} Itinerario</button>\n      <button class="outlets-stab${parquesSubTab === "atracciones" ? " active" : ""}" onclick="switchParquesTab('atracciones')">${ic("sparkles", 13)} Atracciones</button>\n    </div>${legacyParksNotice()}`;
   if (parquesSubTab === "itinerario") {
     panel.innerHTML = `<div class="parques-panel">${subtabs}${itinMochilaLink()}${renderItinerario()}</div>`;
     updateParquesCounter();
@@ -3982,6 +4000,33 @@ function tipsDelete(id, e) {
 }
 
 const ITIN_KEY = "orlando-itinerario-v1";
+
+function importSharedRoute() {
+  let data;
+  try { data = JSON.parse(sessionStorage.getItem("taxfly-route-import") || "null"); } catch (_) {}
+  if (!data || data.profile !== window._perfilId || data.tripId !== window._tripId || !Array.isArray(data.days)) return;
+  data.days.forEach((sourceDay, dayIndex) => {
+    if (!Array.isArray(sourceDay.stops) || !sourceDay.stops.length) return;
+    let date = "";
+    if (data.startDate) {
+      const day = new Date(data.startDate + "T12:00:00");
+      day.setDate(day.getDate() + dayIndex);
+      date = [day.getFullYear(), String(day.getMonth() + 1).padStart(2, "0"), String(day.getDate()).padStart(2, "0")].join("-");
+    }
+    let target = date && itinDias.find(d => d.fecha === date);
+    if (!target) {
+      target = { id: itinNewId(), fecha: date, nombre: sourceDay.name || "Ruta " + (dayIndex + 1), nota: "", bloques: [] };
+      itinDias.push(target);
+    }
+    sourceDay.stops.forEach(s => {
+      if (!s?.name || target.bloques.some(b => itinNorm(b.titulo) === itinNorm(s.name))) return;
+      target.bloques.push({ id: itinNewId(), hora: "", titulo: s.name, zona: "", tipo: "caminata", espera: 0, dur: 0, obs: s.note || "", url: s.url || "" });
+    });
+  });
+  itinSave();
+  sessionStorage.removeItem("taxfly-route-import");
+  showMToast("Ruta agregada al itinerario del viaje");
+}
 
 let itinDias = itinDefault();
 

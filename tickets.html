@@ -411,8 +411,6 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 </div>
 
 
-<div id="menuOverlay" class="menu-overlay" onclick="toggleSettings()"></div>
-<div id="settingsDrawer" class="settings-drawer"></div>
 <script src="assets/trip-context.js"></script>
 <script src="assets/settings.js"></script>
 
@@ -643,6 +641,7 @@ window.fsSave = async (uid, pid, docObj) => {
     id: docObj.id,
     perfilId: docObj.perfilId,
     tripId: docObj.tripId || "unassigned",
+    reservationId: docObj.reservationId || "",
     name: docObj.name,
     type: docObj.type,
     createdAt: docObj.createdAt,
@@ -1233,6 +1232,7 @@ async function initDocs() {
     allDocs = cached;
     renderList();
     updateStorage();
+    openRequestedDocument();
   }
   if (!navigator.onLine) {
     if (!cached || !cached.length) {
@@ -1256,6 +1256,20 @@ async function initDocs() {
   }
   renderList();
   updateStorage();
+  openRequestedDocument();
+}
+
+function openRequestedDocument() {
+  const params = new URLSearchParams(location.search);
+  const id = params.get("doc");
+  if (id && allDocs.some(d => d.id === id)) {
+    params.delete("doc");
+    history.replaceState(null, "", location.pathname + (params.size ? "?" + params : ""));
+    window.openViewer(id);
+  }
+  if (params.has("reservation") && !document.getElementById("addModal").classList.contains("show")) {
+    window.openAddModal();
+  }
 }
 
 function showSyncBanner(msg, isError) {
@@ -1661,6 +1675,7 @@ window.saveDoc = async () => {
     id: `doc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     perfilId: perfilId,
     tripId:window._uid?window.TripContext.assign(window._uid,perfilId):"unassigned",
+    reservationId: new URLSearchParams(location.search).get("reservation") || "",
     name: name,
     type: selType,
     files: [ ...pending ],
@@ -1669,6 +1684,7 @@ window.saveDoc = async () => {
   allDocs.unshift(docObj);
   await guardarDocsEnCache(allDocs);
   closeAddModal();
+  if (docObj.reservationId) history.replaceState(null, "", location.pathname);
   renderList();
   updateStorage();
   if (!navigator.onLine) {

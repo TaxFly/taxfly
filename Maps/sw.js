@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v41';
+const CACHE_VERSION = 'v42';
 const CACHE_NAME = 'trip-planning-' + CACHE_VERSION;
 const TILES_CACHE_NAME = 'orlando-tiles-v1';
 const MAX_TILES = 600;
@@ -8,6 +8,7 @@ const APP_SHELL = [
   './index.html',
   './styles.css',
   './app.js',
+  './legacy-parks.js',
   './reservations.js',
   './theme.js',
   './firebase-sync.js',

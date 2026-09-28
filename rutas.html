@@ -408,6 +408,7 @@ if ("serviceWorker" in navigator) {
     <div class="result-topbar">
       <div class="result-title" data-i18n="result_ready">✨ Ruta optimizada con IA</div>
       <div class="result-actions">
+        <button class="action-btn" onclick="saveRouteToTrip()">↗ Trip Planning</button>
         <button class="action-btn" onclick="downloadHTML()" data-i18n="btn_download">⬇️ HTML</button>
         <button class="action-btn" onclick="resetAll()" data-i18n="btn_new">↺ Nueva</button>
       </div>
@@ -449,8 +450,6 @@ if ("serviceWorker" in navigator) {
 </div>
 
 
-<div id="menuOverlay" class="menu-overlay" onclick="toggleSettings()"></div>
-<div id="settingsDrawer" class="settings-drawer"></div>
 <script src="assets/trip-context.js"></script>
 <script src="assets/settings.js"></script>
 
@@ -482,7 +481,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/fireba
 
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js";
 
@@ -568,6 +567,8 @@ onAuthStateChanged(auth, async user => {
     }
   }
   currentUser = user;
+  window._routeUid = user.uid;
+  loadTripStartingPoint(user.uid);
   const perfilNombre = localStorage.getItem("perfilActivoNombre");
   const el = document.getElementById("userEmail");
   if (el) el.innerText = perfilNombre || user.email;
@@ -582,6 +583,35 @@ onAuthStateChanged(auth, async user => {
   const lang = localStorage.getItem("appLang") || "es";
   window.changeLanguage(lang);
 });
+
+async function loadTripStartingPoint(uid) {
+  const profile = localStorage.getItem("perfilActivoId");
+  if (!profile) return;
+  const tripId = window.TripContext.active(uid, profile);
+  const overrideKey = `taxusa_hotel_addr::${profile}::${tripId}`;
+  if (tripId === "orlando" && !localStorage.getItem(overrideKey)) {
+    const legacy = localStorage.getItem("taxusa_hotel_addr");
+    if (legacy) localStorage.setItem(overrideKey, legacy);
+  }
+  const input = document.getElementById("hotel-input");
+  if (!input) return;
+  const override = localStorage.getItem(overrideKey);
+  if (override) { input.value = override; return; }
+  const localKey = `orlando-hotel-v1::${profile}${tripId === "orlando" ? "" : "::" + tripId}`;
+  let hotel = null;
+  try { hotel = JSON.parse(localStorage.getItem(localKey) || "null"); } catch (_) {}
+  try {
+    const path = tripId === "orlando"
+      ? ["usuarios", uid, "perfiles", profile, "orlando", "hotel"]
+      : ["usuarios", uid, "perfiles", profile, "tripPlanning", tripId, "data", "hotel"];
+    const snap = await getDoc(doc(db, ...path));
+    if (snap.exists()) hotel = snap.data();
+  } catch (_) {}
+  const trip = window.TripContext.readTrips(uid, profile).find(t => t.id === tripId);
+  const destination = trip?.destinations?.[trip.activeDestination || 0];
+  const location = destination && hotel?.locations?.[destination.city + "::" + destination.state];
+  if (!localStorage.getItem(overrideKey) && (location?.addr || hotel?.addr)) input.value = location?.addr || hotel.addr;
+}
 
 window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
 
@@ -1224,12 +1254,19 @@ function escHtml(s) {
 
 let hotelAcItems = [];
 
+function routeHotelOverrideKey() {
+  const uid = window._routeUid;
+  const profile = localStorage.getItem("perfilActivoId") || "default";
+  const tripId = uid ? window.TripContext.active(uid, profile) : "orlando";
+  return `taxusa_hotel_addr::${profile}::${tripId}`;
+}
+
 function onHotelInput(val) {
   clearTimeout(hotelAcTimer);
   hotelFocusedIdx = -1;
   const spinner = document.getElementById("hotel-spinner");
   const listEl = document.getElementById("hotel-ac");
-  localStorage.setItem("taxusa_hotel_addr", val);
+  localStorage.setItem(routeHotelOverrideKey(), val);
   if (!val || val.length < 3) {
     listEl.classList.remove("show");
     hotelAcItems = [];
@@ -1241,7 +1278,7 @@ function onHotelInput(val) {
     spinner.style.display = "none";
     renderAcList(listEl, hotelAcItems, item => {
       document.getElementById("hotel-input").value = item.address;
-      localStorage.setItem("taxusa_hotel_addr", item.address);
+      localStorage.setItem(routeHotelOverrideKey(), item.address);
       listEl.classList.remove("show");
     }, hotelFocusedIdx);
   }, 450);
@@ -1616,6 +1653,19 @@ async function generateRoute() {
 
 let activeDay = 0;
 
+function saveRouteToTrip() {
+  if (!routeData?.dayData?.length || !window._routeUid) return;
+  const profile = localStorage.getItem("perfilActivoId");
+  const tripId = window.TripContext.active(window._routeUid, profile);
+  sessionStorage.setItem("taxfly-route-import", JSON.stringify({
+    tripId, profile, startDate: document.getElementById("start-date").value,
+    days: routeData.dayData.map(d => ({ name: d.label, stops: d.stops.map(s => ({
+      name: s.name, note: s.desc || "", url: s.url || ""
+    })) }))
+  }));
+  location.href = "Maps/index.html?section=parques";
+}
+
 function switchDay(d) {
   activeDay = d;
   document.querySelectorAll(".day-tab").forEach((t, i) => t.classList.toggle("active", i === d));
@@ -1727,8 +1777,7 @@ function resetAll() {
   document.getElementById("ruta-result").style.display = "none";
   document.getElementById("day-bottom-nav").classList.remove("show");
   document.getElementById("hotel-input").value = "";
-  localStorage.removeItem("taxusa_hotel_addr");
-  localStorage.removeItem("taxusa_hotel_addr");
+  localStorage.removeItem(routeHotelOverrideKey());
   document.getElementById("start-date").value = "";
   days = 3;
   document.getElementById("days-count").textContent = "3";
@@ -1783,7 +1832,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.changeLanguage(lang);
   const inp = document.getElementById("hotel-input");
   if (inp) {
-    const saved = localStorage.getItem("taxusa_hotel_addr");
+    const saved = localStorage.getItem(routeHotelOverrideKey());
     if (saved) inp.value = saved;
     inp.placeholder = HOTEL_PLACEHOLDERS[_phIdx];
   }

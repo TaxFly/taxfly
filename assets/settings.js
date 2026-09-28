@@ -1,7 +1,21 @@
 (function() {
   "use strict";
+  var overlay = document.getElementById("menuOverlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "menuOverlay";
+    overlay.className = "menu-overlay";
+    overlay.addEventListener("click", function() { window.toggleSettings?.(); });
+    document.body.appendChild(overlay);
+  }
   var drawer = document.getElementById("settingsDrawer");
-  if (!drawer || drawer.getAttribute("data-sx") === "1") return;
+  if (!drawer) {
+    drawer = document.createElement("div");
+    drawer.id = "settingsDrawer";
+    drawer.className = "settings-drawer";
+    document.body.appendChild(drawer);
+  }
+  if (drawer.getAttribute("data-sx") === "1") return;
   drawer.setAttribute("data-sx", "1");
   var T = {
     es: {

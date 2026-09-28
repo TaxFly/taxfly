@@ -300,3 +300,50 @@ test('installed PWA shortcut loads cached login offline and refreshes HTML onlin
   online=true;assert.equal(await navigate(),'new login');
   await new Promise(resolve=>setImmediate(resolve));assert.equal(updated,true);
 });
+
+test('legacy Trip Planning expenses move once to the personal ledger before clearing the old list', async () => {
+  const src=between(read('Maps/firebase-sync.js'),'async function migrateManualExpenses()','window._fb = {');
+  const writes=[];let clears=0;
+  const expenses=[{id:'g1',monto:15,nota:'Cena',cat:'comida'}];
+  const c=context(src,{navigator:{onLine:true},window:{_getLegacyBudgetExpenses:()=>expenses,
+    _clearLegacyBudgetExpenses:async()=>{clears++}},collection:(_db,...p)=>p.join('/'),doc:(base,id)=>base+'/'+id,
+    setDoc:async (ref,data)=>{writes.push({ref,data})},db:{},currentUid:'u',currentPerfilId:'p',activeTripId:'trip-a'});
+  await c.migrateManualExpenses();
+  assert.equal(writes[0].ref,'usuarios/u/perfiles/p/gastos/maps-trip-a-g1');
+  assert.equal(writes[0].data.tripId,'trip-a');
+  assert.equal(clears,1);
+  expenses.push({monto:9});
+  await c.migrateManualExpenses();
+  assert.equal(clears,1);
+});
+
+test('route import merges by date and stop name without replacing existing itinerary blocks', () => {
+  const src=between(read('Maps/app.js'),'function importSharedRoute()','let itinDias =');
+  const pending={tripId:'orlando',profile:'p',startDate:'2027-01-10',days:[{name:'Día 1',stops:[
+    {name:'Museo',note:'Entrada',url:'https://maps.example/museo'}, {name:'Parque',note:'',url:''}]}]};
+  const store=storage({'taxfly-route-import':JSON.stringify(pending)});
+  const days=[{fecha:'2027-01-10',nombre:'Día existente',bloques:[{id:'old',titulo:'Museo'}]}];let saves=0;
+  const c=context(src,{sessionStorage:store,window:{_perfilId:'p',_tripId:'orlando'},itinDias:days,
+    itinNewId:()=>String(Math.random()),itinNorm:s=>s.toLowerCase(),itinSave:()=>saves++,showMToast:()=>{},Date,JSON});
+  c.importSharedRoute();
+  assert.equal(days.length,1);
+  assert.deepEqual(days[0].bloques.map(b=>b.titulo),['Museo','Parque']);
+  assert.equal(store.getItem('taxfly-route-import'),null);
+  assert.equal(saves,1);
+});
+
+test('park migration matches attraction names and preserves the legacy marks until sync succeeds', async () => {
+  const src=between(read('Maps/app.js'),'let legacyParquesMigrationPending = false;','function parquesSave()');
+  const store=storage({parkTracker_v1:JSON.stringify({mk_0_2:true})});
+  const state={};let resolveSync;
+  const c=context(src,{window:{_tripId:'orlando',TAXFLY_LEGACY_PARK_NAMES:{mk_0_2:['Magic Kingdom','Space Mountain']},
+    _fb:{fbSet:()=>new Promise(resolve=>{resolveSync=resolve})}},navigator:{onLine:true},localStorage:store,
+    scopedKey:key=>key+'::p',allParksList:()=>[{id:'mk',name:'Magic Kingdom',zones:[{attractions:[{name:'Other'},{name:'Space Mountain'}]}]}],
+    pkNorm:s=>s.toLowerCase(),pkKey:(p,z,a)=>`${p}_${z}_${a}`,parquesState:state,parquesSave:()=>{},Promise,JSON});
+  c.migrateLegacyParques();
+  assert.equal(state.mk_0_1,true);
+  assert.equal(store.getItem('parkTracker_v1_migrated::p'),null);
+  resolveSync();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(JSON.parse(store.getItem('parkTracker_v1_migrated::p')).mk_0_2,true);
+  assert.equal(JSON.parse(store.getItem('parkTracker_v1')).mk_0_2,true);
+});

@@ -64,6 +64,13 @@ async function loadTrips() {
   await window.TripContext.hydrate(db,currentUid,currentPerfilId,getDocs,collection,publishTrip);
   publishTrip();
 }
+function listenTripDocuments() {
+  return onSnapshot(collection(db, "users", currentUid, "profiles", currentPerfilId, "docs"), snap => {
+    window._tripDocuments = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(d => (d.tripId || "unassigned") === activeTripId);
+    window.renderReservations?.();
+  }, () => {});
+}
 window.tripPlanningCreate = async function(name,destinations,startDate,endDate) {
   await window.TripContext.create(currentUid,currentPerfilId,{name,destinations,startDate,endDate});
   publishTrip(); location.assign("./index.html");
@@ -179,6 +186,26 @@ function listenTaxflyGastos(cb) {
   }, () => {});
 }
 
+async function migrateManualExpenses() {
+  if (!navigator.onLine) return;
+  const old = window._getLegacyBudgetExpenses?.() || [];
+  if (!old.length) return;
+  if (old.some(x => !x?.id || !(Number(x.monto) > 0))) return;
+  const dest = collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "gastos");
+  for (const expense of old) {
+    if (!expense?.id || !(Number(expense.monto) > 0)) continue;
+    await setDoc(doc(dest, "maps-" + activeTripId + "-" + expense.id), {
+      nombre: expense.nota || expense.cat || "Gasto de Trip Planning",
+      valor: Number(expense.monto),
+      cat: expense.cat || "otros",
+      fecha: expense.fecha || Date.now(),
+      tripId: activeTripId,
+      source: "trip-planning"
+    }, { merge: true });
+  }
+  await window._clearLegacyBudgetExpenses?.();
+}
+
 window._fb = {
   fbSet: fbSet,
   fbGet: fbGet,
@@ -198,6 +225,7 @@ window._fbSignOut = async function() {
 
 async function startApp() {
   await loadTrips();
+  listenTripDocuments();
   const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
   const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 1e4), withTimeout(fbGet("days"), 1e4), withTimeout(fbGet("visited"), 1e4), withTimeout(fbGet("meals"), 1e4), withTimeout(fbGet("walmart"), 1e4), withTimeout(fbGet("wmChecked"), 1e4), withTimeout(fbGet("shopping"), 1e4), withTimeout(fbGet("customParks"), 1e4), withTimeout(fbGet("parquesExtra"), 1e4), withTimeout(fbGet("coordOverrides"), 1e4), withTimeout(fbGet("parques"), 1e4), withTimeout(fbGet("budget"), 1e4), withTimeout(fbGet("itinerario"), 1e4), withTimeout(fbGet("tips"), 1e4), withTimeout(fbGet("parquesExcel"), 1e4), withTimeout(fbGet("reservations"), 1e4) ]);
   const val = r => r.status === "fulfilled" ? r.value : null;
@@ -224,6 +252,7 @@ async function startApp() {
   window._fbReady = true;
   window._splashFbReady && window._splashFbReady();
   if (window._appInit) window._appInit();
+  migrateManualExpenses().catch(e => devError("expense migration", e));
   fbListen("hotel", data => {
     if (window.hotel) {
       Object.assign(window.hotel, data);
