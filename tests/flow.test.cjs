@@ -348,16 +348,25 @@ test('park migration matches attraction names and preserves the legacy marks unt
   assert.equal(JSON.parse(store.getItem('parkTracker_v1')).mk_0_2,true);
 });
 
-test('Maps links open Apple Maps on iOS, Google Maps on Android, and a new tab on desktop', () => {
+test('Maps links offer a choice on iOS, open Google Maps on Android, and a new tab on desktop', () => {
   const src=between(read('Maps/app.js'),'function tripMapLink(address,','window._syncedWriteLog');
   const setup=userAgent=>context(src,{navigator:{userAgent,platform:'',maxTouchPoints:0},
     escapeHtml:s=>s,ic:()=>'<pin/>',encodeURIComponent}).tripMapLink('850 Savanna Dr, Kissimmee');
-  assert.match(setup('iPhone'),/maps\.apple\.com/);
+  assert.match(setup('iPhone'),/onclick="openMapChooser\(this\.dataset\.mapQuery\)"/);
+  assert.match(setup('iPad'),/data-map-query="850%20Savanna%20Dr%2C%20Kissimmee"/);
+  assert.doesNotMatch(setup('iPhone'),/maps\.apple\.com/);
   assert.doesNotMatch(setup('iPhone'),/target="_blank"/);
   assert.match(setup('Android'),/www\.google\.com\/maps\/search/);
   assert.doesNotMatch(setup('Android'),/target="_blank"/);
   assert.match(setup('Windows NT'),/target="_blank" rel="noopener noreferrer"/);
   assert.equal(context(src,{navigator:{userAgent:'',platform:'',maxTouchPoints:0},escapeHtml:s=>s,ic:()=>'',encodeURIComponent}).tripMapLink(''), '');
+  const links={"#map-choice-apple":{},"#map-choice-google":{}};
+  let shown=false;
+  const dialog={querySelector:selector=>links[selector],showModal:()=>{shown=true}};
+  context(src,{document:{getElementById:()=>dialog}}).openMapChooser('850%20Savanna%20Dr%2C%20Kissimmee');
+  assert.equal(links['#map-choice-apple'].href,'https://maps.apple.com/?q=850%20Savanna%20Dr%2C%20Kissimmee');
+  assert.equal(links['#map-choice-google'].href,'https://www.google.com/maps/search/?api=1&query=850%20Savanna%20Dr%2C%20Kissimmee');
+  assert.equal(shown,true);
   assert.match(read('Maps/app.js'),/tripMapLink\(hotel\.addr, "hotel-map-link"\)/);
 });
 

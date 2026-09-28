@@ -67,9 +67,17 @@ function tripMapLink(address, className = "reservation-map-link") {
   const query = encodeURIComponent(address);
   const ios = /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const mobile = ios || /Android/i.test(navigator.userAgent);
-  const url = ios ? `https://maps.apple.com/?q=${query}` : `https://www.google.com/maps/search/?api=1&query=${query}`;
+  if (ios) return `<button type="button" class="${className}" data-map-query="${escapeHtml(query)}" onclick="openMapChooser(this.dataset.mapQuery)">${ic("pin", 15)} Abrir en Maps</button>`;
+  const mobile = /Android/i.test(navigator.userAgent);
+  const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
   return `<a class="${className}" href="${escapeHtml(url)}"${mobile ? "" : ' target="_blank" rel="noopener noreferrer"'}>${ic("pin", 15)} Abrir en Maps</a>`;
+}
+
+function openMapChooser(query) {
+  const dialog = document.getElementById("map-choice-dialog");
+  dialog.querySelector("#map-choice-apple").href = `https://maps.apple.com/?q=${query}`;
+  dialog.querySelector("#map-choice-google").href = `https://www.google.com/maps/search/?api=1&query=${query}`;
+  dialog.showModal();
 }
 
 window._syncedWriteLog = window._syncedWriteLog || {};

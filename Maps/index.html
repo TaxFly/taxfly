@@ -225,6 +225,13 @@ if ("serviceWorker" in navigator) {
 </div>
 
 
+<dialog id="map-choice-dialog" class="map-choice-dialog" aria-labelledby="map-choice-title">
+  <h2 id="map-choice-title">Abrir con</h2>
+  <a id="map-choice-apple" href="#" onclick="this.closest('dialog').close()">Apple Maps</a>
+  <a id="map-choice-google" href="#" onclick="this.closest('dialog').close()">Google Maps</a>
+  <button type="button" onclick="this.closest('dialog').close()">Cancelar</button>
+</dialog>
+
 <script src="i18n.js"></script>
 <script src="i18n-orlando.js"></script>
 <script src="sx-ui.js"></script>

@@ -790,6 +790,11 @@ body {
   padding: 20px;
 }
 .modal-bg.open { display: flex; animation: modalFadeIn .2s ease; }
+.map-choice-dialog { width:min(360px,calc(100% - 32px)); padding:20px; border:1px solid var(--border2); border-radius:var(--radius); background:var(--surface); color:var(--text); box-shadow:var(--shadow-lg); font:inherit; }
+.map-choice-dialog::backdrop { background:rgba(8,12,20,.6); }
+.map-choice-dialog h2 { margin:0 0 14px; font-size:18px; }
+.map-choice-dialog a,.map-choice-dialog button { display:block; width:100%; padding:12px; margin-top:8px; border:1px solid var(--border2); border-radius:10px; background:var(--surface2); color:var(--text); font:inherit; text-align:center; text-decoration:none; cursor:pointer; }
+.map-choice-dialog a { color:var(--theme-accent); font-weight:700; }
 @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .modal-box {
   background: var(--surface);
