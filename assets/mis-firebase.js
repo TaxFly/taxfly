@@ -57,6 +57,7 @@ function buildDB(uid, perfilId, tripId) {
       return {
         onSnapshot(cb, errCb) {
           return onSnapshot(ref, snap => {
+            if (!snap.metadata?.fromCache) window.taxflyOfflineStatus?.mark("things", uid, perfilId, tripId);
             cb({
               docs: snap.docs.map(d => ({
                 id: d.id,
@@ -72,6 +73,7 @@ function buildDB(uid, perfilId, tripId) {
       return {
         onSnapshot(cb, errCb) {
           return onSnapshot(ref, snap => {
+            if (!snap.metadata?.fromCache) window.taxflyOfflineStatus?.mark("things", uid, perfilId, tripId);
             cb({
               exists: snap.exists(),
               data: () => snap.data()

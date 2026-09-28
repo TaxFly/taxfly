@@ -310,6 +310,7 @@ if ("serviceWorker" in navigator) {
 <script defer src="assets/autofill.js"></script>
 <link rel="stylesheet" href="assets/cohesion.css">
 <script defer src="assets/localize.js"></script>
+<script src="assets/offline-status.js"></script>
 </head>
 <body>
 
@@ -1165,22 +1166,24 @@ window.nextTip = () => {
 };
 
 const PENDING_KEY = "taxusa_itin_pending";
+const pendingKey = () => PENDING_KEY + "::" + (currentUser?.uid || "sin-usuario") + "::" + (perfilId || "sin-perfil");
 
 function getPending() {
   try {
-    return JSON.parse(localStorage.getItem(PENDING_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(pendingKey()) || "[]");
   } catch (e) {
     return [];
   }
 }
 
 function savePending(ops) {
-  localStorage.setItem(PENDING_KEY, JSON.stringify(ops));
+  localStorage.setItem(pendingKey(), JSON.stringify(ops));
 }
 
 function queueOp(op) {
   const ops = getPending();
-  ops.push(op);
+  if (!currentUser || !perfilId) return;
+  ops.push({...op, uid:currentUser.uid, perfilId});
   savePending(ops);
 }
 
@@ -1201,6 +1204,7 @@ async function flushPending() {
   }
   const failed = [];
   for (const op of ops) {
+    if (!currentUser || op.uid !== currentUser.uid || op.perfilId !== perfilId) { failed.push(op); continue; }
     try {
       const base = [ "usuarios", currentUser.uid, "perfiles", perfilId ];
       if (op.type === "add_activity") {
@@ -1426,10 +1430,16 @@ function listenActivities() {
   if (!currentUser || !perfilId) return;
   const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "actividades"), orderBy("date", "asc"));
   onSnapshot(q, sn => {
+    if (!sn.metadata?.fromCache) window.taxflyOfflineStatus?.mark("places", currentUser.uid, perfilId);
     localActivities = sn.docs.map(d => ({
       id: d.id,
       ...d.data()
     }));
+    for (const op of getPending()) {
+      if (op.type === "add_activity") localActivities.push({id:op.tempId,...op.data,_pending:true});
+      if (op.type === "toggle_activity") localActivities = localActivities.map(a => a.id === op.id ? {...a,done:op.done,_pending:true} : a);
+      if (op.type === "del_activity") localActivities = localActivities.filter(a => a.id !== op.id);
+    }
     renderActivities(localActivities);
   }, error => {
     console.error("Error en actividades:", error);
@@ -1489,10 +1499,15 @@ function listenNotes() {
   if (!currentUser || !perfilId) return;
   const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "notas"), orderBy("createdAt", "desc"));
   onSnapshot(q, sn => {
+    if (!sn.metadata?.fromCache) window.taxflyOfflineStatus?.mark("places", currentUser.uid, perfilId);
     localNotes = sn.docs.map(d => ({
       id: d.id,
       ...d.data()
     }));
+    for (const op of getPending()) {
+      if (op.type === "add_note") localNotes.unshift({id:op.tempId,...op.data,_pending:true});
+      if (op.type === "del_note") localNotes = localNotes.filter(n => n.id !== op.id);
+    }
     renderNotes(localNotes);
   });
 }

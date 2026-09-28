@@ -982,17 +982,18 @@ function suscribirGrupo(code) {
 }
 
 const PENDING_KEY = "taxusa_pending_ops";
+const pendingKey = () => PENDING_KEY + "::" + (currentUser?.uid || "sin-usuario");
 
 function getPending() {
   try {
-    return JSON.parse(localStorage.getItem(PENDING_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(pendingKey()) || "[]");
   } catch (e) {
     return [];
   }
 }
 
 function savePending(ops) {
-  localStorage.setItem(PENDING_KEY, JSON.stringify(ops));
+  localStorage.setItem(pendingKey(), JSON.stringify(ops));
   updatePendingBadge();
 }
 
@@ -1007,7 +1008,8 @@ function updatePendingBadge() {
 
 function queueOp(op) {
   const ops = getPending();
-  ops.push(op);
+  if (!currentUser) return;
+  ops.push({...op, uid:currentUser.uid});
   savePending(ops);
 }
 
@@ -1055,6 +1057,7 @@ async function flushPending() {
   }
   const failed = [];
   for (const op of ops) {
+    if (!currentUser || op.uid !== currentUser.uid) { failed.push(op); continue; }
     try {
       if (op.type === "add_gasto") {
         await updateDoc(doc(db, "grupos", op.groupId), {

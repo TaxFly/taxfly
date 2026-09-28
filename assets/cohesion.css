@@ -16,3 +16,6 @@ a, a:visited, a:hover, a:focus-visible { text-decoration:none; }
   body > .wrap { width: min(100%, 620px); max-width: 620px; margin-inline: auto; }
   body > .wrap > .nav-bar { gap: 4px; padding: 7px; }
 }
+
+.offline-readiness{display:grid;gap:4px;padding:12px 14px;margin:0 0 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);font-size:12px}
+.offline-readiness:empty{display:none}.offline-readiness strong{font-size:13px}.offline-readiness span,.offline-readiness small{color:var(--text-sub,var(--muted));line-height:1.4}.offline-readiness[data-ready="false"] strong{color:#b45309}

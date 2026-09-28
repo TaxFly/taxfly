@@ -257,6 +257,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 <script defer src="assets/autofill.js"></script>
 <link rel="stylesheet" href="assets/cohesion.css">
 <script defer src="assets/localize.js"></script>
+<script src="assets/offline-status.js"></script>
 </head>
 <body>
 
@@ -603,11 +604,11 @@ async function idbSet(key, value) {
 }
 
 async function guardarDocsEnCache(docs) {
-  await idbSet(DOCS_CACHE_KEY_PFX + getPerfilId(), docs);
+  await idbSet(DOCS_CACHE_KEY_PFX + (window._uid || "sin-usuario") + "::" + getPerfilId(), docs);
 }
 
 async function cargarDocsDesdeCache() {
-  return await idbGet(DOCS_CACHE_KEY_PFX + getPerfilId());
+  return await idbGet(DOCS_CACHE_KEY_PFX + (window._uid || "sin-usuario") + "::" + getPerfilId());
 }
 
 window.addEventListener("offline", () => {
@@ -1254,18 +1255,21 @@ async function initDocs() {
     updateStorage();
     openRequestedDocument();
   }
+  const legacy = await idbGet(QUEUE_KEY) || [];
   if (!navigator.onLine) {
     if (!cached || !cached.length) {
       hideSyncBanner();
       renderList();
       updateStorage();
     }
+    if (legacy.length) showSyncBanner("Hay documentos pendientes de una versión anterior sin usuario verificable. Conservá un respaldo de este dispositivo.", true);
     return;
   }
   showSyncBanner("Cargando documentos…", false);
   try {
     allDocs = await window.fsLoad(window._uid, perfilId);
-    guardarDocsEnCache(allDocs);
+    await guardarDocsEnCache(allDocs);
+    window.taxflyOfflineStatus?.mark("docs", window._uid, perfilId);
     hideSyncBanner();
   } catch (e) {
     console.warn("Firestore load error", e);
@@ -1277,6 +1281,7 @@ async function initDocs() {
   renderList();
   updateStorage();
   openRequestedDocument();
+  if (legacy.length) showSyncBanner("Hay documentos pendientes de una versión anterior sin usuario verificable. Conservá un respaldo antes de borrar datos locales; no se enviarán a otro perfil automáticamente.", true);
 }
 
 let linkedReservations = [];
@@ -1669,18 +1674,21 @@ async function updateOfflineToast() {
 window.updateOfflineToast = updateOfflineToast;
 
 const QUEUE_KEY = "taxusa_tickets_pending_ops";
+const queueScope = () => QUEUE_KEY + "::" + (window._uid || "sin-usuario") + "::" + perfilId;
 
 async function loadQueue() {
-  return await idbGet(QUEUE_KEY) || [];
+  return await idbGet(queueScope()) || [];
 }
 
 async function saveQueue(q) {
-  await idbSet(QUEUE_KEY, q);
+  await idbSet(queueScope(), q);
+  try { localStorage.setItem("taxfly-offline-pending-docs::" + (window._uid || "") + "::" + perfilId, String(q.length)); } catch (_) {}
 }
 
 async function enqueue(op) {
+  if (!window._uid || !perfilId) throw new Error("No hay perfil activo para guardar el cambio pendiente");
   const q = await loadQueue();
-  q.push(op);
+  q.push({...op, uid: window._uid, perfilId});
   await saveQueue(q);
 }
 
@@ -1690,16 +1698,19 @@ async function dequeue(id) {
 }
 
 window._flushTicketsPending = async () => {
+  const uid = window._uid, profile = perfilId;
+  if (!uid || !profile || !navigator.onLine) return;
   const q = await loadQueue();
-  if (!q.length || !navigator.onLine) return;
+  if (!q.length) return;
   let synced = 0;
   for (const op of q) {
+    if (window._uid !== uid || perfilId !== profile || op.uid !== uid || op.perfilId !== profile) break;
     try {
       if (op.type === "save_doc") {
-        await window.fsSave(window._uid, perfilId, op.docObj);
+        await window.fsSave(uid, profile, op.docObj);
       } else if (op.type === "del_doc") {
-        await window.fsDelete(window._uid, perfilId, op.docId);
-      }
+        await window.fsDelete(uid, profile, op.docId);
+      } else break;
       await dequeue(op.docId);
       synced++;
     } catch (e) {

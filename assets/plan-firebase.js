@@ -253,6 +253,7 @@ async function startApp() {
   if (parquesExcelDataFb) window._parquesExcelFromFb = parquesExcelDataFb;
   if (reservationsDataFb) window._reservationsFromFb = reservationsDataFb;
   window._fbReady = true;
+  if (results.some(r => r.status === "fulfilled" && r.value)) window.taxflyOfflineStatus?.mark("plan", currentUid, currentPerfilId, activeTripId);
   if (window._appInit) window._appInit();
   document.getElementById("trip-loading")?.remove();
   migrateManualExpenses().catch(e => devError("expense migration", e));

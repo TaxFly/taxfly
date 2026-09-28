@@ -1,19 +1,20 @@
-const CACHE = "taxfly-32708d7460b5";
+const CACHE = "taxfly-bccaa794df9f";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 
 const MAX_TILES = 600;
 
-const PRECACHE = ["./login.html", "./selector.html", "./profiles.html", "./index.html", "./compras.html", "./itinerario.html", "./lugares.html", "./planificacion.html", "./assets/plan-cohesion.css", "./assets/mis-cohesion.css", "./404.html", "./unidades.html", "./tickets.html", "./grupo.html", "./rutas.html", "./tax.html", "./offline.html", "./assets/style.css", "./assets/cohesion.css", "./assets/localize.js", "./assets/splash.css", "./config.js", "./assets/dialogs.js", "./assets/account.js", "./assets/autofill.js", "./assets/recaptcha.js", "./assets/security.js", "./assets/settings.js", "./assets/ui.css", "./assets/taxie-widget.css", "./assets/taxie-corner.css", "./assets/ui.js", "./assets/park-live.js", "./assets/trip-context.js", "./assets/trips-ui.js", "./assets/backup.js", "./manifest.json", "./assets/icon-512.png", "./assets/icon-192.png", "./mis-cosas.html", "./assets/plan-styles.css", "./assets/app-settings.css", "./assets/plan-app.js", "./assets/plan-places.js", "./assets/plan-legacy-parks.js", "./assets/plan-reservations.js", "./assets/plan-theme.js", "./assets/plan-firebase.js", "./assets/mis-firebase.js", "./assets/app-settings.js", "./assets/plan-i18n.js", "./assets/plan-i18n-orlando.js", "./assets/mis-i18n.js", "./assets/plan-vendor-xlsx.min.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js"];
+const PRECACHE = ["./login.html", "./selector.html", "./profiles.html", "./index.html", "./compras.html", "./itinerario.html", "./lugares.html", "./planificacion.html", "./assets/plan-cohesion.css", "./assets/mis-cohesion.css", "./404.html", "./unidades.html", "./tickets.html", "./grupo.html", "./rutas.html", "./tax.html", "./offline.html", "./assets/style.css", "./assets/cohesion.css", "./assets/localize.js", "./assets/splash.css", "./config.js", "./assets/dialogs.js", "./assets/account.js", "./assets/autofill.js", "./assets/recaptcha.js", "./assets/security.js", "./assets/settings.js", "./assets/ui.css", "./assets/taxie-widget.css", "./assets/taxie-corner.css", "./assets/ui.js", "./assets/park-live.js", "./assets/trip-context.js", "./assets/trips-ui.js", "./assets/backup.js", "./assets/offline-status.js", "./manifest.json", "./assets/icon-512.png", "./assets/icon-192.png", "./mis-cosas.html", "./assets/plan-styles.css", "./assets/app-settings.css", "./assets/plan-app.js", "./assets/plan-places.js", "./assets/plan-legacy-parks.js", "./assets/plan-reservations.js", "./assets/plan-theme.js", "./assets/plan-firebase.js", "./assets/mis-firebase.js", "./assets/app-settings.js", "./assets/plan-i18n.js", "./assets/plan-i18n-orlando.js", "./assets/mis-i18n.js", "./assets/plan-vendor-xlsx.min.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js"];
 
 const OFFLINE_FALLBACK = "./offline.html";
 
-const CORE = ["./login.html", "./selector.html", "./profiles.html", "./index.html", "./offline.html", "./config.js", "./assets/security.js", "./assets/style.css", "./assets/cohesion.css", "./assets/localize.js", "./assets/splash.css", "./assets/ui.css", "./manifest.json"];
-
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(async cache => {
-    await cache.addAll(CORE);
-    const optional = PRECACHE.filter(url => !CORE.includes(url));
+    // Firebase modules are imported by the signed-in screens. They are as
+    // essential as the local scripts for opening those screens offline.
+    const required = PRECACHE.filter(url => url.startsWith("./") || url.includes("gstatic.com/firebasejs/"));
+    await cache.addAll(required);
+    const optional = PRECACHE.filter(url => !required.includes(url));
     await Promise.allSettled(optional.map(url => cache.add(url).catch(err => {
       console.warn("[SW] No se pudo cachear:", url, err);
     })));
@@ -130,6 +131,14 @@ self.addEventListener("fetch", e => {
 });
 
 self.addEventListener("message", e => {
+  if (e.data?.type === "OFFLINE_STATUS") {
+    e.waitUntil(caches.open(CACHE).then(async cache => {
+      const local = PRECACHE.filter(url => url.startsWith("./") || url.includes("gstatic.com/firebasejs/"));
+      const missing = [];
+      for (const url of local) if (!await cache.match(url)) missing.push(url);
+      e.ports[0]?.postMessage({ready: missing.length === 0, total: local.length, missing: missing.length});
+    }).catch(() => e.ports[0]?.postMessage({ready: false, missing: -1})));
+  }
   if (e.data?.type === "SKIP_WAITING") self.skipWaiting();
   if (e.data?.type === "CLEAR_CACHE") {
     caches.delete(CACHE).then(() => e.ports[0]?.postMessage({

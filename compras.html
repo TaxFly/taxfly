@@ -489,6 +489,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 <script defer src="assets/autofill.js"></script>
 <link rel="stylesheet" href="assets/cohesion.css">
 <script defer src="assets/localize.js"></script>
+<script src="assets/offline-status.js"></script>
 </head>
 <body>
 <div id="offline-toast" role="status" aria-live="polite">
@@ -887,11 +888,13 @@ let currentUser = null;
 const perfilId = localStorage.getItem("perfilActivoId");
 
 const GASTOS_CACHE_KEY = "taxusa_gastos_cache_" + (perfilId || "default");
+const gastosCacheKey = () => GASTOS_CACHE_KEY + "::" + (currentUser?.uid || localStorage.getItem("taxusa_offline_uid") || "sin-usuario");
 
 const BUDGET_CACHE_KEY = "taxusa_budget_cache_" + (perfilId || "default");
 function currentBudgetKey() {
   const id = currentUser && perfilId ? window.TripContext.view(currentUser.uid, perfilId) : "orlando";
-  return id === "orlando" ? BUDGET_CACHE_KEY : BUDGET_CACHE_KEY + "::" + (currentUser?.uid || "offline") + "::" + id;
+  const uid = currentUser?.uid || localStorage.getItem("taxusa_offline_uid") || "sin-usuario";
+  return BUDGET_CACHE_KEY + "::" + uid + (id === "orlando" ? "" : "::" + id);
 }
 function currentBudgetRef() {
   const id=window.TripContext.view(currentUser.uid,perfilId);
@@ -900,16 +903,17 @@ function currentBudgetRef() {
 function currentBudgetField() { return window.TripContext.view(currentUser.uid,perfilId)==="orlando"?"presupuesto":"taxflyBudget"; }
 
 const PENDING_GASTOS_KEY = "taxusa_gastos_pending_" + (perfilId || "default");
+const pendingGastosKey = () => PENDING_GASTOS_KEY + "::" + (currentUser?.uid || "sin-usuario");
 
 function guardarGastosEnCache(gastos) {
   try {
-    localStorage.setItem(GASTOS_CACHE_KEY, JSON.stringify(gastos));
+    localStorage.setItem(gastosCacheKey(), JSON.stringify(gastos));
   } catch (e) {}
 }
 
 function cargarGastosDesdeCache() {
   try {
-    const raw = localStorage.getItem(GASTOS_CACHE_KEY);
+    const raw = localStorage.getItem(gastosCacheKey());
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
     return null;
@@ -929,7 +933,7 @@ function cargarPresupuestoDesdeCache() {
 
 function getPendingGastos() {
   try {
-    return JSON.parse(localStorage.getItem(PENDING_GASTOS_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(pendingGastosKey()) || "[]");
   } catch (e) {
     return [];
   }
@@ -937,7 +941,7 @@ function getPendingGastos() {
 
 function savePendingGastos(ops) {
   try {
-    localStorage.setItem(PENDING_GASTOS_KEY, JSON.stringify(ops));
+    localStorage.setItem(pendingGastosKey(), JSON.stringify(ops));
     window.dispatchEvent(new Event("taxfly-pending-updated"));
   } catch (e) {}
 }
@@ -978,7 +982,7 @@ const perfilFoto = localStorage.getItem("perfilActivoFoto");
 
 let presupuestoBase = 0;
 
-let mapsSpent = parseFloat(localStorage.getItem("taxusa_maps_budget_cache_" + perfilId)) || 0;
+let mapsSpent = 0;
 
 let tripBudgetUnsubs = [];
 function filteredGastos() {
@@ -2010,6 +2014,7 @@ function listenGastos() {
   }
   const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), orderBy("fecha", "desc"));
   onSnapshot(q, snap => {
+    if (!snap.metadata?.fromCache) window.taxflyOfflineStatus?.mark("expenses", currentUser.uid, perfilId);
     if (snap.empty) {
       const pending = getPendingGastos();
       const hayLocales = allGastos.some(g => String(g.id).startsWith("local_"));

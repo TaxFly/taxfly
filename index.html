@@ -239,6 +239,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <link rel="stylesheet" href="assets/ui.css">
 <link rel="stylesheet" href="assets/cohesion.css">
 <script defer src="assets/localize.js"></script>
+<script src="assets/offline-status.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -272,6 +273,7 @@ document.addEventListener("DOMContentLoaded", function() {
     </a>
 
     <div class="home-section-heading" id="homePlanHeading">Tu viaje</div>
+    <section id="offline-readiness" class="offline-readiness" role="status" aria-live="polite"></section>
     <div class="section-grid home-primary-grid" id="sectionList"></div>
 
     
@@ -1250,8 +1252,9 @@ window.loadWeather = async function(force = false) {
   const l = lang || localStorage.getItem("appLang") || "es";
   let city = "Orlando";
   try {
-    const tripId = localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando";
-    const trips = JSON.parse(localStorage.getItem("trip-planning-trips::" + currentUser.uid + "::" + perfilId) || "[]");
+    const weatherUid = currentUser?.uid || localStorage.getItem("taxusa_offline_uid");
+    const tripId = localStorage.getItem("trip-planning-active::" + weatherUid + "::" + perfilId) || "orlando";
+    const trips = JSON.parse(localStorage.getItem("trip-planning-trips::" + weatherUid + "::" + perfilId) || "[]");
     const trip = trips.find(t => t.id === tripId);
     const destination = trip && trip.destinations && trip.destinations[trip.activeDestination || 0];
     if (destination) city = destination.city;
@@ -1267,8 +1270,15 @@ window.loadWeather = async function(force = false) {
   }
   if (!navigator.onLine) {
     if (refreshBtn) refreshBtn.classList.remove("spinning");
-    if (weatherCache.data) {
-      renderWeather(weatherCache.data, l);
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem("taxfly-weather-display::" + city.toLowerCase()) || "null"); } catch (_) {}
+    const last = weatherCache.city === city && weatherCache.data ? {data:weatherCache.data,ts:weatherCache.ts} : saved;
+    if (last?.data) {
+      renderWeather(last.data, l);
+      const note = document.createElement("div");
+      note.className = "ww-error";
+      note.textContent = "Sin conexión · último clima guardado: " + new Date(last.ts).toLocaleString("es-AR") + " (no es actual)";
+      body.append(note);
       return;
     }
     if (body) body.innerHTML = '<div class="ww-error">📵 Sin conexión — clima no disponible</div>';
@@ -1315,6 +1325,7 @@ window.loadWeather = async function(force = false) {
       data: result,
       ts: Date.now()
     };
+    try { localStorage.setItem("taxfly-weather-display::" + city.toLowerCase(), JSON.stringify({data:result,ts:weatherCache.ts})); } catch (_) {}
     renderWeather(result, l);
   } catch (e) {
     if (refreshBtn) refreshBtn.classList.remove("spinning");
@@ -1557,11 +1568,13 @@ function loadOfflineUI() {
   }
   loadBudget();
   loadNextEvent();
+  window.taxflyOfflineStatus?.render(localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId"));
 }
 
 onAuthStateChanged(auth, user => {
   guardOfflineAuth(user, u => {
     currentUser = u;
+    window.taxflyOfflineStatus?.render(u.uid, localStorage.getItem("perfilActivoId"));
     const perfilNombre = localStorage.getItem("perfilActivoNombre");
     document.getElementById("userEmail").textContent = perfilNombre || u.email || "";
     const img = localStorage.getItem("perfilActivoFoto") || u.photoURL;
@@ -1582,6 +1595,8 @@ onAuthStateChanged(auth, user => {
   }
   window.addEventListener("online", upd);
   window.addEventListener("offline", upd);
+  window.addEventListener("taxfly:tripchange", () => window.taxflyOfflineStatus?.render(currentUser?.uid || localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId")));
+  window.addEventListener("taxfly:offline-status", () => window.taxflyOfflineStatus?.render(currentUser?.uid || localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId")));
   upd();
 })();
 
@@ -1596,6 +1611,7 @@ loadWeather();
 if ("serviceWorker" in navigator) {
   const hadServiceWorker = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
+    window.taxflyOfflineStatus?.render(currentUser?.uid || localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId"));
     if (hadServiceWorker) location.reload();
   }, { once: true });
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));

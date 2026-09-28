@@ -240,7 +240,7 @@ test('profile name is text, image URL is constrained, and buttons retain click b
 
 test('expense queue survives a failed sync and clears after retry', async () => {
   const store=storage();let fail=true,applied=0;
-  const code=between(read('compras.html'),'function getPendingGastos()', 'window.addEventListener("online", () => {');
+  const code=between(read('compras.html'),'const pendingGastosKey =', 'window.addEventListener("online", () => {');
   const c=context(code, {localStorage:store,PENDING_GASTOS_KEY:'expense-queue',currentUser:{uid:'u'},perfilId:'p',
     window:{dispatchEvent(){}},Event,classDummy:0,Date,console,collection:()=>({}),doc:()=>({}),db:{},
     addDoc:async()=>{if(fail)throw Error('offline');applied++},deleteDoc:async()=>{applied++}});
@@ -261,6 +261,48 @@ test('document queue retains failed upload then syncs and removes it', async () 
   fail=false;await c.window._flushTicketsPending();assert.equal((await c.loadQueue()).length,0);assert.equal(uploaded,1);
 });
 
+test('offline document cache cannot show another user’s profile', async () => {
+  const source=between(read('tickets.html'),'async function guardarDocsEnCache(docs)', 'window.addEventListener("offline"');
+  const data=new Map(),w={_uid:'u1'};
+  const c=context(source,{window:w,DOCS_CACHE_KEY_PFX:'docs-',getPerfilId:()=> 'p',
+    idbSet:async(k,v)=>data.set(k,v),idbGet:async k=>data.get(k)});
+  await c.guardarDocsEnCache([{id:'d1'}]);
+  w._uid='u2';assert.equal(await c.cargarDocsDesdeCache(),undefined);
+  w._uid='u1';assert.equal((await c.cargarDocsDesdeCache())[0].id,'d1');
+});
+
+test('pending documents stay with their original user and profile', async () => {
+  const src=between(read('tickets.html'),'const QUEUE_KEY = ', 'window.saveDoc = async () => {');
+  const data=new Map(),sent=[];
+  const c=context(src,{window:{_uid:'u1',fsSave:async(uid,p)=>sent.push([uid,p]),fsDelete:async()=>{}},
+    idbGet:async k=>data.get(k),idbSet:async(k,v)=>data.set(k,v),navigator:{onLine:true},
+    perfilId:'p1',localStorage:storage(),console:{warn(){}},getT:()=>({synced_ok:'ok',synced_ok_pl:'ok'}),showSyncOk:()=>{}});
+  await c.enqueue({type:'save_doc',docId:'d1',docObj:{name:'Passport'}});
+  c.window._uid='u2';assert.equal((await c.loadQueue()).length,0);
+  await c.window._flushTicketsPending();assert.equal(sent.length,0);
+  c.window._uid='u1';await c.window._flushTicketsPending();
+  assert.deepEqual(sent,[['u1','p1']]);
+});
+
+test('pending reminders stay in the matching user and profile', () => {
+  const src=between(read('lugares.html'),'const PENDING_KEY = ', 'async function flushPending()');
+  const c=context(src,{currentUser:{uid:'u1'},perfilId:'p1',localStorage:storage(),JSON});
+  c.queueOp({type:'add_activity',data:{name:'Flight'}});
+  assert.equal(c.getPending().length,1);
+  c.currentUser={uid:'u2'};assert.equal(c.getPending().length,0);
+  c.currentUser={uid:'u1'};c.perfilId='p2';assert.equal(c.getPending().length,0);
+});
+
+test('pending reminders remain visible after a cached snapshot replaces the list', () => {
+  const source=between(read('lugares.html'),'function listenActivities()','let localNotes =');
+  let rendered;
+  const c=context(source,{currentUser:{uid:'u'},perfilId:'p',db:{},collection:()=>({}),query:()=>({}),orderBy:()=>({}),
+    getPending:()=>[{type:'add_activity',tempId:'temp',data:{name:'Flight',tripId:'orlando'}}],
+    onSnapshot:(_q,cb)=>cb({docs:[]}),renderActivities:items=>{rendered=items},window:{taxflyOfflineStatus:{mark(){}}},navigator:{onLine:false}});
+  c.listenActivities();
+  assert.equal(rendered.length,1);assert.equal(rendered[0].id,'temp');
+});
+
 test('cache version changes with an asset and install keeps old worker if shell download fails', async () => {
   const source=read('sw.js'),paths=extractPrecachePaths(source);
   assert.ok(paths.includes('./login.html'));
@@ -273,18 +315,29 @@ test('cache version changes with an asset and install keeps old worker if shell 
     assert.notEqual(cacheVersion(source+'\n// worker logic changed',temp),cacheVersion(source,temp));
   } finally {fs.rmSync(temp,{recursive:true,force:true})}
   async function install(fails) {
-    const listeners={},cached=new Map([['taxfly-old',{}],['other-app',{}]]);let skipped=false;
+    const listeners={},cached=new Map([['taxfly-old',{}],['other-app',{}]]);let skipped=false,required=[];
     const self={location:{origin:'https://taxfly.example'},addEventListener:(k,fn)=>listeners[k]=fn,skipWaiting:async()=>{skipped=true},clients:{claim:async()=>{}}};
-    const caches={open:async name=>({addAll:async()=>{if(fails)throw Error('shell failed')},add:async()=>{}}),keys:async()=>[...cached.keys()],delete:async k=>cached.delete(k)};
+    const caches={open:async name=>({addAll:async urls=>{required=urls;if(fails)throw Error('shell failed')},add:async()=>{}}),keys:async()=>[...cached.keys()],delete:async k=>cached.delete(k)};
     const c=context(source,{self,caches,fetch:async()=>{},console,Promise,URL,Response,setTimeout,clearTimeout});
     let installing;listeners.install({waitUntil:p=>installing=p});
     if(fails)await assert.rejects(installing,/shell failed/);else await installing;
+    assert.deepEqual(Array.from(required).filter(x=>x.startsWith("./")),paths);
+    assert.equal(Array.from(required).filter(x=>x.includes("gstatic.com/firebasejs/")).length,4);
     assert.equal(skipped,!fails);
     if(!fails){let activating;listeners.activate({waitUntil:p=>activating=p});await activating;assert.equal(cached.has('taxfly-old'),false);assert.equal(cached.has('other-app'),true)}
   }
   await install(true);await install(false);
 });
 
+
+test('offline status reports a missing essential screen', async () => {
+  const listeners={},source=read('sw.js');let result;
+  const self={location:{origin:'https://taxfly.example'},addEventListener:(k,fn)=>listeners[k]=fn};
+  const caches={open:async()=>({match:async url=>url==='./tickets.html'?null:new Response('cached')})};
+  context(source,{self,caches,Promise,URL,Response,setTimeout,clearTimeout});
+  let done;listeners.message({data:{type:'OFFLINE_STATUS'},ports:[{postMessage:value=>result=value}],waitUntil:p=>done=p});
+  await done;assert.equal(result.ready,false);assert.equal(result.missing,1);
+});
 
 test('installed PWA shortcut loads cached login offline and refreshes HTML online', async () => {
   const listeners={};let online=false,updated=false;
