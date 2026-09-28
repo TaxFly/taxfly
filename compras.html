@@ -224,8 +224,6 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .comp-store-info{flex:1;min-width:0;}
         .comp-store-name{font-size:.82rem;font-weight:800;color:var(--text);letter-spacing:-.2px;}
         .comp-store-tag{font-size:.55rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
-        .comp-store-arrow{font-size:.85rem;color:var(--store-color,var(--primary));font-weight:900;flex-shrink:0;transition:transform .2s;}
-        .comp-store-card:hover .comp-store-arrow{transform:translate(2px,-2px);}
         .comp-store-highlight{border-color:var(--store-color,var(--primary));box-shadow:0 0 0 2px var(--store-color,var(--primary)) inset;}
         .comp-store-highlight::before{opacity:1;height:4px;}
         
@@ -526,7 +524,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     <script src="assets/ui.js"></script>
     <script src="assets/trip-context.js"></script>
 
-    <div class="taxfly-trip-filter"><label for="trip-filter-expenses">Viaje</label><select id="trip-filter-expenses" aria-label="Filtrar por viaje"></select><a href="index.html#viajes">Gestionar viajes ↗</a></div>
+    <div class="taxfly-trip-filter"><label for="trip-filter-expenses">Viaje</label><select id="trip-filter-expenses" aria-label="Filtrar por viaje"></select><a href="index.html#viajes">Gestionar viajes</a></div>
     <div class="budget-card">
         <div class="budget-label" data-i18n="label_budget">Presupuesto Restante</div>
         <div class="budget-value" id="disp-fondo">USD 0.00</div>
@@ -3406,7 +3404,7 @@ function compRenderGrid(q) {
     const href = q ? s.url(q) : "#";
     const dimmed = q ? "" : "opacity:.45;pointer-events:none;";
     const highlighted = category && s.tag === category ? " comp-store-highlight" : "";
-    return `<a class="comp-store-card${highlighted}" href="${href}" target="_blank" rel="noopener"\n            style="--store-color:${s.color};${dimmed}">\n            <div class="comp-store-inner">\n                <div class="comp-store-emoji">${s.emoji}</div>\n                <div class="comp-store-info">\n                    <div class="comp-store-name">${esc(s.name)}</div>\n                    <div class="comp-store-tag">${s.tag}</div>\n                </div>\n                <div class="comp-store-arrow">↗</div>\n            </div>\n        </a>`;
+    return `<a class="comp-store-card${highlighted}" href="${href}" target="_blank" rel="noopener"\n            style="--store-color:${s.color};${dimmed}">\n            <div class="comp-store-inner">\n                <div class="comp-store-emoji">${s.emoji}</div>\n                <div class="comp-store-info">\n                    <div class="comp-store-name">${esc(s.name)}</div>\n                    <div class="comp-store-tag">${s.tag}</div>\n                </div>\n            </div>\n        </a>`;
   }).join("");
 }
 

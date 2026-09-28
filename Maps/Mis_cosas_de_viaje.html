@@ -134,6 +134,11 @@ h1{
 }
 h1 span{color:var(--theme-accent)}
 .sub{margin:4px 0 0;color:var(--muted);font-size:13px;font-weight:500}
+.mis-trip-filter{display:flex;align-items:center;gap:9px;margin:12px 0;padding:9px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);font-size:.75rem}
+.mis-trip-filter label{font-weight:800}
+.mis-trip-filter select{flex:1;min-width:0;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font:inherit}
+.mis-trip-filter a{color:var(--theme-accent);text-decoration:none;white-space:nowrap;font-weight:700}
+@media(max-width:480px){.mis-trip-filter a{font-size:.65rem}}
 .modo{
   display:inline-flex;align-items:center;gap:6px;margin:10px 0 0;padding:5px 11px;border-radius:999px;
   background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--border));
@@ -497,7 +502,7 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
       </div>
     </div>
     <div class="enlaces" id="enlaces"></div>
-    <div style="margin:8px 0;font-size:12px;font-weight:700"><span id="mis-trip-active">✈️ Viaje activo</span> · <a href="../index.html#viajes" style="color:inherit">Gestionar en TaxFly ↗</a></div>
+    <div class="mis-trip-filter"><label for="mis-trip-active">Viaje</label><select id="mis-trip-active" aria-label="Elegir viaje"></select><a href="../index.html#viajes">Gestionar en TaxFly</a></div>
     <h1 id="titulo"></h1>
     <p class="sub" id="resumen"></p>
     <p class="modo" id="modo" hidden></p>

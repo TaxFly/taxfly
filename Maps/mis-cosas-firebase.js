@@ -120,8 +120,18 @@ onAuthStateChanged(auth, async user => {
   await window.TripContext.hydrate(db,user.uid,perfilId,getDocs,collection);
   const tripId = window.TripContext.active(user.uid, perfilId);
   window._misCosasScope = `${user.uid}::${perfilId}::${tripId}`;
-  const trip = window.TripContext.readTrips(user.uid, perfilId).find(t => t.id === tripId);
-  const chip = document.getElementById("mis-trip-active");
-  if (chip) chip.textContent = "✈️ " + (trip?.name || "Mi viaje a Orlando");
+  const selector = document.getElementById("mis-trip-active");
+  if (selector) {
+    for (const trip of window.TripContext.readTrips(user.uid, perfilId)) {
+      const option = document.createElement("option");
+      option.value = trip.id;
+      option.textContent = trip.name + (trip.status ? " (archivado)" : "");
+      selector.appendChild(option);
+    }
+    selector.value = tripId;
+    selector.addEventListener("change", () => {
+      if (window.TripContext.select(user.uid, perfilId, selector.value)) window.location.reload();
+    });
+  }
   window._misCosasResolve({ DB: buildDB(user.uid, perfilId, tripId) });
 });
