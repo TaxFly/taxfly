@@ -19,3 +19,9 @@
 @media(max-width:500px){.plan-app-nav{grid-template-columns:repeat(5,minmax(0,1fr)) 38px}.plan-app-nav>a,.plan-more>summary{font-size:7px}.plan-app-nav svg{width:19px;height:19px}.nav-bar button{min-width:0}}
 
 .mis-trip-filter[hidden]{display:none!important}
+/* One solid canvas across the header, content column and page edges. */
+body,[data-theme="dark"] body,.header{background:var(--bg);background-image:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+
+/* Arrow buttons remain available; the horizontal track is visually hidden. */
+.scroll-control .chips{scrollbar-width:none!important;-ms-overflow-style:none;padding-bottom:2px}
+.scroll-control .chips::-webkit-scrollbar{display:none;width:0;height:0}

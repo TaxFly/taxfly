@@ -45,3 +45,5 @@
 .plan-section-menu a{display:flex;align-items:center;gap:10px;width:100%;color:var(--text);padding:11px 12px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:800}
 .plan-section-menu a:hover{background:color-mix(in srgb,var(--theme-accent) 14%,var(--surface));color:var(--theme-accent)}
 .trip-manager[hidden],.trip-chip-slot[hidden]{display:none!important}
+/* One solid canvas across the header, content column and page edges. */
+body,[data-theme="dark"] body,.header{background:var(--bg);background-image:none;backdrop-filter:none;-webkit-backdrop-filter:none}
