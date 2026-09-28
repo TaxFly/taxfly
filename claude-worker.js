@@ -2,6 +2,14 @@ const FIREBASE_PROJECT_ID = "viajes-db538";
 
 const JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
 
+const MAX_BODY_CHARS = 12 * 1024 * 1024;
+const MAX_IMAGE_B64 = 7 * 1024 * 1024;
+const MAX_PDF_B64 = 10 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = [ "image/jpeg", "image/png", "image/webp", "image/gif" ];
+const MAX_CHAT_MESSAGES = 30;
+const MAX_CHAT_CONTENT = 8000;
+const MAX_CHAT_SYSTEM = 6000;
+
 const AI_TYPES = [ "invoice_ocr", "insurance_analysis", "moderate_image", "optimize_route", "taxie_chat", "compare_shopping" ];
 
 export default {
@@ -39,7 +47,16 @@ async function handle(request, env) {
   }, 405);
   let body;
   try {
-    body = await request.json();
+    const declared = Number(request.headers.get("Content-Length") || 0);
+    if (declared > MAX_BODY_CHARS) return json({
+      error: "Payload too large"
+    }, 413);
+    const raw = await request.text();
+    if (raw.length > MAX_BODY_CHARS) return json({
+      error: "Payload too large"
+    }, 413);
+    body = JSON.parse(raw);
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("not an object");
   } catch (e) {
     return json({
       error: "Invalid JSON body"
@@ -57,8 +74,7 @@ async function handle(request, env) {
       user = await verifyFirebaseToken(token);
     } catch (e) {
       return json({
-        error: "Invalid or expired session",
-        detail: String(e.message || e)
+        error: "Invalid or expired session"
       }, 401);
     }
     if (env.COST_LIMITER) {
@@ -182,20 +198,25 @@ async function handleAIChat(body, apiKey, model, defaultMaxTokens, defaultTemper
       error: "Missing required field: messages"
     }, 400);
   }
+  if (messages.length > MAX_CHAT_MESSAGES) return json({
+    error: "Too many messages"
+  }, 400);
   let system;
   const chatMessages = [];
   for (const m of messages) {
     if (!m || typeof m.content !== "string") continue;
-    if (m.role === "system") system = system ? `${system}\n\n${m.content}` : m.content; else chatMessages.push({
+    const content = m.content.slice(0, MAX_CHAT_CONTENT);
+    if (m.role === "system") system = system ? `${system}\n\n${content}` : content; else chatMessages.push({
       role: m.role === "assistant" ? "assistant" : "user",
-      content: m.content
+      content: content
     });
   }
+  if (system) system = system.slice(0, MAX_CHAT_SYSTEM);
   if (!chatMessages.length) return json({
     error: "No user/assistant messages provided"
   }, 400);
   const maxTokens = Math.min(Number(body.max_tokens) || defaultMaxTokens, 1500);
-  const temperature = typeof body.temperature === "number" ? body.temperature : defaultTemperature;
+  const temperature = typeof body.temperature === "number" && isFinite(body.temperature) ? Math.min(Math.max(body.temperature, 0), 1) : defaultTemperature;
   const claudeRes = await callClaude(apiKey, {
     model: model,
     max_tokens: maxTokens,
@@ -273,6 +294,12 @@ async function handleInvoice(body, apiKey) {
     error: "Missing required field: image_base64"
   }, 400);
   const mediaType = image_media_type || "image/jpeg";
+  if (typeof image_base64 !== "string" || image_base64.length > MAX_IMAGE_B64) return json({
+    error: "Image too large"
+  }, 413);
+  if (!ALLOWED_IMAGE_TYPES.includes(mediaType)) return json({
+    error: "Unsupported image type"
+  }, 400);
   const prompt = `You are reading a photo of a store receipt/ticket (in Spanish, English or Portuguese).\nExtract the data and respond ONLY with a JSON object, nothing else, no markdown, no explanation:\n\n{\n  "store": "store or business name",\n  "total": 0.00,\n  "subtotal": 0.00,\n  "taxes": 0.00,\n  "items": [ { "name": "item name", "price": 0.00 } ]\n}\n\nRules:\n- For "store": use the printed name/text on the receipt if present. If there's no readable name but you can clearly recognize a well-known brand from its logo (shape, colors, typography), use that brand name. If you're not confident (small/unfamiliar local business with an unclear logo), use "Compra" instead of guessing — never invent a store name you're not reasonably sure about.\n- "total", "subtotal" and "taxes" must be numbers (not strings), using dot as decimal separator.\n- If a field is not present on the receipt, use 0 for numbers.\n- List at most 12 items. If items aren't clearly readable, return an empty array.\n- Do not invent data that isn't visible on the receipt.`;
   const claudeRes = await callClaude(apiKey, {
     model: "claude-haiku-4-5-20251001",
@@ -323,7 +350,16 @@ async function handleInsurance(body, apiKey) {
       error: "Missing required fields: fileBase64, mediaType, docName"
     }, 400);
   }
-  const isImage = mediaType.startsWith("image/");
+  if (typeof fileBase64 !== "string" || typeof mediaType !== "string") return json({
+    error: "Invalid file"
+  }, 400);
+  const isImage = ALLOWED_IMAGE_TYPES.includes(mediaType);
+  if (!isImage && mediaType !== "application/pdf") return json({
+    error: "Unsupported file type"
+  }, 400);
+  if (fileBase64.length > (isImage ? MAX_IMAGE_B64 : MAX_PDF_B64)) return json({
+    error: "File too large"
+  }, 413);
   const prompt = `You are analyzing a travel insurance policy document.\nExtract ONLY these two fields from the document:\n1. insurer: The insurance company name (e.g. "Assist Card", "Allianz", "IATI", "Mapfre", "Europ Assistance", "Falabella Seguros", etc.)\n2. phone: The 24/7 emergency phone number for medical emergencies abroad (international format preferred, e.g. "+1-800-XXX-XXXX" or "+54-11-XXXX-XXXX")\n\nDocument name hint: "${docName}"\n\nRespond ONLY with a JSON object, nothing else, no markdown:\n{"insurer": "...", "phone": "..."}\n\nIf you cannot find a field, use null for that field. Do not invent data.`;
   const content = isImage ? [ {
     type: "image",
@@ -432,6 +468,12 @@ async function handleModerate(body, apiKey) {
   const {imageBase64: imageBase64, mediaType: mediaType = "image/jpeg"} = body;
   if (!imageBase64) return json({
     error: "Missing imageBase64"
+  }, 400);
+  if (typeof imageBase64 !== "string" || imageBase64.length > MAX_IMAGE_B64) return json({
+    error: "Image too large"
+  }, 413);
+  if (!ALLOWED_IMAGE_TYPES.includes(mediaType)) return json({
+    error: "Unsupported image type"
   }, 400);
   if (!apiKey) return json({
     error: "Anthropic API key not configured"
