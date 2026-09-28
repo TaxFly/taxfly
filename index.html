@@ -181,9 +181,9 @@ document.addEventListener("DOMContentLoaded", function() {
         
         
         .section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
-        .home-primary-grid{grid-template-columns:repeat(2,1fr);}
-        .home-primary-grid .section-card{min-height:132px;aspect-ratio:auto;}
-        .home-primary-grid .section-card:last-child{grid-column:1/-1;min-height:90px;flex-direction:row;gap:14px;}
+        .home-primary-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+        .home-primary-grid .section-card{min-height:88px;aspect-ratio:1;}
+        
         .home-section-heading{font-size:.7rem;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}
         .section-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:inherit;transition:var(--tr);cursor:pointer;aspect-ratio:1;position:relative;overflow:hidden;}
         .section-card::before{content:'';position:absolute;inset:0;background:transparent;border-radius:14px;transition:var(--tr);}
@@ -536,7 +536,7 @@ const I18N = {
     }, {
       icon: "🌍",
       color: "ic-teal",
-      href: "https://taxfly.github.io/taxfly/Planificacion/index.html",
+      href: "https://taxfly.github.io/taxfly/planificacion.html",
       name: "Planificación",
       desc: "Viajes, lugares, comidas, compras y atracciones por EE. UU."
     } ],
@@ -657,7 +657,7 @@ const I18N = {
     }, {
       icon: "🛒",
       color: "ic-teal",
-      href: "https://taxfly.github.io/taxfly/Planificacion/index.html",
+      href: "https://taxfly.github.io/taxfly/planificacion.html",
       name: "Maps",
       desc: "Trips, places, meals, shopping and attractions across the USA"
     } ],
@@ -778,7 +778,7 @@ const I18N = {
     }, {
       icon: "🛒",
       color: "ic-teal",
-      href: "https://taxfly.github.io/taxfly/Planificacion/index.html",
+      href: "https://taxfly.github.io/taxfly/planificacion.html",
       name: "Maps",
       desc: "Viagens, lugares, refeições, compras e atrações pelos EUA"
     } ],
@@ -837,6 +837,7 @@ window.changeLanguage = function(nl) {
   lang = nl;
   localStorage.setItem("appLang", lang);
   applyI18n();
+  window.taxflyRefreshTrips?.();
   updateGreeting();
 };
 
@@ -1412,15 +1413,18 @@ function renderSections() {
   const cards = [
     {href:"tax.html", icon:"calculator", tone:"blue", name:lang === "en" ? "Calculator" : "Calculadora"},
     {href:"compras.html", icon:"bag", tone:"violet", name:sections.find(s=>s.href==="compras.html")?.name || "Gastos"},
-    {href:"Planificacion/index.html?section=parques", icon:"calendar", tone:"teal", name:heading[1]},
+    {href:"planificacion.html?section=parques", icon:"calendar", tone:"teal", name:heading[1]},
     {href:"unidades.html", icon:"bulb", tone:"amber", name:{es:"Ayudas y referencias", en:"Help & references", pt:"Ajuda e referências"}[lang] || "Ayudas y referencias"},
-    {href:"Maps/Mis_cosas_de_viaje.html", icon:"briefcase", tone:"indigo", name:heading[2]}
+    {href:"tickets.html", icon:"file", tone:"teal", name:{es:"Documentos",en:"Documents",pt:"Documentos"}[lang]},
+    {href:"grupo.html", icon:"users", tone:"violet", name:{es:"Grupo",en:"Group",pt:"Grupo"}[lang]},
+    {href:"rutas.html", icon:"map", tone:"amber", name:{es:"Rutas",en:"Routes",pt:"Rotas"}[lang]},
+    {href:"mis-cosas.html", icon:"briefcase", tone:"indigo", name:heading[2]}
   ];
   cards.forEach(sec => {
     const a = document.createElement("a");
     a.href = sec.href;
     a.className = "section-card";
-    a.innerHTML = `<span class="sc-emoji ui-slot" data-tone="${sec.tone}">${window.uiIcon(sec.icon, 32)}</span><span class="sc-name">${sec.name}</span>`;
+    a.innerHTML = `<span class="sc-emoji ui-slot" data-tone="${sec.tone}">${window.uiIcon(sec.icon, 30)}</span><span class="sc-name">${sec.name}</span>`;
     list.appendChild(a);
   });
 }

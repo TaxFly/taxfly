@@ -35,6 +35,12 @@ const settings=document.querySelector('#settingsDrawer .sx-scroll');
 if (settings) settings.insertBefore(card,settings.firstChild);
 const home=location.pathname.endsWith('/index.html')||location.pathname.endsWith('/');
 if (home) { const top=document.querySelector('header'); if(top) { const c=card.cloneNode(); c.id='tf-trip-home';top.insertAdjacentElement('afterend',c); } }
+const words={
+ es:{orphan:"Registros sin viaje",activeTrip:"Viaje activo",orphanView:"Viendo registros sin viaje",destination:"Elegí un destino",pending:"pendiente de Firebase",trips:"Mis viajes",openTrips:"Abrir mis viajes",close:"Cerrar viajes",completed:"Finalizado",suspended:"Suspendido",active:"Activo",choose:"Elegir",edit:"Editar",restore:"Restaurar",finish:"Finalizar",suspend:"Suspender",delete:"Eliminar",none:"Sin viaje",see:"Ver registros",editTrip:"Editar viaje",newTrip:"Nuevo viaje",name:"Nombre",from:"Desde",until:"Hasta",addCity:"+ Agregar ciudad",save:"Guardar cambios",create:"Crear viaje",cancel:"Cancelar",city:"Ciudad",state:"Estado",removeCity:"Quitar ciudad",required:"Completá ciudad y estado.",local:"Guardado en este dispositivo; pendiente de sincronización con Firebase.",saved:"Viaje guardado en Firebase.",confirm:"Se eliminará el plan de este viaje. Gastos, actividades y notas quedarán en ‘Sin viaje’. Exportá un respaldo antes de continuar. ¿Eliminar definitivamente?",failed:"No se pudo eliminar. Revisá tu conexión.",changed:"Cambio guardado en Firebase.",changePending:"Cambio pendiente de sincronización."},
+ en:{orphan:"Records without a trip",activeTrip:"Active trip",orphanView:"Viewing records without a trip",destination:"Choose a destination",pending:"pending Firebase sync",trips:"My trips",openTrips:"Open my trips",close:"Close trips",completed:"Completed",suspended:"Paused",active:"Active",choose:"Select",edit:"Edit",restore:"Restore",finish:"Finish",suspend:"Pause",delete:"Delete",none:"No trip",see:"View records",editTrip:"Edit trip",newTrip:"New trip",name:"Name",from:"From",until:"Until",addCity:"+ Add city",save:"Save changes",create:"Create trip",cancel:"Cancel",city:"City",state:"State",removeCity:"Remove city",required:"Enter a city and state.",local:"Saved on this device; Firebase sync pending.",saved:"Trip saved to Firebase.",confirm:"This trip plan will be deleted. Expenses, activities and notes will move to No trip. Export a backup before continuing. Delete permanently?",failed:"Could not delete. Check your connection.",changed:"Change saved to Firebase.",changePending:"Change pending sync."},
+ pt:{orphan:"Registros sem viagem",activeTrip:"Viagem ativa",orphanView:"Exibindo registros sem viagem",destination:"Escolha um destino",pending:"sincronização pendente",trips:"Minhas viagens",openTrips:"Abrir minhas viagens",close:"Fechar viagens",completed:"Concluída",suspended:"Pausada",active:"Ativa",choose:"Selecionar",edit:"Editar",restore:"Restaurar",finish:"Concluir",suspend:"Pausar",delete:"Excluir",none:"Sem viagem",see:"Ver registros",editTrip:"Editar viagem",newTrip:"Nova viagem",name:"Nome",from:"De",until:"Até",addCity:"+ Adicionar cidade",save:"Salvar alterações",create:"Criar viagem",cancel:"Cancelar",city:"Cidade",state:"Estado",removeCity:"Remover cidade",required:"Informe cidade e estado.",local:"Salvo neste dispositivo; sincronização com Firebase pendente.",saved:"Viagem salva no Firebase.",confirm:"O plano desta viagem será excluído. Gastos, atividades e notas irão para Sem viagem. Exporte um backup antes de continuar. Excluir permanentemente?",failed:"Não foi possível excluir. Verifique sua conexão.",changed:"Alteração salva no Firebase.",changePending:"Alteração aguardando sincronização."}
+};
+const tr=key=>(words[localStorage.getItem('appLang')]||words.es)[key]||words.es[key];
 function activeTrip(){return tc.readTrips(uid,profile).find(t=>t.id===tc.active(uid,profile))||tc.legacy;}
 function syncCard(){
   if(!uid||!profile)return;
@@ -42,13 +48,13 @@ function syncCard(){
   for(const el of document.querySelectorAll('.tf-trip-entry')){
     el.hidden=false;el.replaceChildren();
     const label=document.createElement('span'); label.className='tf-trip-copy';
-    const eyebrow=document.createElement('span');eyebrow.className='tf-trip-eyebrow';eyebrow.textContent=tc.view(uid,profile)==='unassigned'?'Registros sin viaje':'Viaje activo';
+    const eyebrow=document.createElement('span');eyebrow.className='tf-trip-eyebrow';eyebrow.textContent=tc.view(uid,profile)==='unassigned'?tr('orphan'):tr('activeTrip');
     const strong=document.createElement('strong'); strong.textContent=trip.name;
     const small=document.createElement('small');
-    const locationLabel=tc.view(uid,profile)==='unassigned'?'Viendo registros sin viaje':dest ? `${dest.city}, ${dest.state}` : 'Elegí un destino';
+    const locationLabel=tc.view(uid,profile)==='unassigned'?tr('orphanView'):dest ? `${dest.city}, ${dest.state}` : tr('destination');
     small.textContent=locationLabel+(Object.keys(tc.pending(uid,profile)).length?' · pendiente de Firebase':'');
     label.append(eyebrow,strong,small);
-    const btn=document.createElement('button'); btn.type='button';btn.textContent='Mis viajes';btn.setAttribute('aria-label','Abrir mis viajes');btn.onclick=()=>openManager();
+    const btn=document.createElement('button'); btn.type='button';btn.textContent=tr('trips');btn.setAttribute('aria-label',tr('openTrips'));btn.onclick=()=>openManager();
     el.append(label,btn);
   }
 }
@@ -56,22 +62,22 @@ function notify(message){ const el=dialog.querySelector('.tf-msg');if(el)el.text
 function openManager(){ if(!uid||!profile)return;renderDialog();if(!dialog.open)dialog.showModal(); }
 function renderDialog(){
   const trips=tc.readTrips(uid,profile), active=tc.active(uid,profile);
-  dialog.innerHTML=`<div class="tf-modal-head"><h2>Mis viajes</h2><button type="button" class="tf-modal-close" aria-label="Cerrar viajes">×</button></div><div class="tf-modal-content"><div class="tf-msg" role="status"></div>
-    ${trips.map(t=>`<div class="tf-line" data-id="${esc(t.id)}"><strong>${esc(t.name)}${t.status?' · '+(t.status==='completed'?'Finalizado':'Suspendido'):''}</strong>
-    ${t.id===active?'<small>Activo</small>':`<button data-action="select">Elegir</button>`}
-    <button data-action="edit">Editar</button>
-    ${t.status?'<button data-action="restore">Restaurar</button>':`<button data-action="complete">Finalizar</button><button data-action="suspend">Suspender</button>`}
-    ${t.id==='orlando'?'':`<button data-action="delete">Eliminar</button>`}</div>`).join('')}
-    <div class="tf-line" data-id="unassigned"><strong>Sin viaje</strong><button data-action="select">Ver registros</button></div>
-    <form id="tf-trip-form"><h3>${editing?'Editar viaje':'Nuevo viaje'}</h3>
-    <label>Nombre<input name="name" maxlength="80" required value="${esc(editing?.name||'')}"></label>
-    <div class="tf-two"><label>Desde<input name="startDate" type="date" value="${esc(editing?.startDate||'')}"></label><label>Hasta<input name="endDate" type="date" value="${esc(editing?.endDate||'')}"></label></div>
-    <div id="tf-cities"></div><button type="button" id="tf-add-city">+ Agregar ciudad</button>
-    <div class="tf-two"><button type="submit">${editing?'Guardar cambios':'Crear viaje'}</button><button type="button" id="tf-close">Cancelar</button></div></form></div>`;
+  dialog.innerHTML=`<div class="tf-modal-head"><h2>${tr("trips")}</h2><button type="button" class="tf-modal-close" aria-label="${tr("close")}">×</button></div><div class="tf-modal-content"><div class="tf-msg" role="status"></div>
+    ${trips.map(t=>`<div class="tf-line" data-id="${esc(t.id)}"><strong>${esc(t.name)}${t.status?' · '+(t.status==='completed'?tr('completed'):tr('suspended')):''}</strong>
+    ${t.id===active?`<small>${tr("active")}</small>`:`<button data-action="select">${tr("choose")}</button>`}
+    <button data-action="edit">${tr("edit")}</button>
+    ${t.status?'<button data-action="restore">${tr("restore")}</button>':`<button data-action="complete">${tr("finish")}</button><button data-action="suspend">${tr("suspend")}</button>`}
+    ${t.id==='orlando'?'':`<button data-action="delete">${tr("delete")}</button>`}</div>`).join('')}
+    <div class="tf-line" data-id="unassigned"><strong>${tr("none")}</strong><button data-action="select">${tr("see")}</button></div>
+    <form id="tf-trip-form"><h3>${editing?tr('editTrip'):tr('newTrip')}</h3>
+    <label>${tr("name")}<input name="name" maxlength="80" required value="${esc(editing?.name||'')}"></label>
+    <div class="tf-two"><label>${tr("from")}<input name="startDate" type="date" value="${esc(editing?.startDate||'')}"></label><label>${tr("until")}<input name="endDate" type="date" value="${esc(editing?.endDate||'')}"></label></div>
+    <div id="tf-cities"></div><button type="button" id="tf-add-city">${tr("addCity")}</button>
+    <div class="tf-two"><button type="submit">${editing?tr('save'):tr('create')}</button><button type="button" id="tf-close">${tr("cancel")}</button></div></form></div>`;
   const cities=dialog.querySelector('#tf-cities');
   const addCity=(city='',state='')=>{
     const row=document.createElement('div'); row.className='tf-two';
-    row.innerHTML=`<label>Ciudad<input name="city" required maxlength="80" placeholder="Orlando" value="${esc(city)}"></label><label>Estado<input name="state" required maxlength="80" placeholder="Florida" value="${esc(state)}"></label><button type="button" aria-label="Quitar ciudad">×</button>`;
+    row.innerHTML=`<label>${tr("city")}<input name="city" required maxlength="80" placeholder="Orlando" value="${esc(city)}"></label><label>${tr("state")}<input name="state" required maxlength="80" placeholder="Florida" value="${esc(state)}"></label><button type="button" aria-label="${tr("removeCity")}">×</button>`;
     row.querySelector('button').onclick=()=>{if(cities.children.length>1)row.remove()};cities.appendChild(row);
   };
   (editing?.destinations?.length?editing.destinations:[{city:'',state:''}]).forEach(d=>addCity(d.city,d.state));
@@ -82,12 +88,12 @@ function renderDialog(){
     e.preventDefault();const form=e.target, button=form.querySelector('[type=submit]');button.disabled=true;
     const names=[...form.querySelectorAll('[name=city]')],states=[...form.querySelectorAll('[name=state]')];
     const destinations=names.map((n,i)=>({city:n.value.trim(),state:states[i].value.trim()}));
-    if(destinations.some(d=>!d.city||!d.state)){notify('Completá ciudad y estado.');button.disabled=false;return}
+    if(destinations.some(d=>!d.city||!d.state)){notify(tr('required'));button.disabled=false;return}
     const fields={name:form.elements.name.value.trim(),startDate:form.elements.startDate.value,endDate:form.elements.endDate.value,destinations};
     if(!fields.name){button.disabled=false;return}
     const result=editing ? await tc.save(uid,profile,{...editing,...fields}) : await tc.create(uid,profile,fields);
     editing=null;renderDialog();syncCard();
-    notify(result===false||result?.synced===false?'Guardado en este dispositivo; pendiente de sincronización con Firebase.':'Viaje guardado en Firebase.');
+    notify(result===false||result?.synced===false?tr('local'):tr('saved'));
     if(result?.trip) location.reload();
   };
   dialog.querySelectorAll('[data-action]').forEach(b=>b.onclick=async()=>{
@@ -95,18 +101,21 @@ function renderDialog(){
     if(action==='select'){tc.select(uid,profile,id);location.reload();return}
     if(action==='edit'){editing=tc.readTrips(uid,profile).find(t=>t.id===id);renderDialog();return}
     if(action==='delete'){
-      if(!confirm('Se eliminará el plan de este viaje. Gastos, actividades y notas quedarán en “Sin viaje”. Exportá un respaldo antes de continuar. ¿Eliminar definitivamente?'))return;
-      if(!await tc.remove(uid,profile,id)){notify('No se pudo eliminar. Revisá tu conexión.');return}
+      if(!confirm(tr('confirm')))return;
+      if(!await tc.remove(uid,profile,id)){notify(tr('failed'));return}
       location.reload();return;
     }
     const status=action==='restore'?'':action==='complete'?'completed':'suspended';
     const ok=await tc.archive(uid,profile,id,status);
-    renderDialog();syncCard();notify(ok?'Cambio guardado en Firebase.':'Cambio pendiente de sincronización.');
+    renderDialog();syncCard();notify(ok?tr('changed'):tr('changePending'));
   });
 }
 window.taxflyOpenTrips=openManager;
+window.taxflyRefreshTrips=()=>{syncCard();if(dialog.open)renderDialog()};
+document.addEventListener('click',e=>{if(e.target.closest('.lang-opt,[data-lang]'))setTimeout(window.taxflyRefreshTrips,0)});
 let openFromHash=location.hash==="#viajes";
 window.addEventListener('taxfly:tripchange',syncCard);
+window.addEventListener('storage',e=>{if(e.key==='appLang'){syncCard();if(dialog.open)renderDialog()}});
 window.addEventListener('storage',e=>{
   if(uid&&profile&&[tc.keys(uid,profile).active,tc.keys(uid,profile).list].includes(e.key))location.reload();
 });

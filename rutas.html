@@ -291,7 +291,7 @@ if ("serviceWorker" in navigator) {
     <a href="index.html"      class="btn-nav"><span class="ni">🏠</span><span data-i18n="nav_home">INICIO</span></a>
     <a href="tax.html"        class="btn-nav"><span class="ni">📊</span><span data-i18n="nav_tax">TAXES</span></a>
     <a href="compras.html"    class="btn-nav"><span class="ni">🛍️</span><span data-i18n="nav_shopping">GASTOS</span></a>
-    <a href="Planificacion/index.html" class="btn-nav"><span class="ni">📍</span><span data-i18n="nav_itinerary">ITINERARIO</span></a>
+    <a href="planificacion.html" class="btn-nav"><span class="ni">📍</span><span data-i18n="nav_itinerary">ITINERARIO</span></a>
     <button class="btn-nav-more" id="btnMore" onclick="toggleMoreMenu(event)">
       <div class="more-dots"><div class="more-dot"></div><div class="more-dot"></div><div class="more-dot"></div></div>
       <span class="more-lbl" data-i18n="nav_more">MÁS</span>
@@ -1665,7 +1665,7 @@ function saveRouteToTrip() {
       name: s.name, note: s.desc || "", url: s.url || ""
     })) }))
   }));
-  location.href = "Planificacion/index.html?section=parques";
+  location.href = "planificacion.html?section=parques";
 }
 
 function switchDay(d) {

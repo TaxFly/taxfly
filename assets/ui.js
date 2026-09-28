@@ -362,8 +362,8 @@
     } catch (e) {}
     return NAV_T[l] ? l : "es";
   };
-  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "tax.html", "calculator", "taxes" ], [ "Planificacion/index.html?section=parques", "calendar", "plan" ], [ "compras.html", "bag", "shopping" ] ];
-  const NAV_MORE = [ [ "tickets.html", "file", "tickets", "cyan" ], [ "Maps/Mis_cosas_de_viaje.html", "briefcase", "things", "violet" ], [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ] ];
+  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "tax.html", "calculator", "taxes" ], [ "planificacion.html?section=parques", "calendar", "plan" ], [ "compras.html", "bag", "shopping" ] ];
+  const NAV_MORE = [ [ "tickets.html", "file", "tickets", "cyan" ], [ "mis-cosas.html", "briefcase", "things", "violet" ], [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ] ];
   function buildNav() {
     const nav = document.querySelector(".nav-bar");
     if (!nav || !nav.querySelector(".btn-nav")) return;

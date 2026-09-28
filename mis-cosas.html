@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>TaxFly — Mis cosas</title>
-<link rel="icon" type="image/png" href="https://taxfly.github.io/taxfly/Maps/favicon.png?v=5">
+<link rel="icon" type="image/png" href="assets/icon-192.png?v=5">
 <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
 <meta name="theme-color" content="#0b1220">
-<link rel="manifest" href="../manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -480,15 +480,17 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
 
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
-<script src="./i18n.js"></script>
-<script src="./i18n-mis.js"></script>
-<script src="./sx-ui.js"></script>
-<script src="../config.js"></script>
-<script src="../assets/trip-context.js"></script>
-<script type="module" src="./mis-cosas-firebase.js"></script>
-<link rel="stylesheet" href="./sx.css">
-<script defer src="../assets/autofill.js"></script>
-<link rel="stylesheet" href="../assets/cohesion.css">
+<script src="assets/plan-i18n.js"></script>
+<script src="assets/mis-i18n.js"></script>
+<script src="assets/app-settings.js"></script>
+<script src="config.js"></script>
+<script src="assets/trip-context.js"></script>
+<script type="module" src="assets/mis-firebase.js"></script>
+<link rel="stylesheet" href="assets/app-settings.css">
+<script defer src="assets/autofill.js"></script>
+<link rel="stylesheet" href="assets/cohesion.css">
+<link rel="stylesheet" href="assets/plan-cohesion.css">
+<link rel="stylesheet" href="assets/mis-cohesion.css">
 </head>
 <body data-sec="accesorios">
 <header class="header">
@@ -503,8 +505,15 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
         <button class="icon-btn av" id="btnSettings" aria-label="Ajustes"><i data-ic="settings" data-s="18"></i></button>
       </div>
     </div>
+    <nav class="plan-app-nav" aria-label="Navegación principal">
+    <a href="index.html"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h5v-6h4v6h5V10"/></svg><span>Inicio</span></a>
+    <a href="tax.html"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 7h8M9 12h.01M14 12h.01M9 17h.01M14 17h.01"/></svg><span>Calculadora</span></a>
+    <a href="planificacion.html"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>Planificación</span></a>
+    <a href="compras.html"><svg viewBox="0 0 24 24"><path d="M4 8h16v13H4zM4 8l2-5h12l2 5M9 12a3 3 0 0 0 6 0"/></svg><span>Gastos</span></a>
+    <details class="plan-more" id="mis-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Más</span></summary><div class="plan-more-menu"><a href="tickets.html">Documentos</a><a href="mis-cosas.html">Mis cosas</a><a href="rutas.html">Rutas</a><a href="unidades.html">Ayudas y referencias</a></div></details>
+  </nav>
     <div class="enlaces" id="enlaces"></div>
-    <div class="mis-trip-filter"><label for="mis-trip-active">Viaje</label><select id="mis-trip-active" aria-label="Elegir viaje"></select><a href="../index.html#viajes">Gestionar en TaxFly</a></div>
+    <div class="mis-trip-filter"><label for="mis-trip-active">Viaje</label><select id="mis-trip-active" aria-label="Elegir viaje"></select><a href="index.html#viajes">Gestionar en TaxFly</a></div>
     <h1 id="titulo"></h1>
     <p class="sub" id="resumen"></p>
     <p class="modo" id="modo" hidden></p>
@@ -571,8 +580,8 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
     <span class="sx-sec">Cuenta</span>
     <div class="sx-card">
       <button type="button" class="sx-row" data-do="perfil"><span class="sx-ico" style="--c:#2563eb"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></svg></span><span class="sx-lbl">Cambiar perfil</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></button>
-      <a class="sx-row" href="../Planificacion/index.html"><span class="sx-ico" style="--c:#0891b2"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 0 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="sx-lbl">Ir a Planificación</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
-      <a class="sx-row" href="../index.html"><span class="sx-ico" style="--c:#6366f1"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg></span><span class="sx-lbl">Ir a Inicio</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
+      <a class="sx-row" href="planificacion.html"><span class="sx-ico" style="--c:#0891b2"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 0 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="sx-lbl">Ir a Planificación</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
+      <a class="sx-row" href="index.html"><span class="sx-ico" style="--c:#6366f1"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg></span><span class="sx-lbl">Ir a Inicio</span><span class="sx-go"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
     </div>
 
     <span class="sx-sec">Aplicación</span>
@@ -691,7 +700,7 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
 </dialog>
 
 <script>
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("../sw.js").catch(() => {}));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 
 const tr = window.tr || (x => x);
 
@@ -782,7 +791,7 @@ const ENLACES_DEF = [ {
   url: "https://taxfly.github.io/taxfly/index.html"
 }, {
   nombre: "Planificación",
-  url: "https://taxfly.github.io/taxfly/Planificacion/index.html"
+  url: "https://taxfly.github.io/taxfly/planificacion.html"
 } ];
 
 const enlaces = ENLACES_DEF;
@@ -2229,7 +2238,7 @@ function esperarFirebaseReady(timeoutMs) {
 </script>
 
 
-<link rel="stylesheet" href="../assets/taxie-widget.css">
+<link rel="stylesheet" href="assets/taxie-widget.css">
 
 <button id="ai-bubble" aria-label="Taxie — Asistente de viaje">
     <span id="ai-badge"></span>

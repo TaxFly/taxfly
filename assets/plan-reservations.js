@@ -151,8 +151,8 @@ function reservationCard(item) {
     ${item.address ? `<div class="reservation-meta">${ic("pin", 14)} ${escapeHtml(item.address)}</div>` : ""}
     ${item.notes ? `<p class="reservation-notes">${escapeHtml(item.notes)}</p>` : ""}
     <div class="reservation-footer">${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${ic("link", 15)} Abrir reserva</a>` : "<span class=\"reservation-no-link\">Sin enlace cargado</span>"}
-      ${docs.map(d => `<a href="../tickets.html?doc=${encodeURIComponent(d.id)}">${ic("file", 14)} ${escapeHtml(d.name || "Documento")}</a>`).join("")}
-      <a href="../tickets.html?reservation=${encodeURIComponent(item.id)}">${ic("plus", 14)} Adjuntar documento</a>
+      ${docs.map(d => `<a href="tickets.html?doc=${encodeURIComponent(d.id)}">${ic("file", 14)} ${escapeHtml(d.name || "Documento")}</a>`).join("")}
+      <a href="tickets.html?reservation=${encodeURIComponent(item.id)}">${ic("plus", 14)} Adjuntar documento</a>
       ${item.type === "stay" && item.address ? `<button type="button" data-res-action="starting-point" data-res-id="${escapeHtml(item.id)}">Usar como punto de partida</button>${reservationMapLink(item.address)}` : ""}
     </div>
   </article>`;

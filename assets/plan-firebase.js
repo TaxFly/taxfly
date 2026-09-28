@@ -73,7 +73,7 @@ function listenTripDocuments() {
 }
 window.tripPlanningCreate = async function(name,destinations,startDate,endDate) {
   await window.TripContext.create(currentUid,currentPerfilId,{name,destinations,startDate,endDate});
-  publishTrip(); location.assign("./index.html");
+  publishTrip(); location.assign("planificacion.html");
 };
 window.tripPlanningUpdate = async function(trip) {
   if(!trip || !trips.some(t=>t.id===trip.id))return false;
@@ -84,13 +84,13 @@ window.tripPlanningUpdate = async function(trip) {
 };
 window.tripPlanningSelect = function(id) {
   if(!window.TripContext.select(currentUid,currentPerfilId,id))return;
-  location.assign("./index.html");
+  location.assign("planificacion.html");
 };
 window.tripPlanningArchive = async function(id,status) {
   const saved=await window.TripContext.archive(currentUid,currentPerfilId,id,status);
   publishTrip();
   if(!saved) window.showMToast?.("Pendiente de sincronización con Firebase.");
-  location.assign("./index.html"); return true;
+  location.assign("planificacion.html"); return true;
 };
 window.tripPlanningRestore = async function(id) {
   await window.TripContext.archive(currentUid,currentPerfilId,id,"");
@@ -98,7 +98,7 @@ window.tripPlanningRestore = async function(id) {
 };
 window.tripPlanningDelete = async function(id) {
   if(!await window.TripContext.remove(currentUid,currentPerfilId,id))return false;
-  publishTrip(); location.assign("./index.html"); return true;
+  publishTrip(); location.assign("planificacion.html"); return true;
 };
 
 function orlandoDocRef(docId) {
@@ -195,7 +195,7 @@ async function migrateManualExpenses() {
   for (const expense of old) {
     if (!expense?.id || !(Number(expense.monto) > 0)) continue;
     await setDoc(doc(dest, "maps-" + activeTripId + "-" + expense.id), {
-      nombre: expense.nota || expense.cat || "Gasto de Trip Planning",
+      nombre: expense.nota || expense.cat || "Gasto de Planificación",
       valor: Number(expense.monto),
       cat: expense.cat || "otros",
       fecha: expense.fecha || Date.now(),

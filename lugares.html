@@ -480,7 +480,7 @@ if ("serviceWorker" in navigator) {
             </div>
         </div>
 
-        <div class="card" style="padding:16px 20px;margin-bottom:14px;"><a class="btn btn-primary" href="Planificacion/index.html?section=parques">Ver agenda de Planificación</a></div>
+        <div class="card" style="padding:16px 20px;margin-bottom:14px;"><a class="btn btn-primary" href="planificacion.html?section=parques">Ver agenda de Planificación</a></div>
 
         
         <div id="reminder-banner" class="reminder-banner" onclick="pedirPermisoRecordatorios()" style="display:none;">
@@ -1084,15 +1084,9 @@ const citiesConfig = {
 };
 
 const placesText = {
-  es: {places:"Lugares para explorar", parks:"Parques y atracciones", nearby:"Algunos parques están fuera de la ciudad; comprobá la distancia antes de ir.",
-    open:"Ver atracciones y esperas", loading:"Cargando datos…", unavailable:"Datos en vivo no disponibles", empty:"No hay atracciones publicadas para este parque.",
-    wait:"min de espera", operating:"En funcionamiento", closed:"No disponible", noWait:"Sin espera publicada"},
-  en: {places:"Places to explore", parks:"Parks and attractions", nearby:"Some parks are outside the city; check the distance before visiting.",
-    open:"See attractions and wait times", loading:"Loading data…", unavailable:"Live data unavailable", empty:"No attractions published for this park.",
-    wait:"min wait", operating:"Operating", closed:"Unavailable", noWait:"Wait time unavailable"},
-  pt: {places:"Lugares para conhecer", parks:"Parques e atrações", nearby:"Alguns parques ficam fora da cidade; confira a distância antes de ir.",
-    open:"Ver atrações e esperas", loading:"Carregando dados…", unavailable:"Dados ao vivo indisponíveis", empty:"Não há atrações publicadas para este parque.",
-    wait:"min de espera", operating:"Em operação", closed:"Indisponível", noWait:"Espera indisponível"}
+  es:{places:"Lugares para explorar",parks:"Parques",nearby:"Algunos parques están fuera de la ciudad; comprobá la distancia antes de ir.",loading:"Consultando esperas…",unavailable:"Esperas en vivo no disponibles",average:"Nivel promedio de filas",low:"Bajo",medium:"Medio",high:"Alto",count:"atracciones medidas"},
+  en:{places:"Places to explore",parks:"Parks",nearby:"Some parks are outside the city; check the distance before visiting.",loading:"Checking wait times…",unavailable:"Live waits unavailable",average:"Average queue level",low:"Low",medium:"Moderate",high:"High",count:"measured attractions"},
+  pt:{places:"Lugares para conhecer",parks:"Parques",nearby:"Alguns parques ficam fora da cidade; confira a distância antes de ir.",loading:"Consultando esperas…",unavailable:"Esperas ao vivo indisponíveis",average:"Nível médio das filas",low:"Baixo",medium:"Médio",high:"Alto",count:"atrações medidas"}
 };
 
 const checklistItems = {
@@ -1119,43 +1113,30 @@ window.renderCityData = async () => {
   if (window._updateParquesTab) window._updateParquesTab();
   if (window.updateInlineTransport) window.updateInlineTransport();
   const cityKey = document.getElementById("citySelector").value;
-  const lang = localStorage.getItem("appLang") || "es";
-  const t = placesText[lang] || placesText.es;
-  const container = document.getElementById("dynamicQueues");
-  const parkBox = document.getElementById("cityParks");
+  const lang = localStorage.getItem("appLang") || "es", t = placesText[lang] || placesText.es;
+  const container = document.getElementById("dynamicQueues"), parkBox = document.getElementById("cityParks");
   const places = citiesConfig[cityKey] || [];
   container.innerHTML = places.map(name => `<div class="queue-card"><div class="queue-name">${esc(name)}</div></div>`).join("");
   if (places.length) container.insertAdjacentHTML("afterbegin", `<h3 style="grid-column:1/-1;margin:0">${t.places}</h3>`);
   parkBox.textContent = "";
   if (!ParkLive.CITY_DESTINATIONS[cityKey]) return;
-  parkBox.innerHTML = `<h3>${t.parks}</h3><p class="park-source">${t.nearby}</p><p class="park-source">${t.loading}</p>`;
+  parkBox.innerHTML = `<h3>${t.parks}</h3><p class="park-source">${t.loading}</p>`;
   try {
     const parks = await ParkLive.parksForCity(cityKey);
     if (document.getElementById("citySelector").value !== cityKey) return;
-    parkBox.innerHTML = `<h3>${t.parks}</h3><p class="park-source">${t.nearby} <a href="https://themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a></p>` +
-      (parks.length ? parks.map(park => `<div class="park-live-card"><strong>${esc(park.name)}</strong><button type="button" data-park-id="${esc(park.id)}">${t.open}</button><div class="park-rides" aria-live="polite"></div></div>`).join("") : `<p class="park-source">${t.unavailable}</p>`);
-  } catch (_) {
-    if (document.getElementById("citySelector").value === cityKey)
-      parkBox.innerHTML = `<h3>${t.parks}</h3><p class="park-source">${t.unavailable}</p><p class="park-source"><a href="https://themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a></p>`;
-  }
+    parkBox.innerHTML = `<h3>${t.parks}</h3><p class="park-source">${t.nearby}</p><p class="park-source"><a href="https://themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a> · <a href="https://queue-times.com/" target="_blank" rel="noopener noreferrer">Powered by Queue-Times.com</a></p>` +
+      (parks.length ? parks.map((park,i) => `<div class="park-live-card"><strong>${esc(park.name)}</strong><span class="park-level" id="park-level-${i}" aria-live="polite">${t.loading}</span></div>`).join("") : `<p class="park-source">${t.unavailable}</p>`);
+    // Limit simultaneous provider requests; each park is updated independently.
+    for (let i=0;i<parks.length;i+=3) await Promise.all(parks.slice(i,i+3).map(async (park,offset) => {
+      const el = document.getElementById(`park-level-${i+offset}`);
+      try {
+        const result = await ParkLive.parkSummary(park);
+        if (el && document.getElementById("citySelector").value===cityKey)
+          el.textContent = result.level ? `${t.average}: ${t[result.level]} · ${result.count} ${t.count} · ${result.sources.join(" + ")}` : t.unavailable;
+      } catch (_) { if (el && document.getElementById("citySelector").value===cityKey) el.textContent=t.unavailable; }
+    }));
+  } catch (_) { if (document.getElementById("citySelector").value===cityKey) parkBox.innerHTML=`<h3>${t.parks}</h3><p class="park-source">${t.unavailable}</p>`; }
 };
-
-document.getElementById("cityParks").addEventListener("click", async event => {
-  const button = event.target.closest("button[data-park-id]");
-  if (!button || button.disabled) return;
-  const lang = localStorage.getItem("appLang") || "es";
-  const t = placesText[lang] || placesText.es;
-  const box = button.nextElementSibling;
-  if (box.dataset.loaded) { box.hidden = !box.hidden; return; }
-  button.disabled = true;
-  box.textContent = t.loading;
-  try {
-    const rides = await ParkLive.ridesForPark(button.dataset.parkId);
-    box.innerHTML = rides.length ? rides.map(ride => `<div class="park-ride"><span>${esc(ride.name)}</span><strong>${ride.wait !== null ? ride.wait + " " + t.wait : ride.status === "OPERATING" ? t.operating + " · " + t.noWait : ride.status ? t.closed : t.noWait}</strong></div>`).join("") : `<p class="park-source">${t.empty}</p>`;
-    box.dataset.loaded = "1";
-  } catch (_) { box.textContent = t.unavailable; }
-  button.disabled = false;
-});
 
 window.toggleActForm = () => {
   const lang = localStorage.getItem("appLang") || "es";

@@ -28,51 +28,51 @@ function devError(...args) {
 <meta name="apple-mobile-web-app-title" content="TaxFly">
 <meta name="theme-color" content="#0b1220">
 <title>TaxFly — Planificación</title>
-<link rel="manifest" href="../manifest.json">
-<link rel="icon" type="image/png" href="https://taxfly.github.io/taxfly/Maps/favicon.png?v=5">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="assets/icon-192.png?v=5">
 <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="../Maps/sx.css">
+<link rel="stylesheet" href="assets/plan-styles.css">
+<link rel="stylesheet" href="assets/app-settings.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="../config.js"></script>
-<script src="../assets/trip-context.js"></script>
-<script type="module" src="firebase-sync.js"></script>
+<script src="config.js"></script>
+<script src="assets/trip-context.js"></script>
+<script type="module" src="assets/plan-firebase.js"></script>
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("../sw.js").catch(() => {});
+    navigator.serviceWorker.register("sw.js").catch(() => {});
   });
 }
 </script>
-<script defer src="../assets/autofill.js"></script>
-<link rel="stylesheet" href="../assets/cohesion.css">
-<link rel="stylesheet" href="cohesion.css">
+<script defer src="assets/autofill.js"></script>
+<link rel="stylesheet" href="assets/cohesion.css">
+<link rel="stylesheet" href="assets/plan-cohesion.css">
 </head>
 <body class="theme-parques">
 
 
 <header class="header">
   <div class="hdr-row">
-    <a class="brand-back" href="../index.html" title="Ir a Inicio" aria-label="Ir a Inicio">
+    <a class="brand-back" href="index.html" title="Ir a Inicio" aria-label="Ir a Inicio">
         <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="tg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#2563eb"/></linearGradient><clipPath id="tc1"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="url(#tg1)"/><g clip-path="url(#tc1)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
         <span class="bb-wm">Tax<b>Fly</b></span>
       </a>
     <div class="hdr-right">
       <div class="sync-dot" id="sync-dot" title="Estado de sincronización"></div>
-      <a class="brand-back brand-viaje app-link" href="../Maps/Mis_cosas_de_viaje.html" title="Abrir Mis cosas de viaje" aria-label="Abrir Mis cosas de viaje">
+      <a class="brand-back brand-viaje app-link" href="mis-cosas.html" title="Abrir Mis cosas de viaje" aria-label="Abrir Mis cosas de viaje">
         <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="vgv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#vgv)"/><path d="M12 9.2V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.2" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/><rect x="6" y="9.2" width="20" height="15.6" rx="3.6" fill="#fff"/><path d="M6 17.2 C10 14.4 13 14.4 16 17.2 S22 20 26 17.2" stroke="url(#vgv)" stroke-width="2.4" stroke-linecap="round" fill="none"/><rect x="9.4" y="24.8" width="2.4" height="1.8" rx=".9" fill="#fff"/><rect x="20.2" y="24.8" width="2.4" height="1.8" rx=".9" fill="#fff"/></svg>
         <span class="bb-wm">Mis <b>cosas</b></span>
       </a>
     </div>
   </div>
   <nav class="plan-app-nav" aria-label="Navegación principal">
-    <a href="../index.html"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h5v-6h4v6h5V10"/></svg><span>Inicio</span></a>
-    <a href="../tax.html"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 7h8M9 12h.01M14 12h.01M9 17h.01M14 17h.01"/></svg><span>Calculadora</span></a>
-    <a href="./index.html" class="active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>Planificación</span></a>
-    <a href="../compras.html"><svg viewBox="0 0 24 24"><path d="M4 8h16v13H4zM4 8l2-5h12l2 5M9 12a3 3 0 0 0 6 0"/></svg><span>Gastos</span></a>
-    <details class="plan-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Más</span></summary><div class="plan-more-menu"><a href="../tickets.html">Documentos</a><a href="../Maps/Mis_cosas_de_viaje.html">Mis cosas</a><a href="../rutas.html">Rutas</a><a href="../unidades.html">Ayudas y referencias</a></div></details>
+    <a href="index.html"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h5v-6h4v6h5V10"/></svg><span>Inicio</span></a>
+    <a href="tax.html"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 7h8M9 12h.01M14 12h.01M9 17h.01M14 17h.01"/></svg><span>Calculadora</span></a>
+    <a href="planificacion.html" class="active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>Planificación</span></a>
+    <a href="compras.html"><svg viewBox="0 0 24 24"><path d="M4 8h16v13H4zM4 8l2-5h12l2 5M9 12a3 3 0 0 0 6 0"/></svg><span>Gastos</span></a>
+    <details class="plan-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Más</span></summary><div class="plan-more-menu"><a href="tickets.html">Documentos</a><a href="mis-cosas.html">Mis cosas</a><a href="rutas.html">Rutas</a><a href="unidades.html">Ayudas y referencias</a></div></details>
   </nav>
   <div class="hdr-title-row">
     <div><div class="plan-eyebrow">PLANIFICACIÓN DEL VIAJE</div><div class="header-title" id="main-title">Agenda y <span class="ht-accent">atracciones</span></div></div>
@@ -95,7 +95,7 @@ if ("serviceWorker" in navigator) {
       <button class="tab" id="nav-comidas" onclick="switchSection('comidas')"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7a3 3 0 0 0 6 0V3M8 13v8M18 3v18M18 3c-3 2-3 6 0 9"/></svg></span><span class="nav-date">Comidas</span></button>
       <button class="tab" id="nav-walmart" onclick="switchSection('walmart')"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2 12h12l2-9H6M9 21h.01M18 21h.01"/></svg></span><span class="nav-date">Supermercado</span></button>
       <button class="tab" id="nav-reservas" onclick="switchSection('reservas')"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M7 9h10M7 13h7M7 17h4"/></svg></span><span class="nav-date">Reservas</span></button>
-      <a class="tab plan-places-link" href="../lugares.html?tab=lugares"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6 7-12a7 7 0 1 0-14 0c0 6 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="nav-date">Lugares y notas</span></a>
+      <a class="tab plan-places-link" href="lugares.html?tab=lugares"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6 7-12a7 7 0 1 0-14 0c0 6 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="nav-date">Lugares y notas</span></a>
     </div>
     <button class="btn-nav-set" id="btnSettings" onclick="openSettingsDrawer()" title="Ajustes"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V19a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V10a1.7 1.7 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
@@ -148,8 +148,8 @@ if ("serviceWorker" in navigator) {
     <span class="sx-sec">Cuenta</span>
     <div class="sx-card">
       <button type="button" class="sx-row" onclick="changeProfile()"><span class="sx-ico" style="--c:#2563eb"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></svg></span><span class="sx-lbl">Cambiar perfil</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></button>
-      <a class="sx-row" href="../Maps/Mis_cosas_de_viaje.html"><span class="sx-ico" style="--c:#7c3aed"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V4h6v3M9 11v6M15 11v6"/></svg></span><span class="sx-lbl">Mis cosas de viaje</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
-      <a class="sx-row" href="../index.html"><span class="sx-ico" style="--c:#6366f1"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg></span><span class="sx-lbl">Ir a Inicio</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
+      <a class="sx-row" href="mis-cosas.html"><span class="sx-ico" style="--c:#7c3aed"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V4h6v3M9 11v6M15 11v6"/></svg></span><span class="sx-lbl">Mis cosas de viaje</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
+      <a class="sx-row" href="index.html"><span class="sx-ico" style="--c:#6366f1"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg></span><span class="sx-lbl">Ir a Inicio</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
     </div>
 
     <span class="sx-sec">Aplicación</span>
@@ -171,14 +171,15 @@ if ("serviceWorker" in navigator) {
   <button type="button" onclick="this.closest('dialog').close()">Cancelar</button>
 </dialog>
 
-<script src="../Maps/i18n.js"></script>
-<script src="i18n-orlando.js"></script>
-<script src="../Maps/sx-ui.js"></script>
-<script src="theme.js"></script>
+<script src="assets/plan-i18n.js"></script>
+<script src="assets/plan-i18n-orlando.js"></script>
+<script src="assets/app-settings.js"></script>
+<script src="assets/plan-theme.js"></script>
 
-<script src="legacy-parks.js"></script>
-<script src="app.js"></script>
-<script src="reservations.js"></script>
+<script src="assets/plan-legacy-parks.js"></script>
+<script src="assets/park-live.js"></script>
+<script src="assets/plan-app.js"></script>
+<script src="assets/plan-reservations.js"></script>
 
 
 <button class="add-day-fab" id="addDayFab" onclick="openMealModal()">+ Agregar día</button>
@@ -478,7 +479,7 @@ if ("serviceWorker" in navigator) {
 </div>
 
 
-<link rel="stylesheet" href="../assets/taxie-widget.css">
+<link rel="stylesheet" href="assets/taxie-widget.css">
 
 <button id="ai-bubble" aria-label="Taxie — Asistente de viaje">
     <span id="ai-badge"></span>

@@ -125,7 +125,7 @@ function syncedLoad(localKey, fbValue) {
   return fbValue !== undefined && fbValue !== null ? fbValue : localLoad(localKey);
 }
 
-const MIS_COSAS_URL = "./Mis_cosas_de_viaje.html";
+const MIS_COSAS_URL = "mis-cosas.html";
 
 const HOTEL_KEY = "orlando-hotel-v1";
 
@@ -356,7 +356,7 @@ window._appInit = function() {
     try {
       back = sessionStorage.getItem("orl_section");
     } catch (e) {}
-    if (sec && OK.includes(sec)) switchSection(sec); else if (back && OK.includes(back) && back !== "outlets") switchSection(back);
+    if (sec && OK.includes(sec)) switchSection(sec); else if (back && OK.includes(back)) switchSection(back); else switchSection("parques");
   } catch (e) {}
 };
 
@@ -1264,7 +1264,7 @@ function renderBudgetPill() {
 }
 
 function openBudgetFromPill() {
-  location.assign("../compras.html");
+  location.assign("compras.html");
 }
 
 window.openBudgetFromPill = openBudgetFromPill;
@@ -1289,7 +1289,7 @@ function renderBudgetBox() {
     const meta = budgetCatMeta[g.cat] || budgetCatMeta.otros;
     gastosHtml += `\n      <div class="budget-gasto-row">\n        <span class="budget-gasto-cat">${ic(meta.icon, 13)} ${meta.label}${g.nota ? " · " + escapeHtml(g.nota) : ""}</span>\n        <span class="budget-gasto-monto">${budgetUsd(g.monto)}\n          <button class="wm-icon-btn wm-icon-del" onclick="budgetDeleteGasto('${g.id}')" title="Eliminar" aria-label="Eliminar gasto">${ic("x", 14)}</button>\n        </span>\n      </div>`;
   });
-  const addForm = `<a class="budget-add-cat-btn" href="../compras.html">${ic("wallet", 15)} <span>Registrar gasto en TaxFly</span></a>`;
+  const addForm = `<a class="budget-add-cat-btn" href="compras.html">${ic("wallet", 15)} <span>Registrar gasto en TaxFly</span></a>`;
   box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      ${counted ? `<div class="budget-summary-row budget-summary-sub">\n        <span>Supermercado (estimado)</span>\n        <span class="budget-summary-val">${budgetUsd(wmEst)}</span>\n      </div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <label class="budget-market-toggle">\n      <input type="checkbox" ${counted ? "checked" : ""} onchange="budgetToggleMarket()">\n      <span>\n        <b>Descontar estimado del supermercado</b> (${budgetUsd(wmEst)})\n        <small>${counted ? "Activado: usalo solo si el súper NO lo cargás en Taxfly, si no se cuenta dos veces." : "Apagado: se asume que el súper se carga en Taxfly (ticket). Así no se cuenta dos veces."}</small>\n      </span>\n    </label>\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. El estimado de supermercado se suma solo si lo activás. Todo en USD.</div>`;
 }
 
@@ -1625,7 +1625,7 @@ function renderTripManager() {
   const selected=Math.max(0,Math.min(trip.activeDestination||0,destinations.length-1));
   slot.innerHTML=`<div class="trip-manager-heading">
       <div class="trip-manager-title"><span class="trip-manager-symbol" aria-hidden="true">${ic('plane',18)}</span><div><span class="trip-manager-kicker">VIAJE ACTIVO</span><strong title="${escapeHtml(trip.name)}">${escapeHtml(trip.name)}</strong></div></div>
-      <a class="trip-manager-edit" href="../index.html#viajes" aria-label="Editar viaje en TaxFly">${ic('pencil',15)}<span>Editar viaje</span></a>
+      <a class="trip-manager-edit" href="index.html#viajes" aria-label="Editar viaje en TaxFly">${ic('pencil',15)}<span>Editar viaje</span></a>
     </div>
     ${destinations.length?`<div class="trip-manager-destinations"><span>Destino</span><div class="trip-manager-options">${destinations.map((d,i)=>`<button type="button" class="${i===selected?'active':''}" aria-pressed="${i===selected}" onclick="tripSelectDestination(${i})">${escapeHtml(d.city)}${d.state?', '+escapeHtml(d.state):''}</button>`).join('')}</div><span class="trip-manager-weather" id="trip-manager-weather" role="status" aria-live="polite">Cargando clima actual…</span></div>`:''}`;
 }
@@ -1681,7 +1681,7 @@ const sectionMeta = {
     theme: "theme-walmart"
   },
   parques: {
-    title: "Parques y",
+    title: "Agenda y",
     accent: "atracciones",
     subtitle: "Tracker de atracciones",
     theme: "theme-parques"
@@ -3058,7 +3058,7 @@ function renderParques() {
   }
   const {done: gDone, total: gTotal} = pkCountAll();
   const gPct = gTotal > 0 ? Math.round(gDone / gTotal * 100) : 0;
-  let html = `<div class="parques-panel">\n    ${subtabs}\n    <div class="parques-global-bar">\n      <div class="parques-global-nums">\n        <div class="parques-global-count">${gDone}</div>\n        <div class="parques-global-lbl">de ${gTotal}</div>\n      </div>\n      <div class="parques-global-right">\n        <div class="parques-global-title">Atracciones completadas</div>\n        <div class="parques-prog-bg"><div class="parques-prog-fill" style="width:${gPct}%"></div></div>\n      </div>\n    </div>\n    ${itinMochilaLink()}\n    <div class="parques-search-wrap">\n      ${ic("search", 15)}\n      <input type="text" class="parques-search-input" id="pkSearchInput" placeholder="Buscar una atracción…" value="${escapeHtml(pkSearchQuery)}" oninput="pkApplySearch(this.value)">\n      ${pkSearchQuery ? `<button class="parques-search-clear" onclick="document.getElementById('pkSearchInput').value='';pkApplySearch('')" aria-label="Borrar búsqueda">${ic("x", 13)}</button>` : ""}\n    </div>\n    <div class="parques-filter-bar">`;
+  let html = `<div class="parques-panel">\n    ${subtabs}\n    <section class="live-rides-panel" aria-label="Esperas en vivo"><h3 id="live-rides-title"></h3><div class="live-rides-selects"><select id="live-city"></select><select id="live-park"></select></div><div id="live-rides" aria-live="polite"></div><p class="live-attribution"><a href="https://themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a> · <a href="https://queue-times.com/" target="_blank" rel="noopener noreferrer">Powered by Queue-Times.com</a></p></section>\n    <div class="parques-global-bar">\n      <div class="parques-global-nums">\n        <div class="parques-global-count">${gDone}</div>\n        <div class="parques-global-lbl">de ${gTotal}</div>\n      </div>\n      <div class="parques-global-right">\n        <div class="parques-global-title">Atracciones completadas</div>\n        <div class="parques-prog-bg"><div class="parques-prog-fill" style="width:${gPct}%"></div></div>\n      </div>\n    </div>\n    ${itinMochilaLink()}\n    <div class="parques-search-wrap">\n      ${ic("search", 15)}\n      <input type="text" class="parques-search-input" id="pkSearchInput" placeholder="Buscar una atracción…" value="${escapeHtml(pkSearchQuery)}" oninput="pkApplySearch(this.value)">\n      ${pkSearchQuery ? `<button class="parques-search-clear" onclick="document.getElementById('pkSearchInput').value='';pkApplySearch('')" aria-label="Borrar búsqueda">${ic("x", 13)}</button>` : ""}\n    </div>\n    <div class="parques-filter-bar">`;
   pkFilterMetaList().forEach(f => {
     html += `<button class="parques-filter-btn${pkFilter === f.id ? " active" : ""}" onclick="pkSetFilter('${f.id}')">${f.label}</button>`;
   });
@@ -3100,6 +3100,7 @@ function renderParques() {
   if (allParksList().length > 0) html += `<div class="parques-reset-row"><button class="wm-reset-btn" onclick="pkResetAll()">↺ Reiniciar todo</button></div>`;
   html += `</div>`;
   panel.innerHTML = html;
+  initLiveRides();
   updateParquesCounter();
   setTimeout(() => {
     pkOpenCards.forEach(parkId => {
@@ -3111,11 +3112,27 @@ function renderParques() {
   }, 80);
 }
 
+const liveLabels={es:{title:"Filas por atracción",city:"Elegí una ciudad",park:"Elegí un parque",loading:"Consultando esperas en vivo…",empty:"No hay esperas recientes para este parque.",unavailable:"Datos en vivo no disponibles",minutes:"min",closed:"Sin espera publicada"},en:{title:"Wait times by attraction",city:"Choose a city",park:"Choose a park",loading:"Checking live waits…",empty:"No recent waits for this park.",unavailable:"Live data unavailable",minutes:"min",closed:"Wait unavailable"},pt:{title:"Filas por atração",city:"Escolha uma cidade",park:"Escolha um parque",loading:"Consultando esperas ao vivo…",empty:"Não há esperas recentes para este parque.",unavailable:"Dados ao vivo indisponíveis",minutes:"min",closed:"Espera indisponível"}};
+let liveSelection={city:"orlando",park:""},liveRequest=0;
+async function initLiveRides(){
+  const cityEl=document.getElementById("live-city"),parkEl=document.getElementById("live-park"),box=document.getElementById("live-rides");
+  if(!cityEl||!window.ParkLive)return;
+  const t=liveLabels[localStorage.getItem("appLang")]||liveLabels.es;
+  document.getElementById("live-rides-title").textContent=t.title;
+  cityEl.setAttribute("aria-label",t.city);parkEl.setAttribute("aria-label",t.park);
+  cityEl.innerHTML=Object.keys(ParkLive.CITY_DESTINATIONS).map(c=>`<option value="${c}">${({orlando:"Orlando",nyc:"Nueva York",la:"Los Ángeles",sf:"San Francisco",chicago:"Chicago"})[c]}</option>`).join("");
+  cityEl.value=liveSelection.city;cityEl.onchange=()=>{liveSelection={city:cityEl.value,park:""};populate()};
+  parkEl.onchange=()=>{liveSelection.park=parkEl.value;showRides()};
+  async function populate(){let ticket=++liveRequest;box.textContent=t.loading;parkEl.replaceChildren();try{let parks=await ParkLive.parksForCity(liveSelection.city);if(ticket!==liveRequest||!parkEl.isConnected)return;parkEl.innerHTML=parks.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join("");let current=parks.find(p=>p.id===liveSelection.park)||parks[0];liveSelection.park=current?.id||"";parkEl.value=liveSelection.park;showRides();}catch(e){if(ticket===liveRequest)box.textContent=t.unavailable;}}
+  async function showRides(){let ticket=++liveRequest,id=liveSelection.park;if(!id){box.textContent=t.empty;return}box.textContent=t.loading;try{let park={id,name:parkEl.selectedOptions[0]?.textContent||""},rides=await ParkLive.ridesForPark(park);if(ticket!==liveRequest||!box.isConnected)return;box.replaceChildren();let recent=rides.filter(r=>r.wait!==null);if(!recent.length){box.textContent=t.empty;return}for(let ride of recent){let row=document.createElement("div");row.className="live-ride-row";let name=document.createElement("span"),wait=document.createElement("strong");name.textContent=ride.name;wait.textContent=`${ride.wait} ${t.minutes}`;row.append(name,wait);box.append(row)}}catch(e){if(ticket===liveRequest)box.textContent=t.unavailable;}}
+  populate();
+}
+
 function itinMochilaLink() {
   return `<a class="pk-mochila-link" href="${MIS_COSAS_URL}?sec=dia">\n      <span class="pk-mochila-ic">${ic("backpack", 18)}</span>\n      <span class="pk-mochila-txt"><strong>Mochila del día</strong><small>Revisala al salir del hotel y antes de irte del parque</small></span>\n      <span class="pk-mochila-arrow" aria-hidden="true">${ic("chevronRight", 16)}</span>\n    </a>`;
 }
 
-const XLSX_SRCS = [ "vendor-xlsx.min.js", "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" ];
+const XLSX_SRCS = [ "assets/plan-vendor-xlsx.min.js", "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" ];
 
 let _xlsxPromise = null;
 
@@ -4791,7 +4808,7 @@ function exportAllData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `trip-planning-backup-${(new Date).toISOString().slice(0, 10)}.json`;
+  a.download = `taxfly-planificacion-backup-${(new Date).toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -4871,7 +4888,7 @@ async function importAllData(event) {
     tipsSave();
     currentOutletDay = 0;
     closeSettingsDrawer();
-    switchSection("outlets");
+    switchSection("parques");
     showMToast("Datos importados");
     event.target.value = "";
   };

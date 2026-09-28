@@ -38,7 +38,7 @@
       deferred = null;
       prompt.prompt();
     } else {
-      location.href = new URL("../login.html?install=1", document.baseURI).href;
+      location.href = new URL("login.html?install=1", document.baseURI).href;
     }
   }
   function init() {

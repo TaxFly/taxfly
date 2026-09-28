@@ -12,20 +12,20 @@ function context(src, values) { const c = vm.createContext(values); vm.runInCont
 function storage(seed={}) { const m=new Map(Object.entries(seed)); return {getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),_map:m}; }
 
 test('Trip Planning keeps the Orlando data path and isolates new trips', () => {
-  const refCode = between(read('Planificacion/firebase-sync.js'), 'function orlandoDocRef(docId)', 'const docWriteQueues');
+  const refCode = between(read('assets/plan-firebase.js'), 'function orlandoDocRef(docId)', 'const docWriteQueues');
   const makeRef = activeTripId => context(refCode, {
     db:{}, currentUid:'user', currentPerfilId:'profile', activeTripId,
     doc:(_db,...path)=>path.join('/')
   }).orlandoDocRef('budget');
   assert.equal(makeRef('orlando'), 'usuarios/user/perfiles/profile/orlando/budget');
   assert.equal(makeRef('trip-123'), 'usuarios/user/perfiles/profile/tripPlanning/trip-123/data/budget');
-  const keyCode = between(read('Planificacion/app.js'), 'function scopedKey(key)', 'function syncedSave(');
+  const keyCode = between(read('assets/plan-app.js'), 'function scopedKey(key)', 'function syncedSave(');
   assert.equal(context(keyCode,{window:{_perfilId:'profile',_tripId:'orlando'}}).scopedKey('days'), 'days::profile');
   assert.equal(context(keyCode,{window:{_perfilId:'profile',_tripId:'trip-123'}}).scopedKey('days'), 'days::profile::trip-123');
 });
 
 test('editing a stop retains its map pin and coordinate links can restore pins', () => {
-  const src=between(read('Planificacion/app.js'), 'function stopSaveEdit(dayIdx, stopIdx)', 'function stopSaveDayLabel(dayIdx)');
+  const src=between(read('assets/plan-app.js'), 'function stopSaveEdit(dayIdx, stopIdx)', 'function stopSaveDayLabel(dayIdx)');
   const original={name:'Dólar Tree',desc:'Old',url:'',lat:28.459,lng:-81.475,custom:'keep'};
   const days=[{stops:[original]}];
   const values={'stop-edit-name':'Dollar Tree','stop-edit-desc':'8910 Turkey Lake Rd · Abre 8:00','stop-edit-url':'',
@@ -47,7 +47,7 @@ test('Orlando day three restores all six pins and saves one complete day', async
   const addresses=['8910 Turkey Lake Rd Ste 500','8375 International Dr','7603 Turkey Lake Rd','5269 International Dr','8001 S Orange Blossom Trl','730 Sand Lake Rd Suite 106'];
   const days=[{stops:[]},{stops:[]},{label:'Outlets',stops:names.slice(0,5).map((name,i)=>({name,desc:addresses[i]}))}];
   let saves=0, searches=0;
-  const code=between(read('Planificacion/app.js'),'const DAY_THREE_OUTLETS = [','function stopSaveDayLabel(');
+  const code=between(read('assets/plan-app.js'),'const DAY_THREE_OUTLETS = [','function stopSaveDayLabel(');
   const c=context(code,{days,window:{_tripId:'orlando'},document:{getElementById:()=>({disabled:false,textContent:''})},
     validStopCoords:(lat,lng)=>Number.isFinite(lat)&&Number.isFinite(lng)&&lat!==0&&lng!==0,
     coordsFromMapsUrl:()=>null,geoNominatimAddress:async()=>{searches++;return null},stopSearchAddress:()=>'',
@@ -63,7 +63,7 @@ test('Orlando day three restores all six pins and saves one complete day', async
 
 test('Firebase writes the newest day after an earlier pending update', async () => {
   let release; const writes=[];
-  const code=between(read('Planificacion/firebase-sync.js'),'const docWriteQueues = new Map();','async function fbGet(');
+  const code=between(read('assets/plan-firebase.js'),'const docWriteQueues = new Map();','async function fbGet(');
   const c=context(code,{orlandoDocRef:()=>({}),setDoc:(_ref,data)=>{writes.push(data);return new Promise(resolve=>{release=resolve})},devError:()=>{}});
   const first=c.fbSet('days',{days:[1]});
   const second=c.fbSet('days',{days:[1,2]});
@@ -78,7 +78,7 @@ test('Firebase writes the newest day after an earlier pending update', async () 
 
 test('an older Firebase day snapshot cannot erase recovered local pins', () => {
   const local=storage({'days::p::pending':JSON.stringify({days:[{stops:[{lat:28.445,lng:-81.475}]}],v:5})});
-  const src=between(read('Planificacion/app.js'),'window._shouldIgnoreDaysSnapshot = function(data)', 'function totalDone()');
+  const src=between(read('assets/plan-app.js'),'window._shouldIgnoreDaysSnapshot = function(data)', 'function totalDone()');
   const w={_fb:{stableStringify:v=>JSON.stringify(v)}};
   context(src,{window:w,localStorage:local,DAYS_KEY:'days',scopedKey:()=> 'days::p'});
   assert.equal(w._shouldIgnoreDaysSnapshot({days:[{stops:[{}]}],v:5}),true);
@@ -124,7 +124,7 @@ test('trip registry reuses existing IDs and retries a local edit without duplica
 });
 
 test('Mis cosas reads Orlando in place and new trips from their own branch', () => {
-  const source=between(read('Maps/mis-cosas-firebase.js'),'function rootPath(uid, perfilId, tripId)', 'function buildDB(');
+  const source=between(read('assets/mis-firebase.js'),'function rootPath(uid, perfilId, tripId)', 'function buildDB(');
   const c=context(source,{});
   assert.equal(c.rootPath('u','p','orlando'),'usuarios/u/perfiles/p/misCosas/root');
   assert.equal(c.rootPath('u','p','trip-1'),'usuarios/u/perfiles/p/tripPlanning/trip-1/misCosas/root');
@@ -144,7 +144,7 @@ test('backup includes each existing trip branch without inventing an ID', () => 
 });
 
 test('travel tips are hidden in Trip Planning and documents carry a trip ID', () => {
-  assert.doesNotMatch(between(read('Planificacion/app.js'),'function renderOutlets()', 'function switchOutletTab('),/renderTips\(\)/);
+  assert.doesNotMatch(between(read('assets/plan-app.js'),'function renderOutlets()', 'function switchOutletTab('),/renderTips\(\)/);
   assert.match(read('tickets.html'),/tripId: docObj.tripId \|\| "unassigned"/);
   assert.match(read('tickets.html'),/TripContext\.filter\(allDocs/);
 });
@@ -203,13 +203,13 @@ test('all settings install the main TaxFly PWA', () => {
     assert.match(read(page), /assets\/settings\.js/);
   }
   assert.match(read('assets/settings.js'), /row\("install", "phone"/);
-  for (const page of ['Planificacion/index.html','Maps/Mis_cosas_de_viaje.html']) {
+  for (const page of ['planificacion.html','mis-cosas.html']) {
     const html=read(page);
-    assert.match(html, /rel="manifest" href="\.\.\/manifest.json"/);
+    assert.match(html, /rel="manifest" href="manifest.json"/);
     assert.match(html, /id="sxInstall"(?! hidden)/);
     assert.match(html, /apple-mobile-web-app-title" content="TaxFly"/);
   }
-  assert.match(read('Maps/sx-ui.js'), /\.\.\/login\.html\?install=1/);
+  assert.match(read('assets/app-settings.js'), /login\.html\?install=1/);
 });
 
 test('profile name is text, image URL is constrained, and buttons retain click behavior', () => {
@@ -302,7 +302,7 @@ test('installed PWA shortcut loads cached login offline and refreshes HTML onlin
 });
 
 test('legacy Trip Planning expenses move once to the personal ledger before clearing the old list', async () => {
-  const src=between(read('Planificacion/firebase-sync.js'),'async function migrateManualExpenses()','window._fb = {');
+  const src=between(read('assets/plan-firebase.js'),'async function migrateManualExpenses()','window._fb = {');
   const writes=[];let clears=0;
   const expenses=[{id:'g1',monto:15,nota:'Cena',cat:'comida'}];
   const c=context(src,{navigator:{onLine:true},window:{_getLegacyBudgetExpenses:()=>expenses,
@@ -318,7 +318,7 @@ test('legacy Trip Planning expenses move once to the personal ledger before clea
 });
 
 test('route import merges by date and stop name without replacing existing itinerary blocks', () => {
-  const src=between(read('Planificacion/app.js'),'function importSharedRoute()','let itinDias =');
+  const src=between(read('assets/plan-app.js'),'function importSharedRoute()','let itinDias =');
   const pending={tripId:'orlando',profile:'p',startDate:'2027-01-10',days:[{name:'Día 1',stops:[
     {name:'Museo',note:'Entrada',url:'https://maps.example/museo'}, {name:'Parque',note:'',url:''}]}]};
   const store=storage({'taxfly-route-import':JSON.stringify(pending)});
@@ -333,7 +333,7 @@ test('route import merges by date and stop name without replacing existing itine
 });
 
 test('park migration matches attraction names and preserves the legacy marks until sync succeeds', async () => {
-  const src=between(read('Planificacion/app.js'),'let legacyParquesMigrationPending = false;','function parquesSave()');
+  const src=between(read('assets/plan-app.js'),'let legacyParquesMigrationPending = false;','function parquesSave()');
   const store=storage({parkTracker_v1:JSON.stringify({mk_0_2:true})});
   const state={};let resolveSync;
   const c=context(src,{window:{_tripId:'orlando',TAXFLY_LEGACY_PARK_NAMES:{mk_0_2:['Magic Kingdom','Space Mountain']},
@@ -349,7 +349,7 @@ test('park migration matches attraction names and preserves the legacy marks unt
 });
 
 test('Maps links offer a choice on iOS, open Google Maps on Android, and a new tab on desktop', () => {
-  const src=between(read('Planificacion/app.js'),'function tripMapLink(address,','window._syncedWriteLog');
+  const src=between(read('assets/plan-app.js'),'function tripMapLink(address,','window._syncedWriteLog');
   const setup=userAgent=>context(src,{navigator:{userAgent,platform:'',maxTouchPoints:0},
     escapeHtml:s=>s,ic:()=>'<pin/>',encodeURIComponent}).tripMapLink('850 Savanna Dr, Kissimmee');
   assert.match(setup('iPhone'),/onclick="openMapChooser\(this\.dataset\.mapQuery\)"/);
@@ -367,47 +367,47 @@ test('Maps links offer a choice on iOS, open Google Maps on Android, and a new t
   assert.equal(links['#map-choice-apple'].href,'https://maps.apple.com/?q=850%20Savanna%20Dr%2C%20Kissimmee');
   assert.equal(links['#map-choice-google'].href,'https://www.google.com/maps/search/?api=1&query=850%20Savanna%20Dr%2C%20Kissimmee');
   assert.equal(shown,true);
-  assert.match(read('Planificacion/styles.css'),/\.map-choice-dialog \{ position:fixed; inset:0; margin:auto;/);
-  assert.match(read('Planificacion/app.js'),/tripMapLink\(hotel\.addr, "hotel-map-link"\)/);
+  assert.match(read('assets/plan-styles.css'),/\.map-choice-dialog \{ position:fixed; inset:0; margin:auto;/);
+  assert.match(read('assets/plan-app.js'),/tripMapLink\(hotel\.addr, "hotel-map-link"\)/);
 });
 
 test('Planificación has the requested navigation and keeps a compatible entry for old links', () => {
   const ui=read('assets/ui.js');
   assert.match(ui,/\[ "index\.html", "home", "home" \], \[ "tax\.html", "calculator", "taxes" \]/);
-  assert.match(ui,/\[ "Planificacion\/index\.html\?section=parques", "calendar", "plan" \]/);
+  assert.match(ui,/\[ "planificacion\.html\?section=parques", "calendar", "plan" \]/);
   assert.match(ui,/\[ "compras\.html", "bag", "shopping" \]/);
   assert.match(ui,/\[ "tickets\.html", "file", "tickets", "cyan" \]/);
   for (const page of ['compras.html','lugares.html','tickets.html','tax.html']) {
     assert.match(read(page),/<nav class="nav-bar">/);
     assert.doesNotMatch(read(page),/app-shell\.js/);
   }
-  const plan=read('Planificacion/index.html');
+  const plan=read('planificacion.html');
   assert.match(plan,/<div class="nav-bar-wrap">/);
   assert.doesNotMatch(plan,/id="splash-screen"|assets\/splash\.css/);
-  assert.match(read('Maps/Mis_cosas_de_viaje.html'),/Tax<b>Fly<\/b>/);
-  assert.match(read('Maps/index.html'),/Planificacion\/index\.html/);
-  assert.match(read('itinerario.html'),/Planificacion\/index\.html/);
+  assert.match(read('mis-cosas.html'),/Tax<b>Fly<\/b>/);
+  assert.match(read('404.html'),/planificacion\.html/);
+  assert.match(read('itinerario.html'),/planificacion\.html/);
   assert.match(plan,/id="nav-parques"|id="nav-outlets"/);
 });
 
 test('old planning URLs redirect with their section and trip while the same data keys remain in use', () => {
-  const redirect=read('Maps/index.html');
-  assert.match(redirect,/Planificacion\/index\.html" \+ location\.search \+ location\.hash/);
-  const plan=read('Planificacion/index.html');
+  const redirect=read('404.html');
+  assert.match(redirect,/base\+page\+location\.search\+location\.hash/);
+  const plan=read('planificacion.html');
   for (const section of ['parques','outlets','comidas','walmart','reservas']) {
     assert.match(plan,new RegExp('id="nav-' + section + '"'));
   }
-  assert.match(plan,/href="\.\.\/lugares\.html\?tab=lugares"/);
-  assert.match(plan,/href="\.\.\/Maps\/Mis_cosas_de_viaje\.html"/);
-  assert.match(read('Planificacion/firebase-sync.js'),/tripPlanning", activeTripId, "data"/);
-  assert.match(read('Planificacion/app.js'),/const HOTEL_KEY = "orlando-hotel-v1"/);
-  assert.match(read('sw.js'),/\.\/Planificacion\/index\.html/);
+  assert.match(plan,/href="lugares\.html\?tab=lugares"/);
+  assert.match(plan,/href="mis-cosas\.html"/);
+  assert.match(read('assets/plan-firebase.js'),/tripPlanning", activeTripId, "data"/);
+  assert.match(read('assets/plan-app.js'),/const HOTEL_KEY = "orlando-hotel-v1"/);
+  assert.match(read('sw.js'),/\.\/planificacion\.html/);
   assert.match(read('sw.js'),/\.\/lugares\.html/);
 });
 
 test('Trip Planning no longer loads or shows personal reminders', () => {
-  assert.doesNotMatch(read('Planificacion/app.js'),/personalReminderSummary|_personalReminders/);
-  assert.doesNotMatch(read('Planificacion/firebase-sync.js'),/_personalReminders/);
+  assert.doesNotMatch(read('assets/plan-app.js'),/personalReminderSummary|_personalReminders/);
+  assert.doesNotMatch(read('assets/plan-firebase.js'),/_personalReminders/);
 });
 
 test('park data uses real, fresh wait times and never guesses the status of city landmarks', async () => {
@@ -429,7 +429,7 @@ test('park data uses real, fresh wait times and never guesses the status of city
 });
 
 test('a reservation shows the existing voucher from Documents as part of its card', () => {
-  const src=between(read('Planificacion/reservations.js'),'function reservationCard(item)','function reservationForm(type, item)');
+  const src=between(read('assets/plan-reservations.js'),'function reservationCard(item)','function reservationForm(type, item)');
   const c=context(src,{window:{_tripDocuments:[{id:'doc-pdf',name:'Airbnb Orlando',reservationId:'res-stay'}]},
     reservationUrl:s=>s,reservationDate:s=>s,reservationAirlineLogos:()=>'',reservationStayLogo:()=>'',
     reservationMapLink:()=>'<map-link/>',ic:()=>'<icon/>',escapeHtml:s=>s,encodeURIComponent});
@@ -438,4 +438,25 @@ test('a reservation shows the existing voucher from Documents as part of its car
   assert.match(card,/tickets\.html\?doc=doc-pdf/);
   assert.match(card,/Adjuntar documento/);
   assert.match(card,/<map-link\/>/);
+});
+
+
+test('park summary blends recent readings from two providers and ignores stale waits', async () => {
+  const now=Date.now(), parkId='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  const fetch=async url=>({ok:true,json:async()=>{
+    if(url.endsWith('/children'))return {children:['Alpha','Beta','Gamma','Old'].map((name,i)=>({id:'r'+i,name,entityType:'ATTRACTION'}))};
+    if(url.endsWith('/live'))return {liveData:[10,20,30,100].map((waitTime,i)=>({id:'r'+i,status:'OPERATING',lastUpdated:new Date(now-(i===3?3600000:60000)).toISOString(),queue:{STANDBY:{waitTime}}}))};
+    if(url.includes('parks.json'))return [{parks:[{id:6,name:'Magic Kingdom Park'}]}];
+    if(url.includes('queue_times.json'))return {rides:['Alpha','Beta','Gamma','Old'].map((name,i)=>({name,is_open:true,wait_time:[20,40,60,0][i],last_updated:new Date(now-(i===3?3600000:60000)).toISOString()}))};
+    return {destinations:[]};
+  }});
+  const c=context(read('assets/park-live.js'),{fetch,AbortSignal,Date,Map,Number});
+  const park={id:parkId,name:'Magic Kingdom Park'};
+  const rides=await c.ParkLive.ridesForPark(park);
+  assert.deepEqual(Array.from(rides.filter(r=>r.wait!==null).map(r=>r.wait)),[15,30,45]);
+  const summary=await c.ParkLive.parkSummary(park);
+  assert.equal(summary.average,30);
+  assert.equal(summary.level,'medium');
+  assert.equal(summary.count,3);
+  assert.deepEqual(Array.from(summary.sources),['ThemeParks.wiki','Queue-Times.com']);
 });
