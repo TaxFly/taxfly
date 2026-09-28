@@ -8,8 +8,11 @@
   function disableAutofill(root) {
     if (root.nodeType !== Node.ELEMENT_NODE) return;
     if (root.matches("form")) root.autocomplete = "off";
-    if (root.matches(fields)) root.autocomplete = "off";
-    root.querySelectorAll(`form, ${fields}`).forEach(element => { element.autocomplete = "off"; });
+    if (root.matches(fields) && !root.hasAttribute("autocomplete")) root.autocomplete = "off";
+    root.querySelectorAll("form").forEach(element => { element.autocomplete = "off"; });
+    root.querySelectorAll(fields).forEach(element => {
+      if (!element.hasAttribute("autocomplete")) element.autocomplete = "off";
+    });
   }
 
   function init() {

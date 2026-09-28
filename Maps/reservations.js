@@ -167,10 +167,10 @@ function reservationForm(type, item) {
   const nameHint = flight ? "Ej.: LATAM · LA8123" : stay ? "Ej.: Hotel o Airbnb" : "Ej.: Traslado al aeropuerto";
   return `<form class="reservation-form" id="reservation-form" data-type="${type}">
     <div class="reservation-form-head"><h3>${item ? "Editar reserva" : "Nueva reserva"}</h3><button type="button" id="reservation-cancel" aria-label="Cerrar formulario">${ic("x", 17)}</button></div>
-    <label>${nameLabel}<input name="name" required maxlength="90" placeholder="${nameHint}" value="${escapeHtml(item?.name || "")}">${flight ? `<small>Si viajás con dos aerolíneas, separalas con / (ej.: Avianca / American Airlines).</small><span class="reservation-airline-preview" aria-live="polite">${reservationAirlineLogos(item?.name)}</span>` : stay ? `<span class="reservation-airline-preview" aria-live="polite">${reservationStayLogo(item?.name)}</span>` : ""}</label>
+    <label>${nameLabel}<input name="reservationTitle" autocomplete="new-password" required maxlength="90" placeholder="${nameHint}" value="${escapeHtml(item?.name || "")}">${flight ? `<small>Si viajás con dos aerolíneas, separalas con / (ej.: Avianca / American Airlines).</small><span class="reservation-airline-preview" aria-live="polite">${reservationAirlineLogos(item?.name)}</span>` : stay ? `<span class="reservation-airline-preview" aria-live="polite">${reservationStayLogo(item?.name)}</span>` : ""}</label>
     <div class="reservation-form-dates"><label>${flight ? "Fecha del vuelo" : "Desde"}<input name="startDate" type="date" value="${escapeHtml(item?.startDate || "")}"></label><label>${flight ? "Regreso (opcional)" : "Hasta (opcional)"}<input name="endDate" type="date" value="${escapeHtml(item?.endDate || "")}"></label></div>
     <label>Código de reserva (opcional)<input name="reference" maxlength="50" autocomplete="off" placeholder="Localizador o número de confirmación" value="${escapeHtml(item?.reference || "")}"></label>
-    ${stay ? `<label>Dirección del alojamiento (opcional)<input name="address" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
+    ${stay ? `<label>Dirección del alojamiento (opcional)<input name="lodgingLocation" autocomplete="new-password" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
     <label>Enlace a mi reserva (opcional)<input name="url" type="url" inputmode="url" placeholder="https://…" value="${escapeHtml(item?.url || "")}"><small>Puede ser el enlace de la aerolínea, Airbnb o el sitio del alojamiento.</small></label>
     <label>Notas (opcional)<textarea name="notes" maxlength="400" rows="2" placeholder="Check-in, horario o dato útil">${escapeHtml(item?.notes || "")}</textarea></label>
     <div class="reservation-form-actions"><button type="button" id="reservation-cancel-bottom">Cancelar</button><button type="submit">Guardar reserva</button></div>
@@ -192,12 +192,12 @@ function renderReservations() {
   if (form) {
     form.addEventListener("submit", saveReservation);
     if (reservationFormType === "flight") {
-      const nameInput = form.elements.name;
+      const nameInput = form.elements.reservationTitle;
       nameInput.addEventListener("input", () => {
         form.querySelector(".reservation-airline-preview").innerHTML = reservationAirlineLogos(nameInput.value);
       });
     } else if (reservationFormType === "stay") {
-      const nameInput = form.elements.name;
+      const nameInput = form.elements.reservationTitle;
       nameInput.addEventListener("input", () => {
         form.querySelector(".reservation-airline-preview").innerHTML = reservationStayLogo(nameInput.value);
       });
@@ -217,7 +217,7 @@ async function onReservationAction(event) {
     reservationFormType = item?.type || button.dataset.resType;
     reservationEditingId = item?.id || null;
     renderReservations();
-    document.querySelector("#reservation-form input[name=name]")?.focus();
+    document.querySelector("#reservation-form input[name=reservationTitle]")?.focus();
     return;
   }
   if (!item) return;
@@ -243,7 +243,7 @@ function saveReservation(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const values = Object.fromEntries(new FormData(form));
-  const name = values.name.trim();
+  const name = values.reservationTitle.trim();
   if (!name) return;
   const url = values.url.trim();
   if (url && !reservationUrl(url)) {
@@ -260,7 +260,7 @@ function saveReservation(event) {
     startDate: values.startDate || "",
     endDate: values.endDate || "",
     reference: values.reference.trim(),
-    address: values.address?.trim() || "",
+    address: values.lodgingLocation?.trim() || "",
     url: reservationUrl(url),
     notes: values.notes.trim()
   };
