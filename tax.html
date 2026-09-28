@@ -359,7 +359,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         #offline-toast{
             position:fixed;
-            bottom:24px;
+            bottom:calc(24px + env(safe-area-inset-bottom));
             left:50%;
             transform:translateX(-50%) translateY(0);
             z-index:9998;
@@ -375,18 +375,24 @@ document.addEventListener("DOMContentLoaded", function() {
             font-size:.8rem;
             font-weight:700;
             color:var(--text);
-            white-space:nowrap;
+            white-space:normal;
+            width:max-content;
+            min-width:0;
+            box-sizing:border-box;
+            overflow-wrap:anywhere;
             pointer-events:none;
             opacity:0;
             transition:opacity .35s ease, transform .35s ease;
-            max-width:calc(100vw - 32px);
+            max-width:min(420px, calc(100vw - 32px));
         }
+        #offline-label{min-width:0;}
         #offline-toast.show{opacity:1;pointer-events:auto;}
         #offline-toast.hide{opacity:0;transform:translateX(-50%) translateY(12px);}
         #offline-dot{width:8px;height:8px;border-radius:50%;background:#BA7517;flex-shrink:0;}
         #offline-label{display:flex;flex-direction:column;gap:1px;}
         #offline-label strong{font-size:.82rem;color:var(--text);}
         #offline-label span{font-size:.7rem;font-weight:600;color:var(--text-sub);}
+        .tax-rule-note{font-size:.68rem;line-height:1.45;color:var(--text-sub);margin:8px 0 13px;overflow-wrap:anywhere}.tax-rule-note a{color:var(--primary);font-weight:700}
 
     </style>
     <script>
@@ -478,8 +484,8 @@ if ("serviceWorker" in navigator) {
         </div>
 
         <div class="subcat-grid" id="food-mode-grid">
-            <button class="subcat-btn active" id="foodmode-prepared" onclick="setFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
-            <button class="subcat-btn" id="foodmode-grocery" onclick="setFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
+            <button class="subcat-btn" id="foodmode-prepared" onclick="setFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
+            <button class="subcat-btn active" id="foodmode-grocery" onclick="setFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
         </div>
         <div class="subcat-grid" id="food-candy-grid">
             <button class="subcat-btn active" id="foodcandy-no" onclick="setFoodCandy(false)">🥦 <span data-i18n="food_staple">Alimento básico</span></button>
@@ -488,6 +494,7 @@ if ("serviceWorker" in navigator) {
         <div class="subcat-grid" id="med-mode-grid">
             <button class="subcat-btn active" id="medmode-otc" onclick="setMedMode('otc')">💊 <span data-i18n="med_otc">Venta libre (OTC)</span></button>
             <button class="subcat-btn" id="medmode-rx" onclick="setMedMode('prescription')">📋 <span data-i18n="med_rx">Con receta</span></button>
+            <button class="subcat-btn" id="medmode-eligible" onclick="setMedMode('eligible_otc')">✓ <span data-i18n="med_listed">Remedio de lista exenta (FL)</span></button>
         </div>
 
         <div class="input-group">
@@ -519,6 +526,7 @@ if ("serviceWorker" in navigator) {
             <div class="result-value" id="total-with-tax">USD 0.00</div>
             <div class="result-detail" id="tax-detail">Tax Aplicado: 0%</div>
         </div>
+        <div class="tax-rule-note" id="tax-rule-note" role="note"></div>
 
         <div class="tip-collapse-header" onclick="toggleTip()">
             <div class="tip-collapse-title" data-i18n="label_tip">Propina (Tip)</div>
@@ -554,6 +562,7 @@ if ("serviceWorker" in navigator) {
     
     <div class="calc-panel" id="panel-cart">
     <div class="cart-card">
+        <div class="tax-rule-note" id="cart-tax-rule-note" role="note"></div>
         <div style="font-size:.68rem;font-weight:600;color:var(--text-dim);margin-bottom:14px;line-height:1.4;" data-i18n="cart_hint">Sumá cada producto del súper y mirá el total con tax al final, sin salir de la app.</div>
 
         <div class="input-group">
@@ -566,8 +575,8 @@ if ("serviceWorker" in navigator) {
                 <button class="cat-btn" id="cart-btn-clothing" onclick="setCartCategory('clothing')"><span class="cat-icon">👕</span><span data-i18n="cat_clothing">ROPA</span></button>
             </div>
             <div class="subcat-grid" id="cart-food-mode-grid">
-                <button class="subcat-btn active" id="cart-foodmode-prepared" onclick="setCartFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
-                <button class="subcat-btn" id="cart-foodmode-grocery" onclick="setCartFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
+                <button class="subcat-btn" id="cart-foodmode-prepared" onclick="setCartFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
+                <button class="subcat-btn active" id="cart-foodmode-grocery" onclick="setCartFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
             </div>
             <div class="subcat-grid" id="cart-food-candy-grid">
                 <button class="subcat-btn active" id="cart-foodcandy-no" onclick="setCartFoodCandy(false)">🥦 <span data-i18n="food_staple">Alimento básico</span></button>
@@ -576,6 +585,7 @@ if ("serviceWorker" in navigator) {
             <div class="subcat-grid" id="cart-med-mode-grid">
                 <button class="subcat-btn active" id="cart-medmode-otc" onclick="setCartMedMode('otc')">💊 <span data-i18n="med_otc">Venta libre (OTC)</span></button>
                 <button class="subcat-btn" id="cart-medmode-rx" onclick="setCartMedMode('prescription')">📋 <span data-i18n="med_rx">Con receta</span></button>
+                <button class="subcat-btn" id="cart-medmode-eligible" onclick="setCartMedMode('eligible_otc')">✓ <span data-i18n="med_listed">Remedio de lista exenta (FL)</span></button>
             </div>
         </div>
 
@@ -839,6 +849,7 @@ let perfilId = null;
 let perfilFoto = null;
 
 const taxData = {
+  "District of Columbia": [{n:"Washington, DC",t:Date.now() >= Date.parse("2026-10-01T00:00:00-04:00") ? 7 : 6}],
   Alabama: [ {
     n: "Birmingham",
     t: 10
@@ -889,7 +900,7 @@ const taxData = {
   }, {
     n: "Kissimmee",
     t: 7.5
-  } ],
+  }, { n: "Jacksonville", t: 7.5 }, { n: "Tallahassee", t: 7.5 } ],
   Georgia: [ {
     n: "Atlanta",
     t: 8.9
@@ -972,7 +983,7 @@ const taxData = {
   } ],
   "New Jersey": [ {
     n: "Jersey City",
-    t: 6.63
+    t: 6.625
   } ],
   "New Mexico": [ {
     n: "Albuquerque",
@@ -980,7 +991,7 @@ const taxData = {
   } ],
   "New York": [ {
     n: "NYC",
-    t: 8.88
+    t: 8.875
   }, {
     n: "Buffalo",
     t: 8.75
@@ -1152,7 +1163,8 @@ const i18n = {
     food_staple: "Alimento básico",
     food_candy: "Golosina / gaseosa",
     med_otc: "Venta libre (OTC)",
-    med_rx: "Con receta"
+    med_rx: "Con receta",
+    med_listed: "Remedio exento (FL)"
   },
   en: {
     nav_expenses: "EXPENSES",
@@ -1240,7 +1252,8 @@ const i18n = {
     food_staple: "Grocery staple",
     food_candy: "Candy / soda",
     med_otc: "Over-the-counter (OTC)",
-    med_rx: "Prescription"
+    med_rx: "Prescription",
+    med_listed: "Listed exempt remedy (FL)"
   },
   pt: {
     nav_expenses: "GASTOS",
@@ -1328,7 +1341,8 @@ const i18n = {
     food_staple: "Alimento básico",
     food_candy: "Doce / refrigerante",
     med_otc: "Venda livre (OTC)",
-    med_rx: "Com receita"
+    med_rx: "Com receita",
+    med_listed: "Remédio isento (FL)"
   }
 };
 
@@ -1433,6 +1447,7 @@ window.setMedMode = mode => {
   individualMedMode = mode;
   document.getElementById("medmode-otc")?.classList.toggle("active", mode === "otc");
   document.getElementById("medmode-rx")?.classList.toggle("active", mode === "prescription");
+  document.getElementById("medmode-eligible")?.classList.toggle("active", mode === "eligible_otc");
   calculate();
 };
 
@@ -1453,52 +1468,72 @@ window.setCustomTip = () => {
   updateTipBadge();
 };
 
-const GROCERY_TAX_OVERRIDE = {
-  Alabama: 2,
-  Hawaii: 4,
-  Idaho: 6,
-  Mississippi: 5,
-  Missouri: 1.225,
-  "South Dakota": 4.2,
-  Tennessee: 4,
-  Utah: 3,
-  Virginia: 1
-};
-
-const OTC_MED_EXEMPT_STATES = new Set([ "Connecticut", "Florida", "Maryland", "Minnesota", "New Jersey", "New York", "Pennsylvania", "Texas", "Vermont", "Virginia" ]);
-
-const CANDY_SODA_FULL_TAX_STATES = new Set([ "Arkansas", "Colorado", "Connecticut", "Florida", "Illinois", "Indiana", "Iowa", "Kentucky", "Maine", "Maryland", "Minnesota", "New Jersey", "New York", "North Carolina", "North Dakota", "Rhode Island", "Tennessee", "Texas", "Wisconsin" ]);
-
+// Rules checked against state tax agencies, September 2026. City rates are
+// estimates unless the jurisdiction is identified by an address.
+const CANDY_SODA_FULL_TAX_STATES = new Set([
+  "Arkansas","Colorado","Connecticut","Florida","Illinois","Indiana","Iowa","Kentucky",
+  "Maine","Maryland","Minnesota","New Jersey","New York","North Carolina",
+  "North Dakota","Rhode Island","Tennessee","Texas","Wisconsin"
+]);
 function getFoodTaxRate(state, mode, localRate, isCandy) {
   if (mode !== "grocery") return localRate;
   if (isCandy && CANDY_SODA_FULL_TAX_STATES.has(state)) return localRate;
-  return GROCERY_TAX_OVERRIDE[state] ?? 0;
+  // Reduced statewide food rates; keep local components where the agency says they apply.
+  if (state === "Alabama") return Math.max(0, localRate - 2); // 4% general → 2% food state rate
+  if (state === "Mississippi") return Math.max(0, localRate - 2); // 7% → 5%
+  if (state === "Missouri" || state === "Tennessee") return Math.max(0, localRate - 3);
+  if (state === "Utah") return 3; // combined grocery food rate
+  if (state === "Virginia") return 1;
+  if (state === "Hawaii" || state === "Idaho" || state === "South Dakota") return localRate;
+  if (state === "Louisiana") return Math.max(0, localRate - 5); // state exempt, local may apply
+  return 0; // ordinary unprepared groceries; confirm product qualification in the receipt
 }
 
 function getMedTaxRate(state, mode, localRate) {
   if (mode === "prescription") return 0;
-  return OTC_MED_EXEMPT_STATES.has(state) ? 0 : localRate;
+  if (state === "Minnesota" && mode === "otc") return 0; // drugs with Drug Facts label
+  if (state === "Florida" && mode === "eligible_otc") return 0; // DR-46NT listed remedies
+  return localRate; // OTC by itself is not proof of an exemption
 }
 
-const CLOTHING_EXEMPT_STATES = new Set([ "Minnesota", "New Jersey", "Pennsylvania", "Vermont" ]);
-
-const CLOTHING_THRESHOLD_STATES = {
-  "New York": 110,
-  Massachusetts: 175,
-  "Rhode Island": 250
-};
-
-function getClothingTaxRate(state, price, localRate) {
-  if (CLOTHING_EXEMPT_STATES.has(state)) return 0;
-  if (state in CLOTHING_THRESHOLD_STATES) {
-    return price <= CLOTHING_THRESHOLD_STATES[state] ? 0 : localRate;
+const CLOTHING_EXEMPT_STATES = new Set(["Minnesota","New Jersey","Pennsylvania","Vermont"]);
+function getClothingTaxRate(state, price, localRate, cityName = "") {
+  if (CLOTHING_EXEMPT_STATES.has(state)) return 0; // qualifying everyday clothes only
+  if (state === "New York" && price < 110) {
+    return cityName === "NYC" ? 0 : cityName === "Buffalo" ? 4.75 : localRate;
   }
+  // MA and RI tax only the amount above their per-item exemption.
+  if (state === "Massachusetts") return price > 175 ? localRate * (price - 175) / price : 0;
+  if (state === "Rhode Island") return price > 250 ? localRate * (price - 250) / price : 0;
   return localRate;
 }
 
+function selectedTaxCity(id) {
+  const sel = document.getElementById(id);
+  return sel?.selectedOptions?.[0]?.textContent?.split(" (")[0] || "";
+}
+function updateTaxRuleNote() {
+  const lang = localStorage.getItem("appLang") || "es";
+  const copy = {
+    es: "Estimación: las tasas y exenciones dependen de la dirección, el producto y su uso. En Florida, alimentos sin preparar suelen estar exentos; comidas preparadas y golosinas pueden tributar. El remedio exento debe figurar en la lista oficial. Confirmá el recibo antes de pagar.",
+    en: "Estimate: rates and exemptions depend on address, product and use. In Florida, unprepared groceries are generally exempt; prepared food and candy may be taxed. An exempt remedy must appear on the official list. Check the receipt before paying.",
+    pt: "Estimativa: alíquotas e isenções dependem do endereço, produto e uso. Na Flórida, alimentos não preparados geralmente são isentos; refeições prontas e doces podem ser tributados. O remédio isento deve constar da lista oficial. Confira o recibo."
+  };
+  for (const id of ["tax-rule-note", "cart-tax-rule-note"]) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = copy[lang] || copy.es;
+  }
+}
+function validateZipTax(data, selectedState) {
+  const rate = Number(data?.rates?.combined) * 100;
+  if (!Number.isFinite(rate) || rate < 0 || rate > 20) throw new Error("invalid rate");
+  const returned = String(data.state || "").trim().toLowerCase();
+  if (returned && selectedState && returned !== selectedState.toLowerCase() && STATE_ALIASES[returned] !== selectedState) throw new Error("state mismatch");
+  return rate;
+}
 let manualTaxActive = false;
 
-let individualFoodMode = "prepared";
+let individualFoodMode = "grocery";
 
 let individualFoodCandy = false;
 
@@ -1527,8 +1562,8 @@ window.lookupZipTax = async () => {
     if (!res.ok) throw new Error("zip not found");
     const json = await res.json();
     if (!json.success || !json.data) throw new Error("bad response");
-    zipTaxOverride = json.data.rates.combined * 100;
-    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${json.data.rates.combined_pct} exacto`;
+    zipTaxOverride = validateZipTax(json.data, document.getElementById("state-select")?.value);
+    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${zipTaxOverride.toFixed(3)}% estimado por ZIP`;
     statusEl.style.color = "var(--success)";
   } catch (e) {
     zipTaxOverride = null;
@@ -1574,8 +1609,8 @@ window.lookupCartZipTax = async () => {
     if (!res.ok) throw new Error("zip not found");
     const json = await res.json();
     if (!json.success || !json.data) throw new Error("bad response");
-    cartZipTaxOverride = json.data.rates.combined * 100;
-    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${json.data.rates.combined_pct} exacto`;
+    cartZipTaxOverride = validateZipTax(json.data, document.getElementById("cart-state-select")?.value);
+    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${cartZipTaxOverride.toFixed(3)}% estimado por ZIP`;
     statusEl.style.color = "var(--success)";
   } catch (e) {
     cartZipTaxOverride = null;
@@ -1597,6 +1632,7 @@ window.clearCartZipTax = () => {
 };
 
 window.calculate = () => {
+  updateTaxRuleNote();
   const price = parseFloat(document.getElementById("price").value) || 0;
   const state = document.getElementById("state-select")?.value;
   let tax;
@@ -1609,7 +1645,7 @@ window.calculate = () => {
     tax = parseFloat(document.getElementById("city-select").value) || 0;
   }
   const cat = document.querySelector("#panel-individual .cat-btn.active");
-  if (cat?.id === "btn-food") tax = getFoodTaxRate(state, individualFoodMode, tax, individualFoodCandy); else if (cat?.id === "btn-med") tax = getMedTaxRate(state, individualMedMode, tax); else if (cat?.id === "btn-clothing") tax = getClothingTaxRate(state, price, tax);
+  if (cat?.id === "btn-food") tax = getFoodTaxRate(state, individualFoodMode, tax, individualFoodCandy); else if (cat?.id === "btn-med") tax = getMedTaxRate(state, individualMedMode, tax); else if (cat?.id === "btn-clothing") tax = getClothingTaxRate(state, price, tax, selectedTaxCity("city-select"));
   const subtotal = price * (1 + tax / 100);
   const fmt = n => n.toLocaleString("en-US", {
     minimumFractionDigits: 2,
@@ -2328,9 +2364,9 @@ const CITY_ALIASES = {
   "new jersey": "Jersey City",
   newark: "Jersey City",
   "nueva jersey": "Jersey City",
-  "washington dc": "Virginia Beach",
-  "washington d.c.": "Virginia Beach",
-  dc: "Virginia Beach",
+  "washington dc": "Washington, DC",
+  "washington d.c.": "Washington, DC",
+  dc: "Washington, DC",
   "virginia beach": "Virginia Beach",
   honolulu: "Honolulu",
   hawaii: "Honolulu",
@@ -2429,9 +2465,9 @@ const CITY_ALIASES = {
   "kansas city mo": "St. Louis",
   savannah: "Atlanta",
   "savannah ga": "Atlanta",
-  jacksonville: "Orlando",
+  jacksonville: "Jacksonville",
   "jacksonville fl": "Orlando",
-  tallahassee: "Orlando",
+  tallahassee: "Tallahassee",
   "newark nj": "Jersey City",
   "new haven": "Stamford",
   "hartford ct": "Stamford"
@@ -2754,7 +2790,7 @@ let cartItems = [];
 
 let cartCurrentCategory = "general";
 
-let cartFoodMode = "prepared";
+let cartFoodMode = "grocery";
 
 let cartFoodCandy = false;
 
@@ -2788,7 +2824,7 @@ const CART_CAT_META = {
 function getCartItemTaxRate(item, state, localRate) {
   if (item.category === "food") return getFoodTaxRate(state, item.mode, localRate, item.isCandy);
   if (item.category === "med") return getMedTaxRate(state, item.mode, localRate);
-  if (item.category === "clothing") return getClothingTaxRate(state, item.price, localRate);
+  if (item.category === "clothing") return getClothingTaxRate(state, item.price, localRate, selectedTaxCity("cart-city-select"));
   return localRate;
 }
 
@@ -2818,6 +2854,7 @@ window.setCartMedMode = mode => {
   cartMedMode = mode;
   document.getElementById("cart-medmode-otc")?.classList.toggle("active", mode === "otc");
   document.getElementById("cart-medmode-rx")?.classList.toggle("active", mode === "prescription");
+  document.getElementById("cart-medmode-eligible")?.classList.toggle("active", mode === "eligible_otc");
 };
 
 window.loadCartCities = () => {
@@ -2908,6 +2945,7 @@ window.clearCart = async () => {
 };
 
 function renderCart() {
+  updateTaxRuleNote();
   const list = document.getElementById("cart-list");
   if (!list) return;
   const summary = document.getElementById("cart-summary");
