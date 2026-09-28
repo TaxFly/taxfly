@@ -40,3 +40,8 @@
 .park-filter-control{display:flex;align-items:center;gap:3px;margin-bottom:12px;min-width:0}.parques-filter-bar{flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;margin:0;padding:4px 1px 8px;scroll-behavior:smooth}.parques-filter-btn{white-space:nowrap}.scroll-arrow{flex:none;width:27px;height:35px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font-size:24px;cursor:pointer;line-height:1}
 .park-card-header{min-width:0}.park-card-info{min-width:0}.park-card-name,.park-card-label{white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 @media(max-width:500px){.plan-app-nav{grid-template-columns:repeat(5,minmax(0,1fr)) 38px}.plan-app-nav>a,.plan-more>summary{font-size:7px}.plan-app-nav svg{width:19px;height:19px}}
+
+.plan-app-nav>a[href="planificacion.html"] span{font-size:clamp(6px,1.8vw,9px);letter-spacing:0;white-space:nowrap}
+.plan-section-menu a{display:flex;align-items:center;gap:10px;width:100%;color:var(--text);padding:11px 12px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:800}
+.plan-section-menu a:hover{background:color-mix(in srgb,var(--theme-accent) 14%,var(--surface));color:var(--theme-accent)}
+.trip-manager[hidden],.trip-chip-slot[hidden]{display:none!important}

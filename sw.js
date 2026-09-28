@@ -1,4 +1,4 @@
-const CACHE = "taxfly-c3ec4d2c6ef2";
+const CACHE = "taxfly-0a954df9e7e4";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 

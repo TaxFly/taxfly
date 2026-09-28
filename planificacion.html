@@ -77,9 +77,9 @@ if ("serviceWorker" in navigator) {
     <div class="global-counter" id="global-counter" title="Paradas visitadas">—</div>
   </div>
   <div class="header-subtitle" id="main-subtitle" hidden>Cronograma de compras</div>
-  <div id="trip-manager" class="trip-manager" aria-label="Viaje activo"></div>
+  <div id="trip-manager" class="trip-manager" hidden aria-hidden="true" aria-label="Viaje activo"></div>
   <div class="hdr-meta">
-    <div class="trip-chip-slot" id="trip-chip-slot"></div>
+    <div class="trip-chip-slot" id="trip-chip-slot" hidden aria-hidden="true"></div>
     <div class="budget-pill-slot" id="budget-pill-slot"></div>
   </div>
   <div class="today-card-slot" id="today-card-slot" style="display:none"></div>
@@ -91,7 +91,7 @@ if ("serviceWorker" in navigator) {
       <button class="tab active" id="nav-parques" onclick="switchSection('parques')"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg></span><span class="nav-date">Agenda y parques</span></button>
       <button class="tab" id="nav-outlets" onclick="switchSection('outlets')"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16v12H4zM3 9l2-6h14l2 6M9 21v-7h6v7"/></svg></span><span class="nav-date">Outlets</span></button>
       <button class="tab" id="nav-food" onclick="switchSection('comidas')"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7a3 3 0 0 0 6 0V3M8 13v8M18 3v18M18 3c-3 2-3 6 0 9"/></svg></span><span class="nav-date">Comidas y supermercado</span></button>
-      <details class="plan-section-more" id="plan-section-more"><summary class="tab"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span class="nav-date">Más</span></summary><div class="plan-section-menu"><button id="nav-reservas" onclick="switchSection('reservas')"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 10h18"/></svg>RESERVAS</button><button id="nav-lugares" onclick="switchSection('lugares')"><svg class="icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="2"/></svg>LUGARES Y NOTAS</button></div></details>
+      <details class="plan-section-more" id="plan-section-more"><summary class="tab"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span class="nav-date">Más</span></summary><div class="plan-section-menu"><button id="nav-reservas" onclick="switchSection('reservas')"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 10h18"/></svg>RESERVAS</button><a id="nav-lugares" href="lugares.html"><svg class="icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="2"/></svg>LUGARES Y NOTAS</a></div></details>
     </div>
     
   </div>

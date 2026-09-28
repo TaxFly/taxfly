@@ -1696,6 +1696,7 @@ const sectionMeta = {
 };
 
 function switchSection(section) {
+  if (section === "lugares") { window.location.href = "lugares.html"; return; }
   window.taxflySetPlanSection?.(section === "parques" ? parquesSubTab === "atracciones" ? "atracciones" : "agenda" : section === "reservas" ? "reservas" : section);
   try {
     sessionStorage.setItem("orl_section", section);

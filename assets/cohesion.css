@@ -1,3 +1,5 @@
 a, a:visited, a:hover, a:focus-visible { text-decoration:none; }
 :where(button, a, input, select, textarea):focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
 :where(.app-header, .header) .wm-usa, :where(.app-header, .header) .bb-wm b { color:var(--primary,#2563eb); }
+
+.taxfly-trip-filter[hidden]{display:none!important}
