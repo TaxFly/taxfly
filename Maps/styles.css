@@ -1550,6 +1550,8 @@ body.theme-reservas { --theme-accent:#6366f1; --theme-accent2:#2563eb; }
 .reservation-footer { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; }
 .reservation-footer a { background:var(--theme-accent); border-color:var(--theme-accent); color:#fff; }
 .reservation-footer a:hover { color:#fff; filter:brightness(1.1); }
+.reservation-footer .reservation-map-link { background:var(--surface2); border-color:var(--border2); color:var(--text); }
+.reservation-footer .reservation-map-link:hover { color:var(--theme-accent); border-color:var(--theme-accent); filter:none; }
 .reservation-no-link { color:var(--muted); font-size:11px; }
 .reservation-form { display:grid; gap:12px; margin-top:16px; padding:16px; border:1px solid var(--theme-accent); border-radius:13px; background:var(--bg); }
 .reservation-form-head { display:flex; align-items:center; justify-content:space-between; }

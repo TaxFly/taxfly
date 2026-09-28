@@ -109,18 +109,54 @@ function reservationAirlineLogos(name) {
   ).join("")}</span>`;
 }
 
+const reservationStayBrands = [
+  { name: "Airbnb", aliases: ["airbnb"], icon: "https://cdn.simpleicons.org/airbnb/FF5A5F" },
+  { name: "Hilton", aliases: ["hilton", "hampton inn", "hampton by hilton", "doubletree", "embassy suites", "homewood suites", "home2 suites"], icon: "https://cdn.simpleicons.org/hiltonhotelsandresorts/231F20" },
+  { name: "Marriott", aliases: ["marriott", "courtyard", "sheraton", "westin", "residence inn", "fairfield inn", "springhill suites", "ritz-carlton"], icon: "https://cdn.simpleicons.org/marriott/9D1B3A" },
+  { name: "Hyatt", aliases: ["hyatt"], domain: "hyatt.com" },
+  { name: "Holiday Inn", aliases: ["holiday inn"], domain: "ihg.com" },
+  { name: "InterContinental", aliases: ["intercontinental"], domain: "ihg.com" },
+  { name: "Wyndham", aliases: ["wyndham"], domain: "wyndhamhotels.com" },
+  { name: "Best Western", aliases: ["best western"], domain: "bestwestern.com" },
+  { name: "Accor", aliases: ["accor", "novotel", "ibis", "mercure", "sofitel"], domain: "all.accor.com" },
+  { name: "Radisson", aliases: ["radisson"], domain: "radissonhotels.com" },
+  { name: "Four Seasons", aliases: ["four seasons"], domain: "fourseasons.com" },
+  { name: "Rosen Hotels", aliases: ["rosen inn", "rosen centre", "rosen plaza", "rosen shingle creek"], domain: "rosenhotels.com" }
+];
+
+function reservationStayBrand(name) {
+  const normalized = String(name || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const words = ` ${normalized.replace(/[^a-z0-9]+/g, " ").trim()} `;
+  return reservationStayBrands.find(brand => brand.aliases.some(alias => words.includes(` ${alias} `))) || null;
+}
+
+function reservationStayLogo(name) {
+  const brand = reservationStayBrand(name);
+  if (!brand) return "";
+  const src = brand.icon || `https://${brand.domain}/favicon.ico`;
+  return `<span class="reservation-airline-logos"><span class="reservation-airline-logo"><img src="${escapeHtml(src)}" alt="${escapeHtml(brand.name)}" title="${escapeHtml(brand.name)}" loading="lazy" onerror="this.closest('.reservation-airline-logos').remove()"></span></span>`;
+}
+
+function reservationMapLink(address) {
+  const query = encodeURIComponent(address);
+  const ios = /iPad|iPhone|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const mobile = ios || /Android/i.test(navigator.userAgent);
+  const url = ios ? `https://maps.apple.com/?q=${query}` : `https://www.google.com/maps/search/?api=1&query=${query}`;
+  return `<a class="reservation-map-link" href="${escapeHtml(url)}"${mobile ? "" : ' target="_blank" rel="noopener noreferrer"'}>${ic("pin", 15)} Abrir en Maps</a>`;
+}
+
 function reservationCard(item) {
   const href = reservationUrl(item.url);
   const dates = [reservationDate(item.startDate), reservationDate(item.endDate)].filter(Boolean).join(" – ");
   return `<article class="reservation-card">
-    <div class="reservation-card-top"><div class="reservation-flight-title">${item.type === "flight" ? reservationAirlineLogos(item.name) : ""}<strong>${escapeHtml(item.name)}</strong></div>
+    <div class="reservation-card-top"><div class="reservation-flight-title">${item.type === "flight" ? reservationAirlineLogos(item.name) : item.type === "stay" ? reservationStayLogo(item.name) : ""}<strong>${escapeHtml(item.name)}</strong></div>
       <div class="reservation-actions"><button type="button" data-res-action="edit" data-res-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}">${ic("pencil", 15)}</button><button type="button" data-res-action="delete" data-res-id="${escapeHtml(item.id)}" aria-label="Eliminar ${escapeHtml(item.name)}">${ic("x", 15)}</button></div></div>
     ${dates ? `<div class="reservation-meta">${ic("calendar", 14)} ${escapeHtml(dates)}</div>` : ""}
     ${item.reference ? `<div class="reservation-meta">Código: <b>${escapeHtml(item.reference)}</b></div>` : ""}
     ${item.address ? `<div class="reservation-meta">${ic("pin", 14)} ${escapeHtml(item.address)}</div>` : ""}
     ${item.notes ? `<p class="reservation-notes">${escapeHtml(item.notes)}</p>` : ""}
     <div class="reservation-footer">${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${ic("link", 15)} Abrir reserva</a>` : "<span class=\"reservation-no-link\">Sin enlace cargado</span>"}
-      ${item.type === "stay" && item.address ? `<button type="button" data-res-action="starting-point" data-res-id="${escapeHtml(item.id)}">Usar como punto de partida</button>` : ""}
+      ${item.type === "stay" && item.address ? `<button type="button" data-res-action="starting-point" data-res-id="${escapeHtml(item.id)}">Usar como punto de partida</button>${reservationMapLink(item.address)}` : ""}
     </div>
   </article>`;
 }
@@ -131,7 +167,7 @@ function reservationForm(type, item) {
   const nameHint = flight ? "Ej.: LATAM · LA8123" : stay ? "Ej.: Hotel o Airbnb" : "Ej.: Traslado al aeropuerto";
   return `<form class="reservation-form" id="reservation-form" data-type="${type}">
     <div class="reservation-form-head"><h3>${item ? "Editar reserva" : "Nueva reserva"}</h3><button type="button" id="reservation-cancel" aria-label="Cerrar formulario">${ic("x", 17)}</button></div>
-    <label>${nameLabel}<input name="name" required maxlength="90" placeholder="${nameHint}" value="${escapeHtml(item?.name || "")}">${flight ? `<small>Si viajás con dos aerolíneas, separalas con / (ej.: Avianca / American Airlines).</small><span class="reservation-airline-preview" aria-live="polite">${reservationAirlineLogos(item?.name)}</span>` : ""}</label>
+    <label>${nameLabel}<input name="name" required maxlength="90" placeholder="${nameHint}" value="${escapeHtml(item?.name || "")}">${flight ? `<small>Si viajás con dos aerolíneas, separalas con / (ej.: Avianca / American Airlines).</small><span class="reservation-airline-preview" aria-live="polite">${reservationAirlineLogos(item?.name)}</span>` : stay ? `<span class="reservation-airline-preview" aria-live="polite">${reservationStayLogo(item?.name)}</span>` : ""}</label>
     <div class="reservation-form-dates"><label>${flight ? "Fecha del vuelo" : "Desde"}<input name="startDate" type="date" value="${escapeHtml(item?.startDate || "")}"></label><label>${flight ? "Regreso (opcional)" : "Hasta (opcional)"}<input name="endDate" type="date" value="${escapeHtml(item?.endDate || "")}"></label></div>
     <label>Código de reserva (opcional)<input name="reference" maxlength="50" autocomplete="off" placeholder="Localizador o número de confirmación" value="${escapeHtml(item?.reference || "")}"></label>
     ${stay ? `<label>Dirección del alojamiento (opcional)<input name="address" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
@@ -159,6 +195,11 @@ function renderReservations() {
       const nameInput = form.elements.name;
       nameInput.addEventListener("input", () => {
         form.querySelector(".reservation-airline-preview").innerHTML = reservationAirlineLogos(nameInput.value);
+      });
+    } else if (reservationFormType === "stay") {
+      const nameInput = form.elements.name;
+      nameInput.addEventListener("input", () => {
+        form.querySelector(".reservation-airline-preview").innerHTML = reservationStayLogo(nameInput.value);
       });
     }
     const cancel = () => { reservationFormType = null; reservationEditingId = null; renderReservations(); };
