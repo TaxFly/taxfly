@@ -261,7 +261,7 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 
     
-    <a class="next-event-card" href="itinerario.html">
+    <a class="next-event-card" href="lugares.html?tab=actividades">
         <div class="ne-dot" id="ne-dot">📅</div>
         <div class="ne-info">
             <div class="ne-label" data-i18n="next_event_label">Próximo evento</div>
@@ -506,7 +506,7 @@ const I18N = {
     }, {
       icon: "📍",
       color: "ic-green",
-      href: "itinerario.html",
+      href: "lugares.html",
       name: "Itinerario",
       desc: "Tu agenda de actividades día a día"
     }, {
@@ -536,7 +536,7 @@ const I18N = {
     }, {
       icon: "🌍",
       color: "ic-teal",
-      href: "https://taxfly.github.io/taxfly/Maps/index.html",
+      href: "https://taxfly.github.io/taxfly/Planificacion/index.html",
       name: "Planificación",
       desc: "Viajes, lugares, comidas, compras y atracciones por EE. UU."
     } ],
@@ -627,7 +627,7 @@ const I18N = {
     }, {
       icon: "📍",
       color: "ic-green",
-      href: "itinerario.html",
+      href: "lugares.html",
       name: "Itinerary",
       desc: "Your day-by-day activity schedule"
     }, {
@@ -657,7 +657,7 @@ const I18N = {
     }, {
       icon: "🛒",
       color: "ic-teal",
-      href: "https://taxfly.github.io/taxfly/Maps/index.html",
+      href: "https://taxfly.github.io/taxfly/Planificacion/index.html",
       name: "Maps",
       desc: "Trips, places, meals, shopping and attractions across the USA"
     } ],
@@ -748,7 +748,7 @@ const I18N = {
     }, {
       icon: "📍",
       color: "ic-green",
-      href: "itinerario.html",
+      href: "lugares.html",
       name: "Itinerário",
       desc: "Sua agenda de atividades dia a dia"
     }, {
@@ -778,7 +778,7 @@ const I18N = {
     }, {
       icon: "🛒",
       color: "ic-teal",
-      href: "https://taxfly.github.io/taxfly/Maps/index.html",
+      href: "https://taxfly.github.io/taxfly/Planificacion/index.html",
       name: "Maps",
       desc: "Viagens, lugares, refeições, compras e atrações pelos EUA"
     } ],
@@ -895,7 +895,7 @@ function renderBudgetUI(base, gastos) {
       mapsNoteEl.textContent = `incluye ${mapsSpentCache.toLocaleString("en-US", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      })} de Trip Planning`;
+      })} de Planificación`;
       mapsNoteEl.style.display = "block";
     } else mapsNoteEl.style.display = "none";
   }
@@ -1412,7 +1412,7 @@ function renderSections() {
   const cards = [
     {href:"tax.html", icon:"calculator", tone:"blue", name:lang === "en" ? "Calculator" : "Calculadora"},
     {href:"compras.html", icon:"bag", tone:"violet", name:sections.find(s=>s.href==="compras.html")?.name || "Gastos"},
-    {href:"Maps/index.html?section=parques", icon:"calendar", tone:"teal", name:heading[1]},
+    {href:"Planificacion/index.html?section=parques", icon:"calendar", tone:"teal", name:heading[1]},
     {href:"unidades.html", icon:"bulb", tone:"amber", name:{es:"Ayudas y referencias", en:"Help & references", pt:"Ajuda e referências"}[lang] || "Ayudas y referencias"},
     {href:"Maps/Mis_cosas_de_viaje.html", icon:"briefcase", tone:"indigo", name:heading[2]}
   ];

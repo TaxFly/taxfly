@@ -1,34 +1,19 @@
-const CACHE_VERSION = 'v50';
+const CACHE_VERSION = 'v51';
 const CACHE_NAME = 'trip-planning-' + CACHE_VERSION;
 const TILES_CACHE_NAME = 'orlando-tiles-v1';
 const MAX_TILES = 600;
 
 const APP_SHELL = [
-  './',
   './index.html',
-  './styles.css',
-  './app.js',
-  './legacy-parks.js',
-  './reservations.js',
-  './theme.js',
-  './firebase-sync.js',
-  './manifest.json',
-  './favicon.png',
-  './apple-touch-icon.png',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png',
-  './vendor-xlsx.min.js',
   './Mis_cosas_de_viaje.html',
   './mis-cosas-firebase.js',
   './sx.css',
   './sx-ui.js',
+  './i18n.js',
+  './i18n-mis.js',
   '../assets/trip-context.js',
   '../assets/cohesion.css',
-  '../assets/autofill.js',
-  './i18n.js',
-  './i18n-orlando.js',
-  './i18n-mis.js',
+  '../assets/autofill.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -43,7 +28,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys
-        .filter((k) => k !== CACHE_NAME && k !== TILES_CACHE_NAME)
+        .filter((k) => k.startsWith('trip-planning-') && k !== CACHE_NAME)
         .map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );

@@ -44,7 +44,7 @@
     {
       "name": "Plan del viaje",
       "short_name": "Plan",
-      "url": "./login.html?next=Maps/index.html?section=parques",
+      "url": "./login.html?next=Planificacion/index.html",
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     },
     {

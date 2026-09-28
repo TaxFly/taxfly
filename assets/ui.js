@@ -293,8 +293,8 @@
       taxes: "CALCULADORA",
       taxes_d: "Calculadora de impuestos",
       shopping: "GASTOS",
-      itinerary: "ITINERARIO",
-      itinerary_d: "Lugares y recordatorios",
+      itinerary: "LUGARES Y NOTAS",
+      itinerary_d: "Ciudades, notas y recordatorios",
       more: "MÁS",
       routes: "Rutas",
       routes_d: "Planificá tus recorridos",
@@ -315,8 +315,8 @@
       taxes: "CALCULATOR",
       taxes_d: "Sales tax calculator",
       shopping: "EXPENSES",
-      itinerary: "ITINERARY",
-      itinerary_d: "Places and reminders",
+      itinerary: "PLACES & NOTES",
+      itinerary_d: "Cities, notes and reminders",
       more: "MORE",
       routes: "Routes",
       routes_d: "Plan your routes",
@@ -337,8 +337,8 @@
       taxes: "CALCULADORA",
       taxes_d: "Calculadora de impostos",
       shopping: "GASTOS",
-      itinerary: "ITINERÁRIO",
-      itinerary_d: "Lugares e lembretes",
+      itinerary: "LUGARES E NOTAS",
+      itinerary_d: "Cidades, notas e lembretes",
       more: "MAIS",
       routes: "Rotas",
       routes_d: "Planeje seus roteiros",
@@ -362,8 +362,8 @@
     } catch (e) {}
     return NAV_T[l] ? l : "es";
   };
-  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "tax.html", "calculator", "taxes" ], [ "Maps/index.html?section=parques", "calendar", "plan" ], [ "compras.html", "bag", "shopping" ] ];
-  const NAV_MORE = [ [ "tickets.html", "file", "tickets", "cyan" ], [ "Maps/Mis_cosas_de_viaje.html", "briefcase", "things", "violet" ], [ "itinerario.html", "pin", "itinerary", "green" ], [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ] ];
+  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "tax.html", "calculator", "taxes" ], [ "Planificacion/index.html?section=parques", "calendar", "plan" ], [ "compras.html", "bag", "shopping" ] ];
+  const NAV_MORE = [ [ "tickets.html", "file", "tickets", "cyan" ], [ "Maps/Mis_cosas_de_viaje.html", "briefcase", "things", "violet" ], [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ] ];
   function buildNav() {
     const nav = document.querySelector(".nav-bar");
     if (!nav || !nav.querySelector(".btn-nav")) return;
@@ -442,7 +442,7 @@
     const file = (location.pathname.split("/").pop() || "index.html").toLowerCase();
     document.querySelectorAll(".nav-bar .btn-nav[href]").forEach(a => {
       const h = (a.getAttribute("href") || "").toLowerCase();
-      a.classList.toggle("active", h === file || file === "" && h === "index.html");
+      a.classList.toggle("active", h === file || file === "" && h === "index.html" || file === "lugares.html" && h.startsWith("planificacion/index.html"));
     });
     const dd = document.querySelector(".nav-bar .btn-nav-more");
     if (dd) {

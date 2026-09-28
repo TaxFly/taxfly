@@ -1,0 +1,13 @@
+
+.plan-app-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:12px 0 19px;padding:5px;background:var(--surface);border:1px solid var(--border);border-radius:17px;box-shadow:var(--shadow)}
+.plan-app-nav>a,.plan-more>summary{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:57px;gap:3px;padding:6px 2px;border-radius:12px;color:var(--muted);font-size:10px;font-weight:800;text-align:center;text-decoration:none;cursor:pointer;list-style:none;line-height:1.12}
+.plan-app-nav>a.active{color:#fff;background:var(--accent);box-shadow:0 4px 15px -6px var(--accent)}
+.plan-app-nav svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.plan-more{position:relative;min-width:0}.plan-more>summary::-webkit-details-marker{display:none}.plan-more[open]>summary{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.plan-more-menu{position:absolute;right:0;top:calc(100% + 9px);width:210px;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);padding:6px}
+.plan-more-menu a{display:block;padding:11px 12px;border-radius:9px;color:var(--text);font-size:13px;font-weight:750;text-decoration:none}.plan-more-menu a:hover{background:var(--surface2)}
+.plan-eyebrow{color:var(--accent);font-size:11px;font-weight:900;letter-spacing:1.2px;margin-bottom:3px}.hdr-title-row{margin-top:3px}
+.nav-bar-wrap{top:env(safe-area-inset-top,0px);padding:9px 16px}.nav-bar{max-width:830px;margin:auto;align-items:stretch}.tabs{display:flex;flex:1;min-width:0;gap:4px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.nav-bar .tab{flex:1 0 92px;min-width:92px;padding:9px 7px;border-radius:12px;text-decoration:none}.nav-bar .tab svg{width:24px;height:24px}.tab .nav-date{font-size:10px;line-height:1.15}
+.nav-bar .btn-nav-set{align-self:center}.plan-places-link{color:var(--muted)}
+@media(max-width:500px){.plan-app-nav>a,.plan-more>summary{font-size:9px;min-height:55px}.plan-app-nav svg{width:23px;height:23px}.nav-bar-wrap{position:relative;top:auto}.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}.nav-bar .tab{min-width:0;flex-basis:auto;min-height:64px}}
