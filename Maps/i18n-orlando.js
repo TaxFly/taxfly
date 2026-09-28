@@ -206,7 +206,6 @@ I18N.add({
   "+ Agregar prenda": [ "+ Add item", "+ Adicionar peça" ],
   "Movido a No necesito ✓": [ "Moved to Not needed ✓", "Movido para Não preciso ✓" ],
   "Se van a desmarcar todas las prendas compradas.": [ "All purchased items will be unchecked.", "Todas as peças compradas serão desmarcadas." ],
-  "Guía de talles": [ "Size guide", "Guia de tamanhos" ],
   "Guía de talles US ↔ ARG": [ "US ↔ ARG size guide", "Guia de tamanhos US ↔ ARG" ],
   "Guía de talles US↔ARG": [ "US↔ARG size guide", "Guia de tamanhos US↔ARG" ],
   "{0} Guía de talles US↔ARG": [ "{0} US↔ARG size guide", "{0} Guia de tamanhos US↔ARG" ],

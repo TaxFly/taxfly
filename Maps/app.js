@@ -11,7 +11,6 @@ const ICON_PATHS = {
   castle: '<path d="M3 21V9l3-2v3l3-2v-2l3 3 3-3v2l3-2v3l3 2v10Z"/><path d="M3 21h18"/><path d="M10 21v-5a2 2 0 0 1 4 0v5"/>',
   clapper: '<path d="M3 8.5 5 3l3.3 3-2 5.5Z"/><path d="M8.3 6 11.6 9l6.7-3.5-3.3-3Z"/><path d="M3 11h18v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/>',
   shirt: '<path d="M8 3 3 6l2 3 3-1.2V21h8V7.8L19 9l2-3-5-3-2 2h-4Z"/>',
-  exchange: '<path d="M4 8h15l-3.5-3.5M20 16H5l3.5 3.5"/>',
   pants: '<path d="M6 2h12l1 8-2 12h-3l-1.5-11L11 22H8L6 10Z"/>',
   dumbbell: '<path d="M4 9v6M2 10.5v3M22 10.5v3M20 9v6M7 12h10"/><rect x="5.5" y="8" width="3" height="8" rx="1"/><rect x="15.5" y="8" width="3" height="8" rx="1"/>',
   footprints: '<path d="M8 15c1.7 0 3-1 3-3 0-1.2-.7-2-1.4-3-.6-1-1-1.7-1-3a2.6 2.6 0 0 0-5.2 0c0 1 .3 1.6.8 2.5"/><path d="M4 21c0-1.7 1-3 3-3s3 1.3 3 3"/><path d="M16 12c-1.7 0-3-1-3-3 0-1.2.7-2 1.4-3 .6-1 1-1.7 1-3a2.6 2.6 0 0 1 5.2 0c0 1-.3 1.6-.8 2.5"/><path d="M13 18c0-1.7 1-3 3-3s3 1.3 3 3"/>',
@@ -294,7 +293,6 @@ async function resetDay(d) {
 
 window._appInit = function() {
   renderTripManager();
-  renderTripWeather();
   hotelLoad();
   loadState();
   mealLoad();
@@ -1642,19 +1640,7 @@ function renderTripManager() {
       <div class="trip-manager-title"><span class="trip-manager-symbol" aria-hidden="true">${ic('plane',18)}</span><div><span class="trip-manager-kicker">VIAJE ACTIVO</span><strong title="${escapeHtml(trip.name)}">${escapeHtml(trip.name)}</strong></div></div>
       <a class="trip-manager-edit" href="../index.html#viajes" aria-label="Editar viaje en TaxFly">${ic('pencil',15)}<span>Editar viaje</span></a>
     </div>
-    ${destinations.length?`<div class="trip-manager-destinations"><span>Destino</span><div class="trip-manager-options">${destinations.map((d,i)=>`<button type="button" class="${i===selected?'active':''}" aria-pressed="${i===selected}" onclick="tripSelectDestination(${i})">${escapeHtml(d.city)}${d.state?', '+escapeHtml(d.state):''}</button>`).join('')}</div><span class="trip-manager-weather" id="trip-manager-weather" role="status" aria-live="polite">Cargando clima actual…</span></div>`:''}`;
-}
-
-async function renderTripWeather(force) {
-  const city = weatherCity();
-  const weather = await fetchWeatherForToday(force);
-  const slot = document.getElementById("trip-manager-weather");
-  if (!slot || city !== weatherCity()) return;
-  if (!weather || weatherCache.city !== city) {
-    slot.textContent = "Clima actual no disponible";
-    return;
-  }
-  slot.textContent = `${WI[weather.code] || "🌡️"} Ahora ${weather.tempC} °C · ${WMO[weather.code] || "Clima actual"}`;
+    ${destinations.length?`<div class="trip-manager-destinations"><span>Clima en</span><div class="trip-manager-options">${destinations.map((d,i)=>`<button type="button" class="${i===selected?'active':''}" aria-pressed="${i===selected}" onclick="tripSelectDestination(${i})">${escapeHtml(d.city)}${d.state?', '+escapeHtml(d.state):''}</button>`).join('')}</div></div>`:''}`;
 }
 
 async function tripSelectDestination(index) {
@@ -1671,7 +1657,6 @@ async function tripSelectDestination(index) {
   weatherCache = { data: null, ts: 0 };
   weatherForecast = { data: null, ts: 0 };
   renderTripManager();
-  renderTripWeather(true);
   renderTodayCard();
   loadWeatherForecast(true);
 }
@@ -2415,7 +2400,7 @@ function renderShopList() {
   };
   const isNeed = shopListTab === "need";
   const filtered = shopItems.filter(i => isNeed ? i.needIt !== false : i.needIt === false);
-  let html = `\n  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">\n    <button class="mbtn" onclick="openSizeGuide()">${ic("shirt", 12)} <span>Guía de talles</span> <span class="size-guide-countries">US ${ic("exchange", 13)} ARG</span></button>\n  </div>\n  <div style="display:flex;gap:6px;margin-bottom:14px">\n    <button onclick="shopListTab='need';renderOutlets()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;border-radius:var(--radius-sm);border:1px solid ${isNeed ? "var(--accent)" : "var(--border2)"};background:${isNeed ? "var(--accent)" : "transparent"};color:${isNeed ? "#fff" : "var(--muted)"};font-family:'DM Sans',sans-serif;font-size:var(--fs-xs);font-weight:600;cursor:pointer;">${ic("check", 13)} A comprar</button>\n    <button onclick="shopListTab='noneed';renderOutlets()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;border-radius:var(--radius-sm);border:1px solid ${!isNeed ? "#ef4444" : "var(--border2)"};background:${!isNeed ? "rgba(239,68,68,0.12)" : "transparent"};color:${!isNeed ? "#ef4444" : "var(--muted)"};font-family:'DM Sans',sans-serif;font-size:var(--fs-xs);font-weight:600;cursor:pointer;">${ic("x", 13)} No necesito</button>\n  </div>`;
+  let html = `\n  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">\n    <button class="mbtn" onclick="openSizeGuide()">${ic("shirt", 12)} Guía de talles US↔ARG</button>\n  </div>\n  <div style="display:flex;gap:6px;margin-bottom:14px">\n    <button onclick="shopListTab='need';renderOutlets()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;border-radius:var(--radius-sm);border:1px solid ${isNeed ? "var(--accent)" : "var(--border2)"};background:${isNeed ? "var(--accent)" : "transparent"};color:${isNeed ? "#fff" : "var(--muted)"};font-family:'DM Sans',sans-serif;font-size:var(--fs-xs);font-weight:600;cursor:pointer;">${ic("check", 13)} A comprar</button>\n    <button onclick="shopListTab='noneed';renderOutlets()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;border-radius:var(--radius-sm);border:1px solid ${!isNeed ? "#ef4444" : "var(--border2)"};background:${!isNeed ? "rgba(239,68,68,0.12)" : "transparent"};color:${!isNeed ? "#ef4444" : "var(--muted)"};font-family:'DM Sans',sans-serif;font-size:var(--fs-xs);font-weight:600;cursor:pointer;">${ic("x", 13)} No necesito</button>\n  </div>`;
   shopCats.forEach(cat => {
     const catItems = filtered.filter(i => i.catId === cat.id);
     if (catItems.length === 0) return;

@@ -473,24 +473,6 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
 #settingsDrawer .sx-out:hover{border-color:#ef4444;color:#ef4444}
 
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
-
-.trip-manager{margin:8px 0 10px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow);font-size:13px;overflow:hidden}
-.trip-manager-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px}
-.trip-manager-title{display:flex;align-items:center;gap:11px;min-width:0}
-.trip-manager-title>div{min-width:0;display:flex;flex-direction:column;gap:2px}
-.trip-manager-title strong{color:var(--text);font-size:15px;line-height:1.25;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.trip-manager-symbol{display:grid;place-items:center;width:36px;height:36px;flex:none;border-radius:11px;font-size:16px;color:#60a5fa;background:rgba(37,99,235,.15)}
-.trip-manager-kicker{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.09em}
-.trip-manager-edit{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;padding:8px 11px;border:1px solid var(--border);border-radius:10px;color:var(--text);text-decoration:none;font-size:12px;font-weight:750;transition:var(--tr)}
-.trip-manager-edit:hover,.trip-manager-edit:focus-visible{background:rgba(37,99,235,.12);border-color:#60a5fa}
-.trip-manager-destinations{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 15px 13px;border-top:1px solid var(--border)}
-.trip-manager-destinations>span{color:var(--muted);font-weight:700;white-space:nowrap}
-.trip-manager-options{display:flex;gap:7px;flex-wrap:wrap}
-.trip-manager .trip-manager-options button{padding:6px 10px;border-radius:999px;font-weight:700;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:default;font:inherit}
-.trip-manager .trip-manager-options button.active{background:#2563eb;border-color:#2563eb;color:#fff}
-.trip-manager-weather{display:inline-flex;align-items:center;min-height:28px;margin-left:auto;color:var(--text);font-size:12px;font-weight:700}
-@media (max-width:420px){.trip-manager-heading{padding:12px}.trip-manager-edit{padding:9px}.trip-manager-edit span{display:none}.trip-manager-destinations{padding:10px 12px 12px}}
-@media (max-width:600px){.trip-manager-weather{flex-basis:100%;margin-left:0}}
 </style>
 <script src="./i18n.js"></script>
 <script src="./i18n-mis.js"></script>
@@ -514,7 +496,7 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
       </div>
     </div>
     <div class="enlaces" id="enlaces"></div>
-    <div id="trip-manager" class="trip-manager" aria-label="Viaje activo"></div>
+    <div style="margin:8px 0;font-size:12px;font-weight:700"><span id="mis-trip-active">✈️ Viaje activo</span> · <a href="../index.html#viajes" style="color:inherit">Gestionar en TaxFly ↗</a></div>
     <h1 id="titulo"></h1>
     <p class="sub" id="resumen"></p>
     <p class="modo" id="modo" hidden></p>

@@ -1,4 +1,4 @@
-const CACHE = "taxfly-e156ce99e7b1";
+const CACHE = "taxfly-b5337ebedf7f";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 
@@ -90,15 +90,6 @@ self.addEventListener("fetch", e => {
     }).catch(() => caches.match(e.request).then(cached => cached || caches.match(e.request, {
       ignoreSearch: true
     }) || caches.match(OFFLINE_FALLBACK))));
-    return;
-  }
-  // Scripts and styles must reflect a new deploy on the first reload.
-  // Keep the cached copy only as an offline fallback.
-  if (url.origin === self.location.origin && /\.(?:js|css)$/.test(url.pathname)) {
-    e.respondWith(fetchWithTimeout(new Request(e.request, { cache: "no-cache" }), 8e3).then(res => {
-      if (res && res.ok) caches.open(CACHE).then(cache => cache.put(e.request, res.clone())).catch(() => {});
-      return res;
-    }).catch(() => caches.match(e.request).then(cached => cached || new Response(null, { status: 503 }))));
     return;
   }
   if (url.origin === self.location.origin) {

@@ -1512,8 +1512,6 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
   .modal-box-wide { max-width: 760px; }
 }
 .size-guide-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-.size-guide-countries { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
-.size-guide-countries .icon { flex: none; }
 @media (min-width: 760px) {
   .size-guide-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
 }
@@ -1850,9 +1848,7 @@ body::before {
 .trip-manager-options { display:flex; gap:7px; flex-wrap:wrap; }
 .trip-manager .trip-manager-options button { padding:6px 10px; border-radius:999px; font-weight:700; }
 .trip-manager .trip-manager-options button.active { background:#2563eb; border-color:#2563eb; color:#fff; }
-.trip-manager-weather { display:inline-flex; align-items:center; min-height:28px; margin-left:auto; color:var(--text, #fff); font-size:12px; font-weight:700; }
 @media (max-width:420px) { .trip-manager-heading { padding:12px; } .trip-manager-edit { padding:9px; } .trip-manager-edit span { display:none; } .trip-manager-destinations { padding:10px 12px 12px; } }
-@media (max-width:600px) { .trip-manager-weather { flex-basis:100%; margin-left:0; } }
 .trip-manager-toggle { width:100%; display:flex; align-items:center; gap:9px; padding:9px 12px; border:0!important; background:transparent!important; color:var(--text,#fff); text-align:left; cursor:pointer; }
 .trip-manager-toggle span { font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .trip-manager-toggle small { opacity:.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
