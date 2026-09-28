@@ -2,6 +2,8 @@
 (function () {
   const prefix = 'taxfly-offline-data::';
   const labels = {plan:'Planificación',docs:'Documentos',expenses:'Gastos',places:'Lugares y notas',things:'Mis cosas'};
+  let dismissed = false;
+  let dismissTimer;
   const key = (uid, profile, trip) => prefix + uid + '::' + profile + '::' + trip;
   function trip(uid, profile) {
     return window.TripContext?.view(uid, profile) || 'orlando';
@@ -43,10 +45,12 @@
   async function render(uid, profile) {
     const box = document.getElementById('offline-readiness');
     if (!box || !uid || !profile) return;
+    if (dismissed) { box.hidden = true; return; }
     const current = trip(uid, profile);
     let data = {};
     try { data = JSON.parse(localStorage.getItem(key(uid, profile, current)) || '{}'); } catch (_) {}
     const ready = await shellReady();
+    if (dismissed) return;
     const latest = Math.max(0, ...Object.values(data).filter(Number.isFinite));
     const sections = Object.keys(labels).filter(section => data[section]).map(section => labels[section]);
     const n = pending(uid, profile);
@@ -59,7 +63,18 @@
       : 'Abrí las secciones del viaje con internet para guardar sus datos en este dispositivo.';
     const foot = document.createElement('small');
     foot.textContent = (n ? n + ' cambio' + (n === 1 ? '' : 's') + ' pendiente' + (n === 1 ? '' : 's') + ' de sincronizar. ' : '') + 'Clima, filas, mapas y Taxie requieren conexión para datos actuales.';
-    box.append(title,detail,foot);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'offline-readiness-close';
+    close.setAttribute('aria-label', 'Cerrar aviso');
+    close.textContent = '×';
+    const dismiss = () => {
+      dismissed = true;
+      clearTimeout(dismissTimer);
+      box.hidden = true;
+    };
+    close.addEventListener('click', dismiss);
+    box.append(title,detail,foot,close);
     const legacy = ['taxusa_itin_pending','taxusa_pending_ops','taxusa_gastos_pending_' + profile]
       .reduce((sum,k) => sum + (() => { try { const v=JSON.parse(localStorage.getItem(k)||'[]'); return Array.isArray(v)?v.length:0; } catch (_) { return 0; } })(),0);
     if (legacy) {
@@ -68,6 +83,9 @@
       box.append(warning);
     }
     box.dataset.ready = String(ready);
+    box.hidden = false;
+    clearTimeout(dismissTimer);
+    dismissTimer = setTimeout(dismiss, 8000);
   }
   window.taxflyOfflineStatus = {mark, render};
 })();

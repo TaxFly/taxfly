@@ -143,6 +143,10 @@ function fbListen(docId, callback) {
   return onSnapshot(orlandoDocRef(docId), snap => {
     if (!snap.exists()) return;
     const data = snap.data();
+    const pending = window._planPendingPayload?.(docId);
+    if (pending) {
+      try { if (stableStringify(JSON.parse(pending)) !== stableStringify(data)) return; } catch (_) { return; }
+    }
     const log = window._syncedWriteLog && window._syncedWriteLog[docId];
     if (window._appInited && log && Date.now() - log.at < CONFLICT_WINDOW_MS) {
       if (stableStringify(data) !== log.value) {

@@ -91,7 +91,7 @@ function syncedSave(localKey, localValue, docId, fbValue) {
   const pendingKey = scopedKey(localKey) + "::pending";
   try {
     localStorage.setItem(scopedKey(localKey), JSON.stringify(localValue));
-    if (docId === "days") localStorage.setItem(pendingKey, JSON.stringify(payload));
+    localStorage.setItem(pendingKey, JSON.stringify(payload));
   } catch (e) {}
   if (window._fb && window._fb.stableStringify) {
     window._syncedWriteLog[docId] = {
@@ -100,13 +100,10 @@ function syncedSave(localKey, localValue, docId, fbValue) {
     };
   }
   if (window._fb) window._fb.fbSet(docId, payload).then(() => {
-    if (docId !== "days") return;
     try {
       if (localStorage.getItem(pendingKey) === JSON.stringify(payload)) localStorage.removeItem(pendingKey);
     } catch (e) {}
-  }).catch(() => {
-    if (docId === "days") showMToast("Sin conexión con Firebase: los cambios quedan guardados en este dispositivo y se reintentarán al abrir la app.");
-  });
+  }).catch(() => showMToast("Sin conexión con Firebase: los cambios quedan guardados en este dispositivo y se reintentarán al abrir la app."));
 }
 
 function localLoad(localKey) {
@@ -119,11 +116,35 @@ function localLoad(localKey) {
 }
 
 function syncedLoad(localKey, fbValue) {
-  if (localKey === "outlets-orlando-days-v2") {
-    try { if (localStorage.getItem(scopedKey(localKey) + "::pending")) return localLoad(localKey) || fbValue; } catch (e) {}
-  }
+  try { if (localStorage.getItem(scopedKey(localKey) + "::pending")) return localLoad(localKey) ?? fbValue; } catch (e) {}
   return fbValue !== undefined && fbValue !== null ? fbValue : localLoad(localKey);
 }
+
+function planningSyncEntries() {
+  return [[HOTEL_KEY,'hotel'],[DAYS_KEY,'days'],[STORAGE_KEY,'visited'],[MEAL_KEY,'meals'],
+    [BUDGET_KEY,'budget'],[WM_DATA_KEY,'walmart'],[WM_CHECKED_KEY,'wmChecked'],[SHOPPING_KEY,'shopping'],
+    [PARQUES_KEY,'parques'],[CUSTOM_PARKS_KEY,'customParks'],[EXTRA_ZONES_KEY,'parquesExtra'],
+    [COORD_OVERRIDES_KEY,'coordOverrides'],[PARQUES_EXCEL_KEY,'parquesExcel'],[TIPS_KEY,'tips'],[ITIN_KEY,'itinerario']];
+}
+window._planPendingPayload = docId => {
+  const entry = planningSyncEntries().find(([, id]) => id === docId);
+  if (!entry) return null;
+  try { return localStorage.getItem(scopedKey(entry[0]) + '::pending'); } catch (_) { return null; }
+};
+function retryPendingPlanning() {
+  if (!window._fb || !navigator.onLine) return;
+  for (const [localKey, docId] of planningSyncEntries()) {
+    const key = scopedKey(localKey) + '::pending';
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      window._fb.fbSet(docId, JSON.parse(raw)).then(() => {
+        if (localStorage.getItem(key) === raw) localStorage.removeItem(key);
+      }).catch(() => {});
+    } catch (_) {}
+  }
+}
+window.retryPendingPlanning = retryPendingPlanning;
 
 const MIS_COSAS_URL = "mis-cosas.html";
 
@@ -346,6 +367,7 @@ window._appInit = function() {
   window.updateGlobal = updateGlobal;
   window.renderTodayCard = renderTodayCard;
   window._appInited = true;
+  retryPendingPlanning();
   patchFbSyncDot();
   try {
     const params = new URLSearchParams(location.search);
@@ -1769,11 +1791,11 @@ function renderOutlets() {
     if (days.length === 0) {
       html += `<div class="all-done" style="display:block">\n        <div class="all-done-emoji">${ic("calendar", 44)}</div>\n        <div class="all-done-title">Sin días cargados</div>\n        <div class="all-done-sub">Agregá el primer día del cronograma para empezar.</div>\n      </div>\n      <div style="display:flex;justify-content:center;margin-top:14px">\n        <button class="wm-reset-btn" onclick="openOutletDayModal()">+ Agregar día</button>\n      </div>`;
     } else {
-      html += `<div class="outlets-day-tabs">\n        ${days.map((d, i) => {
+      html += `<div class="day-tabs-control"><button type="button" class="day-tabs-arrow" onclick="this.nextElementSibling.scrollBy({left:-260,behavior:'smooth'})" aria-label="Días anteriores">‹</button><div class="outlets-day-tabs">\n        ${days.map((d, i) => {
         const fc = forecastForTripDate(d.date);
         const wBadge = fc ? `<span class="odt-weather" title="${escapeHtml(WMO[fc.code] || "")} · mín ${fc.tminF}°F">${WI[fc.code] || "🌡️"} ${fc.tmaxF}°</span>` : "";
         return `<button class="outlets-day-tab${i === currentDay ? " active" : ""}" onclick="switchOutletDay(${i})">${escapeHtml(d.dayName || "Día " + (i + 1))}<span class="odt-date">${escapeHtml(d.date || "")}${wBadge}</span></button>`;
-      }).join("")}\n        <button class="btn-nav-set" style="margin-left:2px" onclick="openOutletDayModal()" title="Agregar día">+</button>\n      </div>`;
+      }).join("")}\n        <button class="btn-nav-set" style="margin-left:2px" onclick="openOutletDayModal()" title="Agregar día">+</button>\n      </div><button type="button" class="day-tabs-arrow" onclick="this.previousElementSibling.scrollBy({left:260,behavior:'smooth'})" aria-label="Ver más días">›</button></div>`;
       html += `<div class="outlets-day-content">`;
       html += renderDayContent(currentDay);
       html += `</div>`;
@@ -1804,6 +1826,15 @@ function switchOutletTab(tab) {
 function switchOutletDay(d) {
   currentOutletDay = d;
   renderOutlets();
+  revealSelectedDay();
+}
+
+function revealSelectedDay() {
+  requestAnimationFrame(() => {
+    const bar = document.querySelector('.day-tabs-control .outlets-day-tabs');
+    const active = bar?.querySelector('.outlets-day-tab.active');
+    if (active) bar.scrollLeft = active.offsetLeft - bar.offsetLeft - (bar.clientWidth - active.clientWidth) / 2;
+  });
 }
 
 function openOutletDayModal() {
@@ -4187,12 +4218,12 @@ function renderItinerario() {
   }
   if (itinDay >= itinDias.length) itinDay = itinDias.length - 1;
   const day = itinGetDay();
-  let html = `<div class="outlets-day-tabs">\n    ${itinDias.map((d, i) => {
+  let html = `<div class="day-tabs-control"><button type="button" class="day-tabs-arrow" onclick="this.nextElementSibling.scrollBy({left:-260,behavior:'smooth'})" aria-label="Días anteriores">‹</button><div class="outlets-day-tabs">\n    ${itinDias.map((d, i) => {
     const fc = forecastForTripDate(d.fecha);
     const wBadge = fc ? `<span class="odt-weather" title="${escapeHtml(WMO[fc.code] || "")} · mín ${fc.tminF}°F">${WI[fc.code] || "🌡️"} ${fc.tmaxF}°</span>` : "";
     const pend = d.bloques.filter(b => !itinHechos.has(b.id)).length;
     return `<button class="outlets-day-tab${i === itinDay ? " active" : ""}" onclick="itinSwitchDay(${i})">${escapeHtml(d.nombre || "Día " + (i + 1))}<span class="odt-date">${escapeHtml(d.fecha || "")}${pend === 0 && d.bloques.length ? " ✓" : ""}${wBadge}</span></button>`;
-  }).join("")}\n    <button class="btn-nav-set" style="margin-left:2px" onclick="itinAddDay()" title="Agregar día">+</button>\n  </div>`;
+  }).join("")}\n    <button class="btn-nav-set" style="margin-left:2px" onclick="itinAddDay()" title="Agregar día">+</button>\n  </div><button type="button" class="day-tabs-arrow" onclick="this.previousElementSibling.scrollBy({left:260,behavior:'smooth'})" aria-label="Ver más días">›</button></div>`;
   html += `<div class="outlets-day-content">`;
   const total = day.bloques.length;
   const done = day.bloques.filter(b => itinHechos.has(b.id)).length;
@@ -4265,6 +4296,7 @@ function itinSwitchDay(i) {
   itinAdding = false;
   itinEditDay = false;
   renderParques();
+  revealSelectedDay();
 }
 
 function itinTogglePend(v) {

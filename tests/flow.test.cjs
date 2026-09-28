@@ -541,3 +541,51 @@ test('planning modules share Firebase initialization and section icons remain vi
   assert.doesNotMatch(places,/initializeApp\(|getFirestore\(/);
   assert.match(html,/id="nav-parques"[^>]*[\s\S]*?stroke="currentColor"/);
 });
+
+test('returning online verifies the server before reloading the offline screen', async () => {
+  const events = new Map();
+  let online = false, reachable = false, reloads = 0, probes = 0, nextId = 0;
+  const timers = new Map();
+  const tick = async () => { const [id,fn] = timers.entries().next().value; timers.delete(id); await fn(); };
+  const window = {addEventListener:(name,cb)=>events.set(name,cb),dispatchEvent:()=>{}};
+  const document = {hidden:false,addEventListener:()=>{}};
+  const navigator = {get onLine(){return online;}};
+  const location = {reload:()=>reloads++};
+  context(read('assets/reconnect.js'), {window,document,navigator,location,AbortController,
+    setTimeout:cb=>{const id=++nextId;timers.set(id,cb);return id;},clearTimeout:id=>timers.delete(id),Date,Event,
+    fetch:async()=>{probes++;return {ok:reachable};}});
+  online = true;
+  events.get('online')();
+  await tick();
+  assert.equal(reloads,0);
+  reachable = true;
+  await tick();
+  assert.equal(probes,2);
+  await tick();
+  assert.equal(reloads,1);
+});
+
+test('planning retains every local write pending until Firebase confirms it', () => {
+  const source = read('assets/plan-app.js');
+  const save = between(source,'function syncedSave(', 'function localLoad(');
+  const load = between(source,'function localLoad(', 'function planningSyncEntries(');
+  const localStorage = storage();
+  const pending = new Promise(()=>{});
+  const c = context(save+load, {localStorage,window:{_syncedWriteLog:{},_fb:{fbSet:()=>pending,stableStringify:JSON.stringify}},
+    scopedKey:k=>k+'::profile',Date,JSON,showMToast:()=>{}});
+  c.syncedSave('hotel-key',{addr:'new'},'hotel');
+  assert.equal(localStorage.getItem('hotel-key::profile::pending'),'{"addr":"new"}');
+  assert.equal(c.syncedLoad('hotel-key',{addr:'old'}).addr,'new');
+});
+
+test('global replay keeps failed operations and removes successful ones individually', async () => {
+  const source = read('assets/reconnect-sync.js');
+  const code = between(source,'const flush = async',"if (page !== 'compras.html')") + 'globalThis.flushQueue = flush;';
+  const localStorage = storage({queue:JSON.stringify([{id:1},{id:2}])});
+  const c = context(code,{localStorage,navigator:{onLine:true},JSON});
+  await c.flushQueue('queue',()=>true,async op=>{if(op.id===2) throw Error('offline again');});
+  assert.equal(JSON.parse(localStorage.getItem('queue')).length,1);
+  assert.equal(JSON.parse(localStorage.getItem('queue'))[0].id,2);
+  await c.flushQueue('queue',()=>true,async()=>{});
+  assert.equal(localStorage.getItem('queue'),'[]');
+});

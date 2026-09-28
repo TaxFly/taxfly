@@ -63,3 +63,11 @@ body,[data-theme="dark"] body,.header{background:var(--bg);background-image:none
 }
 
 .parques-panel,.park-filter-control{width:100%;max-width:100%;min-width:0}.park-filter-control>.parques-filter-bar{flex:1 1 0;width:0;min-width:0;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
+
+/* Day navigation has visible controls on desktop; touch keeps native swipe. */
+.day-tabs-control{display:flex;align-items:stretch;gap:5px;min-width:0;width:100%;max-width:100%;margin-bottom:14px}
+.day-tabs-control>.outlets-day-tabs{flex:1 1 0;width:0;min-width:0;max-width:100%;margin-bottom:0;overflow-x:auto;scroll-behavior:smooth;overscroll-behavior-inline:contain}
+.day-tabs-control .outlets-day-tab{flex:0 0 auto;min-width:64px}
+.day-tabs-arrow{flex:none;width:28px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font:600 23px/1 'DM Sans',sans-serif;cursor:pointer}
+.day-tabs-arrow:hover{border-color:var(--theme-accent);color:var(--theme-accent)}
+@media(max-width:500px){.day-tabs-control{display:block}.day-tabs-control>.outlets-day-tabs{width:100%;margin-bottom:14px}.day-tabs-arrow{display:none}}

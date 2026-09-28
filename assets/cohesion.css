@@ -19,3 +19,4 @@ a, a:visited, a:hover, a:focus-visible { text-decoration:none; }
 
 .offline-readiness{display:grid;gap:4px;padding:12px 14px;margin:0 0 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);font-size:12px}
 .offline-readiness:empty{display:none}.offline-readiness strong{font-size:13px}.offline-readiness span,.offline-readiness small{color:var(--text-sub,var(--muted));line-height:1.4}.offline-readiness[data-ready="false"] strong{color:#b45309}
+.offline-readiness[hidden]{display:none!important}.offline-readiness{position:relative;padding-right:39px}.offline-readiness-close{position:absolute;right:8px;top:6px;border:0;background:transparent;color:var(--text-sub,var(--muted));font:600 22px/1 sans-serif;cursor:pointer;padding:4px 7px;border-radius:7px}.offline-readiness-close:hover{background:var(--surface-2,var(--surface));color:var(--text)}
