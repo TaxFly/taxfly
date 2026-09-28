@@ -47,3 +47,17 @@
 .trip-manager[hidden],.trip-chip-slot[hidden]{display:none!important}
 /* One solid canvas across the header, content column and page edges. */
 body,[data-theme="dark"] body,.header{background:var(--bg);background-image:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+
+@media (min-width: 1200px) {
+  .header, .nav-bar-wrap, .panel, .plan-food-switch { max-width: 760px; }
+  .plan-app-nav { gap: 5px; padding: 7px; }
+  .plan-app-nav>a, .plan-more>summary { font-size: 10px; min-height: 64px; }
+  .plan-app-nav>a[href="planificacion.html"] span { font-size: 10px; }
+  .plan-sections .nav-date { font-size: 11px; }
+}
+
+@media (min-width: 600px) and (max-width: 1199px) {
+  .header, .nav-bar-wrap, .panel, .plan-food-switch { max-width: 620px; }
+  .plan-app-nav>a, .plan-more>summary { font-size: 9px; }
+  .plan-app-nav>a[href="planificacion.html"] span { font-size: 9px; }
+}

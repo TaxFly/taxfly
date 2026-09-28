@@ -3,3 +3,16 @@ a, a:visited, a:hover, a:focus-visible { text-decoration:none; }
 :where(.app-header, .header) .wm-usa, :where(.app-header, .header) .bb-wm b { color:var(--primary,#2563eb); }
 
 .taxfly-trip-filter[hidden]{display:none!important}
+
+/* Desktop breathing room; phone and tablet layouts keep their current rules. */
+@media (min-width: 1200px) {
+  body > .wrap { width: min(100%, 760px); max-width: 760px; margin-inline: auto; }
+  body > .wrap > .nav-bar { gap: 5px; padding: 8px; }
+  body > .wrap > .nav-bar .btn-nav { font-size: 10px; padding-block: 9px; }
+}
+
+/* Tablet viewport: a comfortable middle column. */
+@media (min-width: 600px) and (max-width: 1199px) {
+  body > .wrap { width: min(100%, 620px); max-width: 620px; margin-inline: auto; }
+  body > .wrap > .nav-bar { gap: 4px; padding: 7px; }
+}
