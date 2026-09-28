@@ -384,7 +384,8 @@ test('Planificación has the requested navigation and keeps a compatible entry f
   const plan=read('planificacion.html');
   assert.match(plan,/<div class="nav-bar-wrap">/);
   assert.doesNotMatch(plan,/id="splash-screen"|assets\/splash\.css/);
-  assert.match(read('mis-cosas.html'),/Tax<b>Fly<\/b>/);
+  assert.match(read('mis-cosas.html'),/class="taxfly-wordmark"/);
+  assert.match(plan,/class="taxfly-wordmark"/);
   assert.match(read('404.html'),/planificacion\.html/);
   assert.match(read('itinerario.html'),/planificacion\.html/);
   assert.match(plan,/id="nav-parques"|id="nav-outlets"/);
@@ -475,4 +476,14 @@ test('itinerary keeps places and notes within one page, with compact four-item s
   assert.match(app,/if \(section === "lugares"\) window\.renderPlanPlaces/);
   assert.match(read('assets/plan-places.js'),/usuarios.*perfiles.*notas/);
   assert.match(read('assets/ui.js'),/\[ "compras.html", "bag", "shopping" \], \[ "planificacion.html\?section=parques", "calendar", "plan" \]/);
+});
+
+
+test('planning modules share Firebase initialization and section icons remain visible', () => {
+  const firebase=read('assets/plan-firebase.js'), places=read('assets/plan-places.js'), html=read('planificacion.html');
+  assert.match(firebase,/getApps\(\)\.length \? getApp\(\) : initializeApp/);
+  assert.match(firebase,/window\.taxflyPlanDb = db/);
+  assert.match(places,/taxfly:plan-db/);
+  assert.doesNotMatch(places,/initializeApp\(|getFirestore\(/);
+  assert.match(html,/id="nav-parques"[^>]*[\s\S]*?stroke="currentColor"/);
 });

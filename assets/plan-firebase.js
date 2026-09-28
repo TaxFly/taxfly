@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
@@ -8,7 +8,7 @@ import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com
 
 const firebaseConfig = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 const db = (() => {
   try {
@@ -22,6 +22,9 @@ const db = (() => {
     return getFirestore(app);
   }
 })();
+
+window.taxflyPlanDb = db;
+window.dispatchEvent(new Event("taxfly:plan-db"));
 
 const auth = getAuth(app);
 
