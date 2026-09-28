@@ -42,11 +42,78 @@ function reservationUrl(value) {
   } catch (_) { return ""; }
 }
 
+// A name can contain more than one carrier ("Avianca / American Airlines").
+// Keep this mapping local: unknown names simply retain their text without a broken image.
+const reservationAirlines = [
+  { name: "Aerolíneas Argentinas", code: "AR", aliases: ["aerolineas argentinas", "aerolineas"] },
+  { name: "American Airlines", code: "AA", aliases: ["american airlines", "american"] },
+  { name: "Avianca", code: "AV", aliases: ["avianca"] },
+  { name: "United Airlines", code: "UA", aliases: ["united airlines", "united"] },
+  { name: "LATAM", code: "LA", aliases: ["latam airlines", "latam"] },
+  { name: "Delta Air Lines", code: "DL", aliases: ["delta air lines", "delta airlines", "delta"] },
+  { name: "JetSMART", code: "JA", aliases: ["jetsmart"] },
+  { name: "Flybondi", code: "FO", aliases: ["flybondi"] },
+  { name: "Copa Airlines", code: "CM", aliases: ["copa airlines", "copa"] },
+  { name: "Gol", code: "G3", aliases: ["gol linhas aereas", "gol"] },
+  { name: "Azul", code: "AD", aliases: ["azul linhas aereas", "azul"] },
+  { name: "Air Canada", code: "AC", aliases: ["air canada"] },
+  { name: "Air France", code: "AF", aliases: ["air france"] },
+  { name: "KLM", code: "KL", aliases: ["klm"] },
+  { name: "Iberia", code: "IB", aliases: ["iberia"] },
+  { name: "British Airways", code: "BA", aliases: ["british airways"] },
+  { name: "Lufthansa", code: "LH", aliases: ["lufthansa"] },
+  { name: "Turkish Airlines", code: "TK", aliases: ["turkish airlines", "turkish"] },
+  { name: "Emirates", code: "EK", aliases: ["emirates"] },
+  { name: "Qatar Airways", code: "QR", aliases: ["qatar airways", "qatar"] },
+  { name: "Aeroméxico", code: "AM", aliases: ["aeromexico"] },
+  { name: "Volaris", code: "Y4", aliases: ["volaris"] },
+  { name: "Viva Aerobus", code: "VB", aliases: ["viva aerobus", "vivaaerobus"] },
+  { name: "Spirit Airlines", code: "NK", aliases: ["spirit airlines", "spirit"] },
+  { name: "Frontier Airlines", code: "F9", aliases: ["frontier airlines", "frontier"] },
+  { name: "Southwest Airlines", code: "WN", aliases: ["southwest airlines", "southwest"] },
+  { name: "JetBlue", code: "B6", aliases: ["jetblue airways", "jetblue"] },
+  { name: "Alaska Airlines", code: "AS", aliases: ["alaska airlines", "alaska"] },
+  { name: "Sky Airline", code: "H2", aliases: ["sky airline"] },
+  { name: "Arajet", code: "DM", aliases: ["arajet"] },
+  { name: "Wingo", code: "P5", aliases: ["wingo"] },
+  { name: "TAP Air Portugal", code: "TP", aliases: ["tap air portugal", "tap portugal", "tap"] },
+  { name: "Air Europa", code: "UX", aliases: ["air europa"] },
+  { name: "ITA Airways", code: "AZ", aliases: ["ita airways"] },
+  { name: "Swiss", code: "LX", aliases: ["swiss international air lines", "swiss"] },
+  { name: "Level", code: "LL", aliases: ["level"] },
+  { name: "Wizz Air", code: "W6", aliases: ["wizz air"] },
+  { name: "Ryanair", code: "FR", aliases: ["ryanair"] },
+  { name: "EasyJet", code: "U2", aliases: ["easyjet"] }
+];
+
+function reservationAirlineMatches(name) {
+  const normalize = value => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const found = new Set();
+  for (const part of String(name || "").split(/\s*\/\s*/)) {
+    const value = normalize(part);
+    // Longer aliases first so names such as "Air Canada" are not confused with codes.
+    const carrier = reservationAirlines.find(airline =>
+      airline.aliases.some(alias => value === alias || value.startsWith(alias + " ") ||
+        value.startsWith(alias + "-") || value.startsWith(alias + "·") || value.startsWith(alias + "–"))
+    );
+    if (carrier) found.add(carrier);
+  }
+  return [...found];
+}
+
+function reservationAirlineLogos(name) {
+  const airlines = reservationAirlineMatches(name);
+  if (!airlines.length) return "";
+  return `<span class="reservation-airline-logos" aria-label="Aerolíneas: ${escapeHtml(airlines.map(a => a.name).join(", "))}">${airlines.map(airline =>
+    `<span class="reservation-airline-logo"><img src="https://images.kiwi.com/airlines/64/${airline.code}.png" alt="${escapeHtml(airline.name)}" title="${escapeHtml(airline.name)}" loading="lazy" onerror="this.parentElement.remove()"></span>`
+  ).join("")}</span>`;
+}
+
 function reservationCard(item) {
   const href = reservationUrl(item.url);
   const dates = [reservationDate(item.startDate), reservationDate(item.endDate)].filter(Boolean).join(" – ");
   return `<article class="reservation-card">
-    <div class="reservation-card-top"><strong>${escapeHtml(item.name)}</strong>
+    <div class="reservation-card-top"><div class="reservation-flight-title">${item.type === "flight" ? reservationAirlineLogos(item.name) : ""}<strong>${escapeHtml(item.name)}</strong></div>
       <div class="reservation-actions"><button type="button" data-res-action="edit" data-res-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}">${ic("pencil", 15)}</button><button type="button" data-res-action="delete" data-res-id="${escapeHtml(item.id)}" aria-label="Eliminar ${escapeHtml(item.name)}">${ic("x", 15)}</button></div></div>
     ${dates ? `<div class="reservation-meta">${ic("calendar", 14)} ${escapeHtml(dates)}</div>` : ""}
     ${item.reference ? `<div class="reservation-meta">Código: <b>${escapeHtml(item.reference)}</b></div>` : ""}
@@ -64,7 +131,7 @@ function reservationForm(type, item) {
   const nameHint = flight ? "Ej.: LATAM · LA8123" : stay ? "Ej.: Hotel o Airbnb" : "Ej.: Traslado al aeropuerto";
   return `<form class="reservation-form" id="reservation-form" data-type="${type}">
     <div class="reservation-form-head"><h3>${item ? "Editar reserva" : "Nueva reserva"}</h3><button type="button" id="reservation-cancel" aria-label="Cerrar formulario">${ic("x", 17)}</button></div>
-    <label>${nameLabel}<input name="name" required maxlength="90" placeholder="${nameHint}" value="${escapeHtml(item?.name || "")}"></label>
+    <label>${nameLabel}<input name="name" required maxlength="90" placeholder="${nameHint}" value="${escapeHtml(item?.name || "")}">${flight ? `<small>Si viajás con dos aerolíneas, separalas con / (ej.: Avianca / American Airlines).</small><span class="reservation-airline-preview" aria-live="polite">${reservationAirlineLogos(item?.name)}</span>` : ""}</label>
     <div class="reservation-form-dates"><label>${flight ? "Fecha del vuelo" : "Desde"}<input name="startDate" type="date" value="${escapeHtml(item?.startDate || "")}"></label><label>${flight ? "Regreso (opcional)" : "Hasta (opcional)"}<input name="endDate" type="date" value="${escapeHtml(item?.endDate || "")}"></label></div>
     <label>Código de reserva (opcional)<input name="reference" maxlength="50" autocomplete="off" placeholder="Localizador o número de confirmación" value="${escapeHtml(item?.reference || "")}"></label>
     ${stay ? `<label>Dirección del alojamiento (opcional)<input name="address" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
@@ -88,6 +155,12 @@ function renderReservations() {
   const form = panel.querySelector("#reservation-form");
   if (form) {
     form.addEventListener("submit", saveReservation);
+    if (reservationFormType === "flight") {
+      const nameInput = form.elements.name;
+      nameInput.addEventListener("input", () => {
+        form.querySelector(".reservation-airline-preview").innerHTML = reservationAirlineLogos(nameInput.value);
+      });
+    }
     const cancel = () => { reservationFormType = null; reservationEditingId = null; renderReservations(); };
     form.querySelector("#reservation-cancel").addEventListener("click", cancel);
     form.querySelector("#reservation-cancel-bottom").addEventListener("click", cancel);
