@@ -5,3 +5,15 @@
 
 /* The active page lives in the shared More menu. */
 .plan-more-menu a[href="mis-cosas.html"]{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+/* Use the same compact column and profile position as the main app. */
+.header,.nav-bar-wrap,.hdr-in,.nav-bar,.wrap{max-width:460px!important;box-sizing:border-box}
+.header,.nav-bar-wrap{width:100%;margin-inline:auto}.header{padding-inline:16px}.nav-bar-wrap{padding-inline:16px}.wrap{width:100%}
+.plan-app-nav{grid-template-columns:repeat(5,minmax(0,1fr)) 42px;align-items:center;gap:2px}
+.plan-app-nav>a,.plan-more>summary{font-size:8px;min-width:0;overflow-wrap:anywhere}
+.plan-app-nav>a svg,.plan-more>summary svg{width:20px;height:20px}
+.plan-app-nav #btnSettings{width:38px;height:38px;justify-self:center;align-self:center;flex:none;border-radius:50%;background-size:cover;background-position:center}
+.plan-more-menu{width:min(240px,80vw);text-align:left}
+.plan-more-menu .more-icon{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mis-trip-filter{display:flex;align-items:center;justify-content:space-between;padding:12px;min-width:0;gap:8px}.mis-trip-heading{display:flex;align-items:center;gap:9px;min-width:0;flex:1}.mis-trip-heading>div{display:flex;flex-direction:column;min-width:0;flex:1}.mis-trip-filter .trip-manager-symbol{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;color:#60a5fa;background:rgba(37,99,235,.15);font-size:18px}.mis-trip-filter .trip-manager-kicker{font-size:10px;letter-spacing:.09em;color:var(--muted);font-weight:800}.mis-trip-filter select{background:transparent;border:0;padding:2px 0;font-size:14px;font-weight:800;max-width:100%;cursor:pointer}.mis-trip-filter>a{display:grid;place-items:center;flex:none;width:34px;height:34px;border:1px solid var(--border);border-radius:9px;color:var(--text)}
+.scroll-control{display:flex;align-items:center;gap:3px;min-width:0;margin:0 0 10px}.scroll-control .chips{flex:1;min-width:0;margin:0;padding:2px 0 8px;scrollbar-width:thin;scroll-behavior:smooth}.scroll-arrow{flex:none;width:27px;height:34px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font-size:24px;cursor:pointer;line-height:1}
+@media(max-width:500px){.plan-app-nav{grid-template-columns:repeat(5,minmax(0,1fr)) 38px}.plan-app-nav>a,.plan-more>summary{font-size:7px}.plan-app-nav svg{width:19px;height:19px}.nav-bar button{min-width:0}}
