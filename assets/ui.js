@@ -291,8 +291,10 @@
     es: {
       home: "INICIO",
       taxes: "TAXES",
+      taxes_d: "Calculadora de impuestos",
       shopping: "GASTOS",
       itinerary: "ITINERARIO",
+      itinerary_d: "Lugares y recordatorios",
       more: "MÁS",
       routes: "Rutas",
       routes_d: "Planificá tus recorridos",
@@ -303,13 +305,18 @@
       group: "Grupo",
       group_d: "Gastos compartidos",
       plan: "Planificación",
-      plan_d: "Viajes, lugares, comidas, compras y atracciones"
+      plan_d: "Agenda, reservas, lugares y atracciones",
+      docs: "DOCUMENTOS",
+      things: "Mis cosas",
+      things_d: "Lista y equipaje del viaje"
     },
     en: {
       home: "HOME",
       taxes: "TAXES",
+      taxes_d: "Sales tax calculator",
       shopping: "EXPENSES",
       itinerary: "ITINERARY",
+      itinerary_d: "Places and reminders",
       more: "MORE",
       routes: "Routes",
       routes_d: "Plan your routes",
@@ -320,13 +327,18 @@
       group: "Group",
       group_d: "Shared expenses",
       plan: "Planning",
-      plan_d: "Trips, places, food, shopping and attractions"
+      plan_d: "Schedule, bookings, places and attractions",
+      docs: "DOCUMENTS",
+      things: "My things",
+      things_d: "Trip lists and luggage"
     },
     pt: {
       home: "INÍCIO",
       taxes: "TAXES",
+      taxes_d: "Calculadora de impostos",
       shopping: "GASTOS",
       itinerary: "ITINERÁRIO",
+      itinerary_d: "Lugares e lembretes",
       more: "MAIS",
       routes: "Rotas",
       routes_d: "Planeje seus roteiros",
@@ -337,7 +349,10 @@
       group: "Grupo",
       group_d: "Gastos compartilhados",
       plan: "Planejamento",
-      plan_d: "Viagens, lugares, comidas, compras e atrações"
+      plan_d: "Agenda, reservas, lugares e atrações",
+      docs: "DOCUMENTOS",
+      things: "Minhas coisas",
+      things_d: "Listas e bagagem da viagem"
     }
   };
   const curLang = () => {
@@ -347,8 +362,8 @@
     } catch (e) {}
     return NAV_T[l] ? l : "es";
   };
-  const NAV_MAIN = [ [ "index.html", "home", "home", "home" ], [ "tax.html", "calculator", "taxes", "blue" ], [ "compras.html", "bag", "shopping", "violet" ], [ "itinerario.html", "pin", "itinerary", "green" ] ];
-  const NAV_MORE = [ [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "tickets.html", "file", "tickets", "cyan" ], [ "grupo.html", "users", "group", "indigo" ], [ "https://taxfly.github.io/taxfly/Maps/index.html", "globe", "plan", "teal" ] ];
+  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "Maps/index.html?section=parques", "calendar", "plan" ], [ "compras.html", "bag", "shopping" ], [ "tickets.html", "file", "docs" ] ];
+  const NAV_MORE = [ [ "itinerario.html", "pin", "itinerary", "green" ], [ "rutas.html", "map", "routes", "red" ], [ "tax.html", "calculator", "taxes", "blue" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ], [ "Maps/Mis_cosas_de_viaje.html", "briefcase", "things", "violet" ] ];
   function buildNav() {
     const nav = document.querySelector(".nav-bar");
     if (!nav || !nav.querySelector(".btn-nav")) return;

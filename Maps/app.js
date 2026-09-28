@@ -1264,15 +1264,7 @@ function renderBudgetPill() {
 }
 
 function openBudgetFromPill() {
-  if (typeof openSettingsDrawer === "function") openSettingsDrawer();
-  setTimeout(() => {
-    try {
-      document.getElementById("budget-box")?.scrollIntoView({
-        block: "start",
-        behavior: "smooth"
-      });
-    } catch (e) {}
-  }, 60);
+  location.assign("../compras.html");
 }
 
 window.openBudgetFromPill = openBudgetFromPill;
@@ -1297,7 +1289,7 @@ function renderBudgetBox() {
     const meta = budgetCatMeta[g.cat] || budgetCatMeta.otros;
     gastosHtml += `\n      <div class="budget-gasto-row">\n        <span class="budget-gasto-cat">${ic(meta.icon, 13)} ${meta.label}${g.nota ? " · " + escapeHtml(g.nota) : ""}</span>\n        <span class="budget-gasto-monto">${budgetUsd(g.monto)}\n          <button class="wm-icon-btn wm-icon-del" onclick="budgetDeleteGasto('${g.id}')" title="Eliminar" aria-label="Eliminar gasto">${ic("x", 14)}</button>\n        </span>\n      </div>`;
   });
-  const addForm = `<a class="budget-add-cat-btn" href="../compras.html">+ Registrar gasto en TaxFly ↗</a>`;
+  const addForm = `<a class="budget-add-cat-btn" href="../compras.html">${ic("wallet", 15)} <span>Registrar gasto en TaxFly</span></a>`;
   box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      ${counted ? `<div class="budget-summary-row budget-summary-sub">\n        <span>Supermercado (estimado)</span>\n        <span class="budget-summary-val">${budgetUsd(wmEst)}</span>\n      </div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <label class="budget-market-toggle">\n      <input type="checkbox" ${counted ? "checked" : ""} onchange="budgetToggleMarket()">\n      <span>\n        <b>Descontar estimado del supermercado</b> (${budgetUsd(wmEst)})\n        <small>${counted ? "Activado: usalo solo si el súper NO lo cargás en Taxfly, si no se cuenta dos veces." : "Apagado: se asume que el súper se carga en Taxfly (ticket). Así no se cuenta dos veces."}</small>\n      </span>\n    </label>\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. El estimado de supermercado se suma solo si lo activás. Todo en USD.</div>`;
 }
 
@@ -1703,7 +1695,7 @@ const sectionMeta = {
 };
 
 function switchSection(section) {
-  window.taxflySetPlanSection?.(section === "reservas" ? "reservas" : section === "parques" ? parquesSubTab === "atracciones" ? "atracciones" : "agenda" : "");
+  window.taxflySetPlanSection?.(section === "parques" ? parquesSubTab === "atracciones" ? "atracciones" : "agenda" : section === "reservas" ? "reservas" : section);
   try {
     sessionStorage.setItem("orl_section", section);
   } catch (e) {}
@@ -3052,11 +3044,10 @@ let parquesSubTab = "itinerario";
 function personalReminderSummary() {
   const reminders = (window._personalReminders || []).filter(item => item?.name)
     .sort((a, b) => `${a.date || ""} ${a.time || ""}`.localeCompare(`${b.date || ""} ${b.time || ""}`));
-  if (!reminders.length) return "";
   return `<section class="personal-reminders" aria-label="Recordatorios personales">
     <div class="personal-reminders-head"><div><strong>Recordatorios personales</strong><p>También aparecen en tu itinerario. Se editan una sola vez.</p></div>
-      <a href="../itinerario.html?tab=actividades">Gestionar recordatorios</a></div>
-    <div class="personal-reminders-list">${reminders.map(item => `<div><span>${escapeHtml(item.date || "Sin fecha")}${item.time ? " · " + escapeHtml(item.time) : ""}</span><b>${escapeHtml(item.name)}</b></div>`).join("")}</div>
+      <a href="../itinerario.html?tab=actividades&new=reminder">${ic("plus", 14)} Agregar recordatorio</a></div>
+    ${reminders.length ? `<div class="personal-reminders-list">${reminders.map(item => `<div><span>${escapeHtml(item.date || "Sin fecha")}${item.time ? " · " + escapeHtml(item.time) : ""}</span><b>${escapeHtml(item.name)}</b></div>`).join("")}</div>` : ""}
   </section>`;
 }
 

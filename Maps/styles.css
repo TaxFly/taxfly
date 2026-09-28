@@ -1382,6 +1382,7 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
 .sync-dot.saving { background: var(--theme-accent); animation: syncPulse .6s ease infinite alternate; }
 .sync-dot.saved  { background: var(--green); }
 .sync-dot.error  { background: #ef4444; }
+.trip-inline-loading { max-width:680px; margin:14px auto; padding:12px 16px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--muted); font-size:.78rem; font-weight:700; text-align:center; }
 @keyframes syncPulse { to { opacity: 0.4; } }
 
 .wm-section-header, .wm-total-bar, .wm-summary-bar,

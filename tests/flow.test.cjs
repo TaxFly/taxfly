@@ -371,37 +371,28 @@ test('Maps links offer a choice on iOS, open Google Maps on Android, and a new t
   assert.match(read('Maps/app.js'),/tripMapLink\(hotel\.addr, "hotel-map-link"\)/);
 });
 
-test('one navigation groups plan and expense sections across the app', () => {
-  const src=read('assets/app-shell.js');
-  const render=pathname=>{
-    let shell;
-    const original={click(){}};
-    const document={readyState:'complete',querySelector:()=>null,getElementById:()=>original,
-      createElement:()=>({querySelector:()=>({addEventListener(){},insertBefore(){}})}),
-      body:{classList:{add(){}},prepend:el=>{shell=el}}};
-    context(src,{document,window:{},location:{pathname,search:''},URLSearchParams,localStorage:{getItem:()=> 'es'}});
-    return shell.innerHTML;
-  };
-  const home=render('/taxfly/index.html');
-  const plan=render('/taxfly/Maps/index.html');
-  const things=render('/taxfly/Maps/Mis_cosas_de_viaje.html');
-  const expenses=render('/taxfly/compras.html');
-  assert.match(home,/href="Maps\/index.html\?section=parques"/);
-  assert.doesNotMatch(home,/aria-label="Secciones del plan"/);
-  assert.match(plan,/aria-label="Secciones del plan"/);
-  assert.match(plan,/href="\.\.\/Maps\/index.html\?section=reservas"/);
-  assert.match(plan,/href="\.\.\/itinerario.html\?tab=actividades"/);
-  assert.match(things,/Mis cosas<\/a>/);
-  assert.match(expenses,/aria-label="Secciones de gastos"/);
-  assert.match(expenses,/href="compras.html\?section=comparador"/);
+test('native layouts keep the shared four destinations and Trip Planning opens without its splash', () => {
+  const ui=read('assets/ui.js');
+  assert.match(ui,/\[ "Maps\/index\.html\?section=parques", "calendar", "plan" \]/);
+  assert.match(ui,/\[ "compras\.html", "bag", "shopping" \]/);
+  assert.match(ui,/\[ "tickets\.html", "file", "docs" \]/);
+  for (const page of ['compras.html','itinerario.html','tickets.html','tax.html']) {
+    assert.match(read(page),/<nav class="nav-bar">/);
+    assert.doesNotMatch(read(page),/app-shell\.js/);
+  }
+  const plan=read('Maps/index.html');
+  assert.match(plan,/<div class="nav-bar-wrap">/);
+  assert.doesNotMatch(plan,/id="splash-screen"|assets\/splash\.css/);
+  assert.match(read('Maps/Mis_cosas_de_viaje.html'),/Tax<b>Fly<\/b>/);
 });
 
 test('plan shows only the active trip reminders as a linked view', () => {
   const src=between(read('Maps/app.js'),'function personalReminderSummary()','function switchParquesTab(t)');
   const ctx=context(src,{window:{_personalReminders:[{name:'Vuelo',date:'2027-01-17',time:'08:00'}]},
-    escapeHtml:s=>String(s).replace(/</g,'&lt;')});
-  assert.match(ctx.personalReminderSummary(),/Gestionar recordatorios/);
+    escapeHtml:s=>String(s).replace(/</g,'&lt;'),ic:()=>'<svg></svg>'});
+  assert.match(ctx.personalReminderSummary(),/Agregar recordatorio/);
   assert.match(ctx.personalReminderSummary(),/Vuelo/);
+  assert.match(ctx.personalReminderSummary(),/new=reminder/);
   assert.doesNotMatch(ctx.personalReminderSummary(),/trip-planning\/.*\/data\/itinerario/);
   assert.match(read('Maps/firebase-sync.js'),/\.filter\(item => item\.tripId === activeTripId\)/);
 });

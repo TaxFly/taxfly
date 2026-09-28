@@ -33,7 +33,6 @@ function devError(...args) {
 <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="../assets/splash.css">
 <link rel="stylesheet" href="sx.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -48,88 +47,16 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 <script defer src="../assets/autofill.js"></script>
-<link rel="stylesheet" href="../assets/app-shell.css">
-<script defer src="../assets/app-shell.js"></script>
+<link rel="stylesheet" href="../assets/cohesion.css">
 </head>
 <body class="theme-outlets">
 
-
-<div id="splash-screen" class="tf-splash" role="status" aria-label="Cargando TaxFly">
-  <div class="tf-splash-content">
-    <div class="tf-globe" aria-hidden="true"><svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                <path d="M60 5 Q5 5 5 60 Q5 115 60 115 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
-                <path d="M60 5 Q34 34 34 60 Q34 86 60 115" fill="none" stroke="#EF9F27" stroke-width="0.9" opacity="0.5"/>
-                <path d="M60 5 Q12 32 12 60 Q12 88 60 115" fill="none" stroke="#EF9F27" stroke-width="0.6" opacity="0.3"/>
-                <path d="M60 5 Q115 5 115 60 Q115 115 60 115 Z" fill="#FAC775" stroke="#BA7517" stroke-width="1.5"/>
-                <path d="M60 5 Q86 34 86 60 Q86 86 60 115" fill="none" stroke="#854F0B" stroke-width="0.9" opacity="0.4"/>
-                <path d="M60 5 Q108 32 108 60 Q108 88 60 115" fill="none" stroke="#854F0B" stroke-width="0.6" opacity="0.25"/>
-                <line x1="5" y1="60" x2="115" y2="60" stroke="#854F0B" stroke-width="0.8" opacity="0.35"/>
-                <line x1="60" y1="5" x2="60" y2="115" stroke="#854F0B" stroke-width="1.5"/>
-                <g transform="translate(60,48)"><g class="tf-plane">
-                    <polygon points="0,-26 20,9 0,3 -20,9" fill="#633806"/>
-                    <polygon points="0,3 -20,9 -10,17" fill="#854F0B"/>
-                    <polygon points="0,3 20,9 10,17" fill="#854F0B"/>
-                    <polygon points="0,3 -6,21 0,16" fill="#BA7517"/>
-                    <polygon points="0,3 6,21 0,16" fill="#BA7517"/>
-                </g></g>
-            <path class="tf-route" d="M22 89 C-5 65 10 13 59 9 C108 5 130 62 97 91" pathLength="1" fill="none" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/></svg></div>
-    <div class="tf-wordmark"><span>Tax</span>Fly</div>
-    <div class="tf-tagline">Plan del viaje</div>
-  </div>
-</div>
-<script>
-(function () {
-  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var minEnd = Date.now() + (reduced ? 0 : 1050);
-  var hidden = false;
-  var ready = false;
-  function hide() {
-    if (hidden) return;
-    hidden = true;
-    clearTimeout(fallback);
-    setTimeout(function () {
-      var splash = document.getElementById("splash-screen");
-      if (!splash) return;
-      splash.classList.add("tf-leaving");
-      setTimeout(function () { splash.remove(); }, reduced ? 0 : 260);
-    }, Math.max(0, minEnd - Date.now()));
-  }
-  function maybeHide() { if (ready && window._fbReady) hide(); }
-  var notice;
-  var slowTimer;
-  window._splashFbReady = function () {
-    clearTimeout(slowTimer);
-    if (notice) notice.remove();
-    maybeHide();
-  };
-  var fallback = setTimeout(function () {
-    if (!window._fbReady) {
-      notice = document.createElement("div");
-      notice.className = "tf-sync-notice";
-      notice.setAttribute("role", "status");
-      notice.textContent = "Cargando los datos de tu viaje…";
-      document.body.appendChild(notice);
-      slowTimer = setTimeout(function () {
-        if (window._fbReady || !notice) return;
-        notice.textContent = "No se pudo completar la carga. Revisá tu conexión. ";
-        var retry = document.createElement("button");
-        retry.type = "button";
-        retry.textContent = "Reintentar";
-        retry.onclick = function () { window.location.reload(); };
-        notice.appendChild(retry);
-      }, 12000);
-    }
-    hide();
-  }, 2500);
-  document.addEventListener("DOMContentLoaded", function () { ready = true; maybeHide(); }, { once: true });
-})();
-</script>
 
 <header class="header">
   <div class="hdr-row">
     <a class="brand-back" href="../index.html" title="Ir a Inicio" aria-label="Ir a Inicio">
         <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="tg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#2563eb"/></linearGradient><clipPath id="tc1"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="url(#tg1)"/><g clip-path="url(#tc1)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
-        <span class="bb-wm">Tax<b>USA</b></span>
+        <span class="bb-wm">Tax<b>Fly</b></span>
       </a>
     <div class="hdr-right">
       <div class="sync-dot" id="sync-dot" title="Estado de sincronización"></div>
@@ -165,6 +92,7 @@ if ("serviceWorker" in navigator) {
   </div>
 </div>
 
+<div id="trip-loading" class="trip-inline-loading" role="status">Cargando los datos de tu viaje…</div>
 <div id="panel-outlets" class="panel active"></div>
 <div id="panel-comidas" class="panel"></div>
 <div id="panel-walmart" class="panel"></div>

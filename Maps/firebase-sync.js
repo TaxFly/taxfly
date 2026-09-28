@@ -250,8 +250,8 @@ async function startApp() {
   if (parquesExcelDataFb) window._parquesExcelFromFb = parquesExcelDataFb;
   if (reservationsDataFb) window._reservationsFromFb = reservationsDataFb;
   window._fbReady = true;
-  window._splashFbReady && window._splashFbReady();
   if (window._appInit) window._appInit();
+  document.getElementById("trip-loading")?.remove();
   onSnapshot(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "actividades"), snap => {
     window._personalReminders = snap.docs.map(item => ({ id:item.id, ...item.data() }))
       .filter(item => item.tripId === activeTripId);
