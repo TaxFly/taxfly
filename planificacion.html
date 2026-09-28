@@ -61,18 +61,15 @@ if ("serviceWorker" in navigator) {
       </a>
     <div class="hdr-right">
       <div class="sync-dot" id="sync-dot" title="Estado de sincronización"></div>
-      <a class="brand-back brand-viaje app-link" href="mis-cosas.html" title="Abrir Mis cosas de viaje" aria-label="Abrir Mis cosas de viaje">
-        <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="vgv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><rect width="32" height="32" rx="10" fill="url(#vgv)"/><path d="M12 9.2V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1.2" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/><rect x="6" y="9.2" width="20" height="15.6" rx="3.6" fill="#fff"/><path d="M6 17.2 C10 14.4 13 14.4 16 17.2 S22 20 26 17.2" stroke="url(#vgv)" stroke-width="2.4" stroke-linecap="round" fill="none"/><rect x="9.4" y="24.8" width="2.4" height="1.8" rx=".9" fill="#fff"/><rect x="20.2" y="24.8" width="2.4" height="1.8" rx=".9" fill="#fff"/></svg>
-        <span class="bb-wm">Mis <b>cosas</b></span>
-      </a>
+
     </div>
   </div>
   <nav class="plan-app-nav" aria-label="Navegación principal">
     <a href="index.html"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h5v-6h4v6h5V10"/></svg><span>Inicio</span></a>
     <a href="tax.html"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 7h8M9 12h.01M14 12h.01M9 17h.01M14 17h.01"/></svg><span>Calculadora</span></a>
-    <a href="planificacion.html" class="active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>Planificación</span></a>
     <a href="compras.html"><svg viewBox="0 0 24 24"><path d="M4 8h16v13H4zM4 8l2-5h12l2 5M9 12a3 3 0 0 0 6 0"/></svg><span>Gastos</span></a>
-    <details class="plan-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Más</span></summary><div class="plan-more-menu"><a href="tickets.html">Documentos</a><a href="mis-cosas.html">Mis cosas</a><a href="rutas.html">Rutas</a><a href="unidades.html">Ayudas y referencias</a></div></details>
+    <a href="planificacion.html" class="active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>Itinerario</span></a>
+    <details class="plan-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Más</span></summary><div class="plan-more-menu"><a href="tickets.html">Documentos</a><a href="mis-cosas.html">Mis cosas</a><a href="rutas.html">Rutas</a><a href="unidades.html">Ayudas y referencias</a><a href="grupo.html">Grupo</a></div></details>
   </nav>
   <div class="hdr-title-row">
     <div><div class="plan-eyebrow">PLANIFICACIÓN DEL VIAJE</div><div class="header-title" id="main-title">Agenda y <span class="ht-accent">atracciones</span></div></div>
@@ -89,17 +86,17 @@ if ("serviceWorker" in navigator) {
 
 <div class="nav-bar-wrap">
   <div class="nav-bar">
-    <div class="tabs" aria-label="Secciones de Planificación">
-      <button class="tab active" id="nav-parques" onclick="switchSection('parques')" aria-label="Agenda y parques"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/></svg></span><span class="nav-date">Agenda y parques</span></button>
-      <button class="tab" id="nav-outlets" onclick="switchSection('outlets')"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16v12H4zM3 9l2-6h14l2 6M9 21v-7h6v7"/></svg></span><span class="nav-date">Outlets</span></button>
-      <button class="tab" id="nav-comidas" onclick="switchSection('comidas')"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7a3 3 0 0 0 6 0V3M8 13v8M18 3v18M18 3c-3 2-3 6 0 9"/></svg></span><span class="nav-date">Comidas</span></button>
-      <button class="tab" id="nav-walmart" onclick="switchSection('walmart')"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2 12h12l2-9H6M9 21h.01M18 21h.01"/></svg></span><span class="nav-date">Supermercado</span></button>
-      <button class="tab" id="nav-reservas" onclick="switchSection('reservas')"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M7 9h10M7 13h7M7 17h4"/></svg></span><span class="nav-date">Reservas</span></button>
-      <a class="tab plan-places-link" href="lugares.html?tab=lugares"><span><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6 7-12a7 7 0 1 0-14 0c0 6 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="nav-date">Lugares y notas</span></a>
+    <div class="tabs plan-sections" aria-label="Secciones de Itinerario">
+      <button class="tab active" id="nav-parques" onclick="switchSection('parques')"><span><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg></span><span class="nav-date">Agenda y parques</span></button>
+      <button class="tab" id="nav-outlets" onclick="switchSection('outlets')"><span><svg class="icon" viewBox="0 0 24 24"><path d="M4 9h16v12H4zM3 9l2-6h14l2 6M9 21v-7h6v7"/></svg></span><span class="nav-date">Outlets</span></button>
+      <button class="tab" id="nav-food" onclick="switchSection('comidas')"><span><svg class="icon" viewBox="0 0 24 24"><path d="M5 3v7a3 3 0 0 0 6 0V3M8 13v8M18 3v18M18 3c-3 2-3 6 0 9"/></svg></span><span class="nav-date">Comidas y supermercado</span></button>
+      <details class="plan-section-more" id="plan-section-more"><summary class="tab"><span><svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span class="nav-date">Más</span></summary><div class="plan-section-menu"><button id="nav-reservas" onclick="switchSection('reservas')">Reservas</button><button id="nav-lugares" onclick="switchSection('lugares')">Lugares y notas</button></div></details>
     </div>
     <button class="btn-nav-set" id="btnSettings" onclick="openSettingsDrawer()" title="Ajustes"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V19a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V10a1.7 1.7 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
 </div>
+
+<div class="plan-food-switch" id="plan-food-switch" hidden><button id="nav-comidas" onclick="switchSection('comidas')">Comidas</button><button id="nav-walmart" onclick="switchSection('walmart')">Supermercado</button></div>
 
 <div id="trip-loading" class="trip-inline-loading" role="status">Cargando los datos de tu viaje…</div>
 <div id="panel-outlets" class="panel"></div>
@@ -107,6 +104,7 @@ if ("serviceWorker" in navigator) {
 <div id="panel-walmart" class="panel"></div>
 <div id="panel-parques" class="panel active"></div>
 <div id="panel-reservas" class="panel"></div>
+<div id="panel-lugares" class="panel"><div id="plan-places-root"></div></div>
 
 <div class="confetti-wrap" id="confetti-wrap"></div>
 
@@ -148,7 +146,7 @@ if ("serviceWorker" in navigator) {
     <span class="sx-sec">Cuenta</span>
     <div class="sx-card">
       <button type="button" class="sx-row" onclick="changeProfile()"><span class="sx-ico" style="--c:#2563eb"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></svg></span><span class="sx-lbl">Cambiar perfil</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></button>
-      <a class="sx-row" href="mis-cosas.html"><span class="sx-ico" style="--c:#7c3aed"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V4h6v3M9 11v6M15 11v6"/></svg></span><span class="sx-lbl">Mis cosas de viaje</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
+
       <a class="sx-row" href="index.html"><span class="sx-ico" style="--c:#6366f1"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg></span><span class="sx-lbl">Ir a Inicio</span><span class="sx-go"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></a>
     </div>
 
@@ -179,6 +177,7 @@ if ("serviceWorker" in navigator) {
 <script src="assets/plan-legacy-parks.js"></script>
 <script src="assets/park-live.js"></script>
 <script src="assets/plan-app.js"></script>
+<script type="module" src="assets/plan-places.js"></script>
 <script src="assets/plan-reservations.js"></script>
 
 

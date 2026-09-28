@@ -119,9 +119,9 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .queue-card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;gap:4px;transition:var(--tr);}
         .queue-name{font-size:.62rem;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;}
         .queue-status{font-size:.85rem;font-weight:900;}
-        .city-parks{display:grid;gap:10px;margin-bottom:14px;}
-        .city-parks h3{font-size:.8rem;margin:8px 0 0;color:var(--text);}
-        .park-live-card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;}
+        .city-parks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;}
+        .city-parks h3,.city-parks>.park-source{grid-column:1/-1}.city-parks h3{font-size:.8rem;margin:8px 0 0;color:var(--text);}
+        .park-live-card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:15px 9px;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-width:0}.park-live-card strong{font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sub);line-height:1.2}.park-level{font-weight:900;font-size:.82rem;letter-spacing:.4px;text-transform:uppercase}.park-level.q-low{color:var(--success)}.park-level.q-med{color:var(--warn)}.park-level.q-high{color:var(--danger)}.park-level.q-off{color:var(--text-dim)}
         .park-live-card button{width:100%;background:transparent;border:0;color:var(--primary);font:inherit;font-size:.78rem;font-weight:800;text-align:left;cursor:pointer;padding:8px 0 0;}
         .park-rides{max-height:290px;overflow:auto;margin-top:8px;}
         .park-ride{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);padding:8px 0;font-size:.72rem;}
@@ -1084,9 +1084,9 @@ const citiesConfig = {
 };
 
 const placesText = {
-  es:{places:"Lugares para explorar",parks:"Parques",nearby:"Algunos parques están fuera de la ciudad; comprobá la distancia antes de ir.",loading:"Consultando esperas…",unavailable:"Esperas en vivo no disponibles",average:"Nivel promedio de filas",low:"Bajo",medium:"Medio",high:"Alto",count:"atracciones medidas"},
-  en:{places:"Places to explore",parks:"Parks",nearby:"Some parks are outside the city; check the distance before visiting.",loading:"Checking wait times…",unavailable:"Live waits unavailable",average:"Average queue level",low:"Low",medium:"Moderate",high:"High",count:"measured attractions"},
-  pt:{places:"Lugares para conhecer",parks:"Parques",nearby:"Alguns parques ficam fora da cidade; confira a distância antes de ir.",loading:"Consultando esperas…",unavailable:"Esperas ao vivo indisponíveis",average:"Nível médio das filas",low:"Baixo",medium:"Médio",high:"Alto",count:"atrações medidas"}
+  es:{places:"Lugares para explorar",parks:"Parques",nearby:"Algunos parques están fuera de la ciudad; comprobá la distancia antes de ir.",loading:"Consultando esperas…",unavailable:"Esperas en vivo no disponibles",average:"Nivel promedio de filas",low:"Bajo",medium:"Medio",high:"Alto",count:"atracciones medidas",closed:"Cerrado"},
+  en:{places:"Places to explore",parks:"Parks",nearby:"Some parks are outside the city; check the distance before visiting.",loading:"Checking wait times…",unavailable:"Live waits unavailable",average:"Average queue level",low:"Low",medium:"Moderate",high:"High",count:"measured attractions",closed:"Closed"},
+  pt:{places:"Lugares para conhecer",parks:"Parques",nearby:"Alguns parques ficam fora da cidade; confira a distância antes de ir.",loading:"Consultando esperas…",unavailable:"Esperas ao vivo indisponíveis",average:"Nível médio das filas",low:"Baixo",medium:"Médio",high:"Alto",count:"atrações medidas",closed:"Fechado"}
 };
 
 const checklistItems = {
@@ -1132,7 +1132,10 @@ window.renderCityData = async () => {
       try {
         const result = await ParkLive.parkSummary(park);
         if (el && document.getElementById("citySelector").value===cityKey)
-          el.textContent = result.level ? `${t.average}: ${t[result.level]} · ${result.count} ${t.count} · ${result.sources.join(" + ")}` : t.unavailable;
+          {
+            el.className="park-level " + (result.level === "low" ? "q-low" : result.level === "medium" ? "q-med" : result.level === "high" ? "q-high" : "q-off");
+            el.textContent=result.level ? `${t[result.level]} ${result.level === "closed" ? "☾" : ""}`.trim() : t.unavailable;
+          }
       } catch (_) { if (el && document.getElementById("citySelector").value===cityKey) el.textContent=t.unavailable; }
     }));
   } catch (_) { if (document.getElementById("citySelector").value===cityKey) parkBox.innerHTML=`<h3>${t.parks}</h3><p class="park-source">${t.unavailable}</p>`; }

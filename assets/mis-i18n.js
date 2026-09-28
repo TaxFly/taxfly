@@ -1,5 +1,5 @@
 I18N.add({
-  Inicio:["Home","Início"], Calculadora:["Calculator","Calculadora"], Planificación:["Planning","Planejamento"], Gastos:["Expenses","Despesas"], Más:["More","Mais"], "Mis cosas":["My things","Minhas coisas"], Rutas:["Routes","Rotas"], "Ayudas y referencias":["Help & references","Ajuda e referências"], "Gestionar en TaxFly":["Manage in TaxFly","Gerenciar no TaxFly"],
+  Grupo:["Group","Grupo"], Itinerario:["Itinerary","Itinerário"], Inicio:["Home","Início"], Calculadora:["Calculator","Calculadora"], Planificación:["Planning","Planejamento"], Gastos:["Expenses","Despesas"], Más:["More","Mais"], "Mis cosas":["My things","Minhas coisas"], Rutas:["Routes","Rotas"], "Ayudas y referencias":["Help & references","Ajuda e referências"], "Gestionar en TaxFly":["Manage in TaxFly","Gerenciar no TaxFly"],
   Mis: [ "My", "Minhas" ],
   cosas: [ "stuff", "coisas" ],
   "Conectando…": [ "Connecting…", "Conectando…" ],

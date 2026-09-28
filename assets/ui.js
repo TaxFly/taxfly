@@ -304,7 +304,7 @@
       tickets_d: "ESTA, seguros, check-in",
       group: "Grupo",
       group_d: "Gastos compartidos",
-      plan: "Planificación",
+      plan: "ITINERARIO",
       plan_d: "Agenda, reservas, lugares y atracciones",
       docs: "DOCUMENTOS",
       things: "Mis cosas",
@@ -326,7 +326,7 @@
       tickets_d: "ESTA, insurance, check-in",
       group: "Group",
       group_d: "Shared expenses",
-      plan: "Planning",
+      plan: "ITINERARY",
       plan_d: "Schedule, bookings, places and attractions",
       docs: "DOCUMENTS",
       things: "My things",
@@ -348,7 +348,7 @@
       tickets_d: "ESTA, seguros, check-in",
       group: "Grupo",
       group_d: "Gastos compartilhados",
-      plan: "Planejamento",
+      plan: "ITINERÁRIO",
       plan_d: "Agenda, reservas, lugares e atrações",
       docs: "DOCUMENTOS",
       things: "Minhas coisas",
@@ -362,7 +362,7 @@
     } catch (e) {}
     return NAV_T[l] ? l : "es";
   };
-  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "tax.html", "calculator", "taxes" ], [ "planificacion.html?section=parques", "calendar", "plan" ], [ "compras.html", "bag", "shopping" ] ];
+  const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "tax.html", "calculator", "taxes" ], [ "compras.html", "bag", "shopping" ], [ "planificacion.html?section=parques", "calendar", "plan" ] ];
   const NAV_MORE = [ [ "tickets.html", "file", "tickets", "cyan" ], [ "mis-cosas.html", "briefcase", "things", "violet" ], [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ] ];
   function buildNav() {
     const nav = document.querySelector(".nav-bar");
@@ -442,7 +442,7 @@
     const file = (location.pathname.split("/").pop() || "index.html").toLowerCase();
     document.querySelectorAll(".nav-bar .btn-nav[href]").forEach(a => {
       const h = (a.getAttribute("href") || "").toLowerCase();
-      a.classList.toggle("active", h === file || file === "" && h === "index.html" || file === "lugares.html" && h.startsWith("planificacion/index.html"));
+      a.classList.toggle("active", h.split("?")[0] === file || file === "" && h === "index.html" || file === "lugares.html" && h.startsWith("planificacion.html"));
     });
     const dd = document.querySelector(".nav-bar .btn-nav-more");
     if (dd) {

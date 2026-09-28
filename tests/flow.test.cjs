@@ -397,7 +397,8 @@ test('old planning URLs redirect with their section and trip while the same data
   for (const section of ['parques','outlets','comidas','walmart','reservas']) {
     assert.match(plan,new RegExp('id="nav-' + section + '"'));
   }
-  assert.match(plan,/href="lugares\.html\?tab=lugares"/);
+  assert.match(plan,/id="nav-lugares"/);
+  assert.doesNotMatch(plan,/href="lugares\.html\?tab=lugares"/);
   assert.match(plan,/href="mis-cosas\.html"/);
   assert.match(read('assets/plan-firebase.js'),/tripPlanning", activeTripId, "data"/);
   assert.match(read('assets/plan-app.js'),/const HOTEL_KEY = "orlando-hotel-v1"/);
@@ -459,4 +460,19 @@ test('park summary blends recent readings from two providers and ignores stale w
   assert.equal(summary.level,'medium');
   assert.equal(summary.count,3);
   assert.deepEqual(Array.from(summary.sources),['ThemeParks.wiki','Queue-Times.com']);
+});
+
+
+test('itinerary keeps places and notes within one page, with compact four-item section navigation', () => {
+  const plan=read('planificacion.html'), app=read('assets/plan-app.js');
+  assert.match(plan,/id="panel-lugares"/);
+  assert.match(plan,/id="plan-places-root"/);
+  assert.match(plan,/id="plan-food-switch"/);
+  assert.match(plan,/id="nav-food"/);
+  assert.match(plan,/class="plan-section-more"/);
+  assert.doesNotMatch(plan,/class="brand-back brand-viaje/);
+  assert.doesNotMatch(plan,/<a class="sx-row" href="mis-cosas.html"/);
+  assert.match(app,/if \(section === "lugares"\) window\.renderPlanPlaces/);
+  assert.match(read('assets/plan-places.js'),/usuarios.*perfiles.*notas/);
+  assert.match(read('assets/ui.js'),/\[ "compras.html", "bag", "shopping" \], \[ "planificacion.html\?section=parques", "calendar", "plan" \]/);
 });

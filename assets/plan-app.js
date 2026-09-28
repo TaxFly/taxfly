@@ -351,7 +351,7 @@ window._appInit = function() {
     const params = new URLSearchParams(location.search);
     const sec = params.get("section");
     if (params.get("subtab") === "atracciones") parquesSubTab = "atracciones";
-    const OK = [ "outlets", "comidas", "walmart", "parques", "reservas" ];
+    const OK = [ "outlets", "comidas", "walmart", "parques", "reservas", "lugares" ];
     let back = null;
     try {
       back = sessionStorage.getItem("orl_section");
@@ -1686,6 +1686,7 @@ const sectionMeta = {
     subtitle: "Tracker de atracciones",
     theme: "theme-parques"
   },
+  lugares: {title:"Lugares y",accent:"notas",subtitle:"Lugares y notas del viaje",theme:"theme-parques"},
   reservas: {
     title: "Reservas del",
     accent: "viaje",
@@ -1699,10 +1700,17 @@ function switchSection(section) {
   try {
     sessionStorage.setItem("orl_section", section);
   } catch (e) {}
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab,.plan-section-menu button,.plan-food-switch button").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + section).classList.add("active");
-  document.getElementById("nav-" + section).classList.add("active");
+  const primary = section === "comidas" || section === "walmart" ? "food" : section === "lugares" || section === "reservas" ? null : section;
+  if (primary) document.getElementById("nav-" + primary)?.classList.add("active");
+  const secondary = document.getElementById("nav-" + section);
+  if (secondary && secondary !== document.getElementById("nav-" + primary)) secondary.classList.add("active");
+  const more = document.getElementById("plan-section-more");
+  if (more) {more.open=false;more.classList.toggle("active",section==="lugares"||section==="reservas")}
+  const food = document.getElementById("plan-food-switch");
+  if (food) food.hidden = section!=="comidas" && section!=="walmart";
   const meta = sectionMeta[section];
   document.getElementById("main-title").innerHTML = escapeHtml(meta.title) + ' <span class="ht-accent">' + escapeHtml(meta.accent) + "</span>";
   document.getElementById("main-subtitle").textContent = meta.subtitle;
@@ -1718,6 +1726,7 @@ function switchSection(section) {
   if (section === "outlets") renderOutlets();
   if (section === "parques") renderParques();
   if (section === "reservas") window.renderReservations?.();
+  if (section === "lugares") window.renderPlanPlaces?.();
   if (section === "parques") {
     updateParquesCounter();
   } else {

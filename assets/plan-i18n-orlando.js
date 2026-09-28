@@ -1,4 +1,6 @@
 I18N.add({
+  "Comidas y supermercado":["Meals & groceries","Refeições e supermercado"],
+  "Grupo":["Group","Grupo"],
   "Filas por atracción":["Wait times by attraction","Filas por atração"], "Consultando esperas en vivo…":["Checking live waits…","Consultando esperas ao vivo…"],
   "PLANIFICACIÓN DEL VIAJE": ["TRIP PLANNING", "PLANEJAMENTO DA VIAGEM"],
   "Planificación": ["Planning", "Planejamento"],
