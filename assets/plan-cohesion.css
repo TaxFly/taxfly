@@ -61,3 +61,5 @@ body,[data-theme="dark"] body,.header{background:var(--bg);background-image:none
   .plan-app-nav>a, .plan-more>summary { font-size: 9px; }
   .plan-app-nav>a[href="planificacion.html"] span { font-size: 9px; }
 }
+
+.parques-panel,.park-filter-control{width:100%;max-width:100%;min-width:0}.park-filter-control>.parques-filter-bar{flex:1 1 0;width:0;min-width:0;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}

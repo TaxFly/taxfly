@@ -1,6 +1,10 @@
 (function () {
   "use strict";
   const words = {
+    "Cancelar": ["Cancel", "Cancelar"],
+    "Abrir en Maps": ["Open in Maps", "Abrir no Maps"],
+    "Filas por atracción": ["Wait times by attraction", "Filas por atração"],
+    "Maps": ["Maps", "Mapas"],
     "Viaje activo": ["Active trip", "Viagem ativa"],
     "Registros sin viaje": ["Records without a trip", "Registros sem viagem"],
     "Gestionar viajes": ["Manage trips", "Gerenciar viagens"],
