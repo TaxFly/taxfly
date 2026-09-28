@@ -9,7 +9,7 @@
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TaxUSA — Taxes</title>
+    <title>TaxFly — Taxes</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
     <meta name="mobile-web-app-capable" content="yes">
@@ -399,6 +399,8 @@ if ("serviceWorker" in navigator) {
 </script>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
+<link rel="stylesheet" href="assets/app-shell.css">
+<script defer src="assets/app-shell.js"></script>
 </head>
 <body>
 
@@ -1367,7 +1369,7 @@ window.changeLanguage = lang => {
   if (tc) tc.innerText = econTips[lang][tipIndex];
   calculate();
   updateTripUI();
-  document.title = lang === "en" ? "TaxUSA — Taxes" : lang === "pt" ? "TaxUSA — Impostos" : "TaxUSA — Taxes";
+  document.title = lang === "en" ? "TaxFly — Taxes" : lang === "pt" ? "TaxFly — Impostos" : "TaxFly — Taxes";
   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
   const lbl = document.getElementById("wc-label");
   if (lbl) {

@@ -9,7 +9,7 @@
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TaxUSA — Documentos</title>
+    <title>TaxFly — Documentos</title>
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
@@ -255,6 +255,8 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     </style>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
+<link rel="stylesheet" href="assets/app-shell.css">
+<script defer src="assets/app-shell.js"></script>
 </head>
 <body>
 
@@ -292,6 +294,8 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         <button class="btn-nav-set active" id="btnSettings" onclick="toggleSettings()"></button>
     </nav>
     <script src="assets/ui.js"></script>
+
+    <div class="taxfly-trip-filter"><label for="trip-filter-docs">Viaje</label><select id="trip-filter-docs" aria-label="Filtrar documentos por viaje"></select><a href="index.html#viajes">Gestionar viajes</a></div>
 
     
     <div class="page-heading">
@@ -729,6 +733,17 @@ window.addEventListener("online", () => sessionStorage.setItem("taxfly_connectiv
 
 window.addEventListener("offline", () => sessionStorage.setItem("taxfly_connectivity", "0"));
 
+function initDocsTripSelector(uid) {
+  if (!uid) return;
+  const select = document.getElementById("trip-filter-docs");
+  window.TripContext.render(select, uid, perfilId);
+  select.onchange = () => {
+    if (!window.TripContext.select(uid, perfilId, select.value)) return;
+    renderList();
+    loadReservationsForDocs();
+  };
+}
+
 async function handleAuthState(user) {
   if (!user) {
     try {
@@ -753,12 +768,15 @@ async function handleAuthState(user) {
         b.style.backgroundImage = `url(${foto})`;
         b.innerText = "";
       }
+      window._uid = localStorage.getItem("taxusa_offline_uid");
+      initDocsTripSelector(window._uid);
       initDocs();
       return;
     }
   }
   currentUser = user;
   window._uid = user.uid;
+  initDocsTripSelector(user.uid);
   const perfilNombre = localStorage.getItem("perfilActivoNombre");
   document.getElementById("userEmail").innerText = perfilNombre || user.email;
   if (!localStorage.getItem("perfilActivoId")) {
@@ -1275,6 +1293,7 @@ async function loadReservationsForDocs() {
       ? ["usuarios", window._uid, "perfiles", perfilId, "orlando", "reservations"]
       : ["usuarios", window._uid, "perfiles", perfilId, "tripPlanning", tripId, "data", "reservations"];
     const snap = await getDoc(doc(db, ...path));
+    if (window.TripContext.assign(window._uid, perfilId) !== tripId) return;
     if (snap.exists() && Array.isArray(snap.data().items)) linkedReservations = snap.data().items;
     renderList();
     fillDocumentFromReservation();
@@ -2068,7 +2087,7 @@ window.changeLanguage = lang => {
     const k = el.getAttribute("data-i18n-ph");
     if (t[k]) el.placeholder = t[k];
   });
-  document.title = lang === "en" ? "TaxUSA — Documents" : lang === "pt" ? "TaxUSA — Documentos" : "TaxUSA — Documentos";
+  document.title = lang === "en" ? "TaxFly — Documents" : lang === "pt" ? "TaxFly — Documentos" : "TaxFly — Documentos";
   const setHtml = (id, val) => {
     const el = document.getElementById(id);
     if (el && val) el.innerHTML = val;

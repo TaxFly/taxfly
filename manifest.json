@@ -1,7 +1,7 @@
 {
-  "name": "TaxFly - Calculadora de Viaje",
+  "name": "TaxFly — Tu viaje",
   "short_name": "TaxFly",
-  "description": "Calculadora de impuestos, propinas, conversor de unidades y comparador de precios para viajes a EE.UU.",
+  "description": "Plan, reservas, rutas, gastos y documentos del viaje en un solo lugar.",
   "start_url": "./login.html",
   "scope": "./",
   "display": "standalone",
@@ -42,9 +42,9 @@
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Itinerario",
-      "short_name": "Itinerario",
-      "url": "./login.html?next=itinerario.html",
+      "name": "Plan del viaje",
+      "short_name": "Plan",
+      "url": "./login.html?next=Maps/index.html?section=parques",
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     },
     {

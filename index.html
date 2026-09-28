@@ -7,7 +7,7 @@
     <script src="assets/account.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TaxUSA — Inicio</title>
+    <title>TaxFly — Inicio</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
     <meta name="mobile-web-app-capable" content="yes">
@@ -181,6 +181,8 @@ document.addEventListener("DOMContentLoaded", function() {
         
         
         .section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+        .home-primary-grid{grid-template-columns:repeat(3,1fr);}
+        .home-section-heading{font-size:.7rem;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}
         .section-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:inherit;transition:var(--tr);cursor:pointer;aspect-ratio:1;position:relative;overflow:hidden;}
         .section-card::before{content:'';position:absolute;inset:0;background:transparent;border-radius:14px;transition:var(--tr);}
         .section-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow);}
@@ -233,6 +235,8 @@ document.addEventListener("DOMContentLoaded", function() {
         .section-card:nth-child(7){animation:fadeIn .3s .32s ease both;}
     </style>
     <link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/app-shell.css">
+<script defer src="assets/app-shell.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -265,7 +269,10 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="ne-arrow">›</div>
     </a>
 
-    <div class="section-grid" id="sectionList"></div>
+    <div class="home-section-heading" id="homePlanHeading">Tu viaje</div>
+    <div class="section-grid home-primary-grid" id="sectionList"></div>
+    <div class="home-section-heading" id="homeToolsHeading">Herramientas</div>
+    <div class="section-grid home-primary-grid" id="homeTools"></div>
 
     
     <div class="widget-budget" onclick="location.href='compras.html'">
@@ -1397,14 +1404,23 @@ setInterval(() => {
 function renderSections() {
   const list = document.getElementById("sectionList");
   if (!list) return;
-  list.innerHTML = "";
-  (t.sections || I18N.es.sections).forEach(sec => {
-    const a = document.createElement("a");
-    a.href = sec.href;
-    a.className = "section-card";
+  const tools = document.getElementById("homeTools");
+  const sections = t.sections || I18N.es.sections;
+  const lang = localStorage.getItem("appLang") || "es";
+  const heading = { es:["Tu viaje","Herramientas","Plan del viaje"], en:["Your trip","Tools","Trip plan"], pt:["Sua viagem","Ferramentas","Plano da viagem"] }[lang] || ["Tu viaje","Herramientas","Plan del viaje"];
+  document.getElementById("homePlanHeading").textContent = heading[0];
+  document.getElementById("homeToolsHeading").textContent = heading[1];
+  list.replaceChildren(); tools.replaceChildren();
+  sections.forEach(sec => {
+    const file = sec.href.split("/").pop();
     const planning = sec.href.includes("/Maps/index.html");
-    a.innerHTML = `<span class="sc-emoji${planning ? ' ui-slot' : ''}"${planning ? ' data-tone="teal"' : ''}>${planning ? window.uiIcon('globe', 25) : sec.icon}</span><span class="sc-name">${sec.name}</span>`;
-    list.appendChild(a);
+    const primary = planning || ["compras.html", "tickets.html"].includes(file);
+    if (!primary && !["tax.html", "unidades.html", "grupo.html"].includes(file)) return;
+    const a = document.createElement("a");
+    a.href = planning ? "Maps/index.html?section=parques" : sec.href;
+    a.className = "section-card";
+    a.innerHTML = `<span class="sc-emoji${planning ? ' ui-slot' : ''}"${planning ? ' data-tone="teal"' : ''}>${planning ? window.uiIcon('globe', 25) : sec.icon}</span><span class="sc-name">${planning ? heading[2] : sec.name}</span>`;
+    (primary ? list : tools).appendChild(a);
   });
 }
 

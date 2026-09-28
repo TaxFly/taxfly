@@ -9,7 +9,7 @@
     <script src="assets/account.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TaxUSA — Unidades</title>
+    <title>TaxFly — Unidades</title>
     <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
     <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
     
@@ -220,6 +220,8 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     </style>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
+<link rel="stylesheet" href="assets/app-shell.css">
+<script defer src="assets/app-shell.js"></script>
 </head>
 <body>
 
@@ -814,7 +816,7 @@ window.changeLanguage = lang => {
   });
   const tc = document.getElementById("tip-content");
   if (tc) tc.innerText = unitTips[lang][tipIndex];
-  document.title = lang === "en" ? "TaxUSA — Units" : lang === "pt" ? "TaxUSA — Unidades" : "TaxUSA — Unidades";
+  document.title = lang === "en" ? "TaxFly — Units" : lang === "pt" ? "TaxFly — Unidades" : "TaxFly — Unidades";
   const offMsg = document.getElementById("offline-toast-msg");
   if (offMsg && i18n[lang]?.offline_msg) offMsg.textContent = i18n[lang].offline_msg;
   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);

@@ -9,7 +9,7 @@
     <script src="config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TaxUSA — Itinerario</title>
+    <title>TaxFly — Lugares y recordatorios</title>
     <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
     <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
     
@@ -298,6 +298,8 @@ if ("serviceWorker" in navigator) {
 </script>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
+<link rel="stylesheet" href="assets/app-shell.css">
+<script defer src="assets/app-shell.js"></script>
 </head>
 <body>
 
@@ -346,7 +348,7 @@ if ("serviceWorker" in navigator) {
         </button>
 
         <button class="tab-btn" onclick="switchTab('actividades')" id="tab-actividades">
-            <span class="ti">✅</span><span data-i18n="tab_activities">ACTIVIDADES</span>
+            <span class="ti">✅</span><span data-i18n="tab_activities">RECORDATORIOS</span>
         </button>
         <button class="tab-btn" onclick="switchTab('notas')" id="tab-notas">
             <span class="ti">📝</span><span data-i18n="tab_notes">NOTAS</span>
@@ -748,7 +750,7 @@ const i18n = {
     nav_tickets_desc: "ESTA, seguros, check-in",
     nav_group_desc: "Gastos compartidos",
     tab_places: "LUGARES",
-    tab_activities: "ACTIVIDADES",
+    tab_activities: "RECORDATORIOS",
     tab_notes: "NOTAS",
     itinerary_title: "📍 Planificador de Viaje",
     tip_label: "✨ Tip de Viaje",
@@ -855,7 +857,7 @@ const i18n = {
     nav_tickets_desc: "ESTA, insurance, check-in",
     nav_group_desc: "Shared expenses",
     tab_places: "PLACES",
-    tab_activities: "ACTIVITIES",
+    tab_activities: "REMINDERS",
     tab_notes: "NOTES",
     itinerary_title: "📍 Trip Planner",
     tip_label: "✨ Travel Tip",
@@ -962,7 +964,7 @@ const i18n = {
     nav_tickets_desc: "ESTA, seguros, check-in",
     nav_group_desc: "Gastos compartilhados",
     tab_places: "LUGARES",
-    tab_activities: "ATIVIDADES",
+    tab_activities: "LEMBRETES",
     tab_notes: "NOTAS",
     itinerary_title: "📍 Planejador de Viagem",
     tip_label: "✨ Dica de Viagem",
@@ -1756,7 +1758,7 @@ window.changeLanguage = lang => {
   }
   const tipEl = document.getElementById("tip-text");
   if (tipEl) tipEl.innerText = tips[lang][currentTipIndex];
-  document.title = lang === "en" ? "TaxUSA — Itinerary" : lang === "pt" ? "TaxUSA — Itinerário" : "TaxUSA — Itinerario";
+  document.title = lang === "en" ? "TaxFly — Itinerary" : lang === "pt" ? "TaxFly — Itinerário" : "TaxFly — Itinerario";
   renderCityData();
   if (window._updateParquesTab) window._updateParquesTab();
   if (window.updateInlineTransport) window.updateInlineTransport();
@@ -2720,6 +2722,7 @@ window.toggleInlineTransportOrlando = function() {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (new URLSearchParams(location.search).get("tab") === "actividades") window.switchTab("actividades");
   const sel = document.getElementById("citySelector");
   if (sel) sel.addEventListener("change", window.updateInlineTransport);
   window.updateInlineTransport();

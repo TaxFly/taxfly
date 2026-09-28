@@ -790,7 +790,7 @@ body {
   padding: 20px;
 }
 .modal-bg.open { display: flex; animation: modalFadeIn .2s ease; }
-.map-choice-dialog { width:min(360px,calc(100% - 32px)); padding:20px; border:1px solid var(--border2); border-radius:var(--radius); background:var(--surface); color:var(--text); box-shadow:var(--shadow-lg); font:inherit; }
+.map-choice-dialog { position:fixed; inset:0; margin:auto; width:min(360px,calc(100% - 32px)); max-height:calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding:20px; border:1px solid var(--border2); border-radius:var(--radius); background:var(--surface); color:var(--text); box-shadow:var(--shadow-lg); font:inherit; }
 .map-choice-dialog::backdrop { background:rgba(8,12,20,.6); }
 .map-choice-dialog h2 { margin:0 0 14px; font-size:18px; }
 .map-choice-dialog a,.map-choice-dialog button { display:block; width:100%; padding:12px; margin-top:8px; border:1px solid var(--border2); border-radius:10px; background:var(--surface2); color:var(--text); font:inherit; text-align:center; text-decoration:none; cursor:pointer; }
@@ -1926,6 +1926,15 @@ body::before {
 .trip-manager .trip-manager-toggle { padding:9px 12px; }
 .trip-manager-links { justify-content:space-between; margin-top:10px; opacity:.8; }
 .trip-manager-links a { color:inherit; }
+.personal-reminders { margin:12px 0 18px; padding:15px; border:1px solid var(--border); border-radius:14px; background:var(--surface); }
+.personal-reminders-head { display:flex; align-items:start; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.personal-reminders-head strong { font-size:14px; }
+.personal-reminders-head p { margin:4px 0 0; color:var(--muted); font-size:11px; }
+.personal-reminders-head a { padding:7px 10px; border-radius:9px; background:var(--surface2); color:var(--theme-accent); font-size:11px; font-weight:700; text-decoration:none; }
+.personal-reminders-list { display:grid; gap:7px; margin-top:12px; }
+.personal-reminders-list > div { display:flex; gap:10px; align-items:baseline; padding:8px 10px; border-radius:8px; background:var(--surface2); font-size:12px; }
+.personal-reminders-list span { color:var(--muted); white-space:nowrap; }
+.personal-reminders-list b { overflow-wrap:anywhere; }
 a, a:visited, a:hover, a:focus, a:active { text-decoration: none !important; }
 .trip-modal { width:min(420px,calc(100% - 28px)); max-height:90vh; border:1px solid #94a3b8; border-radius:18px; padding:22px; background:#172337; color:#fff; box-shadow:0 20px 80px #0009; }
 .trip-modal::backdrop { background:#0009; }

@@ -1,6 +1,6 @@
 {
-  "name": "Trip Planning",
-  "short_name": "Trip Planning",
+  "name": "TaxFly — Plan del viaje",
+  "short_name": "TaxFly",
   "description": "Viajes, lugares, comidas, compras y atracciones por Estados Unidos",
   "start_url": "./index.html",
   "scope": "./",

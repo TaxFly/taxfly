@@ -350,6 +350,7 @@ window._appInit = function() {
   try {
     const params = new URLSearchParams(location.search);
     const sec = params.get("section");
+    if (params.get("subtab") === "atracciones") parquesSubTab = "atracciones";
     const OK = [ "outlets", "comidas", "walmart", "parques", "reservas" ];
     let back = null;
     try {
@@ -1702,6 +1703,7 @@ const sectionMeta = {
 };
 
 function switchSection(section) {
+  window.taxflySetPlanSection?.(section === "reservas" ? "reservas" : section === "parques" ? parquesSubTab === "atracciones" ? "atracciones" : "agenda" : "");
   try {
     sessionStorage.setItem("orl_section", section);
   } catch (e) {}
@@ -1716,7 +1718,8 @@ function switchSection(section) {
     const gc = document.getElementById("global-counter");
     if (gc) gc.style.display = section === "outlets" || section === "parques" ? "" : "none";
   }
-  document.body.className = meta.theme;
+  document.body.classList.remove(...Object.values(sectionMeta).map(item => item.theme));
+  document.body.classList.add(meta.theme);
   document.getElementById("addDayFab").style.display = section === "comidas" ? "block" : "none";
   if (section === "comidas") renderComidas();
   if (section === "walmart") renderWalmart();
@@ -3046,8 +3049,20 @@ function initOpenParkMaps() {
 
 let parquesSubTab = "itinerario";
 
+function personalReminderSummary() {
+  const reminders = (window._personalReminders || []).filter(item => item?.name)
+    .sort((a, b) => `${a.date || ""} ${a.time || ""}`.localeCompare(`${b.date || ""} ${b.time || ""}`));
+  if (!reminders.length) return "";
+  return `<section class="personal-reminders" aria-label="Recordatorios personales">
+    <div class="personal-reminders-head"><div><strong>Recordatorios personales</strong><p>También aparecen en tu itinerario. Se editan una sola vez.</p></div>
+      <a href="../itinerario.html?tab=actividades">Gestionar recordatorios</a></div>
+    <div class="personal-reminders-list">${reminders.map(item => `<div><span>${escapeHtml(item.date || "Sin fecha")}${item.time ? " · " + escapeHtml(item.time) : ""}</span><b>${escapeHtml(item.name)}</b></div>`).join("")}</div>
+  </section>`;
+}
+
 function switchParquesTab(t) {
   parquesSubTab = t;
+  window.taxflySetPlanSection?.(t === "atracciones" ? "atracciones" : "agenda");
   renderParques();
 }
 
@@ -3056,7 +3071,7 @@ function renderParques() {
   const panel = document.getElementById("panel-parques");
   const subtabs = `<div class="outlets-subtabs">\n      <button class="outlets-stab${parquesSubTab === "itinerario" ? " active" : ""}" onclick="switchParquesTab('itinerario')">${ic("calendar", 13)} Itinerario</button>\n      <button class="outlets-stab${parquesSubTab === "atracciones" ? " active" : ""}" onclick="switchParquesTab('atracciones')">${ic("sparkles", 13)} Atracciones</button>\n    </div>${legacyParksNotice()}`;
   if (parquesSubTab === "itinerario") {
-    panel.innerHTML = `<div class="parques-panel">${subtabs}${itinMochilaLink()}${renderItinerario()}</div>`;
+    panel.innerHTML = `<div class="parques-panel">${subtabs}${personalReminderSummary()}${itinMochilaLink()}${renderItinerario()}</div>`;
     updateParquesCounter();
     return;
   }

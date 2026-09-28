@@ -252,6 +252,11 @@ async function startApp() {
   window._fbReady = true;
   window._splashFbReady && window._splashFbReady();
   if (window._appInit) window._appInit();
+  onSnapshot(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "actividades"), snap => {
+    window._personalReminders = snap.docs.map(item => ({ id:item.id, ...item.data() }))
+      .filter(item => item.tripId === activeTripId);
+    if (window._appInited && document.getElementById("panel-parques")?.classList.contains("active")) window.renderParques?.();
+  }, () => {});
   migrateManualExpenses().catch(e => devError("expense migration", e));
   fbListen("hotel", data => {
     if (window.hotel) {

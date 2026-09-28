@@ -10,7 +10,7 @@
     <script src="assets/security.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TaxUSA — Gastos</title>
+    <title>TaxFly — Gastos</title>
     <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
     <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
     <script>
@@ -487,6 +487,8 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     </style>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
+<link rel="stylesheet" href="assets/app-shell.css">
+<script defer src="assets/app-shell.js"></script>
 </head>
 <body>
 <div id="offline-toast" role="status" aria-live="polite">
@@ -1521,7 +1523,7 @@ window.changeLanguage = lang => {
   const offSub = document.querySelector("#offline-label span");
   if (offTitle) offTitle.textContent = t.offline_title;
   if (offSub) offSub.textContent = t.offline_sub;
-  document.title = lang === "en" ? "TaxUSA — Expenses" : lang === "pt" ? "TaxUSA — Gastos" : "TaxUSA — Gastos";
+  document.title = lang === "en" ? "TaxFly — Expenses" : lang === "pt" ? "TaxFly — Gastos" : "TaxFly — Gastos";
   const ocrTitle = document.getElementById("ocr-modal-title");
   if (ocrTitle) ocrTitle.textContent = t.ocr_modal_title || "";
   const ocrItemsTitle = document.getElementById("ocr-items-title");
@@ -2446,7 +2448,7 @@ window.exportarResumen = async function(formato) {
         })) {
           try {
             await navigator.share({
-              title: "TaxUSA — Resumen de gastos",
+              title: "TaxFly — Resumen de gastos",
               text: `💸 ${fmt(total)} USD${presupuestoBase > 0 ? " / Presupuesto: $" + fmt(presupuestoBase) : ""}`,
               files: [ file ]
             });
@@ -2491,7 +2493,7 @@ window.exportarResumen = async function(formato) {
           files: [ file ]
         })) {
           await navigator.share({
-            title: "TaxUSA — Resumen de gastos",
+            title: "TaxFly — Resumen de gastos",
             text: `💸 ${fmt(total)} USD`,
             files: [ file ]
           });
@@ -2538,6 +2540,7 @@ function showExportToast(msg) {
 }
 
 window.showSec = s => {
+  window.taxflySetExpenseSection?.(s === "comparador" ? "comparar" : "movimientos");
   [ "gastos", "resumen", "talles", "comparador" ].forEach(id => {
     const el = document.getElementById("sec-" + id);
     if (el) el.style.display = s === id ? "block" : "none";
@@ -2548,6 +2551,10 @@ window.showSec = s => {
   if (s === "comparador") compInit();
   window.scrollTo(0, 0);
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (new URLSearchParams(location.search).get("section") === "comparador") window.showSec("comparador");
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   if ("Notification" in window) {

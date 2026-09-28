@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v46';
+const CACHE_VERSION = 'v47';
 const CACHE_NAME = 'trip-planning-' + CACHE_VERSION;
 const TILES_CACHE_NAME = 'orlando-tiles-v1';
 const MAX_TILES = 600;
@@ -24,6 +24,8 @@ const APP_SHELL = [
   './sx.css',
   './sx-ui.js',
   '../assets/trip-context.js',
+  '../assets/app-shell.css',
+  '../assets/app-shell.js',
   '../assets/autofill.js',
   './i18n.js',
   './i18n-orlando.js',
