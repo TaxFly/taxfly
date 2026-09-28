@@ -156,6 +156,7 @@ body {
 .tabs { display: contents; }
 .tab, .nav-btn {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1512,6 +1513,49 @@ body.theme-parques .global-counter { color: #8b5cf6; border-color: rgba(139,92,2
   .modal-box-wide { max-width: 760px; }
 }
 .size-guide-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.size-guide-countries { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.size-guide-countries .icon { flex: none; }
+
+/* Trip reservations */
+body.theme-reservas { --theme-accent:#6366f1; --theme-accent2:#2563eb; }
+.reservations-intro { max-width:900px; margin:20px auto 16px; }
+.reservations-intro h2 { margin:0 0 5px; font-size:22px; color:var(--text); }
+.reservations-intro p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }
+.reservation-group { max-width:900px; margin:0 auto 16px; border:1px solid var(--border); border-radius:18px; background:var(--surface); padding:17px; box-shadow:var(--shadow); }
+.reservation-group-head { display:flex; align-items:center; gap:11px; }
+.reservation-group-head>div { min-width:0; flex:1; }
+.reservation-group-head h3 { margin:0; font-size:17px; color:var(--text); }
+.reservation-group-head small { color:var(--muted); font-size:11px; }
+.reservation-group-icon { display:grid; place-items:center; flex:none; width:39px; height:39px; border-radius:11px; color:var(--theme-accent); background:color-mix(in srgb,var(--theme-accent) 13%,transparent); }
+.reservation-add,.reservation-form-actions button,.reservation-footer button,.reservation-footer a { display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid var(--border2); border-radius:9px; padding:8px 11px; background:var(--surface2); color:var(--text); font:inherit; font-size:12px; font-weight:700; text-decoration:none; cursor:pointer; }
+.reservation-add:hover,.reservation-form-actions button:hover,.reservation-footer button:hover,.reservation-footer a:hover { border-color:var(--theme-accent); color:var(--theme-accent); }
+.reservation-empty { margin:14px 0 0; padding:13px 14px; border-radius:11px; background:var(--surface2); color:var(--muted); font-size:12px; }
+.reservation-list { display:grid; gap:10px; margin-top:15px; }
+.reservation-card { padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--bg); min-width:0; }
+.reservation-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:7px; }
+.reservation-card-top strong { font-size:14px; color:var(--text); overflow-wrap:anywhere; }
+.reservation-actions { display:flex; gap:3px; flex:none; }
+.reservation-actions button,.reservation-form-head button { display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; border-radius:7px; background:transparent; color:var(--muted); cursor:pointer; }
+.reservation-actions button:hover,.reservation-form-head button:hover { color:var(--theme-accent); background:var(--surface2); }
+.reservation-meta { display:flex; align-items:center; gap:5px; margin:4px 0; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+.reservation-meta b { color:var(--text); }
+.reservation-notes { margin:8px 0 0; color:var(--muted); font-size:12px; white-space:pre-wrap; }
+.reservation-footer { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.reservation-footer a { background:var(--theme-accent); border-color:var(--theme-accent); color:#fff; }
+.reservation-footer a:hover { color:#fff; filter:brightness(1.1); }
+.reservation-no-link { color:var(--muted); font-size:11px; }
+.reservation-form { display:grid; gap:12px; margin-top:16px; padding:16px; border:1px solid var(--theme-accent); border-radius:13px; background:var(--bg); }
+.reservation-form-head { display:flex; align-items:center; justify-content:space-between; }
+.reservation-form-head h3 { margin:0; font-size:15px; }
+.reservation-form label { display:grid; gap:5px; color:var(--text); font-size:12px; font-weight:700; }
+.reservation-form input,.reservation-form textarea { box-sizing:border-box; width:100%; min-width:0; padding:10px; border:1px solid var(--border2); border-radius:9px; background:var(--surface); color:var(--text); font:inherit; font-size:13px; }
+.reservation-form input:focus,.reservation-form textarea:focus { outline:2px solid var(--theme-accent); outline-offset:1px; }
+.reservation-form label small { color:var(--muted); font-weight:500; line-height:1.4; }
+.reservation-form-dates { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.reservation-form-actions { display:flex; justify-content:flex-end; gap:8px; }
+.reservation-form-actions button[type=submit] { background:var(--theme-accent); border-color:var(--theme-accent); color:#fff; }
+@media (max-width:600px) { .reservation-group { padding:14px; } .reservation-form { padding:12px; } .reservation-form-dates { grid-template-columns:1fr; } }
+@media (max-width:480px) { .nav-bar-wrap { padding-left:8px; padding-right:8px; } .nav-bar { padding:4px; } .tab { padding:8px 2px; } .tab .nav-date { font-size:9px; letter-spacing:-.2px; } #nav-walmart .nav-date { font-size:8px; } }
 @media (min-width: 760px) {
   .size-guide-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
 }
@@ -1848,7 +1892,9 @@ body::before {
 .trip-manager-options { display:flex; gap:7px; flex-wrap:wrap; }
 .trip-manager .trip-manager-options button { padding:6px 10px; border-radius:999px; font-weight:700; }
 .trip-manager .trip-manager-options button.active { background:#2563eb; border-color:#2563eb; color:#fff; }
+.trip-manager-weather { display:inline-flex; align-items:center; min-height:28px; margin-left:auto; color:var(--text, #fff); font-size:12px; font-weight:700; }
 @media (max-width:420px) { .trip-manager-heading { padding:12px; } .trip-manager-edit { padding:9px; } .trip-manager-edit span { display:none; } .trip-manager-destinations { padding:10px 12px 12px; } }
+@media (max-width:600px) { .trip-manager-weather { flex-basis:100%; margin-left:0; } }
 .trip-manager-toggle { width:100%; display:flex; align-items:center; gap:9px; padding:9px 12px; border:0!important; background:transparent!important; color:var(--text,#fff); text-align:left; cursor:pointer; }
 .trip-manager-toggle span { font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .trip-manager-toggle small { opacity:.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

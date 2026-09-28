@@ -1,10 +1,10 @@
-const CACHE = "taxfly-b5337ebedf7f";
+const CACHE = "taxfly-f82b5ae9b3d1";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 
 const MAX_TILES = 600;
 
-const PRECACHE = [ "./login.html", "./selector.html", "./profiles.html", "./index.html", "./compras.html", "./itinerario.html", "./unidades.html", "./tickets.html", "./grupo.html", "./rutas.html", "./tax.html", "./offline.html", "./assets/style.css", "./assets/splash.css", "./config.js", "./assets/dialogs.js", "./assets/account.js", "./assets/recaptcha.js", "./assets/security.js", "./assets/settings.js", "./assets/ui.css", "./assets/taxie-widget.css", "./assets/ui.js", "./assets/trip-context.js", "./assets/trips-ui.js", "./assets/backup.js", "./manifest.json", "./assets/icon-512.png", "./assets/icon-192.png", "./Maps/index.html", "./Maps/Mis_cosas_de_viaje.html", "./Maps/styles.css", "./Maps/sx.css", "./Maps/app.js", "./Maps/theme.js", "./Maps/firebase-sync.js", "./Maps/mis-cosas-firebase.js", "./Maps/sx-ui.js", "./Maps/i18n.js", "./Maps/i18n-orlando.js", "./Maps/i18n-mis.js", "./Maps/vendor-xlsx.min.js", "./Maps/manifest.json", "./Maps/favicon.png", "./Maps/apple-touch-icon-viaje.png", "./Maps/favicon-viaje.png", "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js" ];
+const PRECACHE = [ "./login.html", "./selector.html", "./profiles.html", "./index.html", "./compras.html", "./itinerario.html", "./unidades.html", "./tickets.html", "./grupo.html", "./rutas.html", "./tax.html", "./offline.html", "./assets/style.css", "./assets/splash.css", "./config.js", "./assets/dialogs.js", "./assets/account.js", "./assets/recaptcha.js", "./assets/security.js", "./assets/settings.js", "./assets/ui.css", "./assets/taxie-widget.css", "./assets/ui.js", "./assets/trip-context.js", "./assets/trips-ui.js", "./assets/backup.js", "./manifest.json", "./assets/icon-512.png", "./assets/icon-192.png", "./Maps/index.html", "./Maps/Mis_cosas_de_viaje.html", "./Maps/styles.css", "./Maps/sx.css", "./Maps/app.js", "./Maps/reservations.js", "./Maps/theme.js", "./Maps/firebase-sync.js", "./Maps/mis-cosas-firebase.js", "./Maps/sx-ui.js", "./Maps/i18n.js", "./Maps/i18n-orlando.js", "./Maps/i18n-mis.js", "./Maps/vendor-xlsx.min.js", "./Maps/manifest.json", "./Maps/favicon.png", "./Maps/apple-touch-icon-viaje.png", "./Maps/favicon-viaje.png", "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js", "https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js" ];
 
 const OFFLINE_FALLBACK = "./offline.html";
 
@@ -90,6 +90,15 @@ self.addEventListener("fetch", e => {
     }).catch(() => caches.match(e.request).then(cached => cached || caches.match(e.request, {
       ignoreSearch: true
     }) || caches.match(OFFLINE_FALLBACK))));
+    return;
+  }
+  // Scripts and styles must reflect a new deploy on the first reload.
+  // Keep the cached copy only as an offline fallback.
+  if (url.origin === self.location.origin && /\.(?:js|css)$/.test(url.pathname)) {
+    e.respondWith(fetchWithTimeout(new Request(e.request, { cache: "no-cache" }), 8e3).then(res => {
+      if (res && res.ok) caches.open(CACHE).then(cache => cache.put(e.request, res.clone())).catch(() => {});
+      return res;
+    }).catch(() => caches.match(e.request).then(cached => cached || new Response(null, { status: 503 }))));
     return;
   }
   if (url.origin === self.location.origin) {

@@ -201,9 +201,9 @@ window._fbSignOut = async function() {
 async function startApp() {
   await loadTrips();
   const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
-  const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 1e4), withTimeout(fbGet("days"), 1e4), withTimeout(fbGet("visited"), 1e4), withTimeout(fbGet("meals"), 1e4), withTimeout(fbGet("walmart"), 1e4), withTimeout(fbGet("wmChecked"), 1e4), withTimeout(fbGet("shopping"), 1e4), withTimeout(fbGet("customParks"), 1e4), withTimeout(fbGet("parquesExtra"), 1e4), withTimeout(fbGet("coordOverrides"), 1e4), withTimeout(fbGet("parques"), 1e4), withTimeout(fbGet("budget"), 1e4), withTimeout(fbGet("itinerario"), 1e4), withTimeout(fbGet("tips"), 1e4), withTimeout(fbGet("parquesExcel"), 1e4) ]);
+  const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 1e4), withTimeout(fbGet("days"), 1e4), withTimeout(fbGet("visited"), 1e4), withTimeout(fbGet("meals"), 1e4), withTimeout(fbGet("walmart"), 1e4), withTimeout(fbGet("wmChecked"), 1e4), withTimeout(fbGet("shopping"), 1e4), withTimeout(fbGet("customParks"), 1e4), withTimeout(fbGet("parquesExtra"), 1e4), withTimeout(fbGet("coordOverrides"), 1e4), withTimeout(fbGet("parques"), 1e4), withTimeout(fbGet("budget"), 1e4), withTimeout(fbGet("itinerario"), 1e4), withTimeout(fbGet("tips"), 1e4), withTimeout(fbGet("parquesExcel"), 1e4), withTimeout(fbGet("reservations"), 1e4) ]);
   const val = r => r.status === "fulfilled" ? r.value : null;
-  const [hotelData, daysData, visitedData, mealDataFb, wmDataFb, wmCheckedFb, shopDataFb, customParksDataFb, parquesExtraDataFb, coordOverridesDataFb, parquesDataFb, budgetDataFb, itinDataFb, tipsDataFb, parquesExcelDataFb] = results.map(val);
+  const [hotelData, daysData, visitedData, mealDataFb, wmDataFb, wmCheckedFb, shopDataFb, customParksDataFb, parquesExtraDataFb, coordOverridesDataFb, parquesDataFb, budgetDataFb, itinDataFb, tipsDataFb, parquesExcelDataFb, reservationsDataFb] = results.map(val);
   if (hotelData) window._hotelFromFb = hotelData;
   if (daysData && daysData.days) {
     window._daysFromFb = daysData.days;
@@ -222,6 +222,7 @@ async function startApp() {
   if (itinDataFb) window._itinFromFb = itinDataFb;
   if (tipsDataFb) window._tipsFromFb = tipsDataFb;
   if (parquesExcelDataFb) window._parquesExcelFromFb = parquesExcelDataFb;
+  if (reservationsDataFb) window._reservationsFromFb = reservationsDataFb;
   window._fbReady = true;
   window._splashFbReady && window._splashFbReady();
   if (window._appInit) window._appInit();
@@ -230,6 +231,9 @@ async function startApp() {
       Object.assign(window.hotel, data);
       window.renderOutlets && window.renderOutlets();
     }
+  });
+  fbListen("reservations", data => {
+    if (data && data.items && window._appInited) window._setReservationsData?.(data);
   });
   fbListen("visited", data => {
     if (data && data.visited && window.visited) {

@@ -10,14 +10,24 @@ let uid=null,profile=null, editing=null;
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const styles=document.createElement('style');
 styles.textContent=`
-.tf-trip-entry{margin:12px 0;padding:11px 13px;border:1px solid var(--border,#cbd5e1);border-radius:14px;background:var(--surface,#fff);color:var(--text,#0f172a);display:flex;gap:12px;align-items:center;justify-content:space-between;font:inherit}
-.tf-trip-entry strong{display:block;font-size:13px}.tf-trip-entry small{font-size:11px;opacity:.75}
-.tf-trip-entry button,.tf-trips button{font:inherit;cursor:pointer}.tf-trip-entry button{border:1px solid var(--border,#94a3b8);border-radius:9px;padding:8px;background:var(--input-bg,#fff);color:inherit}
-.tf-trips{border:0;border-radius:18px;padding:20px;width:min(500px,calc(100% - 24px));max-height:90vh;overflow:auto;background:var(--surface,#fff);color:var(--text,#111827);box-shadow:0 18px 60px #0008;font:inherit}
-.tf-trips::backdrop{background:#0009}.tf-trips h2{margin:0 0 14px}.tf-trips .tf-line{border:1px solid var(--border,#cbd5e1);border-radius:10px;padding:10px;margin:7px 0;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.tf-trips .tf-line strong{flex:1;min-width:130px}.tf-trips button{border:1px solid var(--border,#cbd5e1);background:var(--input-bg,#fff);color:inherit;border-radius:8px;padding:6px 9px}
-.tf-trips form{display:grid;gap:9px;margin-top:15px}.tf-trips input,.tf-trips select{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--border,#cbd5e1);border-radius:8px;background:var(--input-bg,#fff);color:inherit;font:inherit}
-.tf-trips label{font-size:12px;font-weight:700}.tf-trips .tf-two{display:flex;gap:8px}.tf-trips .tf-two>*{flex:1;min-width:0}.tf-trips .tf-msg{font-size:12px;min-height:18px;color:var(--text-sub,#475569)}
+.tf-trip-entry{margin:2px 0 14px;padding:7px 2px 11px;border-bottom:1px solid var(--border,#cbd5e1);color:var(--text,#0f172a);display:flex;gap:12px;align-items:center;justify-content:space-between;font:inherit;min-width:0}
+.tf-trip-entry .tf-trip-copy{min-width:0}.tf-trip-entry .tf-trip-eyebrow{display:block;color:var(--text-sub,#64748b);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.tf-trip-entry strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tf-trip-entry small{display:block;font-size:11px;color:var(--text-sub,#64748b);margin-top:2px}
+.tf-trip-entry button,.tf-trips button{font:inherit;cursor:pointer}.tf-trip-entry button{flex:none;border:0;border-bottom:1px solid currentColor;border-radius:0;padding:5px 0;background:transparent;color:var(--primary,#2563eb);font-size:12px;font-weight:800}
+.tf-trip-entry button:hover,.tf-trip-entry button:focus-visible{color:var(--text,#0f172a)}
+.tf-trips{position:fixed;inset:0;margin:auto;border:1px solid var(--border,#cbd5e1);border-radius:18px;padding:0;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;background:var(--surface,#fff);color:var(--text,#111827);box-shadow:0 24px 80px #0008;font:inherit;overscroll-behavior:contain}
+.tf-trips::backdrop{background:rgba(2,8,23,.68);backdrop-filter:blur(3px)}
+.tf-trips .tf-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 22px 14px;border-bottom:1px solid var(--border,#cbd5e1)}
+.tf-trips h2{margin:0;font-size:20px;line-height:1.2}.tf-trips .tf-modal-close{border:0;background:transparent;padding:4px 8px;font-size:24px;line-height:1;color:var(--text-sub,#64748b)}
+.tf-trips .tf-modal-content{padding:16px 22px 22px}.tf-trips .tf-line{border:1px solid var(--border,#cbd5e1);border-radius:12px;padding:12px;margin:8px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tf-trips .tf-line strong{flex:1;min-width:110px;font-size:14px}.tf-trips .tf-line small{font-size:11px;color:var(--text-sub,#64748b)}
+.tf-trips button{border:1px solid var(--border,#cbd5e1);background:var(--input-bg,#fff);color:inherit;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700}.tf-trips button:hover{border-color:var(--primary,#2563eb)}
+.tf-trips form{display:grid;gap:12px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border,#cbd5e1)}.tf-trips h3{font-size:16px;margin:0}
+.tf-trips input,.tf-trips select{width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border,#cbd5e1);border-radius:9px;background:var(--input-bg,#fff);color:inherit;font:inherit;font-size:13px}
+.tf-trips label{font-size:12px;font-weight:700;display:grid;gap:5px}.tf-trips .tf-two{display:flex;gap:8px}.tf-trips .tf-two>*{flex:1;min-width:0}.tf-trips .tf-msg{font-size:12px;color:var(--text-sub,#475569)}.tf-trips .tf-msg:empty{display:none}
+.tf-trips #tf-add-city{width:100%}.tf-trips button[type=submit]{background:var(--primary,#2563eb);border-color:var(--primary,#2563eb);color:#fff}
+.tf-trips .tf-two label+button{align-self:end;flex:0 0 38px;height:38px;padding:0}
+@media(max-width:480px){.tf-trips .tf-modal-head{padding:17px 16px 12px}.tf-trips .tf-modal-content{padding:12px 16px 18px}.tf-trips .tf-line strong{flex-basis:100%}}
 `; document.head.appendChild(styles);
 const dialog=document.createElement('dialog'); dialog.className='tf-trips'; document.body.appendChild(dialog);
 const card=document.createElement('div'); card.className='tf-trip-entry'; card.hidden=true;
@@ -31,21 +41,22 @@ function syncCard(){
   const trip=activeTrip(), dest=trip.destinations?.[trip.activeDestination||0];
   for(const el of document.querySelectorAll('.tf-trip-entry')){
     el.hidden=false;el.replaceChildren();
-    const label=document.createElement('span');
-    const strong=document.createElement('strong'); strong.textContent='✈️ '+trip.name;
+    const label=document.createElement('span'); label.className='tf-trip-copy';
+    const eyebrow=document.createElement('span');eyebrow.className='tf-trip-eyebrow';eyebrow.textContent=tc.view(uid,profile)==='unassigned'?'Registros sin viaje':'Viaje activo';
+    const strong=document.createElement('strong'); strong.textContent=trip.name;
     const small=document.createElement('small');
     const locationLabel=tc.view(uid,profile)==='unassigned'?'Viendo registros sin viaje':dest ? `${dest.city}, ${dest.state}` : 'Elegí un destino';
     small.textContent=locationLabel+(Object.keys(tc.pending(uid,profile)).length?' · pendiente de Firebase':'');
-    label.append(strong,small);
-    const btn=document.createElement('button'); btn.type='button';btn.textContent='Viajes';btn.onclick=()=>openManager();
+    label.append(eyebrow,strong,small);
+    const btn=document.createElement('button'); btn.type='button';btn.textContent='Mis viajes';btn.setAttribute('aria-label','Abrir mis viajes');btn.onclick=()=>openManager();
     el.append(label,btn);
   }
 }
 function notify(message){ const el=dialog.querySelector('.tf-msg');if(el)el.textContent=message; }
-function openManager(){ if(!uid||!profile)return;renderDialog();dialog.showModal(); }
+function openManager(){ if(!uid||!profile)return;renderDialog();if(!dialog.open)dialog.showModal(); }
 function renderDialog(){
   const trips=tc.readTrips(uid,profile), active=tc.active(uid,profile);
-  dialog.innerHTML=`<h2>Viajes de TaxFly</h2><div class="tf-msg" role="status"></div>
+  dialog.innerHTML=`<div class="tf-modal-head"><h2>Mis viajes</h2><button type="button" class="tf-modal-close" aria-label="Cerrar viajes">×</button></div><div class="tf-modal-content"><div class="tf-msg" role="status"></div>
     ${trips.map(t=>`<div class="tf-line" data-id="${esc(t.id)}"><strong>${esc(t.name)}${t.status?' · '+(t.status==='completed'?'Finalizado':'Suspendido'):''}</strong>
     ${t.id===active?'<small>Activo</small>':`<button data-action="select">Elegir</button>`}
     <button data-action="edit">Editar</button>
@@ -56,7 +67,7 @@ function renderDialog(){
     <label>Nombre<input name="name" maxlength="80" required value="${esc(editing?.name||'')}"></label>
     <div class="tf-two"><label>Desde<input name="startDate" type="date" value="${esc(editing?.startDate||'')}"></label><label>Hasta<input name="endDate" type="date" value="${esc(editing?.endDate||'')}"></label></div>
     <div id="tf-cities"></div><button type="button" id="tf-add-city">+ Agregar ciudad</button>
-    <div class="tf-two"><button type="submit">${editing?'Guardar cambios':'Crear viaje'}</button><button type="button" id="tf-close">Cerrar</button></div></form>`;
+    <div class="tf-two"><button type="submit">${editing?'Guardar cambios':'Crear viaje'}</button><button type="button" id="tf-close">Cancelar</button></div></form></div>`;
   const cities=dialog.querySelector('#tf-cities');
   const addCity=(city='',state='')=>{
     const row=document.createElement('div'); row.className='tf-two';
@@ -65,6 +76,7 @@ function renderDialog(){
   };
   (editing?.destinations?.length?editing.destinations:[{city:'',state:''}]).forEach(d=>addCity(d.city,d.state));
   dialog.querySelector('#tf-add-city').onclick=()=>addCity();
+  dialog.querySelector('.tf-modal-close').onclick=()=>{editing=null;dialog.close()};
   dialog.querySelector('#tf-close').onclick=()=>{editing=null;dialog.close()};
   dialog.querySelector('#tf-trip-form').onsubmit=async e=>{
     e.preventDefault();const form=e.target, button=form.querySelector('[type=submit]');button.disabled=true;
