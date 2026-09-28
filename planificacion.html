@@ -68,8 +68,8 @@ if ("serviceWorker" in navigator) {
     <a href="index.html"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h5v-6h4v6h5V10"/></svg><span>Inicio</span></a>
     <a href="tax.html"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 7h8M9 12h.01M14 12h.01M9 17h.01M14 17h.01"/></svg><span>Calculadora</span></a>
     <a href="compras.html"><svg viewBox="0 0 24 24"><path d="M4 8h16v13H4zM4 8l2-5h12l2 5M9 12a3 3 0 0 0 6 0"/></svg><span>Gastos</span></a>
-    <a href="planificacion.html" class="active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>Itinerario</span></a>
-    <details class="plan-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Más</span></summary><div class="plan-more-menu"><a href="tickets.html">Documentos</a><a href="mis-cosas.html">Mis cosas</a><a href="rutas.html">Rutas</a><a href="unidades.html">Ayudas y referencias</a><a href="grupo.html">Grupo</a></div></details>
+    <a href="planificacion.html" class="active" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>PLANIFICACIÓN</span></a>
+    <details class="plan-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>MÁS</span></summary><div class="plan-more-menu"><a href="tickets.html"><span class="more-icon" aria-hidden="true">📄</span><span>DOCUMENTOS</span></a><a href="mis-cosas.html"><span class="more-icon" aria-hidden="true">🧳</span><span>MIS COSAS</span></a><a href="rutas.html"><span class="more-icon" aria-hidden="true">🗺️</span><span>RUTAS</span></a><a href="unidades.html"><span class="more-icon" aria-hidden="true">💡</span><span>AYUDAS Y REFERENCIAS</span></a><a href="grupo.html"><span class="more-icon" aria-hidden="true">👥</span><span>GRUPO</span></a></div></details>
   </nav>
   <div class="hdr-title-row">
     <div><div class="plan-eyebrow">PLANIFICACIÓN DEL VIAJE</div><div class="header-title" id="main-title">Agenda y <span class="ht-accent">atracciones</span></div></div>
@@ -86,7 +86,7 @@ if ("serviceWorker" in navigator) {
 
 <div class="nav-bar-wrap">
   <div class="nav-bar">
-    <div class="tabs plan-sections" aria-label="Secciones de Itinerario">
+    <div class="tabs plan-sections" aria-label="Secciones de Planificación">
       <button class="tab active" id="nav-parques" onclick="switchSection('parques')"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg></span><span class="nav-date">Agenda y parques</span></button>
       <button class="tab" id="nav-outlets" onclick="switchSection('outlets')"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16v12H4zM3 9l2-6h14l2 6M9 21v-7h6v7"/></svg></span><span class="nav-date">Outlets</span></button>
       <button class="tab" id="nav-food" onclick="switchSection('comidas')"><span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7a3 3 0 0 0 6 0V3M8 13v8M18 3v18M18 3c-3 2-3 6 0 9"/></svg></span><span class="nav-date">Comidas y supermercado</span></button>

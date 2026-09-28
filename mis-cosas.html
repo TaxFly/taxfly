@@ -509,10 +509,9 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
     <a href="index.html"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h5v-6h4v6h5V10"/></svg><span>Inicio</span></a>
     <a href="tax.html"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 7h8M9 12h.01M14 12h.01M9 17h.01M14 17h.01"/></svg><span>Calculadora</span></a>
     <a href="compras.html"><svg viewBox="0 0 24 24"><path d="M4 8h16v13H4zM4 8l2-5h12l2 5M9 12a3 3 0 0 0 6 0"/></svg><span>Gastos</span></a>
-    <a href="planificacion.html"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>Itinerario</span></a>
-    <details class="plan-more" id="mis-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>Más</span></summary><div class="plan-more-menu"><a href="tickets.html">Documentos</a><a href="mis-cosas.html">Mis cosas</a><a href="rutas.html">Rutas</a><a href="unidades.html">Ayudas y referencias</a><a href="grupo.html">Grupo</a></div></details>
+    <a href="planificacion.html"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v5m10-5v5M3 9h18"/></svg><span>PLANIFICACIÓN</span></a>
+    <details class="plan-more" id="mis-more"><summary><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>MÁS</span></summary><div class="plan-more-menu"><a href="tickets.html"><span class="more-icon" aria-hidden="true">📄</span><span>DOCUMENTOS</span></a><a href="mis-cosas.html"><span class="more-icon" aria-hidden="true">🧳</span><span>MIS COSAS</span></a><a href="rutas.html"><span class="more-icon" aria-hidden="true">🗺️</span><span>RUTAS</span></a><a href="unidades.html"><span class="more-icon" aria-hidden="true">💡</span><span>AYUDAS Y REFERENCIAS</span></a><a href="grupo.html"><span class="more-icon" aria-hidden="true">👥</span><span>GRUPO</span></a></div></details>
   </nav>
-    <div class="enlaces" id="enlaces"></div>
     <div class="mis-trip-filter"><label for="mis-trip-active">Viaje</label><select id="mis-trip-active" aria-label="Elegir viaje"></select><a href="index.html#viajes">Gestionar en TaxFly</a></div>
     <h1 id="titulo"></h1>
     <p class="sub" id="resumen"></p>
@@ -786,13 +785,7 @@ let mochila = {
 
 let mochilaPend = 0, dispPend = 0;
 
-const ENLACES_DEF = [ {
-  nombre: "TaxUSA",
-  url: "https://taxfly.github.io/taxfly/index.html"
-}, {
-  nombre: "Planificación",
-  url: "https://taxfly.github.io/taxfly/planificacion.html"
-} ];
+const ENLACES_DEF = [];
 
 const enlaces = ENLACES_DEF;
 
@@ -1160,24 +1153,6 @@ const misma = u => {
   }
 };
 
-$("#enlaces").addEventListener("click", e => {
-  const a = e.target.closest("a[data-app]");
-  if (!a) return;
-  try {
-    if (history.length > 1 && document.referrer && norm(document.referrer) === norm(a.href)) {
-      e.preventDefault();
-      history.back();
-    }
-  } catch (err) {}
-});
-
-function renderEnlaces() {
-  $("#enlaces").innerHTML = enlaces.map(e => {
-    const t = tipoLogo(e);
-    return `<a class="enl" href="${esc(e.url)}" ${misma(e.url) ? "data-app" : 'target="_blank" rel="noopener"'} title="${esc(e.nombre)}">${t ? logo(t, 20) : ic("upRight", 14)}<span>${esc(e.nombre)}</span></a>`;
-  }).join("");
-}
-
 function guardarDisp() {
   if (modo === "local") {
     putLocal("dispositivos", dispositivos);
@@ -1251,7 +1226,6 @@ function pintarTitulo(t) {
 }
 
 function render() {
-  renderEnlaces();
   document.body.dataset.sec = sec;
   $("#secTabs").innerHTML = TABS.map(s => `<button role="tab" data-sec="${s}" aria-selected="${s === sec}">${ic(s === "dia" ? "backpack" : SEC[s].icon, 18)}<span>${s === "dia" ? "Mochila" : SEC[s].corto || SEC[s].tab}</span></button>`).join("");
   $("#syncDot").className = "sync-dot " + (modo || "");

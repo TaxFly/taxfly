@@ -448,14 +448,14 @@ const I18N = {
   es: {
     nav_home: "INICIO",
     nav_expenses: "GASTOS",
-    nav_itinerary: "ITIN.",
+    nav_itinerary: "PLANIFICACIÓN",
     nav_units: "UNID.",
     nav_tickets: "DOCS",
     nav_group: "GRUPO",
     greeting_sub: "Bienvenido de vuelta",
     q_tax: "Calculadora",
     q_gastos: "Gastos",
-    q_itin: "Itinerario",
+    q_itin: "Planificación",
     q_units: "AYUDA Y REFERENCIAS",
     q_docs: "Docs",
     q_grupo: "Grupo",
@@ -507,7 +507,7 @@ const I18N = {
       icon: "📍",
       color: "ic-green",
       href: "lugares.html",
-      name: "Itinerario",
+      name: "Planificación",
       desc: "Tu agenda de actividades día a día"
     }, {
       icon: "💡",
@@ -569,7 +569,7 @@ const I18N = {
   en: {
     nav_home: "HOME",
     nav_expenses: "EXPENSES",
-    nav_itinerary: "ITIN.",
+    nav_itinerary: "PLANIFICACIÓN",
     nav_units: "UNITS",
     nav_tickets: "DOCS",
     nav_group: "GROUP",
@@ -690,7 +690,7 @@ const I18N = {
   pt: {
     nav_home: "INÍCIO",
     nav_expenses: "GASTOS",
-    nav_itinerary: "ITIN.",
+    nav_itinerary: "PLANIFICACIÓN",
     nav_units: "UNID.",
     nav_tickets: "DOCS",
     nav_group: "GRUPO",
@@ -1407,7 +1407,7 @@ function renderSections() {
   if (!list) return;
   const sections = t.sections || I18N.es.sections;
   const lang = localStorage.getItem("appLang") || "es";
-  const heading = { es:["Tu viaje","Plan del viaje","Mis cosas"], en:["Your trip","Trip plan","My things"], pt:["Sua viagem","Plano da viagem","Minhas coisas"] }[lang] || ["Tu viaje","Plan del viaje","Mis cosas"];
+  const heading = { es:["Tu viaje","Planificación","Mis cosas"], en:["Your trip","Planning","My things"], pt:["Sua viagem","Planejamento","Minhas coisas"] }[lang] || ["Tu viaje","Planificación","Mis cosas"];
   document.getElementById("homePlanHeading").textContent = heading[0];
   list.replaceChildren();
   const cards = [

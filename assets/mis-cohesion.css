@@ -2,3 +2,6 @@
 .hdr-in,.nav-bar,.wrap{max-width:830px!important;margin-inline:auto}.header{background:var(--bg);border-bottom:1px solid var(--border)}.brand{border:0;background:transparent;padding:0;margin:0}.nav-bar-wrap{position:relative;top:auto}.nav-bar{overflow-x:auto;scrollbar-width:none}.nav-bar button{min-height:60px}.wrap{padding-top:18px}.plan-app-nav{margin:8px 0 14px}.plan-more>summary{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
 @media(max-width:500px){.hdr-in,.nav-bar,.wrap{width:100%}.nav-bar-wrap{padding:9px 16px}.nav-bar{display:flex}.nav-bar button{min-width:88px}.plan-app-nav{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .taxfly-wordmark{display:inline-flex;align-items:center;gap:10px;color:var(--text);font:900 1.4rem 'DM Sans',sans-serif;letter-spacing:-.5px;text-decoration:none}.taxfly-wordmark svg{width:32px;height:32px;flex:none}.taxfly-wordmark .wm-usa{color:#5b8def}.taxfly-wordmark:hover{color:var(--text)}
+
+/* The active page lives in the shared More menu. */
+.plan-more-menu a[href="mis-cosas.html"]{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
