@@ -80,6 +80,17 @@ function openMapChooser(query) {
   dialog.showModal();
 }
 
+function openAttachChoice(reservationId, reservationName) {
+  const dialog = document.getElementById("attach-choice-dialog");
+  if (!dialog) return;
+  const title = dialog.querySelector("#attach-choice-title");
+  if (title) title.textContent = reservationName ? `Adjuntar documento · ${reservationName}` : "Adjuntar documento";
+  dialog.querySelector("#attach-choice-link").href = `tickets.html?linkReservation=${encodeURIComponent(reservationId)}`;
+  dialog.querySelector("#attach-choice-upload").href = `tickets.html?reservation=${encodeURIComponent(reservationId)}`;
+  dialog.showModal();
+}
+window.openAttachChoice = openAttachChoice;
+
 window._syncedWriteLog = window._syncedWriteLog || {};
 
 function scopedKey(key) {

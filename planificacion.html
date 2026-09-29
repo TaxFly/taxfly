@@ -171,6 +171,13 @@ if ("serviceWorker" in navigator) {
   <button type="button" onclick="this.closest('dialog').close()">Cancelar</button>
 </dialog>
 
+<dialog id="attach-choice-dialog" class="map-choice-dialog" aria-labelledby="attach-choice-title">
+  <h2 id="attach-choice-title">Adjuntar documento</h2>
+  <a id="attach-choice-link" href="#">🔗 Vincular desde documentos</a>
+  <a id="attach-choice-upload" href="#">📤 Subir documento</a>
+  <button type="button" onclick="this.closest('dialog').close()">Cancelar</button>
+</dialog>
+
 <script src="assets/plan-i18n.js"></script>
 <script src="assets/plan-i18n-orlando.js"></script>
 <script src="assets/app-settings.js"></script>

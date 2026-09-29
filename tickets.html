@@ -434,6 +434,15 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
   <div class="doc-link-actions"><button type="button" class="doc-link-save" id="doc-link-save">Guardar vínculo</button><button type="button" id="doc-link-cancel">Cancelar</button></div>
   <p id="doc-link-feedback" role="status" aria-live="polite"></p>
 </dialog>
+
+<dialog id="reservationLinkDialog" class="doc-link-dialog" aria-labelledby="reservation-link-title">
+  <h2 id="reservation-link-title">Vincular documento existente</h2>
+  <p id="reservation-link-description"></p>
+  <label for="reservation-link-doc">Documento</label>
+  <select id="reservation-link-doc"></select>
+  <div class="doc-link-actions"><button type="button" class="doc-link-save" id="reservation-link-save">Guardar vínculo</button><button type="button" id="reservation-link-cancel">Cancelar</button></div>
+  <p id="reservation-link-feedback" role="status" aria-live="polite"></p>
+</dialog>
 <script src="assets/trip-context.js"></script>
 <script src="assets/settings.js"></script>
 
@@ -1389,6 +1398,65 @@ document.getElementById('doc-link-save').onclick=async()=>{
   }catch(e){docObj.reservationId=previous.reservationId;docObj.linkExplicit=previous.linkExplicit;docObj.tripId=previous.tripId;await guardarDocsEnCache(allDocs);renderList();document.getElementById('doc-link-feedback').textContent=e.message;}
   finally{button.disabled=false;}
 };
+
+window.openReservationLinkDialog = reservationId => {
+  const dialog = document.getElementById('reservationLinkDialog');
+  const reservation = linkedReservations.find(r => r.id === reservationId);
+  dialog.dataset.reservationId = reservationId;
+  document.getElementById('reservation-link-description').textContent = reservation ? reservation.name : '';
+  const select = document.getElementById('reservation-link-doc');
+  select.replaceChildren();
+  if (!allDocs.length) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'Todavía no tenés documentos guardados';
+    select.append(option);
+  } else {
+    allDocs.forEach(d => {
+      const option = document.createElement('option');
+      option.value = d.id;
+      option.textContent = d.name || 'Documento';
+      select.append(option);
+    });
+  }
+  document.getElementById('reservation-link-feedback').textContent = '';
+  dialog.showModal();
+};
+function refreshReservationLinkDialog() {
+  const dialog = document.getElementById('reservationLinkDialog');
+  if (!dialog.open || !dialog.dataset.reservationId) return;
+  const reservation = linkedReservations.find(r => r.id === dialog.dataset.reservationId);
+  if (reservation) document.getElementById('reservation-link-description').textContent = reservation.name;
+}
+document.getElementById('reservation-link-cancel').onclick = () => document.getElementById('reservationLinkDialog').close();
+document.getElementById('reservation-link-save').onclick = async () => {
+  const dialog = document.getElementById('reservationLinkDialog');
+  const reservationId = dialog.dataset.reservationId;
+  const chosen = document.getElementById('reservation-link-doc').value;
+  const docObj = allDocs.find(d => d.id === chosen);
+  if (!docObj) { document.getElementById('reservation-link-feedback').textContent = 'Elegí un documento.'; return; }
+  const button = document.getElementById('reservation-link-save');
+  button.disabled = true;
+  const previous = {reservationId: docObj.reservationId, linkExplicit: docObj.linkExplicit, tripId: docObj.tripId};
+  try {
+    docObj.reservationId = reservationId;
+    docObj.linkExplicit = true;
+    if ((docObj.tripId || 'unassigned') === 'unassigned') docObj.tripId = window.TripContext.assign(window._uid, perfilId);
+    if (!await idbSet(DOCS_CACHE_KEY_PFX+window._uid+'::'+perfilId, allDocs)) throw Error('No se pudo guardar en este dispositivo.');
+    renderList();
+    const q = await loadQueue(), pendingSave = q.find(o => o.docId === docObj.id && o.type === 'save_doc');
+    if (pendingSave) { pendingSave.docObj.reservationId = reservationId; pendingSave.docObj.tripId = docObj.tripId; pendingSave.docObj.linkExplicit = true; await saveQueue(q); }
+    else if (!navigator.onLine) await enqueueLink(docObj.id, reservationId, docObj.tripId);
+    else try { await window.fsLink(window._uid, perfilId, docObj.id, reservationId, docObj.tripId) } catch(e) { await enqueueLink(docObj.id, reservationId, docObj.tripId) }
+    dialog.close();
+    const params = new URLSearchParams(location.search);
+    params.delete('linkReservation');
+    history.replaceState(null, '', location.pathname + (params.size ? '?'+params : ''));
+    showSyncOk(navigator.onLine ? 'Documento vinculado a la reserva' : 'Vínculo guardado en este dispositivo');
+    updateOfflineToast();
+  } catch(e) { docObj.reservationId = previous.reservationId; docObj.linkExplicit = previous.linkExplicit; docObj.tripId = previous.tripId; await guardarDocsEnCache(allDocs); renderList(); document.getElementById('reservation-link-feedback').textContent = e.message; }
+  finally { button.disabled = false; }
+};
 async function enqueueLink(docId,reservationId,tripId) {
   const q=await loadQueue();const prior=q.find(o=>o.docId===docId && o.type==='link_doc');
   if(prior){prior.reservationId=reservationId;prior.tripId=tripId;}
@@ -1403,6 +1471,7 @@ async function loadReservationsForDocs() {
   try { linkedReservations = JSON.parse(localStorage.getItem(cacheKey) || "{}").items || []; } catch (_) {}
   renderList();
   fillDocumentFromReservation();
+  refreshReservationLinkDialog();
   if (!navigator.onLine || tripId === "unassigned") return;
   try {
     const path = tripId === "orlando"
@@ -1413,6 +1482,7 @@ async function loadReservationsForDocs() {
     if (snap.exists() && Array.isArray(snap.data().items)) linkedReservations = snap.data().items;
     renderList();
     fillDocumentFromReservation();
+    refreshReservationLinkDialog();
   } catch (_) {}
 }
 
@@ -1437,6 +1507,10 @@ function openRequestedDocument() {
   if (params.has("reservation") && !document.getElementById("addModal").classList.contains("show")) {
     window.openAddModal();
     fillDocumentFromReservation();
+  }
+  const linkId = params.get("linkReservation");
+  if (linkId && !document.getElementById("reservationLinkDialog").open) {
+    window.openReservationLinkDialog(linkId);
   }
 }
 
