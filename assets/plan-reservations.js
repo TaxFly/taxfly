@@ -170,7 +170,8 @@ function reservationForm(type, item) {
     ${stay ? `<label>Dirección del alojamiento (opcional)<input name="lodgingLocation" autocomplete="new-password" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
     <label>Enlace a mi reserva (opcional)<input name="url" type="url" inputmode="url" placeholder="https://…" value="${escapeHtml(item?.url || "")}"><small>Puede ser el enlace de la aerolínea, Airbnb o el sitio del alojamiento.</small></label>
     <label>Notas (opcional)<textarea name="notes" maxlength="400" rows="2" placeholder="Check-in, horario o dato útil">${escapeHtml(item?.notes || "")}</textarea></label>
-    <label>Documento existente (opcional)<select name="documentId"><option value="">Sin documento vinculado</option>${(window._tripDocuments || []).map(d => `<option value="${escapeHtml(d.id)}"${item?.documentId === d.id ? " selected" : ""}>${escapeHtml(d.name || "Documento")}</option>`).join("")}</select><small>Los documentos nuevos se pueden adjuntar después de guardar la reserva.</small></label>
+    <label>Documento existente (opcional)<select name="documentId"><option value="">Sin documento vinculado</option>${(window._tripDocuments || []).map(d => `<option value="${escapeHtml(d.id)}"${item?.documentId === d.id ? " selected" : ""}>${escapeHtml(d.name || "Documento")}</option>`).join("")}</select><small>Elegí uno existente o adjuntá un archivo nuevo.</small></label>
+    <label>Adjuntar PDF o imagen (opcional)<input name="quickFile" type="file" accept="application/pdf,image/*"><small>Se guardará en Documentos y quedará vinculado a esta reserva.</small></label>
     <div class="reservation-form-actions"><button type="button" id="reservation-cancel-bottom">Cancelar</button><button type="submit">Guardar reserva</button></div>
   </form>`;
 }
@@ -244,7 +245,7 @@ async function onReservationAction(event) {
   }
 }
 
-function saveReservation(event) {
+async function saveReservation(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const values = Object.fromEntries(new FormData(form));
@@ -270,12 +271,32 @@ function saveReservation(event) {
     notes: values.notes.trim(),
     documentId: values.documentId || ""
   };
+  const attached = form.elements.quickFile?.files?.[0];
+  if (attached && !/^image\//.test(attached.type) && attached.type !== "application/pdf") {
+    form.elements.quickFile.setCustomValidity("Elegí un PDF o una imagen");
+    form.elements.quickFile.reportValidity(); return;
+  }
+  if (attached) {
+    try {
+      const req = indexedDB.open("taxfly_docs_db", 1);
+      const db = await new Promise((resolve, reject) => {
+        req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains("kv")) req.result.createObjectStore("kv"); };
+        req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error);
+      });
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction("kv", "readwrite");
+        tx.objectStore("kv").put({uid:window._taxflyTripUid || window._uid, profile:window._perfilId, tripId:window._tripId || 'orlando', reservationId:item.id, name:item.name, file:attached}, "taxfly-quick-attachment");
+        tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
+      }); db.close();
+    } catch(e) { showMToast("No se pudo guardar el archivo en este dispositivo. Volvé a elegirlo."); return; }
+  }
   reservations = existing ? reservations.map(r => r.id === item.id ? item : r) : [...reservations, item];
   syncedSave(RESERVATIONS_KEY, { items: reservations }, "reservations");
   reservationFormType = null;
   reservationEditingId = null;
   renderReservations();
-  showMToast("Reserva guardada");
+  if (attached) location.href = "tickets.html?reservation=" + encodeURIComponent(item.id) + "&quick=1";
+  else showMToast("Reserva guardada");
 }
 
 window.I18N?.onChange(() => { if (!reservationFormType) renderReservations(); });

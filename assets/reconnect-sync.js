@@ -1,5 +1,6 @@
 /* Replay account-scoped offline queues even when another screen is open. */
 (async function syncAll() {
+  window.taxflyRetryPending = syncAll;
   if (!navigator.onLine || !window.TAXFLY_CONFIG?.FIREBASE_CONFIG) return;
   const profile = localStorage.getItem('perfilActivoId');
   if (!profile) return;

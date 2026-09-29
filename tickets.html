@@ -1263,6 +1263,7 @@ async function initDocs() {
       updateStorage();
     }
     if (legacy.length) showSyncBanner("Hay documentos pendientes de una versión anterior sin usuario verificable. Conservá un respaldo de este dispositivo.", true);
+    await consumeQuickAttachment();
     return;
   }
   showSyncBanner("Cargando documentos…", false);
@@ -1281,7 +1282,26 @@ async function initDocs() {
   renderList();
   updateStorage();
   openRequestedDocument();
+  await consumeQuickAttachment();
   if (legacy.length) showSyncBanner("Hay documentos pendientes de una versión anterior sin usuario verificable. Conservá un respaldo antes de borrar datos locales; no se enviarán a otro perfil automáticamente.", true);
+}
+
+async function consumeQuickAttachment() {
+  const params = new URLSearchParams(location.search);
+  if (!params.has("quick") || !params.has("reservation")) return;
+  const draft = await idbGet("taxfly-quick-attachment");
+  if (!draft || draft.uid !== window._uid || draft.profile !== perfilId || draft.reservationId !== params.get("reservation") || draft.tripId !== window.TripContext.assign(window._uid, perfilId)) return;
+  try {
+    window.openAddModal();
+    document.getElementById("inp-name").value = draft.name;
+    await window.handleFiles([draft.file]);
+    if (document.getElementById("heavyPdfModal").classList.contains("show")) return;
+    if (!pending.length) throw Error("El archivo no pudo procesarse");
+    await window.saveDoc();
+    await idbSet("taxfly-quick-attachment", null);
+    params.delete("quick");
+    history.replaceState(null, "", location.pathname + (params.size ? "?" + params : ""));
+  } catch(e) { console.warn("Adjunto pendiente", e); showSyncBanner("La reserva se guardó. Revisá el archivo y guardalo desde Documentos.", true); }
 }
 
 let linkedReservations = [];
@@ -2695,5 +2715,7 @@ window.doSwitchApp = function(destino) {
 <script src="assets/map-links.js" defer></script>
 <script src="assets/reconnect.js" defer></script>
 <script src="assets/reconnect-sync.js" defer></script>
+<link rel="stylesheet" href="assets/travel-tools.css">
+<script src="assets/travel-tools.js" defer></script>
 </body>
 </html>
