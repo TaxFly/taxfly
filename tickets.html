@@ -217,7 +217,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .pdf-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
         @keyframes spin{to{transform:rotate(360deg)}}
         
-        .doc-link-dialog{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:18px;padding:20px;width:min(420px,calc(100vw - 28px));box-shadow:var(--shadow-lg);}
+        .doc-link-dialog{position:fixed;inset:0;margin:auto;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:18px;padding:20px;width:min(420px,calc(100vw - 28px));max-height:calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;box-shadow:var(--shadow-lg);}
         .doc-link-dialog::backdrop{background:rgba(7,17,35,.65)}
         .doc-link-dialog h2{font-size:1.15rem;margin:0 0 7px}.doc-link-dialog p{color:var(--text-sub);font-size:.8rem;line-height:1.5}
         .doc-link-dialog label{display:block;margin:14px 0 6px;font-size:.76rem;font-weight:800}.doc-link-dialog select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font:inherit}

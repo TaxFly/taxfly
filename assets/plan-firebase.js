@@ -48,10 +48,10 @@ let currentUid = null;
 let currentPerfilId = null;
 
 const legacyTrip = window.TripContext.legacy;
-let trips = [legacyTrip];
-let activeTripId = "orlando";
+let trips = [];
+let activeTripId = "unassigned";
 const tripActiveKey = () => window.TripContext.keys(currentUid,currentPerfilId).active;
-function activeTrip() { return trips.find(t => t.id === activeTripId) || legacyTrip; }
+function activeTrip() { return trips.find(t => t.id === activeTripId) || null; }
 function publishTrip() {
   trips = window.TripContext.readTrips(currentUid,currentPerfilId);
   activeTripId = window.TripContext.active(currentUid,currentPerfilId);
@@ -232,6 +232,7 @@ window._fbSignOut = async function() {
 
 async function startApp() {
   await loadTrips();
+  if (!trips.length) { location.replace("index.html#viajes"); return; }
   listenTripDocuments();
   const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
   const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 1e4), withTimeout(fbGet("days"), 1e4), withTimeout(fbGet("visited"), 1e4), withTimeout(fbGet("meals"), 1e4), withTimeout(fbGet("walmart"), 1e4), withTimeout(fbGet("wmChecked"), 1e4), withTimeout(fbGet("shopping"), 1e4), withTimeout(fbGet("customParks"), 1e4), withTimeout(fbGet("parquesExtra"), 1e4), withTimeout(fbGet("coordOverrides"), 1e4), withTimeout(fbGet("parques"), 1e4), withTimeout(fbGet("budget"), 1e4), withTimeout(fbGet("itinerario"), 1e4), withTimeout(fbGet("tips"), 1e4), withTimeout(fbGet("parquesExcel"), 1e4), withTimeout(fbGet("reservations"), 1e4) ]);

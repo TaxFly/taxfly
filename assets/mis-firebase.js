@@ -120,6 +120,10 @@ onAuthStateChanged(auth, async user => {
   window.TripContext.configure({db,doc,collection,getDocs,setDoc,updateDoc,deleteDoc});
   window._taxflyTripUid=user.uid; window._taxflyTripProfile=perfilId;
   await window.TripContext.hydrate(db,user.uid,perfilId,getDocs,collection);
+  if (!window.TripContext.readTrips(user.uid,perfilId).length) {
+    window.location.replace('index.html#viajes');
+    return;
+  }
   const tripId = window.TripContext.active(user.uid, perfilId);
   window._misCosasScope = `${user.uid}::${perfilId}::${tripId}`;
   const selector = document.getElementById("mis-trip-active");

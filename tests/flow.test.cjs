@@ -100,7 +100,8 @@ test('trip selection isolates profiles and keeps ambiguous records in Sin viaje'
   w.TripContext.select('u','p','unassigned');
   assert.deepEqual(w.TripContext.filter(records,'u','p').map(x=>x.name),['Viejo','Desvinculado']);
   assert.equal(w.TripContext.assign('u','p'),'unassigned');
-  assert.equal(w.TripContext.active('u','otro'),'orlando');
+  assert.equal(w.TripContext.active('u','otro'),'unassigned');
+  assert.equal(w.TripContext.readTrips('u','otro').length,0);
 });
 
 test('trip registry reuses existing IDs and retries a local edit without duplicating it', async () => {
@@ -150,7 +151,7 @@ test('travel tips stay hidden and profile documents remain visible across trips'
   assert.doesNotMatch(read('tickets.html'),/TripContext\.filter\(allDocs/);
 });
 
-test('archiving and deleting a trip leaves other trips and detaches linked records', async () => {
+test('archiving and deleting a trip removes its data without affecting another trip', async () => {
   const store=storage({'trip-planning-active::u::p':'trip-1',
     'trip-planning-trips::u::p':JSON.stringify([{id:'orlando',name:'Orlando'},
       {id:'trip-1',name:'Miami'},{id:'trip-2',name:'Nueva York'}])});
@@ -168,10 +169,13 @@ test('archiving and deleting a trip leaves other trips and detaches linked recor
   assert.equal(w.TripContext.readTrips('u','p').find(t=>t.id==='trip-1').status,'completed');
   assert.equal(await w.TripContext.archive('u','p','trip-1',''),true);
   assert.equal(await w.TripContext.remove('u','p','trip-1'),true);
-  assert.deepEqual(JSON.parse(JSON.stringify(detached)),[{ref:'g1',value:{tripId:'unassigned'}}]);
+  assert.equal(detached.length,0);
+  assert.ok(deleted.includes('g1'));
+  assert.ok(!deleted.includes('g2'));
   assert.equal(w.TripContext.readTrips('u','p').some(t=>t.id==='trip-1'),false);
   assert.equal(w.TripContext.readTrips('u','p').some(t=>t.id==='trip-2'),true);
-  assert.equal(await w.TripContext.remove('u','p','orlando'),false);
+  assert.equal(await w.TripContext.remove('u','p','orlando'),true);
+  assert.equal(w.TripContext.readTrips('u','p').some(t=>t.id==='orlando'),false);
   assert.ok(writes.some(x=>x.ref.endsWith('/tripPlanning/trip-1')&&x.data.status==='deleted'));
 });
 
@@ -602,4 +606,41 @@ test('document suggestions prefer a matching reservation code and handle ambigui
   assert.ok(ranked[0].score>ranked[1].score);
   assert.equal(matcher.suggest({type:'✈️',name:'Boarding pass FL9012'},reservations)[0].reservation.id,'flight');
   assert.equal(matcher.suggest({type:'📦',name:'Archivo sin descripción'},reservations).length,0);
+});
+
+
+test('new profiles start with no trip and deleting Sin viaje removes only orphan records', async () => {
+  const store=storage();const w={},deleted=[];
+  context(read('assets/trip-context.js'),{window:w,localStorage:store,navigator:{onLine:true},document:{createElement:()=>({})},setTimeout,clearTimeout});
+  assert.equal(w.TripContext.readTrips('u','new').length,0);
+  assert.equal(w.TripContext.active('u','new'),'unassigned');
+  const records={
+    gastos:[{id:'orphan-expense',tripId:null},{id:'kept-expense',tripId:'trip-1'}],
+    actividades:[{id:'orphan-activity'},{id:'kept-activity',tripId:'trip-1'}],
+    notas:[],docs:[{id:'orphan-doc',tripId:'unassigned'},{id:'kept-doc',tripId:'trip-1'}],
+    chunks:[{id:'orphan-chunk'}]
+  };
+  w.TripContext.configure({db:{},collection:(_db,...path)=>path.join('/'),deleteDoc:async ref=>deleted.push(ref),
+    getDocs:async ref=>{const group=ref.endsWith('/docs/orphan-doc/chunks')?'chunks':ref.split('/').at(-1);
+      return {docs:(records[group]||[]).map(x=>({id:x.id,ref:x.id,data:()=>x}))};}});
+  assert.equal(await w.TripContext.orphanCount('u','new'),3);
+  assert.equal(await w.TripContext.removeOrphans('u','new'),true);
+  assert.deepEqual(deleted.sort(),['orphan-activity','orphan-chunk','orphan-doc','orphan-expense']);
+});
+
+test('legacy Orlando data is retained, but an untouched profile gets no default trip', async () => {
+  async function scenario(withLegacy, deleted) {
+    const store=storage(), w={};
+    const rows={tripPlanning:deleted?[{id:'orlando',value:{status:'deleted'}}]:[],orlando:withLegacy?[{id:'reservations',value:{items:[{name:'Airbnb'}]}}]:[]};
+    const collection=(_db,...path)=>path.at(-1);
+    const getDocs=async group=>({docs:(rows[group]||[]).map(x=>({id:x.id,data:()=>x.value})),
+      empty:!(rows[group]||[]).length,forEach(cb){this.docs.forEach(cb)}});
+    context(read('assets/trip-context.js'),{window:w,localStorage:store,navigator:{onLine:true},setTimeout,clearTimeout});
+    w.TripContext.configure({db:{},collection,getDocs,doc:()=>({}),setDoc:async()=>{}});
+    await w.TripContext.hydrate({},'u','p',getDocs,collection);
+    return Array.from(w.TripContext.readTrips('u','p'),t=>t.id);
+  }
+  assert.deepEqual(await scenario(false,false),[]);
+  assert.deepEqual(await scenario(true,false),['orlando']);
+  assert.deepEqual(await scenario(true,true),[]);
 });
