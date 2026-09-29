@@ -94,13 +94,15 @@
           if (op.type === 'save_doc') {
             const value=op.docObj;
             const files=value.files.map((f,fileIdx)=>({kind:f.kind,name:f.name,fileIdx,numChunks:Math.ceil(f.dataUrl.length/800000)}));
-            await fs.setDoc(fs.doc(docs,value.id),{id:value.id,perfilId:value.perfilId,tripId:value.tripId||'unassigned',reservationId:value.reservationId||'',name:value.name,type:value.type,createdAt:value.createdAt,files});
+            await fs.setDoc(fs.doc(docs,value.id),{id:value.id,perfilId:value.perfilId,tripId:value.tripId||'unassigned',reservationId:value.reservationId||'',linkExplicit:!!value.linkExplicit,name:value.name,type:value.type,createdAt:value.createdAt,files});
             let batch=fs.writeBatch(db), size=0;
             for (const meta of files) for (let i=0;i<meta.numChunks;i++) {
               batch.set(fs.doc(docs,value.id,'chunks',meta.fileIdx+'_'+i),{data:value.files[meta.fileIdx].dataUrl.slice(i*800000,(i+1)*800000)});
               if (++size===400) { await batch.commit();batch=fs.writeBatch(db);size=0; }
             }
             if (size) await batch.commit();
+          } else if (op.type === 'link_doc') {
+            await fs.setDoc(fs.doc(docs,op.docId),{reservationId:op.reservationId||'',tripId:op.tripId||'unassigned',linkExplicit:true},{merge:true});
           } else if (op.type === 'del_doc') {
             const chunks=await fs.getDocs(fs.collection(docs,op.docId,'chunks'));
             let batch=fs.writeBatch(db),size=0;

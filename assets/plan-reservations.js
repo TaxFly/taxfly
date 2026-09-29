@@ -141,7 +141,7 @@ function reservationMapLink(address) {
 
 function reservationCard(item) {
   const href = reservationUrl(item.url);
-  const docs = (window._tripDocuments || []).filter(d => d.id === item.documentId || d.reservationId === item.id);
+  const docs = (window._tripDocuments || []).filter(d => d.linkExplicit ? d.reservationId === item.id : d.id === item.documentId || d.reservationId === item.id);
   const dates = [reservationDate(item.startDate), reservationDate(item.endDate)].filter(Boolean).join(" – ");
   return `<article class="reservation-card" id="reservation-${escapeHtml(item.id)}">
     <div class="reservation-card-top"><div class="reservation-flight-title">${item.type === "flight" ? reservationAirlineLogos(item.name) : item.type === "stay" ? reservationStayLogo(item.name) : ""}<strong>${escapeHtml(item.name)}</strong></div>

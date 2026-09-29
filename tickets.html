@@ -217,6 +217,12 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .pdf-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
         @keyframes spin{to{transform:rotate(360deg)}}
         
+        .doc-link-dialog{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:18px;padding:20px;width:min(420px,calc(100vw - 28px));box-shadow:var(--shadow-lg);}
+        .doc-link-dialog::backdrop{background:rgba(7,17,35,.65)}
+        .doc-link-dialog h2{font-size:1.15rem;margin:0 0 7px}.doc-link-dialog p{color:var(--text-sub);font-size:.8rem;line-height:1.5}
+        .doc-link-dialog label{display:block;margin:14px 0 6px;font-size:.76rem;font-weight:800}.doc-link-dialog select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font:inherit}
+        .doc-link-suggestion{background:var(--primary-dim);border-radius:10px;padding:11px;margin:12px 0;font-size:.78rem}.doc-link-suggestion strong{display:block;margin-bottom:4px}.doc-link-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.doc-link-actions button{border:1px solid var(--border);border-radius:9px;padding:10px 12px;background:var(--surface-2);color:var(--text);font:inherit;font-weight:750;cursor:pointer}.doc-link-actions .doc-link-save{background:var(--primary);color:white;border-color:var(--primary)}
+        .doc-link-hint{font-size:.72rem;color:var(--text-sub);padding:8px 14px 10px}.doc-link-hint button{border:0;background:none;color:var(--primary);font:inherit;font-weight:800;cursor:pointer;padding:0;text-align:left}
         .viewer-actions{padding:10px 14px 28px;display:flex;gap:8px;flex-shrink:0;}
         .viewer-btn{flex:1;padding:12px;border-radius:10px;border:none;font-family:inherit;font-size:.78rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr);}
         .viewer-btn.share{background:var(--primary);color:white;}
@@ -366,6 +372,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
             <button class="type-btn" data-type="📦" onclick="setType(this)"><span class="t-icon">📦</span><span data-i18n="type_other">Otro</span></button>
         </div>
 
+        <small id="doc-type-hint" aria-live="polite" style="display:block;margin:0 0 12px;color:var(--text-sub)"></small>
         <span class="slabel" data-i18n="label_source">Agregar archivo</span>
         <div class="source-row">
             <button class="source-btn" onclick="openCamera()">📷 <span data-i18n="src_cam">Cámara</span></button>
@@ -411,12 +418,22 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     </div>
     <div class="viewer-body" id="viewer-body"></div>
     <div class="viewer-actions">
+        <button class="viewer-btn search-toggle" onclick="openDocumentLink()">🔗 Vincular</button>
         <button class="viewer-btn share" onclick="shareDoc()">📤 <span data-i18n="btn_share">Compartir</span></button>
         <button class="viewer-btn del"   onclick="deleteFromViewer()">🗑️ <span data-i18n="btn_del">Eliminar</span></button>
     </div>
 </div>
 
 
+<dialog id="docLinkDialog" class="doc-link-dialog" aria-labelledby="doc-link-title">
+  <h2 id="doc-link-title">Vincular documento</h2>
+  <p id="doc-link-description"></p>
+  <div id="doc-link-suggestion"></div>
+  <label for="doc-link-reservation">Reserva de Planificación</label>
+  <select id="doc-link-reservation"></select>
+  <div class="doc-link-actions"><button type="button" class="doc-link-save" id="doc-link-save">Guardar vínculo</button><button type="button" id="doc-link-cancel">Cancelar</button></div>
+  <p id="doc-link-feedback" role="status" aria-live="polite"></p>
+</dialog>
 <script src="assets/trip-context.js"></script>
 <script src="assets/settings.js"></script>
 
@@ -498,6 +515,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
   </div>
 </div>
 
+<script src="assets/document-links.js"></script>
 <script type="module">
 const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
@@ -648,6 +666,7 @@ window.fsSave = async (uid, pid, docObj) => {
     perfilId: docObj.perfilId,
     tripId: docObj.tripId || "unassigned",
     reservationId: docObj.reservationId || "",
+    linkExplicit: !!docObj.linkExplicit,
     name: docObj.name,
     type: docObj.type,
     createdAt: docObj.createdAt,
@@ -664,6 +683,9 @@ window.fsSave = async (uid, pid, docObj) => {
   }
   await batch.commit();
 };
+
+window.fsLink = (uid, pid, docId, reservationId, tripId) =>
+  setDoc(doc(docsCol(uid, pid), docId), {reservationId, tripId, linkExplicit:true}, {merge:true});
 
 window.fsLoad = async (uid, pid) => {
   const snap = await getDocs(query(docsCol(uid, pid), orderBy("createdAt", "desc")));
@@ -790,11 +812,9 @@ async function handleAuthState(user) {
     b.style.backgroundImage = `url(${foto})`;
     b.innerText = "";
   }
+  if (navigator.onLine && window._flushTicketsPending) await window._flushTicketsPending();
   initDocs();
-  if (navigator.onLine) {
-    if (window._flushTicketsPending) window._flushTicketsPending();
-    if (typeof flushPendingDocs === "function") flushPendingDocs();
-  }
+  if (navigator.onLine && typeof flushPendingDocs === "function") flushPendingDocs();
 }
 
 if (firebaseOk) {
@@ -927,6 +947,7 @@ let allDocs = [];
 let activeFilter = "all";
 
 let selType = "✈️";
+let typeChosenManually = false;
 
 let pending = [];
 
@@ -1269,6 +1290,14 @@ async function initDocs() {
   showSyncBanner("Cargando documentos…", false);
   try {
     allDocs = await window.fsLoad(window._uid, perfilId);
+    const byId = new Map(allDocs.map(d => [d.id,d]));
+    for (const op of await loadQueue()) {
+      if (op.uid !== window._uid || op.perfilId !== perfilId) continue;
+      if (op.type === "save_doc") byId.set(op.docId,op.docObj);
+      if (op.type === "del_doc") byId.delete(op.docId);
+      if (op.type === "link_doc" && byId.has(op.docId)) Object.assign(byId.get(op.docId),{reservationId:op.reservationId,tripId:op.tripId,linkExplicit:true});
+    }
+    allDocs = [...byId.values()];
     await guardarDocsEnCache(allDocs);
     window.taxflyOfflineStatus?.mark("docs", window._uid, perfilId);
     hideSyncBanner();
@@ -1305,6 +1334,68 @@ async function consumeQuickAttachment() {
 }
 
 let linkedReservations = [];
+function documentReservation(d) {
+  return d.linkExplicit
+    ? linkedReservations.find(r => r.id === d.reservationId)
+    : linkedReservations.find(r => r.id === d.reservationId || r.documentId === d.id);
+}
+function documentSuggestions(d) {
+  if (!window._uid || !['unassigned',window.TripContext.assign(window._uid,perfilId)].includes(d.tripId||'unassigned')) return [];
+  return window.TaxflyDocumentLinks.suggest(d,linkedReservations);
+}
+window.openDocumentLink = id => {
+  const target=id || viewingId, docObj=allDocs.find(d=>d.id===target), dialog=document.getElementById('docLinkDialog');
+  if (!docObj || !window._uid) return;
+  const currentTrip=window.TripContext.assign(window._uid,perfilId);
+  if (!['unassigned',currentTrip].includes(docObj.tripId||'unassigned')) {
+    showAlert('Elegí el viaje de este documento antes de vincularlo.'); return;
+  }
+  const matches=documentSuggestions(docObj), best=matches[0], second=matches[1];
+  const confident=best && best.score>=6 && (!second || best.score-second.score>=2);
+  dialog.dataset.docId=docObj.id;
+  document.getElementById('doc-link-description').textContent=`${docObj.name} · ${window.TaxflyDocumentLinks.kind(docObj)==='stay'?'Alojamiento':window.TaxflyDocumentLinks.kind(docObj)==='flight'?'Vuelo':'Documento del viaje'}`;
+  const hint=document.getElementById('doc-link-suggestion');hint.replaceChildren();
+  if(best){const block=document.createElement('div');block.className='doc-link-suggestion';
+    const heading=document.createElement('strong'),detail=document.createElement('span');
+    heading.textContent=confident?`Sugerencia: ${best.reservation.name}`:'Posible vínculo: '+best.reservation.name;
+    detail.textContent=best.reason+(confident?' · Confirmá antes de guardar':' · Revisá la reserva correcta');
+    block.append(heading,detail);hint.append(block);
+  }else hint.textContent=linkedReservations.length?'No hay una coincidencia clara. Elegí la reserva manualmente.':'Todavía no hay reservas en este viaje.';
+  const select=document.getElementById('doc-link-reservation');select.replaceChildren();
+  for(const [id,name] of [['','Sin reserva vinculada'],...linkedReservations.map(r=>[r.id,r.name])]) {
+    const option=document.createElement('option');option.value=id;option.textContent=name;select.append(option);
+  }
+  select.value=documentReservation(docObj)?.id || (confident?best.reservation.id:'');
+  document.getElementById('doc-link-feedback').textContent='';
+  dialog.showModal();
+};
+document.getElementById('doc-link-cancel').onclick=()=>document.getElementById('docLinkDialog').close();
+document.getElementById('doc-link-save').onclick=async()=>{
+  const dialog=document.getElementById('docLinkDialog'),docObj=allDocs.find(d=>d.id===dialog.dataset.docId),chosen=document.getElementById('doc-link-reservation').value;
+  if(!docObj || (chosen && !linkedReservations.some(r=>r.id===chosen)))return;
+  const button=document.getElementById('doc-link-save');button.disabled=true;
+  const previous={reservationId:docObj.reservationId,linkExplicit:docObj.linkExplicit,tripId:docObj.tripId};
+  try {
+    docObj.reservationId=chosen;docObj.linkExplicit=true;
+    if(chosen && (docObj.tripId||'unassigned')==='unassigned')docObj.tripId=window.TripContext.assign(window._uid,perfilId);
+    if(!await idbSet(DOCS_CACHE_KEY_PFX+window._uid+'::'+perfilId,allDocs))throw Error('No se pudo guardar en este dispositivo.');
+    renderList();
+    const q=await loadQueue(), pendingSave=q.find(o=>o.docId===docObj.id && o.type==='save_doc');
+    if(pendingSave){pendingSave.docObj.reservationId=chosen;pendingSave.docObj.tripId=docObj.tripId;pendingSave.docObj.linkExplicit=true;await saveQueue(q);}
+    else if(!navigator.onLine)await enqueueLink(docObj.id,chosen,docObj.tripId);
+    else try {await window.fsLink(window._uid,perfilId,docObj.id,chosen,docObj.tripId)} catch(e){await enqueueLink(docObj.id,chosen,docObj.tripId)}
+    dialog.close();showSyncOk(navigator.onLine?(chosen?'Documento vinculado a la reserva':'Vínculo eliminado'):'Vínculo guardado en este dispositivo');
+    updateOfflineToast();
+  }catch(e){docObj.reservationId=previous.reservationId;docObj.linkExplicit=previous.linkExplicit;docObj.tripId=previous.tripId;await guardarDocsEnCache(allDocs);renderList();document.getElementById('doc-link-feedback').textContent=e.message;}
+  finally{button.disabled=false;}
+};
+async function enqueueLink(docId,reservationId,tripId) {
+  const q=await loadQueue();const prior=q.find(o=>o.docId===docId && o.type==='link_doc');
+  if(prior){prior.reservationId=reservationId;prior.tripId=tripId;}
+  else q.push({type:'link_doc',docId,reservationId,tripId,uid:window._uid,perfilId});
+  await saveQueue(q);
+}
+
 async function loadReservationsForDocs() {
   if (!window._uid || !perfilId) return;
   const tripId = window.TripContext.assign(window._uid, perfilId);
@@ -1393,7 +1484,8 @@ function renderList() {
   }
   empty.style.display = "none";
   list.innerHTML = filtered.map(doc => {
-    const linked = linkedReservations.find(r => r.id === doc.reservationId) || linkedReservations.find(r => r.documentId === doc.id);
+    const linked = documentReservation(doc);
+    const suggested = linked ? null : documentSuggestions(doc)[0];
     const cfg = TYPE_CFG[doc.type] || TYPE_CFG["📦"];
     const f0 = doc.files?.[0];
     const pages = doc.files?.filter(f => f.kind === "pdf").length || 0;
@@ -1418,7 +1510,8 @@ function renderList() {
     }
     const typeLabel = lbl[doc.type] || "Doc";
     const totalFiles = doc.files?.length || 0;
-    return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            ${linked ? `<span class="doc-meta-dot"></span><span>Reserva: ${esc(linked.name)}</span>` : ""}\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${t.lbl_pgs || "pág."}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        ${linked ? `<a class="doc-view-btn" href="planificacion.html?section=reservas&reservation=${encodeURIComponent(linked.id)}" onclick="event.stopPropagation()" style="text-decoration:none;">VER RESERVA</a>` : ""}\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openViewer('${doc.id}')">${t.lbl_ver || "VER"}</button>\n                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar" aria-label="Eliminar documento">🗑️</button>\n                    </div>\n                </div>\n                ${preview}\n                ${offlineBadge}\n            </div>\n        </div>`;
+    return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            ${linked ? `<span class="doc-meta-dot"></span><span>Reserva: ${esc(linked.name)}</span>` : ""}\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${t.lbl_pgs || "pág."}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        ${linked ? `<a class="doc-view-btn" href="planificacion.html?section=reservas&reservation=${encodeURIComponent(linked.id)}" onclick="event.stopPropagation()" style="text-decoration:none;">VER RESERVA</a>` : ""}\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${linked?'CAMBIAR VÍNCULO':'VINCULAR'}</button>
+                        <button class="doc-view-btn" onclick="event.stopPropagation();openViewer('${doc.id}')">${t.lbl_ver || "VER"}</button>\n                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar" aria-label="Eliminar documento">🗑️</button>\n                    </div>\n                </div>\n                ${!linked && suggested ? `<div class="doc-link-hint">🔗 Podría corresponder a <button type="button" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${esc(suggested.reservation.name)}</button></div>` : ""}\n                ${preview}\n                ${offlineBadge}\n            </div>\n        </div>`;
   }).join("");
 }
 
@@ -1439,6 +1532,7 @@ function updateStorage() {
 }
 
 window.openAddModal = () => {
+  typeChosenManually = false;
   document.getElementById("addModal").classList.add("show");
   document.body.style.overflow = "hidden";
 };
@@ -1451,6 +1545,8 @@ window.closeAddModal = () => {
   renderPreview();
   document.querySelectorAll(".type-btn").forEach((b, i) => b.classList.toggle("active", i === 0));
   selType = "✈️";
+  typeChosenManually = false;
+  document.getElementById("doc-type-hint").textContent = "";
 };
 
 window.bgClick = e => {
@@ -1458,6 +1554,8 @@ window.bgClick = e => {
 };
 
 window.setType = btn => {
+  typeChosenManually = true;
+  document.getElementById("doc-type-hint").textContent = "";
   document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   selType = btn.dataset.type;
@@ -1520,6 +1618,16 @@ async function compressPdfToImages(dataUrl) {
 }
 
 window.handleFiles = async files => {
+  const first=Array.from(files)[0];
+  if(first && !typeChosenManually) {
+    const title=document.getElementById("inp-name");
+    if(!title.value.trim())title.value=first.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g," ").trim();
+    const detected=window.TaxflyDocumentLinks.kind({name:title.value,files:[{name:first.name}],type:'📦'});
+    const suggestedType=detected==='stay'?'🏨':detected==='flight'?'✈️':'📦';
+    document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===suggestedType));
+    selType=suggestedType;
+    document.getElementById('doc-type-hint').textContent='Categoría sugerida a partir del nombre del archivo. Podés cambiarla.';
+  }
   for (const f of Array.from(files)) {
     const raw = await toDataUrl(f);
     if (f.type === "application/pdf") {
@@ -1730,6 +1838,8 @@ window._flushTicketsPending = async () => {
         await window.fsSave(uid, profile, op.docObj);
       } else if (op.type === "del_doc") {
         await window.fsDelete(uid, profile, op.docId);
+      } else if (op.type === "link_doc") {
+        await window.fsLink(uid, profile, op.docId, op.reservationId, op.tripId);
       } else break;
       await dequeue(op.docId);
       synced++;

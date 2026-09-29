@@ -589,3 +589,17 @@ test('global replay keeps failed operations and removes successful ones individu
   await c.flushQueue('queue',()=>true,async()=>{});
   assert.equal(localStorage.getItem('queue'),'[]');
 });
+
+test('document suggestions prefer a matching reservation code and handle ambiguity', () => {
+  const matcher=require('../assets/document-links.js');
+  const reservations=[
+    {id:'stay-a',type:'stay',name:'Airbnb Lake Buena Vista',reference:'AB1234'},
+    {id:'stay-b',type:'stay',name:'Airbnb International Drive',reference:'CD5678'},
+    {id:'flight',type:'flight',name:'American Airlines',reference:'FL9012'}
+  ];
+  const ranked=matcher.suggest({type:'🏨',name:'Confirmación Airbnb Lake Buena Vista AB1234.pdf'},reservations);
+  assert.equal(ranked[0].reservation.id,'stay-a');
+  assert.ok(ranked[0].score>ranked[1].score);
+  assert.equal(matcher.suggest({type:'✈️',name:'Boarding pass FL9012'},reservations)[0].reservation.id,'flight');
+  assert.equal(matcher.suggest({type:'📦',name:'Archivo sin descripción'},reservations).length,0);
+});
