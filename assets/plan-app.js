@@ -44,7 +44,8 @@ const ICON_PATHS = {
   chevronLeft: '<path d="M15 6l-6 6 6 6"/>',
   chevronRight: '<path d="M9 6l6 6-6 6"/>',
   ban: '<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>',
-  download: '<path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>'
+  download: '<path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+  upload: '<path d="M12 21V9m0 0-4 4m4-4 4 4"/><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/>'
 };
 
 function ic(name, size) {
@@ -87,6 +88,8 @@ function openAttachChoice(reservationId, reservationName) {
   if (title) title.textContent = reservationName ? `Adjuntar documento · ${reservationName}` : "Adjuntar documento";
   dialog.querySelector("#attach-choice-link").href = `tickets.html?linkReservation=${encodeURIComponent(reservationId)}`;
   dialog.querySelector("#attach-choice-upload").href = `tickets.html?reservation=${encodeURIComponent(reservationId)}`;
+  dialog.querySelector("#attach-choice-link").innerHTML = `${ic("link", 18)}<span>Vincular desde documentos</span>`;
+  dialog.querySelector("#attach-choice-upload").innerHTML = `${ic("upload", 18)}<span>Subir documento</span>`;
   dialog.showModal();
 }
 window.openAttachChoice = openAttachChoice;
