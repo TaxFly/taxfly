@@ -85,7 +85,9 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .page-heading p{font-size:.75rem;color:var(--text-sub);font-weight:600;margin-top:2px;}
         .btn-add{width:100%;padding:14px;border:2px dashed var(--border);border-radius:var(--radius);background:transparent;color:var(--text-sub);font-family:inherit;font-size:.85rem;font-weight:800;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:8px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:18px;}
         .btn-add:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-dim);}
-        .filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none;}
+        .filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none;cursor:grab;overscroll-behavior-x:contain;}
+        .filter-row.dragging{cursor:grabbing;user-select:none;}
+        .filter-row.dragging .filter-pill{pointer-events:none;}
         .filter-row::-webkit-scrollbar{display:none;}
         .filter-pill{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:.7rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);white-space:nowrap;font-family:inherit;flex-shrink:0;}
         .filter-pill.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
@@ -2897,6 +2899,47 @@ window.doSwitchApp = function(destino) {
 </script>
 
 <script src="assets/map-links.js" defer></script>
+<script>
+(function(){
+  function init(){
+    var row=document.querySelector('.filter-row');
+    if(!row||row._scrollFix)return;
+    row._scrollFix=true;
+    // Rueda del mouse -> scroll horizontal (solo si la fila desborda)
+    row.addEventListener('wheel',function(e){
+      if(row.scrollWidth<=row.clientWidth)return;
+      var d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;
+      var max=row.scrollWidth-row.clientWidth;
+      if((d<0&&row.scrollLeft<=0)||(d>0&&row.scrollLeft>=max))return;
+      e.preventDefault();
+      row.scrollLeft+=d;
+    },{passive:false});
+    // Arrastrar con el mouse
+    var down=false,moved=false,startX=0,startLeft=0;
+    row.addEventListener('mousedown',function(e){
+      if(e.button!==0)return;
+      down=true;moved=false;startX=e.pageX;startLeft=row.scrollLeft;
+    });
+    window.addEventListener('mousemove',function(e){
+      if(!down)return;
+      var dx=e.pageX-startX;
+      if(!moved&&Math.abs(dx)>4){moved=true;row.classList.add('dragging');}
+      if(moved)row.scrollLeft=startLeft-dx;
+    });
+    window.addEventListener('mouseup',function(){
+      if(!down)return;
+      down=false;
+      if(moved)setTimeout(function(){row.classList.remove('dragging');},0);
+    });
+    // Mantener visible la pastilla activa
+    row.addEventListener('click',function(e){
+      var b=e.target.closest('.filter-pill');
+      if(b&&b.scrollIntoView)b.scrollIntoView({inline:'nearest',block:'nearest',behavior:'smooth'});
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 <script src="assets/reconnect.js" defer></script>
 <script src="assets/reconnect-sync.js" defer></script>
 <link rel="stylesheet" href="assets/travel-tools.css">
