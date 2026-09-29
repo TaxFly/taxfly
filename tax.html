@@ -1517,9 +1517,9 @@ function selectedTaxCity(id) {
 function updateTaxRuleNote() {
   const lang = localStorage.getItem("appLang") || "es";
   const copy = {
-    es: "Estimación: las tasas y exenciones dependen de la dirección, el producto y su uso. En Florida, alimentos sin preparar suelen estar exentos; comidas preparadas y golosinas pueden tributar. El remedio exento debe figurar en la lista oficial. Confirmá el recibo antes de pagar.",
-    en: "Estimate: rates and exemptions depend on address, product and use. In Florida, unprepared groceries are generally exempt; prepared food and candy may be taxed. An exempt remedy must appear on the official list. Check the receipt before paying.",
-    pt: "Estimativa: alíquotas e isenções dependem do endereço, produto e uso. Na Flórida, alimentos não preparados geralmente são isentos; refeições prontas e doces podem ser tributados. O remédio isento deve constar da lista oficial. Confira o recibo."
+    es: "Estimación: las tasas y exenciones dependen de la dirección, el producto y su uso.",
+    en: "Estimate: rates and exemptions depend on address, product and use.",
+    pt: "Estimativa: alíquotas e isenções dependem do endereço, produto e uso."
   };
   for (const id of ["tax-rule-note", "cart-tax-rule-note"]) {
     const el = document.getElementById(id);

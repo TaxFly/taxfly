@@ -849,6 +849,7 @@ document.addEventListener("click", function(e) {
 </script>
 
 <script type="module">
+const onReady = f => document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", f) : setTimeout(f, 0);
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
@@ -1799,7 +1800,7 @@ window.changeLanguage = lang => {
     szRender();
   };
   window.szReRender = szRender;
-  document.addEventListener("DOMContentLoaded", szRender);
+  onReady(szRender);
 })();
 
 function sharedCacheGet(key, ttlMs) {
@@ -2559,11 +2560,11 @@ window.showSec = s => {
   window.scrollTo(0, 0);
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+onReady(() => {
   if (new URLSearchParams(location.search).get("section") === "comparador") window.showSec("comparador");
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+onReady(() => {
   if ("Notification" in window) {
     const banner = document.getElementById("notif-banner");
     const btn = document.getElementById("btn-activar-notif");

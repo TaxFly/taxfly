@@ -528,6 +528,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 
 <script src="assets/document-links.js"></script>
 <script type="module">
+const onReady = f => document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", f) : setTimeout(f, 0);
 const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
 let initializeApp, getAuth, onAuthStateChanged, signOut, deleteUser, initializeAppCheck, ReCaptchaV3Provider, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, getDoc, getDocs, query, orderBy, writeBatch;
@@ -2326,7 +2327,7 @@ window.changeLanguage = lang => {
   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+onReady(() => {
   const lang = localStorage.getItem("appLang") || "es";
   changeLanguage(lang);
 });
