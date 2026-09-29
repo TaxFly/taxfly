@@ -14,7 +14,7 @@ if (navigator.onLine) {
 }
 </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaxFly — Profiles</title>
     <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
     <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
@@ -418,6 +418,8 @@ if ("serviceWorker" in navigator) {
 })();
 </script>
 <script defer src="assets/autofill.js"></script>
+    <link rel="stylesheet" href="assets/ux.css">
+    <script src="assets/ux.js" defer></script>
 </head>
 <body>
 
@@ -869,7 +871,7 @@ window.openEditor = id => {
   document.getElementById("btnDelete").style.display = id ? "block" : "none";
   updatePreview();
   const grid = document.getElementById("photoGrid");
-  grid.innerHTML = photos.map(url => `\n            <img src="${url}" class="photo-option ${url === selectedPhoto ? "selected" : ""}"\n                 onclick="selectPhoto('${url}')">\n        `).join("");
+  grid.innerHTML = photos.map(url => `\n            <img src="${url}" alt="Foto de perfil" class="photo-option ${url === selectedPhoto ? "selected" : ""}"\n                 onclick="selectPhoto('${url}')">\n        `).join("");
   document.getElementById("editModal").classList.add("show");
 };
 
