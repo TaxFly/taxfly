@@ -151,6 +151,8 @@ I18N.add({
   "Mover el día hacia la derecha": [ "Move day right", "Mover o dia para a direita" ],
   Mover: [ "Move", "Mover" ],
   "Eliminar este día": [ "Delete this day", "Excluir este dia" ],
+  "Se lee siempre la pestaña llamada «Menú» del Excel (columnas Día, Fecha, Desayuno, Almuerzo, Cena y Snack / Notas). Elegí qué días traer del archivo.": [ "The tab named “Menú” in the Excel file is always read (columns Day, Date, Breakfast, Lunch, Dinner and Snack / Notes). Choose which days to import from the file.", "Sempre é lida a aba chamada «Menú» do Excel (colunas Dia, Data, Café da manhã, Almoço, Jantar e Lanche / Notas). Escolha quais dias trazer do arquivo." ],
+  "{d} en auto (total)": [ "{d} by car (total)", "{d} de carro (total)" ],
   "en auto (total)": [ "by car (total)", "de carro (total)" ],
   "No se pudo optimizar la ruta": [ "Could not optimize the route", "Não foi possível otimizar a rota" ],
   "Orden optimizado ✓ — se acomodaron las paradas para viajar menos": [ "Order optimized ✓ — stops rearranged to travel less", "Ordem otimizada ✓ — as paradas foram reorganizadas para se deslocar menos" ],
