@@ -600,7 +600,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
             <div class="bc-progress-txt" id="bc-progress-txt"></div>
             <div class="bc-chips">
                 <span class="bc-chip" id="bc-chip-gastos"></span>
-                <a class="bc-chip" id="budget-maps-note" href="planificacion.html"></a>
+                <a class="bc-chip" id="budget-maps-note" href="planificacion.html?section=walmart"></a>
             </div>
             <div class="bc-total-row" id="budget-info-row">
                 <span><span id="bc-total-lbl">Presupuesto total</span>: <span id="budget-base-val">—</span></span>
@@ -2089,8 +2089,14 @@ function renderBudgetCard() {
   if (!card || !row) return;
   const has = presupuestoBase > 0;
   const editing = row._editing === true;
-  const spentG = lastGastosTotal || 0, spentP = mapsSpent || 0;
-  const eff = spentG + spentP;
+  // Lo registrado desde Supermercado ("Registrar como gasto") se muestra en el chip Planificación, no en Gastos.
+  // El total (eff) no cambia: solo se reparte entre los dos chips.
+  let superSum = 0;
+  try {
+    superSum = filteredGastos().filter(g => g.source === "walmart" && !pendingDeletes.has(g.id)).reduce((t, g) => t + (Number(g.valor) || 0), 0);
+  } catch (e) {}
+  const spentG = Math.max(0, (lastGastosTotal || 0) - superSum), spentP = (mapsSpent || 0) + superSum;
+  const eff = (lastGastosTotal || 0) + (mapsSpent || 0);
   const pct = has ? eff / presupuestoBase * 100 : 0;
   const over = has && eff > presupuestoBase;
   const show = (id, on, disp) => { const el = document.getElementById(id); if (el) el.style.display = on ? (disp || "block") : "none"; };
