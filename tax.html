@@ -559,6 +559,7 @@ if ("serviceWorker" in navigator) {
         <div class="final-label" data-i18n="label_total">TOTAL FINAL (INC. TIP)</div>
         <div class="final-value" id="final-total">USD 0.00</div>
     </div>
+    <button type="button" class="cart-btn cart-btn-save" id="btn-save-individual" style="width:100%;margin-top:12px;" onclick="saveIndividualAsExpense()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 13.5h.01"/></svg> <span data-i18n="cart_save">Guardar en Gastos</span></button>
     </div>
 
     
@@ -1166,7 +1167,7 @@ const i18n = {
     food_candy: "Golosina / gaseosa",
     med_otc: "Venta libre (OTC)",
     med_rx: "Con receta",
-    med_listed: "Remedio exento (FL)"
+    med_listed: "Remedio de lista exenta (FL)"
   },
   en: {
     nav_expenses: "EXPENSES",
@@ -1662,6 +1663,7 @@ window.calculate = () => {
   document.getElementById("total-with-tax").innerText = `USD ${fmt(subtotal)}`;
   const lang = localStorage.getItem("appLang") || "es";
   document.getElementById("tax-detail").innerText = `${i18n[lang].tax_applied}: ${tax}%`;
+  window._indivFinal = subtotal * (1 + currentTip / 100);
   document.getElementById("final-total").innerText = `USD ${fmt(subtotal * (1 + currentTip / 100))}`;
 };
 
@@ -2984,6 +2986,61 @@ function renderCart() {
   if (summary) summary.style.display = "block";
   if (actions) actions.style.display = "flex";
 }
+
+window.saveIndividualAsExpense = async () => {
+  const lang = localStorage.getItem("appLang") || "es";
+  const total = Math.round((window._indivFinal || 0) * 100) / 100;
+  const L = (es, en, pt) => ({ es, en, pt })[lang] || es;
+  if (!(total > 0)) {
+    const m = L("Ingresá un precio para guardar el gasto.", "Enter a price to save the expense.", "Informe um preço para salvar o gasto.");
+    if (window.showAlert) window.showAlert(m); else alert(m);
+    return;
+  }
+  const promptMsg = L("¿Qué compraste? (nombre del gasto)", "What did you buy? (expense name)", "O que você comprou? (nome do gasto)");
+  const nombre = window.showPrompt ? await window.showPrompt(promptMsg, "") : prompt(promptMsg, "");
+  if (!nombre || !nombre.trim()) return;
+  const activeId = document.querySelector("#panel-individual .cat-btn.active")?.id;
+  const catMap = {
+    "btn-general": "🛍️ Compras",
+    "btn-tech": "🛍️ Compras",
+    "btn-food": "🍔 Comida",
+    "btn-med": "💊 Farmacia",
+    "btn-clothing": "👟 Ropa"
+  };
+  const gastoData = {
+    nombre: nombre.trim(),
+    valor: total,
+    cat: catMap[activeId] || "🛍️ Compras",
+    fecha: Date.now(),
+    thumb: "",
+    tripId: currentUser && perfilId ? window.TripContext.assign(currentUser.uid, perfilId) : "orlando"
+  };
+  try {
+    if (firebaseOk && currentUser && perfilId && navigator.onLine) {
+      await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), gastoData);
+    } else {
+      const pid = perfilId || "default";
+      const key = "taxusa_gastos_pending_" + pid;
+      let pending = [];
+      try {
+        pending = JSON.parse(localStorage.getItem(key) || "[]");
+      } catch (e) {
+        pending = [];
+      }
+      pending.push({ type: "add", data: gastoData, ts: Date.now() });
+      localStorage.setItem(key, JSON.stringify(pending));
+    }
+    const fmt2 = n => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const ok = L(`Guardado en Gastos: ${fmt2(total)} (${gastoData.nombre}).`, `Saved to Expenses: ${fmt2(total)} (${gastoData.nombre}).`, `Salvo em Gastos: ${fmt2(total)} (${gastoData.nombre}).`);
+    if (window.showAlert) window.showAlert(ok); else alert(ok);
+    const priceEl = document.getElementById("price");
+    if (priceEl) priceEl.value = "";
+    calculate();
+  } catch (e) {
+    const err = L("No se pudo guardar el gasto.", "Could not save the expense.", "Não foi possível salvar o gasto.");
+    if (window.showAlert) window.showAlert(err); else alert(err);
+  }
+};
 
 window.saveCartAsExpense = async () => {
   if (!cartItems.length) return;

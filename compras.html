@@ -513,6 +513,26 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         #offline-label{display:flex;flex-direction:column;gap:1px;}
         #offline-label strong{font-size:.82rem;color:var(--text);}
         #offline-label span{font-size:.7rem;font-weight:600;color:var(--text-sub);}
+    
+        /* Gastos: cotizaciones plegables, lista por día, edición, toast */
+        .quote-section{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:14px;background:var(--surface-2);}
+        .quote-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit;color:var(--text-dim);font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;}
+        .quote-toggle svg{flex-shrink:0;transition:transform .2s;}
+        .quote-toggle[aria-expanded="true"] svg{transform:rotate(180deg);}
+        .quote-body{padding:0 12px 12px;}
+        .quote-body[hidden]{display:none;}
+        .exp-day-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);}
+        .exp-day-head:first-child{margin-top:4px;}
+        .exp-day-head b{color:var(--text-sub);font-weight:800;}
+        .h-main{flex:1;min-width:0;padding:0 8px;cursor:pointer;}
+        .h-main:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px;}
+        .exp-toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);background:#111827;color:#fff;padding:10px 16px;border-radius:999px;font-size:.8rem;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:10001;box-shadow:0 6px 20px rgba(0,0,0,.3);}
+        .exp-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto;}
+        .exp-toast button{background:none;border:none;color:#93c5fd;font:inherit;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;padding:0;}
+        #edit-gasto-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:9998;align-items:flex-end;justify-content:center;}
+        #edit-gasto-overlay.open{display:flex;}
+        #edit-gasto-box{background:var(--surface);border-radius:24px 24px 0 0;padding:20px 20px 28px;width:100%;max-width:460px;box-shadow:var(--shadow-lg);border:1px solid var(--border);border-bottom:none;animation:ocrModalIn .3s cubic-bezier(.34,1.56,.64,1);}
+        #edit-gasto-box select{width:100%;}
     </style>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
@@ -626,16 +646,12 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         </div>
 
         <div id="sec-gastos">
-            <div class="scanner-warn" id="scanner-warning" data-i18n="scanner_beta_msg">⚠️ El escáner está en beta. Verificá siempre el monto detectado.</div>
-            <div class="scan-btns">
-                <button class="btn btn-cyan" onclick="startScanner()" style="margin-bottom:0;">📷 <span data-i18n="btn_camera">CÁMARA</span></button>
-                <button class="btn btn-ghost" onclick="document.getElementById('gallery-input').click()" style="margin-bottom:0;">🖼️ <span data-i18n="btn_gallery">GALERÍA</span></button>
-            </div>
-            <input type="file" id="gallery-input" accept="image/*" style="display:none;" onchange="handleGalleryImage(event)">
-
-            
-            <span class="slabel" style="margin-bottom:10px;" data-i18n="label_exchange">Cotizaciones</span>
-            <div class="rates-grid">
+            <div class="quote-section" id="quote-section">
+                <button type="button" class="quote-toggle" id="quote-toggle" aria-expanded="false" aria-controls="quote-body" onclick="toggleQuotes()">
+                    <span data-i18n="label_exchange">Cotizaciones</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div class="quote-body" id="quote-body" hidden>
+<div class="rates-grid">
                 <div class="rate-box arg">
                     <div class="rate-label" data-i18n="rate_official">Dólar Oficial</div>
                     <div class="rate-row"><span><img src="https://flagcdn.com/20x15/us.png" alt="🇺🇸" onerror="this.outerHTML='🇺🇸'"></span><input type="text" id="oficial-usd" value="1" oninput="formatVisual(this);convert('oficial','usd')"></div>
@@ -665,9 +681,19 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
                     <div class="rate-row"><span id="flag-brl"><img src="https://flagcdn.com/20x15/br.png" alt="🇧🇷" onerror="this.outerHTML='🇧🇷'"></span><input type="text" id="brl-local" oninput="formatVisual(this);convert('brl','local')"></div>
                 </div>
             </div>
+                </div>
+            </div>
 
-            <div class="input-group"><input type="text" id="nombre" placeholder="Producto" data-i18n-ph="placeholder_product"></div>
-            <div class="input-group"><input type="number" id="valor" placeholder="Precio USD" step="0.01" inputmode="decimal" data-i18n-ph="placeholder_price"></div>
+            <div class="exp-section" id="exp-section">
+<div class="scanner-warn" id="scanner-warning" data-i18n="scanner_beta_msg">⚠️ El escáner está en beta. Verificá siempre el monto detectado.</div>
+            <div class="scan-btns">
+                <button class="btn btn-cyan" onclick="startScanner()" style="margin-bottom:0;">📷 <span data-i18n="btn_camera">CÁMARA</span></button>
+                <button class="btn btn-ghost" onclick="document.getElementById('gallery-input').click()" style="margin-bottom:0;">🖼️ <span data-i18n="btn_gallery">GALERÍA</span></button>
+            </div>
+            <input type="file" id="gallery-input" accept="image/*" style="display:none;" onchange="handleGalleryImage(event)">
+
+<div class="input-group"><input type="text" id="nombre" placeholder="Producto" data-i18n-ph="placeholder_product" enterkeyhint="next" autocomplete="off"></div>
+            <div class="input-group"><input type="number" id="valor" placeholder="Precio USD" step="0.01" inputmode="decimal" enterkeyhint="done" data-i18n-ph="placeholder_price"></div>
             <span class="cat-tag-label" data-i18n="label_cat_tag">Categoría</span>
             <div class="cat-tag-row" id="cat-tag-row">
                 <button class="cat-tag sel" data-cat="🛍️ Compras" data-i18n="cat_shopping">🛍️ Compras</button>
@@ -682,6 +708,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
             </div>
             <button class="btn btn-primary" onclick="addGasto()">💾 <span data-i18n="btn_save_expense">GUARDAR GASTO</span></button>
             <div id="listaGastos"><p style="text-align:center;color:var(--text-dim);font-size:.85rem;" data-i18n="loading">Cargando...</p></div>
+            </div>
         </div>
 
         
@@ -1021,6 +1048,8 @@ async function flushPendingGastos() {
         await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), op.data);
       } else if (op.type === "del") {
         await deleteDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", op.id));
+      } else if (op.type === "upd") {
+        await updateDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", op.id), op.data);
       }
     } catch (e) {
       failed.push(op);
@@ -1170,6 +1199,20 @@ const i18n = {
     cat_other: "📦 Otros",
     btn_save_expense: "GUARDAR GASTO",
     loading: "Cargando...",
+    empty_expenses: "No hay gastos.",
+    fill_product_msg: "Completá el nombre del producto.",
+    day_today: "Hoy",
+    day_yesterday: "Ayer",
+    day_nodate: "Sin fecha",
+    toast_saved: "Guardado",
+    toast_deleted: "Gasto eliminado",
+    toast_updated: "Gasto actualizado",
+    undo: "Deshacer",
+    edit_title: "Editar gasto",
+    edit_save: "Guardar cambios",
+    edit_cancel: "Cancelar",
+    aria_edit: "Editar gasto",
+    aria_delete: "Eliminar gasto",
     dash_total: "Total gastado",
     dash_count: "Compras",
     dash_avg: "Promedio",
@@ -1325,6 +1368,20 @@ const i18n = {
     cat_other: "📦 Other",
     btn_save_expense: "SAVE EXPENSE",
     loading: "Loading...",
+    empty_expenses: "No expenses.",
+    fill_product_msg: "Please fill in the product name.",
+    day_today: "Today",
+    day_yesterday: "Yesterday",
+    day_nodate: "No date",
+    toast_saved: "Saved",
+    toast_deleted: "Expense deleted",
+    toast_updated: "Expense updated",
+    undo: "Undo",
+    edit_title: "Edit expense",
+    edit_save: "Save changes",
+    edit_cancel: "Cancel",
+    aria_edit: "Edit expense",
+    aria_delete: "Delete expense",
     dash_total: "Total spent",
     dash_count: "Purchases",
     dash_avg: "Average",
@@ -1480,6 +1537,20 @@ const i18n = {
     cat_other: "📦 Outros",
     btn_save_expense: "SALVAR GASTO",
     loading: "Carregando...",
+    empty_expenses: "Sem gastos.",
+    fill_product_msg: "Por favor preencha o nome do produto.",
+    day_today: "Hoje",
+    day_yesterday: "Ontem",
+    day_nodate: "Sem data",
+    toast_saved: "Salvo",
+    toast_deleted: "Gasto excluído",
+    toast_updated: "Gasto atualizado",
+    undo: "Desfazer",
+    edit_title: "Editar gasto",
+    edit_save: "Salvar alterações",
+    edit_cancel: "Cancelar",
+    aria_edit: "Editar gasto",
+    aria_delete: "Excluir gasto",
     dash_total: "Total gasto",
     dash_count: "Compras",
     dash_avg: "Média",
@@ -1666,6 +1737,7 @@ window.changeLanguage = lang => {
   if (window.szReRender) window.szReRender();
   if (typeof allGastos !== "undefined" && allGastos.length) renderDashboard(allGastos);
   try { renderBudgetCard(); renderCapsEditor(); } catch (e) {}
+  try { if (typeof allGastos !== "undefined" && allGastos.length) renderGastosList(allGastos); } catch (e) {}
 };
 
 (function() {
@@ -2002,7 +2074,7 @@ function renderBudgetCard() {
   const spentG = lastGastosTotal || 0, spentP = mapsSpent || 0;
   const eff = spentG + spentP;
   const pct = has ? eff / presupuestoBase * 100 : 0;
-  const over = has && pct >= 100;
+  const over = has && eff > presupuestoBase;
   const show = (id, on, disp) => { const el = document.getElementById(id); if (el) el.style.display = on ? (disp || "block") : "none"; };
 
   card.classList.toggle("bc-over", over);
@@ -2211,34 +2283,176 @@ window.addGasto = async () => {
   await addGastoWithThumb("");
 };
 
-window.deleteGasto = async id => {
-  const lang = localStorage.getItem("appLang") || "es";
-  const msgs = {
-    es: "¿Eliminar este gasto?",
-    en: "Delete this expense?",
-    pt: "Excluir este gasto?"
-  };
-  if (!await showConfirm(msgs[lang] || msgs.es) || !perfilId) return;
-  const cached = cargarGastosDesdeCache() || [];
-  guardarGastosEnCache(cached.filter(g => g.id !== id));
-  allGastos = allGastos.filter(g => g.id !== id);
-  renderGastosList(allGastos);
+function showExpToast(msg, actionLabel, onAction, ms) {
+  const el = document.getElementById("exp-toast");
+  if (!el) return;
+  clearTimeout(el._t);
+  el.textContent = "";
+  const span = document.createElement("span");
+  span.textContent = msg;
+  el.appendChild(span);
+  if (actionLabel) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = actionLabel;
+    btn.onclick = () => {
+      el.classList.remove("show");
+      if (onAction) onAction();
+    };
+    el.appendChild(btn);
+  }
+  el.classList.add("show");
+  el._t = setTimeout(() => el.classList.remove("show"), ms || 2200);
+}
+
+function dropPendingAdd(g) {
+  const ops = getPendingGastos();
+  const i = ops.findIndex(o => o.type === "add" && o.data && o.data.fecha === g.fecha && o.data.nombre === g.nombre);
+  if (i > -1) {
+    ops.splice(i, 1);
+    savePendingGastos(ops);
+  }
+}
+
+async function removeGastoRemote(g) {
+  const id = g.id;
+  if (String(id).startsWith("local_")) {
+    dropPendingAdd(g);
+    return;
+  }
   if (!navigator.onLine || !currentUser) {
-    queueGastoOp({
-      type: "del",
-      id: id
-    });
+    queueGastoOp({ type: "del", id: id });
     return;
   }
   try {
     await deleteDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", id));
   } catch (e) {
-    queueGastoOp({
-      type: "del",
-      id: id
-    });
+    queueGastoOp({ type: "del", id: id });
+  }
+}
+
+function commitDelete(id) {
+  const p = pendingDeletes.get(id);
+  if (!p) return;
+  clearTimeout(p.timer);
+  pendingDeletes.delete(id);
+  removeGastoRemote(p.gasto);
+}
+
+function commitAllDeletesNow() {
+  [ ...pendingDeletes.keys() ].forEach(commitDelete);
+}
+
+function undoDelete(id) {
+  const p = pendingDeletes.get(id);
+  if (!p) return;
+  clearTimeout(p.timer);
+  pendingDeletes.delete(id);
+  if (!allGastos.some(x => x.id === id)) allGastos.push(p.gasto);
+  allGastos.sort((x, y) => (Number(y.fecha) || 0) - (Number(x.fecha) || 0));
+  guardarGastosEnCache(allGastos);
+  renderGastosList(allGastos);
+}
+
+window.deleteGasto = id => {
+  if (!perfilId) return;
+  const g = allGastos.find(x => x.id === id);
+  if (!g || pendingDeletes.has(id)) return;
+  commitAllDeletesNow();
+  const cached = cargarGastosDesdeCache() || [];
+  guardarGastosEnCache(cached.filter(x => x.id !== id));
+  allGastos = allGastos.filter(x => x.id !== id);
+  pendingDeletes.set(id, { gasto: g, timer: setTimeout(() => commitDelete(id), 6000) });
+  renderGastosList(allGastos);
+  showExpToast(bt("toast_deleted"), bt("undo"), () => undoDelete(id), 6000);
+};
+
+function persistPendingDeletesSafely() {
+  if (!pendingDeletes.size) return;
+  pendingDeletes.forEach(p => {
+    clearTimeout(p.timer);
+    if (String(p.gasto.id).startsWith("local_")) dropPendingAdd(p.gasto); else queueGastoOp({ type: "del", id: p.gasto.id });
+  });
+  pendingDeletes.clear();
+  document.getElementById("exp-toast")?.classList.remove("show");
+  flushPendingGastos();
+}
+
+window.addEventListener("pagehide", persistPendingDeletesSafely);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") persistPendingDeletesSafely();
+});
+
+let _editGastoId = null;
+
+window.editGasto = id => {
+  const g = allGastos.find(x => x.id === id);
+  if (!g) return;
+  _editGastoId = id;
+  document.getElementById("edit-gasto-name").value = g.nombre || "";
+  document.getElementById("edit-gasto-val").value = parseFloat(g.valor) || 0;
+  const sel = document.getElementById("edit-gasto-cat");
+  const current = g.cat || "📦 Otros";
+  const cats = Object.keys(CAT_COLORS);
+  if (!cats.includes(current)) cats.push(current);
+  sel.innerHTML = cats.map(c => `<option value="${esc(c)}"${c === current ? " selected" : ""}>${esc(catLabel(c))}</option>`).join("");
+  document.getElementById("edit-gasto-overlay").classList.add("open");
+  setTimeout(() => document.getElementById("edit-gasto-name").focus(), 50);
+};
+
+window.closeEditGasto = () => {
+  document.getElementById("edit-gasto-overlay").classList.remove("open");
+  _editGastoId = null;
+};
+
+window.saveEditGasto = async () => {
+  const id = _editGastoId;
+  const g = allGastos.find(x => x.id === id);
+  if (!g) { closeEditGasto(); return; }
+  const nombre = document.getElementById("edit-gasto-name").value.trim();
+  const valor = parseFloat(document.getElementById("edit-gasto-val").value);
+  const cat = document.getElementById("edit-gasto-cat").value || "📦 Otros";
+  if (!nombre || isNaN(valor) || valor < 0) {
+    showAlert(bt("fill_product_msg"));
+    return;
+  }
+  const patch = { nombre: nombre, valor: valor, cat: cat };
+  const before = { ...g };
+  allGastos = allGastos.map(x => x.id === id ? { ...x, ...patch } : x);
+  const cached = cargarGastosDesdeCache() || [];
+  guardarGastosEnCache(cached.map(x => x.id === id ? { ...x, ...patch } : x));
+  closeEditGasto();
+  renderGastosList(allGastos);
+  showExpToast(bt("toast_updated"));
+  if (String(id).startsWith("local_")) {
+    const ops = getPendingGastos();
+    const op = ops.find(o => o.type === "add" && o.data && o.data.fecha === before.fecha && o.data.nombre === before.nombre);
+    if (op) {
+      op.data = { ...op.data, ...patch };
+      savePendingGastos(ops);
+    }
+    return;
+  }
+  if (!navigator.onLine || !currentUser) {
+    queueGastoOp({ type: "upd", id: id, data: patch });
+    return;
+  }
+  try {
+    await updateDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", id), patch);
+  } catch (e) {
+    queueGastoOp({ type: "upd", id: id, data: patch });
   }
 };
+
+document.addEventListener("keydown", e => {
+  const ov = document.getElementById("edit-gasto-overlay");
+  if (!ov || !ov.classList.contains("open")) return;
+  if (e.key === "Escape") closeEditGasto();
+  if (e.key === "Enter" && !e.isComposing && e.target.tagName !== "SELECT") {
+    e.preventDefault();
+    if (e.target.id === "edit-gasto-name" && document.getElementById("edit-gasto-val").value === "") document.getElementById("edit-gasto-val").focus(); else saveEditGasto();
+  }
+});
 
 let allGastos = [];
 
@@ -2276,24 +2490,71 @@ function catLabel(cat) {
   return key && i18n[lang]?.[key] || cat;
 }
 
+const pendingDeletes = new Map();
+
+function dayKey(ts) {
+  const n = Number(ts);
+  const d = new Date(n);
+  if (!n || isNaN(d.getTime())) return "none";
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function dayLabel(key, ts) {
+  if (key === "none") return bt("day_nodate");
+  const now = new Date();
+  const yest = new Date(now);
+  yest.setDate(now.getDate() - 1);
+  if (key === dayKey(now.getTime())) return bt("day_today");
+  if (key === dayKey(yest.getTime())) return bt("day_yesterday");
+  const lang = localStorage.getItem("appLang") || "es";
+  const loc = { es: "es-AR", en: "en-US", pt: "pt-BR" }[lang] || "es-AR";
+  return new Date(Number(ts)).toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "short" });
+}
+
+function gastoItemHtml(g) {
+  const cat = g.cat || "📦 Otros";
+  const catEmoji = cat.match(/^(\S+)/)?.[1] || "📦";
+  const catDisplayLabel = catLabel(cat).replace(/^\S+\s*/, "");
+  const thumbHtml = g.thumb ? `<img class="h-thumb" src="${g.thumb}" alt="recibo" onclick="openReceiptViewer('${g.thumb}','${g.id}')">` : `<div class="h-thumb-placeholder">${catEmoji}</div>`;
+  const editLbl = esc(bt("aria_edit") + ": " + (g.nombre || ""));
+  return `<div class="history-item" style="border-left-color:${catColor(cat)}">
+                ${thumbHtml}
+                <div class="h-main" role="button" tabindex="0" aria-label="${editLbl}" onclick="editGasto('${g.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();editGasto('${g.id}')}">
+                    <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.nombre)}</div>
+                    <div style="font-size:.62rem;color:var(--text-dim);margin-top:1px;">${catDisplayLabel}</div>
+                </div>
+                <div class="h-right">
+                    <div class="h-amount">-${fmt(g.valor)}</div>
+                    <button class="h-del" onclick="deleteGasto('${g.id}')" aria-label="${esc(bt("aria_delete"))}">✕</button>
+                </div>
+            </div>`;
+}
+
 function renderGastosList(gastos) {
   if (currentUser && perfilId) gastos = window.TripContext.filter(gastos, currentUser.uid, perfilId);
+  gastos = (gastos || []).filter(g => !pendingDeletes.has(g.id));
   const c = document.getElementById("listaGastos");
-  if (!gastos || !gastos.length) {
-    c.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:.85rem;">No hay gastos.</p>';
+  if (!gastos.length) {
+    c.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:.85rem;" data-i18n="empty_expenses">' + esc(bt("empty_expenses")) + '</p>';
     updateBudgetDisplay(0);
     renderDashboard([]);
     return;
   }
   let total = 0;
   gastos.forEach(g => total += parseFloat(g.valor) || 0);
-  c.innerHTML = gastos.map(g => {
-    const cat = g.cat || "📦 Otros";
-    const catEmoji = cat.match(/^(\S+)/)?.[1] || "📦";
-    const catDisplayLabel = catLabel(cat).replace(/^\S+\s*/, "");
-    const thumbHtml = g.thumb ? `<img class="h-thumb" src="${g.thumb}" alt="recibo" onclick="openReceiptViewer('${g.thumb}','${g.id}')">` : `<div class="h-thumb-placeholder">${catEmoji}</div>`;
-    return `<div class="history-item" style="border-left-color:${catColor(cat)}">\n                ${thumbHtml}\n                <div style="flex:1;min-width:0;padding:0 8px;">\n                    <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.nombre)}</div>\n                    <div style="font-size:.62rem;color:var(--text-dim);margin-top:1px;">${catDisplayLabel}</div>\n                </div>\n                <div class="h-right">\n                    <div class="h-amount">-${fmt(g.valor)}</div>\n                    <button class="h-del" onclick="deleteGasto('${g.id}')" aria-label="Eliminar gasto">✕</button>\n                </div>\n            </div>`;
-  }).join("");
+  const sorted = gastos.slice().sort((x, y) => (Number(y.fecha) || 0) - (Number(x.fecha) || 0));
+  const groups = [];
+  const byKey = {};
+  sorted.forEach(g => {
+    const k = dayKey(g.fecha);
+    if (!byKey[k]) {
+      byKey[k] = { key: k, ts: g.fecha, sub: 0, items: [] };
+      groups.push(byKey[k]);
+    }
+    byKey[k].sub += parseFloat(g.valor) || 0;
+    byKey[k].items.push(g);
+  });
+  c.innerHTML = groups.map(grp => `<div class="exp-day-head"><span>${esc(dayLabel(grp.key, grp.ts))}</span><b>-${fmt(grp.sub)}</b></div>` + grp.items.map(gastoItemHtml).join("")).join("");
   updateBudgetDisplay(total);
   renderDashboard(gastos);
 }
@@ -2893,7 +3154,41 @@ onReady(() => {
       btn.classList.add("sel");
     });
   });
+  try {
+    const last = localStorage.getItem(LAST_CAT_KEY);
+    const tags = [ ...document.querySelectorAll("#cat-tag-row .cat-tag") ];
+    const hit = last && tags.find(b => b.dataset.cat === last);
+    if (hit) {
+      tags.forEach(b => b.classList.remove("sel"));
+      hit.classList.add("sel");
+    }
+  } catch (e) {}
+  const nombreEl = document.getElementById("nombre");
+  const valorEl = document.getElementById("valor");
+  if (nombreEl && valorEl) {
+    nombreEl.addEventListener("keydown", e => {
+      if (e.key !== "Enter" || e.isComposing) return;
+      e.preventDefault();
+      if (valorEl.value === "") valorEl.focus(); else addGasto();
+    });
+    valorEl.addEventListener("keydown", e => {
+      if (e.key !== "Enter" || e.isComposing) return;
+      e.preventDefault();
+      addGasto();
+    });
+  }
+  window.toggleQuotes(localStorage.getItem("taxfly_quotes_open") === "1");
 });
+
+window.toggleQuotes = force => {
+  const btn = document.getElementById("quote-toggle");
+  const body = document.getElementById("quote-body");
+  if (!btn || !body) return;
+  const open = typeof force === "boolean" ? force : btn.getAttribute("aria-expanded") !== "true";
+  btn.setAttribute("aria-expanded", String(open));
+  body.hidden = !open;
+  try { localStorage.setItem("taxfly_quotes_open", open ? "1" : "0"); } catch (e) {}
+};
 
 window.startScanner = async () => {
   document.getElementById("scanner-ui").style.display = "block";
@@ -3183,6 +3478,8 @@ window.confirmOcrScan = async () => {
   await addGastoWithThumb(_lastThumb);
 };
 
+const LAST_CAT_KEY = "taxfly_last_expense_cat";
+
 window.addGastoWithThumb = async thumb => {
   const n = document.getElementById("nombre").value;
   const v = parseFloat(document.getElementById("valor").value);
@@ -3220,6 +3517,9 @@ window.addGastoWithThumb = async thumb => {
   renderGastosList(allGastos);
   document.getElementById("nombre").value = "";
   document.getElementById("valor").value = "";
+  try { localStorage.setItem(LAST_CAT_KEY, cat); } catch (e) {}
+  showExpToast(bt("toast_saved"));
+  if (!thumb) document.getElementById("nombre").focus();
   if (!navigator.onLine || !currentUser) {
     queueGastoOp({
       type: "add",
@@ -4234,6 +4534,21 @@ window.compInit = function() {
 </script>
 
 
+
+<div id="edit-gasto-overlay" onclick="if(event.target===this)closeEditGasto()">
+  <div id="edit-gasto-box" role="dialog" aria-modal="true" aria-labelledby="edit-gasto-title">
+    <div class="ocr-modal-handle"></div>
+    <div class="ocr-modal-title" id="edit-gasto-title" data-i18n="edit_title">Editar gasto</div>
+    <div class="input-group"><input type="text" id="edit-gasto-name" data-i18n-ph="placeholder_product" placeholder="Producto" enterkeyhint="next" autocomplete="off"></div>
+    <div class="input-group"><input type="number" id="edit-gasto-val" data-i18n-ph="placeholder_price" placeholder="Precio USD" step="0.01" inputmode="decimal" enterkeyhint="done"></div>
+    <div class="input-group"><select id="edit-gasto-cat" aria-label="Categoría"></select></div>
+    <div class="ocr-btns">
+      <button type="button" class="ocr-btn-cancel" onclick="closeEditGasto()" data-i18n="edit_cancel">Cancelar</button>
+      <button type="button" class="ocr-btn-confirm" onclick="saveEditGasto()" data-i18n="edit_save">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+<div id="exp-toast" class="exp-toast" role="status" aria-live="polite"></div>
 
 <div id="ocr-modal-overlay">
   <div id="ocr-modal-box">
