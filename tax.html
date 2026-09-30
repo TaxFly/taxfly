@@ -139,10 +139,12 @@ document.addEventListener("DOMContentLoaded", function() {
         .result-detail{font-size:.8rem;font-weight:700;color:var(--primary);opacity:.8;}
 
         
+        .tip-section{background:rgba(245,158,11,.08);border:1.5px solid var(--warn);border-radius:var(--radius-sm);padding:13px 14px;margin-bottom:14px;}
         .tip-collapse-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;margin-bottom:0;}
-        .tip-collapse-title{font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:6px;}
-        .tip-preview{font-size:.7rem;font-weight:800;color:var(--accent);background:var(--accent-dim);padding:3px 8px;border-radius:6px;}
-        .tip-toggle-lbl{font-size:.65rem;color:var(--text-dim);font-weight:700;}
+        .tip-collapse-title{font-size:.72rem;font-weight:900;color:#d97706;text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:6px;}
+        .tip-icon{font-size:1rem;}
+        .tip-preview{font-size:.75rem;font-weight:900;color:#d97706;background:rgba(245,158,11,.18);padding:3px 9px;border-radius:6px;}
+        .tip-toggle-lbl{font-size:.65rem;color:#d97706;font-weight:800;}
         .tip-body{display:none;margin-top:12px;}
         .tip-body.open{display:block;}
         .tip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
@@ -530,27 +532,29 @@ if ("serviceWorker" in navigator) {
         </div>
         <div class="tax-rule-note" id="tax-rule-note" role="note"></div>
 
-        <div class="tip-collapse-header" onclick="toggleTip()">
-            <div class="tip-collapse-title" data-i18n="label_tip">Propina (Tip)</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <span class="tip-preview" id="tip-preview-badge">10%</span>
-                <span class="tip-toggle-lbl" id="tip-toggle-lbl">▼ VER</span>
-            </div>
-        </div>
-        <div class="tip-body" id="tip-body">
-            <div class="tip-grid">
-                <button class="tip-btn" id="tip-0"  onclick="setTip(0)">0%<small id="val-tip-0">$0.00</small></button>
-                <button class="tip-btn active" id="tip-10" onclick="setTip(10)">10%<small id="val-tip-10">$0.00</small></button>
-                <button class="tip-btn" id="tip-15" onclick="setTip(15)">15%<small id="val-tip-15">$0.00</small></button>
-                <button class="tip-btn" id="tip-20" onclick="setTip(20)">20%<small id="val-tip-20">$0.00</small></button>
-            </div>
-            <div class="custom-tip">
-                <div class="custom-tip-row">
-                    <span data-i18n="label_other">OTRO</span>
-                    <input type="number" id="custom-tip-input" placeholder="0" oninput="setCustomTip()" inputmode="numeric">
-                    <span>%</span>
+        <div class="tip-section">
+            <div class="tip-collapse-header" onclick="toggleTip()">
+                <div class="tip-collapse-title"><span class="tip-icon">💵</span><span data-i18n="label_tip">Propina (Tip)</span></div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="tip-preview" id="tip-preview-badge">10%</span>
+                    <span class="tip-toggle-lbl" id="tip-toggle-lbl">▲ OCULTAR</span>
                 </div>
-                <span id="val-tip-custom">$0.00</span>
+            </div>
+            <div class="tip-body open" id="tip-body">
+                <div class="tip-grid">
+                    <button class="tip-btn" id="tip-0"  onclick="setTip(0)">0%<small id="val-tip-0">$0.00</small></button>
+                    <button class="tip-btn active" id="tip-10" onclick="setTip(10)">10%<small id="val-tip-10">$0.00</small></button>
+                    <button class="tip-btn" id="tip-15" onclick="setTip(15)">15%<small id="val-tip-15">$0.00</small></button>
+                    <button class="tip-btn" id="tip-20" onclick="setTip(20)">20%<small id="val-tip-20">$0.00</small></button>
+                </div>
+                <div class="custom-tip">
+                    <div class="custom-tip-row">
+                        <span data-i18n="label_other">OTRO</span>
+                        <input type="number" id="custom-tip-input" placeholder="0" oninput="setCustomTip()" inputmode="numeric">
+                        <span>%</span>
+                    </div>
+                    <span id="val-tip-custom">$0.00</span>
+                </div>
             </div>
         </div>
     </div>
@@ -2267,7 +2271,7 @@ window.calcSplit = () => {
   res.style.display = "block";
 };
 
-let tipOpen = false;
+let tipOpen = true;
 
 window.toggleTip = () => {
   tipOpen = !tipOpen;
