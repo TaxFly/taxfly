@@ -1617,6 +1617,50 @@ async function wmReset() {
   renderWalmart();
 }
 
+let _wmRegistering = false;
+
+function wmToast(msg) {
+  let el = document.getElementById("wmToast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "wmToast";
+    el.className = "wm-toast";
+    el.setAttribute("role", "status");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+async function wmRegisterExpense() {
+  if (_wmRegistering) return;
+  const total = Math.round(wmTotalChecked() * 100) / 100;
+  if (!wmChecked.size || !(total > 0)) {
+    showAlert("Tildá al menos un producto con precio para registrar el gasto.", "Nada para registrar");
+    return;
+  }
+  const ok = await showConfirm("Se guarda el total tildado en Gastos (Comida) y los productos vuelven a pendientes para la próxima compra.", "¿Registrar como gasto?", "Registrar", true);
+  if (!ok) return;
+  _wmRegistering = true;
+  try {
+    const saved = await (window._fb?.addTaxflyGasto?.({ nombre: "Walmart", valor: total, cat: "🍔 Comida", source: "walmart" }) ?? false);
+    if (!saved) {
+      showAlert("No se pudo guardar el gasto. Probá de nuevo.", "Error");
+      return;
+    }
+    wmChecked.clear();
+    wmSave();
+    renderWalmart();
+    wmToast("Gasto registrado");
+  } finally {
+    _wmRegistering = false;
+  }
+}
+window.wmRegisterExpense = wmRegisterExpense;
+
 function renderWalmart() {
   const panel = document.getElementById("panel-walmart");
   const total = wmCountAll();
@@ -1625,7 +1669,7 @@ function renderWalmart() {
   const totalAll = wmTotalAll().toFixed(2);
   const totalChk = wmTotalChecked().toFixed(2);
   let html = '<div class="wm-panel">';
-  html += `\n    <div class="wm-summary-bar">\n      <div class="wm-stat"><div class="wm-stat-val">${checked}</div><div class="wm-stat-lbl">en carrito</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${total - checked}</div><div class="wm-stat-lbl">pendientes</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${pct}%</div><div class="wm-stat-lbl">listo</div></div>\n    </div>\n    <div class="wm-total-bar">\n      <span class="wm-total-label">Total del carrito</span>\n      <span class="wm-total-val">$${totalChk} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${totalAll}</span></span>\n    </div>\n    ${currentArsRate ? `\n    <div class="wm-total-bar wm-total-bar-ars" onclick="wmRefreshFx(event)" title="Tocar para actualizar cotización">\n      <span class="wm-total-label">≈ pesos <span class="wm-fx-badge">$${fmtArs(currentArsRate)} ${currentArsLabel === "oficial" ? "oficial" : currentArsLabel}</span></span>\n      <span class="wm-total-val wm-total-val-ars">$${fmtArs(wmTotalChecked() * currentArsRate)} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${fmtArs(wmTotalAll() * currentArsRate)}</span></span>\n    </div>` : `<div class="wm-fx-loading">Cotización USD→ARS: buscando…</div>`}\n    <div class="wm-progress-bar-bg">\n      <div class="wm-progress-bar-fill" style="width:${pct}%"></div>\n    </div>`;
+  html += `\n    <div class="wm-summary-bar">\n      <div class="wm-stat"><div class="wm-stat-val">${checked}</div><div class="wm-stat-lbl">en carrito</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${total - checked}</div><div class="wm-stat-lbl">pendientes</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${pct}%</div><div class="wm-stat-lbl">listo</div></div>\n    </div>\n    <div class="wm-total-bar">\n      <span class="wm-total-label">Total del carrito</span>\n      <span class="wm-total-val">$${totalChk} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${totalAll}</span></span>\n    </div>\n    ${currentArsRate ? `\n    <div class="wm-total-bar wm-total-bar-ars" onclick="wmRefreshFx(event)" title="Tocar para actualizar cotización">\n      <span class="wm-total-label">≈ pesos <span class="wm-fx-badge">$${fmtArs(currentArsRate)} ${currentArsLabel === "oficial" ? "oficial" : currentArsLabel}</span></span>\n      <span class="wm-total-val wm-total-val-ars">$${fmtArs(wmTotalChecked() * currentArsRate)} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${fmtArs(wmTotalAll() * currentArsRate)}</span></span>\n    </div>` : `<div class="wm-fx-loading">Cotización USD→ARS: buscando…</div>`}\n    <button type="button" class="wm-register-btn" onclick="wmRegisterExpense()" ${checked ? "" : "disabled"}>${ic("wallet", 16)} <span>Registrar como gasto</span></button>\n    <div class="wm-progress-bar-bg">\n      <div class="wm-progress-bar-fill" style="width:${pct}%"></div>\n    </div>`;
   wmData.forEach(cat => {
     const meta = wmCatMeta[cat.id] || {
       icon: "📦",

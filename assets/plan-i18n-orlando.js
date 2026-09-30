@@ -452,6 +452,14 @@ I18N.add({
   "Mover parada abajo": [ "Move stop down", "Mover parada para baixo" ],
   "↺ reiniciar": [ "↺ reset", "↺ reiniciar" ],
   "↺ Reiniciar checks": [ "↺ Reset checks", "↺ Reiniciar marcações" ],
+  "Registrar como gasto": [ "Register as expense", "Registrar como despesa" ],
+  "¿Registrar como gasto?": [ "Register as expense?", "Registrar como despesa?" ],
+  "Registrar": [ "Register", "Registrar" ],
+  "Gasto registrado": [ "Expense registered", "Despesa registrada" ],
+  "Nada para registrar": [ "Nothing to register", "Nada para registrar" ],
+  "Tildá al menos un producto con precio para registrar el gasto.": [ "Check at least one priced item to register the expense.", "Marque pelo menos um produto com preço para registrar a despesa." ],
+  "Se guarda el total tildado en Gastos (Comida) y los productos vuelven a pendientes para la próxima compra.": [ "The checked total is saved to Expenses (Food) and the items go back to pending for your next shop.", "O total marcado é salvo em Despesas (Comida) e os produtos voltam a pendentes para a próxima compra." ],
+  "No se pudo guardar el gasto. Probá de nuevo.": [ "Could not save the expense. Try again.", "Não foi possível salvar a despesa. Tente novamente." ],
   Visitado: [ "Visited", "Visitado" ],
   Completada: [ "Completed", "Concluída" ]
 });

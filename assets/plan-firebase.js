@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
@@ -213,6 +213,37 @@ async function migrateManualExpenses() {
   await window._clearLegacyBudgetExpenses?.();
 }
 
+async function addTaxflyGasto(data) {
+  if (!currentUid || !currentPerfilId) return false;
+  const gasto = {
+    nombre: String(data.nombre || "Gasto"),
+    valor: Number(data.valor) || 0,
+    cat: data.cat || "📦 Otros",
+    fecha: Date.now(),
+    thumb: "",
+    tripId: activeTripId,
+    source: data.source || "trip-planning"
+  };
+  if (!(gasto.valor > 0)) return false;
+  try {
+    if (navigator.onLine) {
+      await addDoc(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "gastos"), gasto);
+      return true;
+    }
+  } catch (e) {
+    devError("addTaxflyGasto error", e);
+  }
+  try {
+    const key = "taxusa_gastos_pending_" + currentPerfilId + "::" + currentUid;
+    const ops = JSON.parse(localStorage.getItem(key) || "[]");
+    ops.push({ type: "add", data: gasto, ts: Date.now() });
+    localStorage.setItem(key, JSON.stringify(ops));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 window._fb = {
   fbSet: fbSet,
   fbGet: fbGet,
@@ -220,7 +251,8 @@ window._fb = {
   stableStringify: stableStringify,
   fbSetPresupuesto: fbSetPresupuesto,
   listenTaxflyPresupuesto: listenTaxflyPresupuesto,
-  listenTaxflyGastos: listenTaxflyGastos
+  listenTaxflyGastos: listenTaxflyGastos,
+  addTaxflyGasto: addTaxflyGasto
 };
 
 window._fbSignOut = async function() {
