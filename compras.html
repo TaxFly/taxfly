@@ -521,6 +521,10 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .quote-toggle[aria-expanded="true"] svg{transform:rotate(180deg);}
         .quote-body{padding:0 12px 12px;}
         .quote-body[hidden]{display:none;}
+        .btn-stack{flex-direction:column;gap:3px;padding:12px 10px;}
+        .btn-stack .btn-main{display:flex;align-items:center;justify-content:center;gap:8px;}
+        .btn-stack small{font-size:.6rem;font-weight:600;text-transform:none;letter-spacing:0;line-height:1.25;opacity:.85;text-align:center;}
+        .exp-body{padding-top:2px;}
         .exp-day-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);}
         .exp-day-head:first-child{margin-top:4px;}
         .exp-day-head b{color:var(--text-sub);font-weight:800;}
@@ -684,11 +688,15 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
                 </div>
             </div>
 
-            <div class="exp-section" id="exp-section">
+            <div class="quote-section exp-section" id="exp-section">
+                <button type="button" class="quote-toggle" id="exp-toggle" aria-expanded="true" aria-controls="exp-body" onclick="toggleExp()">
+                    <span data-i18n="label_expense_log">Registro de gastos</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div class="quote-body exp-body" id="exp-body">
 <div class="scanner-warn" id="scanner-warning" data-i18n="scanner_beta_msg">⚠️ El escáner está en beta. Verificá siempre el monto detectado.</div>
             <div class="scan-btns">
-                <button class="btn btn-cyan" onclick="startScanner()" style="margin-bottom:0;">📷 <span data-i18n="btn_camera">CÁMARA</span></button>
-                <button class="btn btn-ghost" onclick="document.getElementById('gallery-input').click()" style="margin-bottom:0;">🖼️ <span data-i18n="btn_gallery">GALERÍA</span></button>
+                <button class="btn btn-cyan btn-stack" onclick="startScanner()"><span class="btn-main">📷 <span id="scan-cam-lbl" data-i18n="btn_camera">ESCANEAR</span></span><small id="scan-cam-sub" data-i18n="btn_camera_sub">Escaneá el ticket y detecto el total</small></button>
+                <button class="btn btn-ghost btn-stack" onclick="document.getElementById('gallery-input').click()"><span class="btn-main">🖼️ <span id="scan-gal-lbl" data-i18n="btn_gallery">DESDE GALERÍA</span></span><small id="scan-gal-sub" data-i18n="btn_gallery_sub">Subí una foto de un ticket ya sacado</small></button>
             </div>
             <input type="file" id="gallery-input" accept="image/*" style="display:none;" onchange="handleGalleryImage(event)">
 
@@ -708,6 +716,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
             </div>
             <button class="btn btn-primary" onclick="addGasto()">💾 <span data-i18n="btn_save_expense">GUARDAR GASTO</span></button>
             <div id="listaGastos"><p style="text-align:center;color:var(--text-dim);font-size:.85rem;" data-i18n="loading">Cargando...</p></div>
+                </div>
             </div>
         </div>
 
@@ -1173,11 +1182,14 @@ const i18n = {
     tab_compare: "COMPARAR",
     scanner_beta_msg: "⚠️ El escáner está en beta. Verificá siempre el monto detectado.",
     btn_scan_ticket: "ESCANEAR TICKET",
-    btn_camera: "CÁMARA",
-    btn_gallery: "GALERÍA",
+    btn_camera: "ESCANEAR",
+    btn_gallery: "DESDE GALERÍA",
     rate_official: "Dólar Oficial",
     rate_card: "Dólar Tarjeta",
     label_exchange: "Cotizaciones",
+    label_expense_log: "Registro de gastos",
+    btn_camera_sub: "Escaneá el ticket y detecto el total",
+    btn_gallery_sub: "Subí una foto de un ticket ya sacado",
     opt_pound: "Libra",
     opt_real: "Real",
     opt_clp: "P. Chileno",
@@ -1342,11 +1354,14 @@ const i18n = {
     tab_compare: "COMPARE",
     scanner_beta_msg: "⚠️ Scanner is in beta. Always verify the detected amount.",
     btn_scan_ticket: "SCAN TICKET",
-    btn_camera: "CAMERA",
-    btn_gallery: "GALLERY",
+    btn_camera: "SCAN",
+    btn_gallery: "FROM GALLERY",
     rate_official: "Official Dollar",
     rate_card: "Card Dollar",
     label_exchange: "Exchange Rates",
+    label_expense_log: "Expense log",
+    btn_camera_sub: "Scan a receipt and I detect the total",
+    btn_gallery_sub: "Upload a photo of an existing receipt",
     opt_pound: "Pound",
     opt_real: "Real",
     opt_clp: "Chilean P.",
@@ -1511,11 +1526,14 @@ const i18n = {
     tab_compare: "COMPARAR",
     scanner_beta_msg: "⚠️ O scanner está em beta. Verifique sempre o valor detectado.",
     btn_scan_ticket: "ESCANEAR TICKET",
-    btn_camera: "CÂMERA",
-    btn_gallery: "GALERIA",
+    btn_camera: "ESCANEAR",
+    btn_gallery: "DA GALERIA",
     rate_official: "Dólar Oficial",
     rate_card: "Dólar Cartão",
     label_exchange: "Cotações",
+    label_expense_log: "Registro de gastos",
+    btn_camera_sub: "Escaneie o ticket e detecto o total",
+    btn_gallery_sub: "Envie a foto de um ticket já tirado",
     opt_pound: "Libra",
     opt_real: "Real",
     opt_clp: "P. Chileno",
@@ -1725,9 +1743,10 @@ window.changeLanguage = lang => {
   if (ocrSave) ocrSave.textContent = t.ocr_save || "";
   const donutLbl = document.getElementById("donut-lbl");
   if (donutLbl) donutLbl.textContent = t.donut_total_lbl || "TOTAL";
-  const scanBtns = document.querySelectorAll(".scan-btns .btn span");
-  if (scanBtns[0]) scanBtns[0].textContent = t.btn_camera || "";
-  if (scanBtns[1]) scanBtns[1].textContent = t.btn_gallery || "";
+  [ [ "scan-cam-lbl", "btn_camera" ], [ "scan-cam-sub", "btn_camera_sub" ], [ "scan-gal-lbl", "btn_gallery" ], [ "scan-gal-sub", "btn_gallery_sub" ] ].forEach(([ id, k ]) => {
+    const el = document.getElementById(id);
+    if (el && t[k]) el.textContent = t[k];
+  });
   const emptyDash = document.getElementById("dash-empty");
   if (emptyDash && t.empty_dash) {
     const parts = t.empty_dash.split("\n");
@@ -3178,7 +3197,18 @@ onReady(() => {
     });
   }
   window.toggleQuotes(localStorage.getItem("taxfly_quotes_open") === "1");
+  window.toggleExp(localStorage.getItem("taxfly_exp_open") !== "0");
 });
+
+window.toggleExp = force => {
+  const btn = document.getElementById("exp-toggle");
+  const body = document.getElementById("exp-body");
+  if (!btn || !body) return;
+  const open = typeof force === "boolean" ? force : btn.getAttribute("aria-expanded") !== "true";
+  btn.setAttribute("aria-expanded", String(open));
+  body.hidden = !open;
+  try { localStorage.setItem("taxfly_exp_open", open ? "1" : "0"); } catch (e) {}
+};
 
 window.toggleQuotes = force => {
   const btn = document.getElementById("quote-toggle");
