@@ -65,13 +65,42 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         input::placeholder{color:var(--text-dim);font-weight:500;}
         .input-group{margin-bottom:12px;}
 
-        .budget-card{background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:20px 22px;border-radius:var(--radius);width:100%;margin-bottom:14px;box-shadow:0 8px 24px rgba(37,99,235,.3);}
-        .budget-label{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.9;margin-bottom:6px;}
-        .budget-value{font-size:2.2rem;font-weight:900;margin-bottom:14px;}
-        .budget-set{display:flex;gap:8px;background:rgba(255,255,255,.15);border-radius:12px;padding:8px 12px;align-items:center;}
-        .budget-set input{background:transparent;border:none;color:white;padding:4px 8px;font-weight:700;flex:1;width:60px;box-shadow:none!important;}
+        .budget-card{background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:20px 22px;border-radius:var(--radius);width:100%;margin-bottom:14px;box-shadow:0 8px 24px rgba(37,99,235,.3);transition:background .4s ease,box-shadow .4s ease;}
+        .budget-card.bc-over{background:linear-gradient(135deg,#dc2626,#9f1239);box-shadow:0 8px 24px rgba(220,38,38,.3);}
+        .bc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;min-height:22px;}
+        .bc-trip{font-size:.65rem;font-weight:800;background:rgba(255,255,255,.18);padding:4px 10px;border-radius:999px;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .budget-label{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.9;}
+        .budget-value{font-size:2.2rem;font-weight:900;margin-bottom:10px;line-height:1.1;}
+        .bc-progress{height:8px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;margin-bottom:6px;}
+        .bc-progress-fill{height:100%;width:0;border-radius:99px;background:#34d399;transition:width .4s ease,background .3s ease;}
+        .bc-progress-txt{font-size:.72rem;font-weight:700;opacity:.95;margin-bottom:10px;}
+        .bc-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+        .bc-chip{font-size:.7rem;font-weight:800;background:rgba(255,255,255,.15);color:white;padding:5px 10px;border-radius:999px;text-decoration:none;}
+        a.bc-chip:active{background:rgba(255,255,255,.3);}
+        .bc-total-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px;}
+        .bc-total-row span{font-size:.7rem;font-weight:700;opacity:.9;}
+        .bc-edit-btn{background:rgba(255,255,255,.25);border:none;color:white;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;}
+        .bc-empty-title{font-size:1.35rem;font-weight:900;margin-bottom:4px;}
+        .bc-empty-sub{font-size:.78rem;opacity:.92;margin-bottom:14px;line-height:1.4;}
+        .bc-hint{font-size:.65rem;opacity:.85;margin-top:10px;line-height:1.35;}
+        .budget-set{display:flex;gap:8px;background:rgba(255,255,255,.15);border-radius:12px;padding:8px 12px;align-items:center;margin-top:10px;}
+        .bc-cur{font-weight:800;font-size:.85rem;opacity:.9;flex-shrink:0;}
+        .budget-set input{background:transparent;border:none;color:white;padding:4px 8px;font-weight:700;font-size:1rem;flex:1;width:60px;box-shadow:none!important;}
         .budget-set input::placeholder{color:rgba(255,255,255,.7);}
         .budget-set button{background:white;color:var(--primary);border:none;padding:8px 16px;border-radius:8px;font-weight:800;font-size:.8rem;cursor:pointer;flex-shrink:0;}
+        .budget-set button.bc-cancel{background:rgba(255,255,255,.2);color:white;padding:8px 12px;}
+        .caps-box{margin-top:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);padding:0 14px;}
+        .caps-box summary{padding:13px 0;font-weight:800;font-size:.8rem;color:var(--text);cursor:pointer;list-style:none;}
+        .caps-box summary::-webkit-details-marker{display:none;}
+        .caps-box summary::after{content:"▾";float:right;color:var(--text-dim);}
+        .caps-box[open] summary::after{content:"▴";}
+        .caps-help{font-size:.75rem;color:var(--text-sub);margin:0 0 10px;line-height:1.4;}
+        .caps-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+        .caps-name{flex:1;font-size:.82rem;font-weight:700;color:var(--text);}
+        .caps-row input{width:118px;padding:9px 11px;font-size:.9rem;text-align:right;}
+        .caps-total{font-size:.72rem;font-weight:700;color:var(--text-sub);margin:6px 0 12px;}
+        .caps-total.warn{color:var(--danger);}
+        .caps-box .btn{margin-bottom:14px;}
 
         .tab-bar{display:flex;background:var(--surface-2);padding:4px;border-radius:14px;margin-bottom:16px;gap:3px;}
         .tab-btn{flex:1;padding:9px 4px;border:none;border-radius:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--text-sub);font-size:.68rem;font-family:inherit;transition:var(--tr);letter-spacing:-.1px;white-space:nowrap;min-width:0;}
@@ -530,27 +559,42 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     <script src="assets/trip-context.js"></script>
 
     <div class="taxfly-trip-filter" hidden aria-hidden="true"><label for="trip-filter-expenses">Viaje</label><select id="trip-filter-expenses" aria-label="Filtrar por viaje"></select><a href="index.html#viajes">Gestionar viajes</a></div>
-    <div class="budget-card">
-        <div class="budget-label" data-i18n="label_budget">Presupuesto Restante</div>
-        <div class="budget-value" id="disp-fondo">USD 0.00</div>
-        <div id="budget-maps-note" style="display:none;font-size:.68rem;font-weight:700;opacity:.8;margin:-4px 0 8px;"></div>
-        <div style="font-size:.65rem;opacity:.8;margin-bottom:8px;">Presupuesto general de TaxFly; el saldo usa los gastos del filtro elegido.</div>
-
-        
-        <div id="budget-info-row" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px;">
-            <span style="font-size:.7rem;font-weight:700;opacity:.85;">Total: <span id="budget-base-val">—</span></span>
-            <button onclick="toggleBudgetEdit()" id="btn-change-budget" style="background:rgba(255,255,255,.25);border:none;color:white;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;" data-i18n="btn_change_budget">✏️ Cambiar</button>
+    <div class="budget-card" id="budget-card">
+        <div class="bc-top">
+            <div class="budget-label" id="bc-label">Presupuesto Restante</div>
+            <div class="bc-trip" id="bc-trip" style="display:none;"></div>
         </div>
 
-        
+        <div id="bc-empty">
+            <div class="bc-empty-title" data-i18n="bc_empty_title">Definí tu presupuesto</div>
+            <div class="bc-empty-sub" data-i18n="bc_empty_sub">Ingresá cuánto pensás gastar en este viaje y te mostramos cuánto te queda.</div>
+        </div>
+
+        <div id="bc-main" style="display:none;">
+            <div class="budget-value" id="disp-fondo">USD 0.00</div>
+            <div class="bc-progress"><div class="bc-progress-fill" id="bc-fill"></div></div>
+            <div class="bc-progress-txt" id="bc-progress-txt"></div>
+            <div class="bc-chips">
+                <span class="bc-chip" id="bc-chip-gastos"></span>
+                <a class="bc-chip" id="budget-maps-note" href="planificacion.html"></a>
+            </div>
+            <div class="bc-total-row" id="budget-info-row">
+                <span><span id="bc-total-lbl">Presupuesto total</span>: <span id="budget-base-val">—</span></span>
+                <button class="bc-edit-btn" onclick="toggleBudgetEdit()" id="btn-change-budget" data-i18n="btn_change_budget">✏️ Cambiar</button>
+            </div>
+        </div>
+
+        <div class="budget-set" id="budget-set-row">
+            <span class="bc-cur">USD</span>
+            <input type="number" id="input-fondo" placeholder="0.00" step="0.01" min="0" inputmode="decimal" enterkeyhint="done" aria-label="Presupuesto en USD">
+            <button class="bc-cancel" id="bc-cancel-btn" onclick="cancelBudgetEdit()" aria-label="Cancelar" style="display:none;">✕</button>
+            <button onclick="updateFondo()" data-i18n="btn_save_budget">GUARDAR</button>
+        </div>
+
+        <div class="bc-hint" id="bc-hint"></div>
+
         <div id="notif-banner" style="display:none;margin-top:8px;">
             <button id="btn-activar-notif" onclick="activarNotificaciones()" style="width:100%;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);color:white;padding:8px 14px;border-radius:10px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.3px;">🔔 Activar alertas de presupuesto</button>
-        </div>
-
-        
-        <div class="budget-set" id="budget-set-row">
-            <input type="number" id="input-fondo" placeholder="USD 0" step="0.01" inputmode="decimal">
-            <button onclick="updateFondo()" data-i18n="btn_set">SET</button>
         </div>
     </div>
 
@@ -691,6 +735,14 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
                     <span>📤</span><span data-i18n="btn_export_share">COMPARTIR RESUMEN</span>
                 </button>
             </div>
+
+            <details class="caps-box" id="caps-box">
+                <summary data-i18n="caps_title">Topes por categoría</summary>
+                <p class="caps-help" data-i18n="caps_help">Poné un máximo para las categorías que quieras controlar. Dejalo vacío si no querés tope.</p>
+                <div id="caps-list"></div>
+                <div class="caps-total" id="caps-total"></div>
+                <button class="btn btn-primary" id="caps-save-btn" onclick="guardarTopes()" data-i18n="caps_save">GUARDAR TOPES</button>
+            </details>
         </div>
 
         
@@ -984,6 +1036,7 @@ window.addEventListener("online", () => {
 const perfilFoto = localStorage.getItem("perfilActivoFoto");
 
 let presupuestoBase = 0;
+let catBudgets = {};
 
 let mapsSpent = 0;
 
@@ -1062,6 +1115,26 @@ const i18n = {
     label_budget: "Presupuesto Restante",
     btn_set: "SET",
     btn_change_budget: "✏️ Cambiar",
+    bc_empty_title: "Definí tu presupuesto",
+    bc_empty_sub: "Ingresá cuánto pensás gastar en este viaje y te mostramos cuánto te queda.",
+    btn_save_budget: "GUARDAR",
+    bc_total: "Presupuesto total",
+    bc_over_label: "Te pasaste por",
+    bc_progress: "Gastaste USD {spent} de USD {total} ({pct}%)",
+    bc_spent_expenses: "🧾 Gastos",
+    bc_spent_plan: "🗺️ Planificación",
+    bc_hint: "Vale para este viaje. Se descuentan tus gastos y lo cargado en Planificación.",
+    bc_hint_unassigned: "Sin viaje: este presupuesto se guarda solo en este dispositivo.",
+    bc_no_trip: "Sin viaje",
+    bc_invalid: "Ingresá un monto mayor a 0.",
+    caps_title: "Topes por categoría",
+    caps_help: "Poné un máximo para las categorías que quieras controlar. Dejalo vacío si no querés tope.",
+    caps_placeholder: "Sin tope",
+    caps_assigned: "Topes asignados: USD {sum} de USD {total}",
+    caps_assigned_nobudget: "Topes asignados: USD {sum}",
+    caps_over_total: "Los topes suman más que tu presupuesto total.",
+    caps_save: "GUARDAR TOPES",
+    caps_saved: "✅ Guardado",
     ocr_analyzing: "Analizando ticket... 🧐",
     ocr_detecting: "Detectando Totales y Taxes",
     shopping_guide: "GUÍA DE COMPRAS",
@@ -1197,6 +1270,26 @@ const i18n = {
     label_budget: "Remaining Budget",
     btn_set: "SET",
     btn_change_budget: "✏️ Change",
+    bc_empty_title: "Set your budget",
+    bc_empty_sub: "Enter how much you plan to spend on this trip and we'll show what's left.",
+    btn_save_budget: "SAVE",
+    bc_total: "Total budget",
+    bc_over_label: "Over budget by",
+    bc_progress: "Spent USD {spent} of USD {total} ({pct}%)",
+    bc_spent_expenses: "🧾 Expenses",
+    bc_spent_plan: "🗺️ Planning",
+    bc_hint: "Applies to this trip. Your expenses and what's logged in Planning are deducted.",
+    bc_hint_unassigned: "No trip: this budget is saved only on this device.",
+    bc_no_trip: "No trip",
+    bc_invalid: "Enter an amount greater than 0.",
+    caps_title: "Category limits",
+    caps_help: "Set a maximum for the categories you want to control. Leave blank for no limit.",
+    caps_placeholder: "No limit",
+    caps_assigned: "Limits assigned: USD {sum} of USD {total}",
+    caps_assigned_nobudget: "Limits assigned: USD {sum}",
+    caps_over_total: "The limits add up to more than your total budget.",
+    caps_save: "SAVE LIMITS",
+    caps_saved: "✅ Saved",
     ocr_analyzing: "Analyzing ticket... 🧐",
     ocr_detecting: "Detecting Totals and Taxes",
     shopping_guide: "SHOPPING GUIDE",
@@ -1332,6 +1425,26 @@ const i18n = {
     label_budget: "Orçamento Restante",
     btn_set: "SET",
     btn_change_budget: "✏️ Alterar",
+    bc_empty_title: "Defina seu orçamento",
+    bc_empty_sub: "Informe quanto pretende gastar nesta viagem e mostramos quanto resta.",
+    btn_save_budget: "SALVAR",
+    bc_total: "Orçamento total",
+    bc_over_label: "Você passou em",
+    bc_progress: "Gastou USD {spent} de USD {total} ({pct}%)",
+    bc_spent_expenses: "🧾 Gastos",
+    bc_spent_plan: "🗺️ Planejamento",
+    bc_hint: "Vale para esta viagem. Seus gastos e o lançado em Planejamento são descontados.",
+    bc_hint_unassigned: "Sem viagem: este orçamento fica salvo só neste dispositivo.",
+    bc_no_trip: "Sem viagem",
+    bc_invalid: "Insira um valor maior que 0.",
+    caps_title: "Limites por categoria",
+    caps_help: "Defina um máximo para as categorias que quiser controlar. Deixe vazio para não ter limite.",
+    caps_placeholder: "Sem limite",
+    caps_assigned: "Limites atribuídos: USD {sum} de USD {total}",
+    caps_assigned_nobudget: "Limites atribuídos: USD {sum}",
+    caps_over_total: "Os limites somam mais que seu orçamento total.",
+    caps_save: "SALVAR LIMITES",
+    caps_saved: "✅ Salvo",
     ocr_analyzing: "Analisando ticket... 🧐",
     ocr_detecting: "Detectando Totais e Taxes",
     shopping_guide: "GUIA DE COMPRAS",
@@ -1552,6 +1665,7 @@ window.changeLanguage = lang => {
   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
   if (window.szReRender) window.szReRender();
   if (typeof allGastos !== "undefined" && allGastos.length) renderDashboard(allGastos);
+  try { renderBudgetCard(); renderCapsEditor(); } catch (e) {}
 };
 
 (function() {
@@ -1862,60 +1976,236 @@ window.convert = (type, dir) => {
   if (dir === "usd") l.value = fmt(cleanVal(u.value) * r); else u.value = fmt(cleanVal(l.value) / r);
 };
 
+// ═══════════ Presupuesto: tarjeta, edición inline y topes por categoría ═══════════
+function bt(key, vars) {
+  const lang = localStorage.getItem("appLang") || "es";
+  let str = (i18n[lang] && i18n[lang][key]) || i18n.es[key] || key;
+  if (vars) Object.keys(vars).forEach(k => { str = str.split("{" + k + "}").join(vars[k]); });
+  return str;
+}
+
+function budgetTripName() {
+  if (!currentUser || !perfilId) return "";
+  const tc = window.TripContext;
+  const id = tc.view(currentUser.uid, perfilId);
+  if (id === "unassigned") return bt("bc_no_trip");
+  const trip = tc.readTrips(currentUser.uid, perfilId).find(t => t.id === id);
+  return trip ? trip.name : "";
+}
+
+function renderBudgetCard() {
+  const card = document.getElementById("budget-card");
+  const row = document.getElementById("budget-set-row");
+  if (!card || !row) return;
+  const has = presupuestoBase > 0;
+  const editing = row._editing === true;
+  const spentG = lastGastosTotal || 0, spentP = mapsSpent || 0;
+  const eff = spentG + spentP;
+  const pct = has ? eff / presupuestoBase * 100 : 0;
+  const over = has && pct >= 100;
+  const show = (id, on, disp) => { const el = document.getElementById(id); if (el) el.style.display = on ? (disp || "block") : "none"; };
+
+  card.classList.toggle("bc-over", over);
+
+  const tripEl = document.getElementById("bc-trip");
+  const name = budgetTripName();
+  if (tripEl) { tripEl.textContent = name ? "✈️ " + name : ""; tripEl.style.display = name ? "" : "none"; }
+
+  const lbl = document.getElementById("bc-label");
+  if (lbl) lbl.textContent = !has ? "" : over ? bt("bc_over_label") : (i18n[localStorage.getItem("appLang") || "es"]?.label_budget || "Presupuesto Restante");
+
+  show("bc-empty", !has);
+  show("bc-main", has);
+  show("budget-info-row", has && !editing, "flex");
+  row.style.display = (!has || editing) ? "flex" : "none";
+  const cancel = document.getElementById("bc-cancel-btn");
+  if (cancel) cancel.style.display = editing ? "" : "none";
+
+  if (has) {
+    const rest = presupuestoBase - eff;
+    const disp = document.getElementById("disp-fondo");
+    if (disp) disp.textContent = "USD " + fmt(Math.abs(rest));
+    const fill = document.getElementById("bc-fill");
+    if (fill) {
+      fill.style.width = Math.min(100, Math.max(0, pct)).toFixed(1) + "%";
+      fill.style.background = pct >= 100 ? "#fecaca" : pct >= 90 ? "#fb923c" : pct >= 70 ? "#fbbf24" : "#34d399";
+    }
+    const txt = document.getElementById("bc-progress-txt");
+    if (txt) txt.textContent = bt("bc_progress", { spent: fmt(eff), total: fmt(presupuestoBase), pct: Math.round(pct) });
+    const cg = document.getElementById("bc-chip-gastos");
+    if (cg) cg.textContent = bt("bc_spent_expenses") + " USD " + fmt(spentG);
+    const cp = document.getElementById("budget-maps-note");
+    if (cp) cp.textContent = bt("bc_spent_plan") + " USD " + fmt(spentP);
+    const base = document.getElementById("budget-base-val");
+    if (base) base.textContent = "USD " + fmt(presupuestoBase);
+    const tl = document.getElementById("bc-total-lbl");
+    if (tl) tl.textContent = bt("bc_total");
+  }
+
+  const hint = document.getElementById("bc-hint");
+  if (hint) {
+    const unassigned = currentUser && perfilId && window.TripContext.view(currentUser.uid, perfilId) === "unassigned";
+    hint.textContent = unassigned ? bt("bc_hint_unassigned") : bt("bc_hint");
+  }
+}
+
+window.refreshBudgetInfoRow = function refreshBudgetInfoRow() { renderBudgetCard(); };
+
 window.toggleBudgetEdit = () => {
   const row = document.getElementById("budget-set-row");
-  const visible = row.style.display !== "none";
-  row._editing = !visible;
-  row.style.display = visible ? "none" : "flex";
-  if (!visible) setTimeout(() => document.getElementById("input-fondo").focus(), 50);
+  const input = document.getElementById("input-fondo");
+  if (!row || !input) return;
+  if (row._editing) { window.cancelBudgetEdit(); return; }
+  row._editing = true;
+  input.value = presupuestoBase > 0 ? String(presupuestoBase) : "";
+  renderBudgetCard();
+  setTimeout(() => { input.focus(); input.select(); }, 50);
 };
 
-window.refreshBudgetInfoRow = function refreshBudgetInfoRow() {
-  const infoRow = document.getElementById("budget-info-row");
-  const baseVal = document.getElementById("budget-base-val");
-  const setRow = document.getElementById("budget-set-row");
-  if (!infoRow || !setRow) return;
-  if (presupuestoBase > 0) {
-    infoRow.style.display = "flex";
-    if (baseVal) baseVal.textContent = "USD " + fmt(presupuestoBase);
-    if (setRow._editing !== true) setRow.style.display = "none";
-  } else {
-    infoRow.style.display = "none";
-    setRow.style.display = "flex";
-  }
+window.cancelBudgetEdit = () => {
+  const row = document.getElementById("budget-set-row");
+  const input = document.getElementById("input-fondo");
+  if (!row || !input) return;
+  row._editing = false;
+  input.value = "";
+  renderBudgetCard();
 };
+
+(function initBudgetInput() {
+  const input = document.getElementById("input-fondo");
+  const row = document.getElementById("budget-set-row");
+  if (!input || !row) return;
+  input.addEventListener("focus", () => { input._skipBlur = false; });
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); input._skipBlur = true; window.updateFondo(); }
+    else if (e.key === "Escape") { input._skipBlur = true; window.cancelBudgetEdit(); }
+  });
+  // iOS no da foco a los botones: pointerdown avisa que el toque va a un botón, no a "salir del campo"
+  row.addEventListener("pointerdown", e => {
+    if (e.target.closest("button")) { row._pressing = true; setTimeout(() => { row._pressing = false; }, 500); }
+  });
+  input.addEventListener("blur", () => {
+    if (input._skipBlur) { input._skipBlur = false; return; }
+    if (row._pressing) return;
+    const v = parseFloat(input.value);
+    if (isFinite(v) && v > 0 && v !== presupuestoBase) window.updateFondo();
+    else if (row._editing) window.cancelBudgetEdit();
+  });
+})();
 
 window.updateFondo = async () => {
   const input = document.getElementById("input-fondo");
-  const v = parseFloat(input.value);
-  if (isNaN(v) || v < 0) {
-    const lang = localStorage.getItem("appLang") || "es";
-    const m = {
-      es: "Ingresá un presupuesto mayor a 0.",
-      en: "Enter a budget greater than 0.",
-      pt: "Insira um orçamento maior que 0."
-    };
-    showAlert(m[lang] || m.es);
+  const v = parseFloat(String(input.value).replace(",", "."));
+  if (!isFinite(v) || v <= 0) {
+    showAlert(bt("bc_invalid"));
     return;
   }
   presupuestoBase = v;
   guardarPresupuestoEnCache(v);
+  const row = document.getElementById("budget-set-row");
+  if (row) row._editing = false;
+  input.value = "";
   const spent = filteredGastos().reduce((s, g) => s + (Number(g.valor) || 0), 0);
   updateBudgetDisplay(spent);
-  input.value = "";
-  input.placeholder = "USD 0";
-  const setRow2 = document.getElementById("budget-set-row");
-  if (setRow2) setRow2._editing = false;
-  refreshBudgetInfoRow();
   if (currentUser && perfilId) {
     try {
-      const ref=currentBudgetRef();
-      if (ref) await setDoc(ref,{[currentBudgetField()]:v},{merge:true});
+      const ref = currentBudgetRef();
+      if (ref) await setDoc(ref, { [currentBudgetField()]: v }, { merge: true });
     } catch (e) {
       console.warn("Budget save failed, cached locally", e);
     }
   }
 };
+
+// ── Topes por categoría (se guardan junto al presupuesto, por clave i18n: cat_shopping, cat_food…) ──
+function normalizeCatBudgets(o) {
+  const out = {};
+  Object.keys(o || {}).forEach(k => { const n = Number(o[k]); if (isFinite(n) && n > 0) out[k] = n; });
+  return out;
+}
+function catBudgetsCacheKey() { return currentBudgetKey() + "::cats"; }
+function guardarTopesEnCache(obj) {
+  try { localStorage.setItem(catBudgetsCacheKey(), JSON.stringify(obj || {})); } catch (e) {}
+}
+function cargarTopesDesdeCache() {
+  try {
+    const o = JSON.parse(localStorage.getItem(catBudgetsCacheKey()) || "{}");
+    return normalizeCatBudgets(o && typeof o === "object" ? o : {});
+  } catch (e) { return {}; }
+}
+
+function renderCapsEditor() {
+  const list = document.getElementById("caps-list");
+  if (!list) return;
+  list.innerHTML = Object.keys(CAT_I18N_KEY).map(cat => {
+    const key = CAT_I18N_KEY[cat];
+    const val = catBudgets[key] ? String(catBudgets[key]) : "";
+    return `<div class="caps-row"><span class="caps-name">${catLabel(cat)}</span><input type="number" inputmode="decimal" min="0" step="0.01" data-capkey="${key}" placeholder="${bt("caps_placeholder")}" value="${val}"></div>`;
+  }).join("");
+  updateCapsTotal();
+}
+
+function updateCapsTotal() {
+  const out = document.getElementById("caps-total");
+  if (!out) return;
+  let sum = 0;
+  document.querySelectorAll("#caps-list input[data-capkey]").forEach(i => { const v = parseFloat(i.value); if (isFinite(v) && v > 0) sum += v; });
+  if (presupuestoBase > 0) {
+    out.textContent = bt("caps_assigned", { sum: fmt(sum), total: fmt(presupuestoBase) }) + (sum > presupuestoBase ? " — " + bt("caps_over_total") : "");
+    out.classList.toggle("warn", sum > presupuestoBase);
+  } else {
+    out.textContent = bt("caps_assigned_nobudget", { sum: fmt(sum) });
+    out.classList.remove("warn");
+  }
+}
+
+(function initCapsUi() {
+  const list = document.getElementById("caps-list");
+  const box = document.getElementById("caps-box");
+  if (list) list.addEventListener("input", updateCapsTotal);
+  if (box) box.addEventListener("toggle", () => { if (box.open) renderCapsEditor(); });
+})();
+
+window.guardarTopes = async () => {
+  const obj = {};
+  document.querySelectorAll("#caps-list input[data-capkey]").forEach(i => {
+    const v = parseFloat(i.value);
+    obj[i.dataset.capkey] = isFinite(v) && v > 0 ? v : 0;   // 0 = sin tope (así un merge también borra topes viejos)
+  });
+  catBudgets = normalizeCatBudgets(obj);
+  guardarTopesEnCache(catBudgets);
+  if (typeof allGastos !== "undefined") renderDashboard(allGastos);
+  updateCapsTotal();
+  const btn = document.getElementById("caps-save-btn");
+  if (btn) {
+    btn.textContent = bt("caps_saved");
+    setTimeout(() => { btn.textContent = bt("caps_save"); }, 1600);
+  }
+  if (currentUser && perfilId) {
+    try {
+      const ref = currentBudgetRef();
+      if (ref) await setDoc(ref, { presupuestoCats: obj }, { merge: true });
+    } catch (e) {
+      console.warn("Caps save failed, cached locally", e);
+    }
+  }
+};
+
+function renderCatBars(cats, total) {
+  const rows = cats.slice();
+  Object.keys(CAT_I18N_KEY).forEach(cat => {
+    if (catBudgets[CAT_I18N_KEY[cat]] && !rows.some(r => r[0] === cat)) rows.push([cat, 0]);
+  });
+  return rows.map(([cat, val]) => {
+    const cap = catBudgets[CAT_I18N_KEY[cat]] || 0;
+    if (cap > 0) {
+      const p = val / cap * 100;
+      const color = p >= 100 ? "var(--danger)" : p >= 80 ? "#f59e0b" : catColor(cat);
+      return `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabel(cat)}${p >= 100 ? " ⚠️" : ""}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">/ ${fmt(cap)}</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.min(100, Math.round(p))}%;background:${color};"></div></div></div>`;
+    }
+    return `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabel(cat)}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">${Math.round(val / total * 100)}%</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.round(val / total * 100)}%;background:${catColor(cat)};"></div></div></div>`;
+  }).join("");
+}
 
 window.addGasto = async () => {
   await addGastoWithThumb("");
@@ -2045,7 +2335,15 @@ function listenPresupuestoYOrlando() {
   if (!currentUser || !perfilId) return;
   const ref=currentBudgetRef(), field=currentBudgetField();
   if (ref) onSnapshot(ref,snap=>{
-    if (!snap.exists() || snap.data()[field]===undefined) return;
+    if (!snap.exists()) return;
+    const cats=snap.data().presupuestoCats;
+    if (cats && typeof cats==="object") {
+      catBudgets=normalizeCatBudgets(cats);
+      guardarTopesEnCache(catBudgets);
+      if (!document.getElementById("caps-box")?.open) renderCapsEditor();
+      if (typeof allGastos!=="undefined") renderDashboard(allGastos);
+    }
+    if (snap.data()[field]===undefined) return;
     presupuestoBase=Number(snap.data()[field])||0;
     guardarPresupuestoEnCache(presupuestoBase);
     updateBudgetDisplay(lastGastosTotal);
@@ -2057,16 +2355,7 @@ function listenPresupuestoYOrlando() {
 function updateBudgetDisplay(spent) {
   lastGastosTotal = spent;
   const eff = spent + mapsSpent;
-  const el = document.getElementById("disp-fondo");
-  if (el) el.innerText = "USD " + fmt(presupuestoBase - eff);
-  const mn = document.getElementById("budget-maps-note");
-  if (mn) {
-    if (mapsSpent > 0) {
-      mn.textContent = "incluye USD " + fmt(mapsSpent) + " de Planificación";
-      mn.style.display = "block";
-    } else mn.style.display = "none";
-  }
-  refreshBudgetInfoRow();
+  renderBudgetCard();
   if (presupuestoBase > 0) checkBudgetAlerts(eff);
 }
 
@@ -2333,7 +2622,7 @@ function renderDashboard(gastos) {
   });
   svg.innerHTML = paths;
   document.getElementById("donut-legend").innerHTML = cats.slice(0, 5).map(([cat, val]) => `<div class="legend-item"><div class="legend-dot" style="background:${catColor(cat)}"></div><div class="legend-name">${catLabel(cat)}</div><div class="legend-val">${fmt(val)}</div><div class="legend-pct">${Math.round(val / total * 100)}%</div></div>`).join("");
-  document.getElementById("cat-bars").innerHTML = cats.map(([cat, val]) => `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabel(cat)}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">${Math.round(val / total * 100)}%</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.round(val / total * 100)}%;background:${catColor(cat)};"></div></div></div>`).join("");
+  document.getElementById("cat-bars").innerHTML = renderCatBars(cats, total);
 }
 
 window.abrirExportSheet = function() {
@@ -3142,6 +3431,7 @@ onAuthStateChanged(auth, async user => {
   currentUser = user;
   const cachedBudget = cargarPresupuestoDesdeCache();
   presupuestoBase = cachedBudget ?? 0;
+  catBudgets = cargarTopesDesdeCache();
   if (cachedBudget !== null) {
     presupuestoBase = cachedBudget;
     const inputFondo = document.getElementById("input-fondo");
@@ -3168,6 +3458,10 @@ onAuthStateChanged(auth, async user => {
     const ref=currentBudgetRef();
     const snap=ref ? await getDoc(ref) : null;
     const field=currentBudgetField();
+    if (snap?.exists() && snap.data().presupuestoCats && typeof snap.data().presupuestoCats === "object") {
+      catBudgets = normalizeCatBudgets(snap.data().presupuestoCats);
+      guardarTopesEnCache(catBudgets);
+    }
     if (snap?.exists() && snap.data()[field] !== undefined) {
       presupuestoBase = Number(snap.data()[field]);
       guardarPresupuestoEnCache(presupuestoBase);
