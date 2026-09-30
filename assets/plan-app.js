@@ -1116,7 +1116,6 @@ function budgetDefaults() {
   return {
     total: 0,
     gastos: [],
-    countMarket: false
   };
 }
 
@@ -1147,7 +1146,6 @@ function budgetLoad() {
 }
 
 function budgetSave() {
-  budgetData.walmartSpent = wmTotalChecked();
   syncedSave(BUDGET_KEY, budgetData, "budget", budgetData);
 }
 
@@ -1227,16 +1225,8 @@ function budgetManualTotal() {
   return budgetData.gastos.reduce((s, g) => s + (g.monto || 0), 0);
 }
 
-function budgetMarketEstimate() {
-  return wmTotalChecked();
-}
-
-function budgetMarketCounted() {
-  return budgetData.countMarket ? budgetMarketEstimate() : 0;
-}
-
 function budgetSpentTotal() {
-  return (tfx.gastos || 0) + budgetManualTotal() + budgetMarketCounted();
+  return (tfx.gastos || 0) + budgetManualTotal();
 }
 
 function budgetRemaining() {
@@ -1262,12 +1252,6 @@ function budgetSetTotal() {
   } catch (e) {}
   window._fb && window._fb.fbSetPresupuesto && window._fb.fbSetPresupuesto(v);
   budgetEditingTotal = false;
-  budgetRenderAll();
-}
-
-function budgetToggleMarket() {
-  budgetData.countMarket = !budgetData.countMarket;
-  budgetSave();
   budgetRenderAll();
 }
 
@@ -1318,15 +1302,13 @@ function renderBudgetBox() {
   const remaining = base - spent;
   const pct = Math.min(100, Math.max(0, Math.round(spent / base * 100)));
   const manual = budgetManualTotal();
-  const wmEst = budgetMarketEstimate();
-  const counted = !!budgetData.countMarket;
   let gastosHtml = "";
   budgetData.gastos.forEach(g => {
     const meta = budgetCatMeta[g.cat] || budgetCatMeta.otros;
     gastosHtml += `\n      <div class="budget-gasto-row">\n        <span class="budget-gasto-cat">${ic(meta.icon, 13)} ${meta.label}${g.nota ? " · " + escapeHtml(g.nota) : ""}</span>\n        <span class="budget-gasto-monto">${budgetUsd(g.monto)}\n          <button class="wm-icon-btn wm-icon-del" onclick="budgetDeleteGasto('${g.id}')" title="Eliminar" aria-label="Eliminar gasto">${ic("x", 14)}</button>\n        </span>\n      </div>`;
   });
   const addForm = `<a class="budget-add-cat-btn" href="compras.html">${ic("wallet", 15)} <span>Registrar gasto en TaxFly</span></a>`;
-  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      ${counted ? `<div class="budget-summary-row budget-summary-sub">\n        <span>Supermercado (estimado)</span>\n        <span class="budget-summary-val">${budgetUsd(wmEst)}</span>\n      </div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <label class="budget-market-toggle">\n      <input type="checkbox" ${counted ? "checked" : ""} onchange="budgetToggleMarket()">\n      <span>\n        <b>Descontar estimado del supermercado</b> (${budgetUsd(wmEst)})\n        <small>${counted ? "Activado: usalo solo si el súper NO lo cargás en Taxfly, si no se cuenta dos veces." : "Apagado: se asume que el súper se carga en Taxfly (ticket). Así no se cuenta dos veces."}</small>\n      </span>\n    </label>\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. El estimado de supermercado se suma solo si lo activás. Todo en USD.</div>`;
+  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. Todo en USD.</div>`;
 }
 
 window.renderBudgetBox = renderBudgetBox;
@@ -1338,18 +1320,8 @@ function budgetRenderAll() {
 
 window.budgetRefresh = budgetRenderAll;
 
-let _wmSpentSyncTimer = null;
-
 function syncWalmartSpentForTaxfly() {
   budgetRenderAll();
-  clearTimeout(_wmSpentSyncTimer);
-  _wmSpentSyncTimer = setTimeout(() => {
-    const spent = wmTotalChecked();
-    budgetData.walmartSpent = spent;
-    window._fb && window._fb.fbSet("budget", {
-      walmartSpent: spent
-    });
-  }, 800);
 }
 
 window.addEventListener("DOMContentLoaded", function() {

@@ -425,9 +425,7 @@ let mapsSpentCache = 0;
 
 function computeMapsSpent(data) {
   if (!data) return 0;
-  const wm = data.countMarket ? parseFloat(data.walmartSpent) || 0 : 0;
-  const manual = (data.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
-  return wm + manual;
+  return (data.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
 }
 
 function listenMapsBudget() {

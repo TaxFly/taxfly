@@ -559,7 +559,12 @@ if ("serviceWorker" in navigator) {
         <div class="final-label" data-i18n="label_total">TOTAL FINAL (INC. TIP)</div>
         <div class="final-value" id="final-total">USD 0.00</div>
     </div>
-    <button type="button" class="cart-btn cart-btn-save" id="btn-save-individual" style="width:100%;margin-top:12px;" onclick="saveIndividualAsExpense()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 13.5h.01"/></svg> <span data-i18n="cart_save">Guardar en Gastos</span></button>
+    <div class="card indiv-actions-card">
+        <div class="cart-actions" style="margin-top:0;">
+            <button type="button" class="cart-btn cart-btn-clear" onclick="clearIndividual()">🗑️ <span data-i18n="cart_clear">Vaciar</span></button>
+            <button type="button" class="cart-btn cart-btn-save" id="btn-save-individual" onclick="saveIndividualAsExpense()">💾 <span data-i18n="cart_save">Guardar en Gastos</span></button>
+        </div>
+    </div>
     </div>
 
     
@@ -2986,6 +2991,14 @@ function renderCart() {
   if (summary) summary.style.display = "block";
   if (actions) actions.style.display = "flex";
 }
+
+window.clearIndividual = () => {
+  const priceEl = document.getElementById("price");
+  if (priceEl) priceEl.value = "";
+  const tipEl = document.getElementById("custom-tip-input");
+  if (tipEl) tipEl.value = "";
+  calculate();
+};
 
 window.saveIndividualAsExpense = async () => {
   const lang = localStorage.getItem("appLang") || "es";

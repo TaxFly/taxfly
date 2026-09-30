@@ -1102,8 +1102,7 @@ function listenTripPlanningSpent() {
     const path = id === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", id, "data", "budget"];
     tripBudgetUnsubs.push(onSnapshot(doc(db, ...path), snap => {
       const d = snap.exists() ? snap.data() : null;
-      const wm = d?.countMarket ? Number(d.walmartSpent) || 0 : 0;
-      totals.set(id, wm + (d?.gastos || []).reduce((s, g) => s + (Number(g.monto) || 0), 0));
+      totals.set(id, (d?.gastos || []).reduce((s, g) => s + (Number(g.monto) || 0), 0));
       mapsSpent = [...totals.values()].reduce((a, b) => a + b, 0);
       updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
     }, () => {}));
