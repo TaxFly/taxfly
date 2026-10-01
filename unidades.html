@@ -808,6 +808,7 @@ window.toggleGroup = id => {
 };
 
 window.changeLanguage = lang => {
+  { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
   localStorage.setItem("appLang", lang);
   document.documentElement.setAttribute("lang", lang);
   document.querySelectorAll(".lang-opt").forEach(o => o.classList.remove("active"));
@@ -1733,7 +1734,7 @@ const FARMA_DATA = [ {
   tip: "Requiere receta en US. Si lo usás en Argentina, llevá el envase para mostrarlo al médico americano.",
   tip_en: "Requires a prescription in the US. If you use it in Argentina, bring the packaging to show the US doctor.",
   tip_pt: "Requer receita nos EUA. Se você usa na Argentina, leve a embalagem para mostrar ao médico americano.",
-  stores: [ "Farmacias con RX" ]
+  stores: [ "Walgreens", "CVS", "Walmart" ]
 }, {
   arg: [ "Omeprazol", "Losec", "Ulcozol", "Mepral" ],
   us: "Prilosec",
@@ -1753,7 +1754,7 @@ const FARMA_DATA = [ {
 }, {
   arg: [ "Pantoprazol", "Pantecta", "Zurcal" ],
   us: "Protonix / Pantoprazole",
-  marcas: "Pantoprazole (genérico, RX)",
+  marcas: "Pantoprazole, Protonix",
   cat: "Gastro / Digestivo",
   rx: "RX",
   dosis_arg: "40 mg 1 vez/día",
@@ -1765,7 +1766,7 @@ const FARMA_DATA = [ {
   tip: "Si lo tomás regularmente, llevá suficiente stock de Argentina o pedí receta al llegar.",
   tip_en: "If you take it regularly, bring enough stock from Argentina or ask for a prescription on arrival.",
   tip_pt: "Se você usa regularmente, leve estoque suficiente da Argentina ou peça receita ao chegar.",
-  stores: [ "Farmacias con RX" ]
+  stores: [ "Walgreens", "CVS", "Walmart" ]
 }, {
   arg: [ "Ranitidina", "Zantac" ],
   us: "Zantac 360 (famotidina)",
@@ -1797,7 +1798,7 @@ const FARMA_DATA = [ {
   tip: "Requiere receta en US. Para náuseas OTC: Dramamine (dimenhidrinato) o Bonine (meclizina).",
   tip_en: "Requires a prescription in the US. For OTC nausea relief: Dramamine (dimenhydrinate) or Bonine (meclizine).",
   tip_pt: "Requer receita nos EUA. Para náuseas OTC: Dramamine (dimenidrinato) ou Bonine (meclizina).",
-  stores: [ "Farmacias con RX" ]
+  stores: [ "Walgreens", "CVS", "Walmart" ]
 }, {
   arg: [ "Domperidona", "Motilium" ],
   us: "No disponible OTC",
@@ -2021,7 +2022,7 @@ const FARMA_DATA = [ {
   tip: "Llevá stock si lo usás. Alternativa OTC: Excedrin Migraine (paracetamol + aspirina + cafeína) muy efectivo.",
   tip_en: "Bring stock if you use it. OTC alternative: Excedrin Migraine (acetaminophen + aspirin + caffeine) — very effective.",
   tip_pt: "Leve estoque se usa. Alternativa OTC: Excedrin Migraine (paracetamol + aspirina + cafeína) — muito eficaz.",
-  stores: [ "Farmacias con RX" ]
+  stores: [ "Walgreens", "CVS", "Walmart" ]
 }, {
   arg: [ "Excedrin", "Cafiaspirina" ],
   us: "Excedrin Migraine",
@@ -2069,7 +2070,7 @@ const FARMA_DATA = [ {
   tip: "⚠️ Es sustancia controlada en US. Llevá receta médica del médico argentino (en inglés si es posible) y declararlo en aduana.",
   tip_en: "⚠️ It is a controlled substance in the US. Carry your Argentine doctor's prescription (in English if possible) and declare it at customs.",
   tip_pt: "⚠️ É substância controlada nos EUA. Leve a receita do médico argentino (em inglês se possível) e declare na alfândega.",
-  stores: [ "Farmacias con RX" ]
+  stores: [ "Walgreens", "CVS", "Walmart" ]
 }, {
   arg: [ "Hidrocortisona crema", "Cortiprex" ],
   us: "Cortaid / Hydrocortisone",
@@ -2117,7 +2118,7 @@ const FARMA_DATA = [ {
   tip: "Llevá tu crema de Argentina. No se consigue OTC en US porque es corticoide de alta potencia.",
   tip_en: "Bring your cream from Argentina. Not available OTC in the US as it is a high-potency corticosteroid.",
   tip_pt: "Leve seu creme da Argentina. Não disponível OTC nos EUA por ser corticoide de alta potência.",
-  stores: [ "Farmacias con RX" ]
+  stores: [ "Walgreens", "CVS", "Walmart" ]
 }, {
   arg: [ "Lágrimas artificiales", "Refresh", "Artelac" ],
   us: "Refresh / Systane",

@@ -880,6 +880,8 @@ const i18n = {
 };
 
 window.changeLanguage = lang => {
+  { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
+  { const _c = document.getElementById("ai-close"); if (_c) _c.setAttribute("aria-label", lang === "en" ? "Close chat" : lang === "pt" ? "Fechar chat" : "Cerrar chat"); }
   localStorage.setItem("appLang", lang);
   document.documentElement.setAttribute("lang", lang);
   document.querySelectorAll(".lang-opt").forEach(o => o.classList.remove("active"));

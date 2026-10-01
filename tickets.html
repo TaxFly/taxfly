@@ -411,7 +411,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     </div>
     
     <div class="viewer-search" id="viewerSearch">
-        <input type="search" id="searchInput" placeholder="Buscar en el documento…" oninput="onSearchInput()" onkeydown="onSearchKey(event)" enterkeyhint="search" autocomplete="off">
+        <input type="search" id="searchInput" placeholder="Buscar en el documento…" data-i18n-ph="search_placeholder" oninput="onSearchInput()" onkeydown="onSearchKey(event)" enterkeyhint="search" autocomplete="off">
         <span class="search-count" id="searchCount"></span>
         <div class="search-nav">
             <button onclick="navMatch(-1)">▲</button>
@@ -1119,7 +1119,14 @@ const I18N = {
     heavy_opt_c_body: "Puede fallar si el archivo es muy grande.<br>Recomendado solo si el PDF tiene entre 3 y 4 MB.",
     heavy_cancel: "CANCELAR",
     viewer_loading: "Cargando PDF…",
-    viewer_error: "No se pudo cargar el PDF."
+        viewer_error: "No se pudo cargar el PDF.",
+    err_choose_trip_link: "Elegí el viaje de este documento antes de vincularlo.",
+    err_compress_failed: "No se pudo comprimir el PDF. Intentá desde ilovepdf.com",
+    err_camera_unavailable: "Cámara no disponible.",
+    err_enter_name: "Ingresá un nombre.",
+    err_add_image_or_pdf: "Agregá al menos una imagen o PDF.",
+    err_share_failed: "No se pudo compartir.",
+    search_placeholder: "Buscar en el documento…"
   },
   en: {
     nav_home: "HOME",
@@ -1197,7 +1204,14 @@ const I18N = {
     heavy_opt_c_body: "May fail if the file is too large.<br>Recommended only if the PDF is between 3 and 4 MB.",
     heavy_cancel: "CANCEL",
     viewer_loading: "Loading PDF…",
-    viewer_error: "Could not load the PDF."
+        viewer_error: "Could not load the PDF.",
+    err_choose_trip_link: "Choose this document's trip before linking it.",
+    err_compress_failed: "Couldn't compress the PDF. Try it at ilovepdf.com",
+    err_camera_unavailable: "Camera not available.",
+    err_enter_name: "Enter a name.",
+    err_add_image_or_pdf: "Add at least one image or PDF.",
+    err_share_failed: "Couldn't share.",
+    search_placeholder: "Search in the document…"
   },
   pt: {
     nav_home: "INÍCIO",
@@ -1275,9 +1289,26 @@ const I18N = {
     heavy_opt_c_body: "Pode falhar se o arquivo for muito grande.<br>Recomendado apenas se o PDF tiver entre 3 e 4 MB.",
     heavy_cancel: "CANCELAR",
     viewer_loading: "Carregando PDF…",
-    viewer_error: "Não foi possível carregar o PDF."
+        viewer_error: "Não foi possível carregar o PDF.",
+    err_choose_trip_link: "Escolha a viagem deste documento antes de vinculá-lo.",
+    err_compress_failed: "Não foi possível comprimir o PDF. Tente em ilovepdf.com",
+    err_camera_unavailable: "Câmera não disponível.",
+    err_enter_name: "Digite um nome.",
+    err_add_image_or_pdf: "Adicione ao menos uma imagem ou PDF.",
+    err_share_failed: "Não foi possível compartilhar.",
+    search_placeholder: "Buscar no documento…"
   }
 };
+
+function tr(key, vars) {
+  const lang = localStorage.getItem("appLang") || "es";
+  let str = (I18N[lang] || I18N.es)[key];
+  if (str == null) return key;
+  if (vars) {
+    for (const k in vars) str = str.split("{" + k + "}").join(vars[k]);
+  }
+  return str;
+}
 
 async function initDocs() {
   loadReservationsForDocs();
@@ -1361,7 +1392,7 @@ window.openDocumentLink = id => {
   if (!docObj || !window._uid) return;
   const currentTrip=window.TripContext.assign(window._uid,perfilId);
   if (!['unassigned',currentTrip].includes(docObj.tripId||'unassigned')) {
-    showAlert('Elegí el viaje de este documento antes de vincularlo.'); return;
+    showAlert(tr('err_choose_trip_link')); return;
   }
   const matches=documentSuggestions(docObj), best=matches[0], second=matches[1];
   const confident=best && best.score>=6 && (!second || best.score-second.score>=2);
@@ -1758,7 +1789,7 @@ window.compressHerePdf = async () => {
     renderPreview();
   } catch (e) {
     console.error(e);
-    showAlert("No se pudo comprimir el PDF. Intentá desde ilovepdf.com");
+    showAlert(tr('err_compress_failed'));
   }
   hideSyncBanner();
   _heavyPdfRaw = null;
@@ -1816,7 +1847,7 @@ window.openCamera = async () => {
     document.getElementById("cam-video").srcObject = camStream;
     ui.style.display = "block";
   } catch {
-    showAlert("Cámara no disponible.");
+    showAlert(tr('err_camera_unavailable'));
   }
 };
 
@@ -1948,11 +1979,11 @@ window._flushTicketsPending = async () => {
 window.saveDoc = async () => {
   const name = document.getElementById("inp-name").value.trim();
   if (!name) {
-    showAlert("Ingresá un nombre.");
+    showAlert(tr('err_enter_name'));
     return;
   }
   if (!pending.length) {
-    showAlert("Agregá al menos una imagen o PDF.");
+    showAlert(tr('err_add_image_or_pdf'));
     return;
   }
   const docObj = {
@@ -2270,7 +2301,7 @@ window.shareDoc = async () => {
       a.click();
     }
   } catch (e) {
-    if (e.name !== "AbortError") showAlert("No se pudo compartir.");
+    if (e.name !== "AbortError") showAlert(tr('err_share_failed'));
   }
 };
 
@@ -2309,6 +2340,7 @@ window.changeProfile = () => {
 };
 
 window.changeLanguage = lang => {
+  { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
   localStorage.setItem("appLang", lang);
   document.documentElement.setAttribute("lang", lang);
   document.querySelectorAll(".lang-opt").forEach(o => o.classList.remove("active"));

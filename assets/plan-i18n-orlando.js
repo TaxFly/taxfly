@@ -536,3 +536,86 @@ I18N.add({
   "Abre": ["Opens", "Abre"],
   "Destino": ["Destination", "Destino"]
 });
+
+// Destructive-confirm dialogs from plan-app.js (showConfirm/showAlert are
+// rendered via textContent into existing DOM nodes, so the generic
+// MutationObserver-based translator above picks these up automatically —
+// no changes needed in plan-app.js itself, just these dictionary entries.
+I18N.add({
+  "¿Confirmar?": ["Confirm?", "Confirmar?"],
+  "Atención": ["Attention", "Atenção"],
+  "Reiniciar": ["Reset", "Reiniciar"],
+  "Actualizar": ["Update", "Atualizar"],
+  "Reemplazar": ["Replace", "Substituir"],
+  "Destildar": ["Uncheck", "Desmarcar"],
+  "Vaciar": ["Clear", "Esvaziar"],
+  "Verificar": ["Check", "Verificar"],
+  "¿Reiniciar día?": ["Reset day?", "Reiniciar dia?"],
+  "Se van a desmarcar todas las paradas de {dia}.": ["All stops for {dia} will be unchecked.", "Todas as paradas de {dia} serão desmarcadas."],
+  "¿Eliminar este día del plan de comidas?": ["Delete this day from the meal plan?", "Excluir este dia do plano de refeições?"],
+  "¿Eliminar día?": ["Delete day?", "Excluir dia?"],
+  "¿Reiniciar checks?": ["Reset checks?", "Reiniciar marcações?"],
+  "Se van a desmarcar todos los productos del carrito.": ["All items in the cart will be unchecked.", "Todos os itens do carrinho serão desmarcados."],
+  "Se van a desmarcar todas las prendas compradas.": ["All purchased clothing items will be unchecked.", "Todas as roupas compradas serão desmarcadas."],
+  "¿Reiniciar Parques?": ["Reset Parks?", "Reiniciar Parques?"],
+  "Se va a borrar todo el progreso de atracciones. ¿Confirmás?": ["All attraction progress will be deleted. Are you sure?", "Todo o progresso das atrações será apagado. Confirma?"],
+  "Actualizar Atracciones": ["Update Attractions", "Atualizar Atrações"],
+  "Se encontraron atracciones para: {nombres}. Se reemplazan las zonas y atracciones de esos parques tal cual están en el Excel (lo tildado y las ubicaciones corregidas se mantienen por nombre).": [
+    "Attractions found for: {nombres}. The zones and attractions for those parks will be replaced exactly as they are in the Excel file (checked items and corrected locations are kept by name).",
+    "Atrações encontradas para: {nombres}. As zonas e atrações desses parques serão substituídas exatamente como estão na planilha Excel (itens marcados e localizações corrigidas são mantidos pelo nome)."
+  ],
+  "¿Reemplazar todo?": ["Replace everything?", "Substituir tudo?"],
+  "Se borra el itinerario actual ({n} días) y queda solo lo del archivo.": [
+    "The current itinerary ({n} days) will be deleted, leaving only what's in the file.",
+    "O itinerário atual ({n} dias) será apagado, ficando apenas o do arquivo."
+  ],
+  "Se borra el plan de comidas actual ({n} días) y queda solo lo del archivo.": [
+    "The current meal plan ({n} days) will be deleted, leaving only what's in the file.",
+    "O plano de refeições atual ({n} dias) será apagado, ficando apenas o do arquivo."
+  ],
+  "¿Eliminar el día?": ["Delete the day?", "Excluir o dia?"],
+  "Se elimina \"{nombre}\" con sus {n} bloques.": ["\"{nombre}\" and its {n} blocks will be deleted.", "\"{nombre}\" e seus {n} blocos serão excluídos."],
+  "¿Destildar el día?": ["Uncheck the day?", "Desmarcar o dia?"],
+  "Se destildan los bloques de \"{nombre}\".": ["The blocks for \"{nombre}\" will be unchecked.", "Os blocos de \"{nombre}\" serão desmarcados."],
+  "¿Eliminar parque?": ["Delete park?", "Excluir parque?"],
+  "Se va a borrar \"{nombre}\" y todas sus atracciones.": ["\"{nombre}\" and all its attractions will be deleted.", "\"{nombre}\" e todas as suas atrações serão excluídos."],
+  "¿Importar backup?": ["Import backup?", "Importar backup?"],
+  "Se van a reemplazar TODOS los datos actuales (lugares, comidas, supermercado, parques y reservas) por los del archivo.": [
+    "ALL current data (places, meals, groceries, parks and reservations) will be replaced with what's in the file.",
+    "TODOS os dados atuais (lugares, refeições, mercado, parques e reservas) serão substituídos pelos do arquivo."
+  ],
+  "Este archivo no parece un backup de esta app, pero se puede intentar igual. Se van a reemplazar TODOS los datos actuales.": [
+    "This file doesn't look like a backup from this app, but you can try anyway. ALL current data will be replaced.",
+    "Este arquivo não parece ser um backup deste app, mas você pode tentar mesmo assim. TODOS os dados atuais serão substituídos."
+  ],
+  "¿Vaciar cronograma?": ["Clear schedule?", "Esvaziar cronograma?"],
+  "Se van a borrar TODOS los días y paradas del cronograma de lugares (la lista de compras y el checklist no se tocan).": [
+    "ALL days and stops in the places schedule will be deleted (the shopping list and checklist won't be touched).",
+    "TODOS os dias e paradas do cronograma de lugares serão apagados (a lista de compras e o checklist não são afetados)."
+  ],
+  "¿Vaciar Comidas?": ["Clear Meals?", "Esvaziar Refeições?"],
+  "Se van a borrar TODOS los días del plan de comidas.": ["ALL days in the meal plan will be deleted.", "TODOS os dias do plano de refeições serão apagados."],
+  "¿Vaciar Market?": ["Clear Market?", "Esvaziar Mercado?"],
+  "Se van a borrar TODOS los productos de la lista de supermercado (las categorías quedan, para agregar productos nuevos).": [
+    "ALL items in the grocery list will be deleted (categories stay, so you can add new items).",
+    "TODOS os itens da lista de mercado serão apagados (as categorias permanecem, para adicionar novos itens)."
+  ],
+  "¿Vaciar Parques?": ["Clear Parks?", "Esvaziar Parques?"],
+  "Se van a borrar todos los parques (los agregados a mano y los importados desde Excel), sus atracciones y todo el progreso marcado.": [
+    "All parks (both the ones you added manually and the ones imported from Excel), their attractions and all marked progress will be deleted.",
+    "Todos os parques (adicionados manualmente e importados do Excel), suas atrações e todo o progresso marcado serão apagados."
+  ],
+  "¿Verificar coordenadas?": ["Check coordinates?", "Verificar coordenadas?"],
+  "Se va a buscar la ubicación de las {n} atracciones de \"{nombre}\" (primero en Wikipedia, y si no aparece, por dirección aproximada). Puede tardar uno o dos minutos. Las que ya corregiste a mano no se tocan.": [
+    "We'll look up the location of the {n} attractions in \"{nombre}\" (first on Wikipedia, then by approximate address if not found). It may take a minute or two. Ones you've already corrected by hand won't be touched.",
+    "Vamos buscar a localização das {n} atrações de \"{nombre}\" (primeiro na Wikipedia e, se não aparecer, por endereço aproximado). Pode levar um ou dois minutos. As que você já corrigiu manualmente não serão alteradas."
+  ]
+});
+
+// Accessibility labels for the shared Taxie chat bubble and the main nav,
+// present on mis-cosas.html / planificacion.html (the only two pages that
+// load this generic translator).
+I18N.add({
+  "Taxie — Asistente de viaje": ["Taxie — Travel assistant", "Taxie — Assistente de viagem"],
+  "Navegación principal": ["Main navigation", "Navegação principal"]
+});

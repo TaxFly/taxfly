@@ -1383,6 +1383,7 @@ window.clicConsejo = () => {
 };
 
 window.changeLanguage = lang => {
+  { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
   localStorage.setItem("appLang", lang);
   document.documentElement.setAttribute("lang", lang);
   document.querySelectorAll(".lang-opt").forEach(o => o.classList.remove("active"));
@@ -1524,16 +1525,92 @@ function selectedTaxCity(id) {
   const sel = document.getElementById(id);
   return sel?.selectedOptions?.[0]?.textContent?.split(" (")[0] || "";
 }
+// State-specific clauses shown alongside the generic estimate note.
+// Kept in sync with getFoodTaxRate / getMedTaxRate / getClothingTaxRate above.
+const STATE_TAX_NOTES = {
+  Florida: {
+    es: "En Florida, alimentos sin preparar suelen estar exentos (las golosinas tributan) y los medicamentos de venta libre solo están exentos si figuran en la lista oficial.",
+    en: "In Florida, unprepared groceries are generally exempt (candy is taxed), and OTC medicine is exempt only if it's on the official list.",
+    pt: "Na Flórida, alimentos não preparados geralmente são isentos (doces são tributados), e remédios de venda livre só são isentos se constarem na lista oficial."
+  },
+  Minnesota: {
+    es: "En Minnesota, la ropa está exenta y los medicamentos de venta libre con etiqueta Drug Facts suelen estar exentos.",
+    en: "In Minnesota, clothing is exempt, and OTC drugs with a Drug Facts label are generally exempt.",
+    pt: "Em Minnesota, roupas são isentas e remédios de venda livre com rótulo Drug Facts geralmente são isentos."
+  },
+  "New Jersey": {
+    es: "En New Jersey, la ropa cotidiana suele estar exenta.",
+    en: "In New Jersey, everyday clothing is generally exempt.",
+    pt: "Em New Jersey, roupas do dia a dia geralmente são isentas."
+  },
+  Pennsylvania: {
+    es: "En Pennsylvania, la ropa cotidiana suele estar exenta.",
+    en: "In Pennsylvania, everyday clothing is generally exempt.",
+    pt: "Na Pensilvânia, roupas do dia a dia geralmente são isentas."
+  },
+  Vermont: {
+    es: "En Vermont, la ropa cotidiana suele estar exenta.",
+    en: "In Vermont, everyday clothing is generally exempt.",
+    pt: "Em Vermont, roupas do dia a dia geralmente são isentas."
+  },
+  "New York": {
+    es: "En Nueva York, la ropa de menos de $110 suele estar exenta (varía según la ciudad).",
+    en: "In New York, clothing under $110 is generally exempt (varies by city).",
+    pt: "Em Nova York, roupas com menos de US$ 110 geralmente são isentas (varia por cidade)."
+  },
+  Massachusetts: {
+    es: "En Massachusetts, la ropa tributa solo en el monto que supera los $175 por prenda.",
+    en: "In Massachusetts, clothing is taxed only on the amount above $175 per item.",
+    pt: "Em Massachusetts, roupas são tributadas apenas no valor acima de US$ 175 por peça."
+  },
+  "Rhode Island": {
+    es: "En Rhode Island, la ropa tributa solo en el monto que supera los $250 por prenda.",
+    en: "In Rhode Island, clothing is taxed only on the amount above $250 per item.",
+    pt: "Em Rhode Island, roupas são tributadas apenas no valor acima de US$ 250 por peça."
+  }
+};
+// States where groceries get a reduced rate vs. the general rate.
+const STATE_FOOD_REDUCED = new Set(["Alabama", "Mississippi", "Missouri", "Tennessee", "Utah", "Virginia", "Louisiana"]);
+// States where groceries are taxed at the full general rate (no exemption).
+const STATE_FOOD_NO_EXEMPTION = new Set(["Hawaii", "Idaho", "South Dakota"]);
+function getStateTaxNote(state, lang) {
+  if (!state) return "";
+  if (STATE_TAX_NOTES[state]) return STATE_TAX_NOTES[state][lang] || STATE_TAX_NOTES[state].es;
+  if (STATE_FOOD_REDUCED.has(state)) {
+    const t = {
+      es: `En ${state}, los alimentos sin preparar pueden tener una tasa reducida respecto a la general.`,
+      en: `In ${state}, unprepared groceries may have a reduced rate compared to the general rate.`,
+      pt: `Em ${state}, alimentos não preparados podem ter uma alíquota reduzida em relação à geral.`
+    };
+    return t[lang] || t.es;
+  }
+  if (STATE_FOOD_NO_EXEMPTION.has(state)) {
+    const t = {
+      es: `En ${state}, los alimentos sin preparar no están exentos: tributan a la tasa general.`,
+      en: `In ${state}, unprepared groceries aren't exempt: they're taxed at the general rate.`,
+      pt: `Em ${state}, alimentos não preparados não são isentos: são tributados na alíquota geral.`
+    };
+    return t[lang] || t.es;
+  }
+  return "";
+}
 function updateTaxRuleNote() {
   const lang = localStorage.getItem("appLang") || "es";
-  const copy = {
-    es: "Estimación: las tasas y exenciones dependen de la dirección, el producto y su uso.",
-    en: "Estimate: rates and exemptions depend on address, product and use.",
-    pt: "Estimativa: alíquotas e isenções dependem do endereço, produto e uso."
+  const base = {
+    es: "Estimación: las tasas y exenciones dependen de la dirección, el producto y su uso. Confirmá el recibo antes de pagar.",
+    en: "Estimate: rates and exemptions depend on address, product and use. Check the receipt before paying.",
+    pt: "Estimativa: alíquotas e isenções dependem do endereço, produto e uso. Confira o recibo."
   };
-  for (const id of ["tax-rule-note", "cart-tax-rule-note"]) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = copy[lang] || copy.es;
+  const targets = [
+    { id: "tax-rule-note", stateId: "state-select" },
+    { id: "cart-tax-rule-note", stateId: "cart-state-select" }
+  ];
+  for (const t of targets) {
+    const el = document.getElementById(t.id);
+    if (!el) continue;
+    const state = document.getElementById(t.stateId)?.value || "";
+    const extra = getStateTaxNote(state, lang);
+    el.textContent = (base[lang] || base.es) + (extra ? " " + extra : "");
   }
 }
 function validateZipTax(data, selectedState) {

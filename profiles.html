@@ -597,7 +597,14 @@ const i18n = {
     active: "Activo",
     confirm: "¿Eliminar este perfil?",
     logout: "🚪 CERRAR SESIÓN",
-    namePlaceholder: "Tu nombre"
+    namePlaceholder: "Tu nombre",
+    err_save_profile: "No se pudo guardar el perfil: {msg}\n\nSi elegiste una foto propia, puede ser que sea muy pesada — probá con una más chica.",
+    err_unknown: "error desconocido",
+    err_image_format: "Solo se aceptan imágenes JPG, PNG o WebP.",
+    err_photo_too_big: "La foto no puede superar los {mb} MB.",
+    err_image_too_small: "La imagen es muy pequeña. Mínimo {dim}×{dim} px.",
+    err_security_retry: "Verificación de seguridad fallida. Intentá de nuevo.",
+    err_confirm_rights: "Por favor confirmá que tenés los derechos sobre la foto antes de guardar."
   },
   en: {
     pageTitle: `${destinoLabel} — Profiles`,
@@ -615,7 +622,14 @@ const i18n = {
     active: "Active",
     confirm: "Delete this profile?",
     logout: "🚪 SIGN OUT",
-    namePlaceholder: "Your name"
+    namePlaceholder: "Your name",
+    err_save_profile: "Couldn't save the profile: {msg}\n\nIf you picked your own photo, it might be too heavy — try a smaller one.",
+    err_unknown: "unknown error",
+    err_image_format: "Only JPG, PNG or WebP images are accepted.",
+    err_photo_too_big: "The photo can't be larger than {mb} MB.",
+    err_image_too_small: "The image is too small. Minimum {dim}×{dim} px.",
+    err_security_retry: "Security check failed. Please try again.",
+    err_confirm_rights: "Please confirm you have the rights to the photo before saving."
   },
   pt: {
     pageTitle: `${destinoLabel} — Perfis`,
@@ -633,9 +647,26 @@ const i18n = {
     active: "Ativo",
     confirm: "Excluir este perfil?",
     logout: "🚪 SAIR",
-    namePlaceholder: "Seu nome"
+    namePlaceholder: "Seu nome",
+    err_save_profile: "Não foi possível salvar o perfil: {msg}\n\nSe você escolheu uma foto própria, ela pode ser muito pesada — tente uma menor.",
+    err_unknown: "erro desconhecido",
+    err_image_format: "Só são aceitas imagens JPG, PNG ou WebP.",
+    err_photo_too_big: "A foto não pode ultrapassar {mb} MB.",
+    err_image_too_small: "A imagem é muito pequena. Mínimo {dim}×{dim} px.",
+    err_security_retry: "Falha na verificação de segurança. Tente novamente.",
+    err_confirm_rights: "Confirme que você tem os direitos sobre a foto antes de salvar."
   }
 };
+
+function tr(key, vars) {
+  const cur = i18n[localStorage.getItem("appLang") || "es"] || i18n.es;
+  let str = cur[key];
+  if (str == null) return key;
+  if (vars) {
+    for (const k in vars) str = str.split("{" + k + "}").join(vars[k]);
+  }
+  return str;
+}
 
 const photos = [ "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1777776216395.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1777776225455.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776311828.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776315983.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776318834.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027664793.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027669500.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027673553.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027676790.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027680096.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027684221.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027686067.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027689046.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027716106.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027718459.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027720162.png" ];
 
@@ -920,7 +951,7 @@ window.saveProfile = async () => {
     });
   } catch (err) {
     console.error("Error guardando perfil:", err);
-    showAlert("No se pudo guardar el perfil: " + (err.message || "error desconocido") + "\n\nSi elegiste una foto propia, puede ser que sea muy pesada — probá con una más chica.");
+    showAlert(tr("err_save_profile", { msg: err.message || tr("err_unknown") }));
     return;
   }
   profiles = updatedProfiles;
@@ -972,11 +1003,11 @@ dropZone.addEventListener("drop", e => {
 function handleFileSelected(file) {
   const allowed = [ "image/jpeg", "image/png", "image/webp" ];
   if (!allowed.includes(file.type)) {
-    showAlert("Solo se aceptan imágenes JPG, PNG o WebP.");
+    showAlert(tr("err_image_format"));
     return;
   }
   if (file.size > MAX_MB * 1024 * 1024) {
-    showAlert(`La foto no puede superar los ${MAX_MB} MB.`);
+    showAlert(tr("err_photo_too_big", { mb: MAX_MB }));
     return;
   }
   const reader = new FileReader;
@@ -984,7 +1015,7 @@ function handleFileSelected(file) {
     const img = new Image;
     img.onload = () => {
       if (img.width < MIN_DIM || img.height < MIN_DIM) {
-        showAlert(`La imagen es muy pequeña. Mínimo ${MIN_DIM}×${MIN_DIM} px.`);
+        showAlert(tr("err_image_too_small", { dim: MIN_DIM }));
         return;
       }
       openCropModal(img);
@@ -1070,7 +1101,7 @@ window.confirmCrop = async () => {
 
 async function moderateAndApplyPhoto(dataUrl) {
   if (!await _rcCheck("upload_photo")) {
-    showAlert("Verificación de seguridad fallida. Intentá de nuevo.");
+    showAlert(tr("err_security_retry"));
     return;
   }
   const statusEl = document.getElementById("modStatus");
@@ -1127,7 +1158,7 @@ const originalSave = window.saveProfile;
 
 window.saveProfile = async () => {
   if (customPhotoDataUrl && !document.getElementById("termsCheck").checked) {
-    showAlert("Por favor confirmá que tenés los derechos sobre la foto antes de guardar.");
+    showAlert(tr("err_confirm_rights"));
     return;
   }
   await originalSave();
