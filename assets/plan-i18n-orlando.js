@@ -619,3 +619,16 @@ I18N.add({
   "Taxie — Asistente de viaje": ["Taxie — Travel assistant", "Taxie — Assistente de viagem"],
   "Navegación principal": ["Main navigation", "Navegação principal"]
 });
+
+// Avisos de sincronización, exportación y accesibilidad de Planificación
+I18N.add({
+  "Sin conexión con Firebase: los cambios quedan guardados en este dispositivo y se reintentarán al abrir la app.": ["No connection to Firebase: your changes are saved on this device and will be retried when you open the app.", "Sem conexão com o Firebase: as alterações ficam salvas neste dispositivo e serão reenviadas ao abrir o app."],
+  "Guardado en este dispositivo; pendiente de Firebase.": ["Saved on this device; pending sync to Firebase.", "Salvo neste dispositivo; pendente de envio ao Firebase."],
+  "⚠️ Otro dispositivo editó esto casi al mismo tiempo — revisá que no se haya perdido nada": ["⚠️ Another device edited this at almost the same time — check that nothing was lost", "⚠️ Outro dispositivo editou isto quase ao mesmo tempo — verifique se nada foi perdido"],
+  "No se pudo guardar el archivo en este dispositivo. Volvé a elegirlo.": ["Couldn't save the file on this device. Please choose it again.", "Não foi possível salvar o arquivo neste dispositivo. Escolha-o novamente."],
+  "Revisá la latitud y longitud de la parada": ["Check the stop's latitude and longitude", "Verifique a latitude e a longitude da parada"],
+  "Todavía no hay días cargados en el plan de comidas.": ["There are no days in the meal plan yet.", "Ainda não há dias no plano de refeições."],
+  "Nada para exportar": ["Nothing to export", "Nada para exportar"],
+  "Actualizar plan de comidas": ["Update meal plan", "Atualizar plano de refeições"],
+  "Secciones de Planificación": ["Planning sections", "Seções do Planejamento"]
+});

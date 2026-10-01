@@ -523,23 +523,23 @@ window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce
 
 <div class="ios-modal-overlay" id="iosOverlay" onclick="hideIosModal()">
     <div class="ios-modal" onclick="event.stopPropagation()">
-        <div class="ios-modal-title">📲 Agregar TaxFly al inicio</div>
+        <div class="ios-modal-title" id="ios-title">📲 Agregar TaxFly al inicio</div>
         <div class="ios-step">
             <div class="ios-step-num">1</div>
             <div class="ios-step-icon">⬆️</div>
-            <div class="ios-step-text">Tocá el botón <strong>Compartir</strong> en Safari</div>
+            <div class="ios-step-text" id="ios-step1">Tocá el botón <strong>Compartir</strong> en Safari</div>
         </div>
         <div class="ios-step">
             <div class="ios-step-num">2</div>
             <div class="ios-step-icon">📋</div>
-            <div class="ios-step-text">Tocá <strong>"Agregar a pantalla de inicio"</strong></div>
+            <div class="ios-step-text" id="ios-step2">Tocá <strong>"Agregar a pantalla de inicio"</strong></div>
         </div>
         <div class="ios-step">
             <div class="ios-step-num">3</div>
             <div class="ios-step-icon">✅</div>
-            <div class="ios-step-text">Tocá <strong>"Agregar"</strong></div>
+            <div class="ios-step-text" id="ios-step3">Tocá <strong>"Agregar"</strong></div>
         </div>
-        <button class="ios-modal-close" onclick="hideIosModal()">Entendido</button>
+        <button class="ios-modal-close" id="ios-close" onclick="hideIosModal()">Entendido</button>
     </div>
 </div>
 
@@ -575,7 +575,7 @@ window.addEventListener("beforeinstallprompt", e => {
 
 window.installAndroid = async () => {
   if (!deferredPrompt) {
-    (window.showAlert||alert)("Para instalar TaxFly, abrí el menú del navegador y elegí ‘Instalar app’ o ‘Agregar a pantalla de inicio’. Si ya está instalada, abrila desde el ícono de TaxFly.");
+    (window.showAlert||alert)(t("installHelp"));
     return;
   }
   deferredPrompt.prompt();
@@ -696,7 +696,16 @@ const i18n = {
     offlineStep1: "Iniciá sesión al menos una vez con WiFi.",
     offlineStep2: "Creá tu PIN de 4 dígitos cuando te lo pida.",
     offlineStep3: "¡Listo! La próxima vez podés entrar con el PIN aunque no tengas conexión.",
-    offlineNote: "Todavía en desarrollo. La calculadora, propina, conversores y gastos siguen funcionando offline."
+    offlineNote: "Todavía en desarrollo. La calculadora, propina, conversores y gastos siguen funcionando offline.",
+    installAndroidBtn: "➕ Agregar a inicio (Android)",
+    installIosBtn: "📲 Agregar a inicio (iPhone)",
+    iosTitle: "📲 Agregar TaxFly al inicio",
+    iosStep1: "Tocá el botón <strong>Compartir</strong> en Safari",
+    iosStep2: "Tocá <strong>\"Agregar a pantalla de inicio\"</strong>",
+    iosStep3: "Tocá <strong>\"Agregar\"</strong>",
+    iosClose: "Entendido",
+    installHelp: "Para instalar TaxFly, abrí el menú del navegador y elegí ‘Instalar app’ o ‘Agregar a pantalla de inicio’. Si ya está instalada, abrila desde el ícono de TaxFly.",
+    verifyResent: "Correo de verificación reenviado. Revisá tu bandeja (y spam)."
   },
   en: {
     welcome: "Welcome",
@@ -748,7 +757,16 @@ const i18n = {
     offlineStep1: "Sign in at least once with WiFi.",
     offlineStep2: "Create your 4-digit PIN when prompted.",
     offlineStep3: "Done! Next time you can enter with your PIN even without internet.",
-    offlineNote: "Still in development. Calculator, tips, unit converter and expenses keep working offline."
+    offlineNote: "Still in development. Calculator, tips, unit converter and expenses keep working offline.",
+    installAndroidBtn: "➕ Add to home screen (Android)",
+    installIosBtn: "📲 Add to home screen (iPhone)",
+    iosTitle: "📲 Add TaxFly to your home screen",
+    iosStep1: "Tap the <strong>Share</strong> button in Safari",
+    iosStep2: "Tap <strong>\"Add to Home Screen\"</strong>",
+    iosStep3: "Tap <strong>\"Add\"</strong>",
+    iosClose: "Got it",
+    installHelp: "To install TaxFly, open your browser menu and choose ‘Install app’ or ‘Add to Home Screen’. If it is already installed, open it from the TaxFly icon.",
+    verifyResent: "Verification email sent again. Check your inbox (and spam)."
   },
   pt: {
     welcome: "Bem-vindo",
@@ -800,7 +818,16 @@ const i18n = {
     offlineStep1: "Entre pelo menos uma vez com WiFi.",
     offlineStep2: "Crie seu PIN de 4 dígitos quando solicitado.",
     offlineStep3: "Pronto! Da próxima vez pode entrar com o PIN sem internet.",
-    offlineNote: "Ainda em desenvolvimento. Calculadora, gorjetas, conversores e gastos continuam funcionando offline."
+    offlineNote: "Ainda em desenvolvimento. Calculadora, gorjetas, conversores e gastos continuam funcionando offline.",
+    installAndroidBtn: "➕ Adicionar à tela inicial (Android)",
+    installIosBtn: "📲 Adicionar à tela inicial (iPhone)",
+    iosTitle: "📲 Adicionar o TaxFly à tela inicial",
+    iosStep1: "Toque no botão <strong>Compartilhar</strong> no Safari",
+    iosStep2: "Toque em <strong>\"Adicionar à Tela de Início\"</strong>",
+    iosStep3: "Toque em <strong>\"Adicionar\"</strong>",
+    iosClose: "Entendi",
+    installHelp: "Para instalar o TaxFly, abra o menu do navegador e escolha ‘Instalar app’ ou ‘Adicionar à tela inicial’. Se já estiver instalado, abra-o pelo ícone do TaxFly.",
+    verifyResent: "E-mail de verificação reenviado. Verifique sua caixa de entrada (e o spam)."
   }
 };
 
@@ -932,6 +959,14 @@ function applyTexts() {
   setText("offline-badge-text", t("offlineBadge"));
   setText("try-online-btn", t("tryOnline"));
   setText("skip-pin-btn", t("skipPin"));
+  setText("btnAndroid", t("installAndroidBtn"));
+  setText("btnIos", t("installIosBtn"));
+  setText("ios-title", t("iosTitle"));
+  setText("ios-close", t("iosClose"));
+  ["ios-step1", "ios-step2", "ios-step3"].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = t("iosStep" + (i + 1));
+  });
   if (pinStep === 1) {
     setText("create-pin-title", t("createPinTitle"));
     setText("create-pin-sub", t("createPinSub"));
@@ -1104,7 +1139,7 @@ if (firebaseOk) onAuthStateChanged(auth, async user => {
     if (wantsResend) {
       try {
         await sendEmailVerification(user);
-        showAlert(t("verifyEmailSent") || "Correo de verificación reenviado. Revisá tu bandeja (y spam).");
+        showAlert(t("verifyResent"));
       } catch (e) {
         showAlert(t("errDefault"));
       }

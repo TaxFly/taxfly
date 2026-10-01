@@ -1132,7 +1132,7 @@ const I18N = {
     nav_home: "HOME",
     nav_taxes: "TAXES",
     nav_expenses: "EXPENSES",
-    nav_itinerary: "ITINERARY",
+    nav_itinerary: "PLANNING",
     nav_units: "Help & Resources",
     nav_group: "GROUP",
     nav_routes: "ROUTES",
@@ -1217,7 +1217,7 @@ const I18N = {
     nav_home: "INÍCIO",
     nav_taxes: "TAXES",
     nav_expenses: "GASTOS",
-    nav_itinerary: "ITINERÁRIO",
+    nav_itinerary: "PLANEJAMENTO",
     nav_units: "Ajuda e Recursos",
     nav_group: "GRUPO",
     nav_routes: "ROTAS",
@@ -1397,16 +1397,16 @@ window.openDocumentLink = id => {
   const matches=documentSuggestions(docObj), best=matches[0], second=matches[1];
   const confident=best && best.score>=6 && (!second || best.score-second.score>=2);
   dialog.dataset.docId=docObj.id;
-  document.getElementById('doc-link-description').textContent=`${docObj.name} · ${window.TaxflyDocumentLinks.kind(docObj)==='stay'?'Alojamiento':window.TaxflyDocumentLinks.kind(docObj)==='flight'?'Vuelo':'Documento del viaje'}`;
+  document.getElementById('doc-link-description').textContent=`${docObj.name} · ${window.TaxflyDocumentLinks.kind(docObj)==='stay'?tfL3('Alojamiento','Accommodation','Hospedagem'):window.TaxflyDocumentLinks.kind(docObj)==='flight'?tfL3('Vuelo','Flight','Voo'):tfL3('Documento del viaje','Trip document','Documento da viagem')}`;
   const hint=document.getElementById('doc-link-suggestion');hint.replaceChildren();
   if(best){const block=document.createElement('div');block.className='doc-link-suggestion';
     const heading=document.createElement('strong'),detail=document.createElement('span');
-    heading.textContent=confident?`Sugerencia: ${best.reservation.name}`:'Posible vínculo: '+best.reservation.name;
-    detail.textContent=best.reason+(confident?' · Confirmá antes de guardar':' · Revisá la reserva correcta');
+    heading.textContent=(confident?tfL3('Sugerencia: ','Suggestion: ','Sugestão: '):tfL3('Posible vínculo: ','Possible link: ','Possível vínculo: '))+best.reservation.name;
+    detail.textContent=best.reason+(confident?tfL3(' · Confirmá antes de guardar',' · Confirm before saving',' · Confirme antes de salvar'):tfL3(' · Revisá la reserva correcta',' · Check that it is the right reservation',' · Verifique se é a reserva correta'));
     block.append(heading,detail);hint.append(block);
-  }else hint.textContent=linkedReservations.length?'No hay una coincidencia clara. Elegí la reserva manualmente.':'Todavía no hay reservas en este viaje.';
+  }else hint.textContent=linkedReservations.length?tfL3('No hay una coincidencia clara. Elegí la reserva manualmente.','No clear match. Choose the reservation manually.','Nenhuma correspondência clara. Escolha a reserva manualmente.'):tfL3('Todavía no hay reservas en este viaje.','There are no reservations in this trip yet.','Ainda não há reservas nesta viagem.');
   const select=document.getElementById('doc-link-reservation');select.replaceChildren();
-  for(const [id,name] of [['','Sin reserva vinculada'],...linkedReservations.map(r=>[r.id,r.name])]) {
+  for(const [id,name] of [['',tfL3('Sin reserva vinculada','No linked reservation','Sem reserva vinculada')],...linkedReservations.map(r=>[r.id,r.name])]) {
     const option=document.createElement('option');option.value=id;option.textContent=name;select.append(option);
   }
   select.value=documentReservation(docObj)?.id || (confident?best.reservation.id:'');
@@ -1422,13 +1422,13 @@ document.getElementById('doc-link-save').onclick=async()=>{
   try {
     docObj.reservationId=chosen;docObj.linkExplicit=true;
     if(chosen && (docObj.tripId||'unassigned')==='unassigned')docObj.tripId=window.TripContext.assign(window._uid,perfilId);
-    if(!await idbSet(DOCS_CACHE_KEY_PFX+window._uid+'::'+perfilId,allDocs))throw Error('No se pudo guardar en este dispositivo.');
+    if(!await idbSet(DOCS_CACHE_KEY_PFX+window._uid+'::'+perfilId,allDocs))throw Error(tfL3('No se pudo guardar en este dispositivo.','Couldn\'t save on this device.','Não foi possível salvar neste dispositivo.'));
     renderList();
     const q=await loadQueue(), pendingSave=q.find(o=>o.docId===docObj.id && o.type==='save_doc');
     if(pendingSave){pendingSave.docObj.reservationId=chosen;pendingSave.docObj.tripId=docObj.tripId;pendingSave.docObj.linkExplicit=true;await saveQueue(q);}
     else if(!navigator.onLine)await enqueueLink(docObj.id,chosen,docObj.tripId);
     else try {await window.fsLink(window._uid,perfilId,docObj.id,chosen,docObj.tripId)} catch(e){await enqueueLink(docObj.id,chosen,docObj.tripId)}
-    dialog.close();showSyncOk(navigator.onLine?(chosen?'Documento vinculado a la reserva':'Vínculo eliminado'):'Vínculo guardado en este dispositivo');
+    dialog.close();showSyncOk(navigator.onLine?(chosen?tfL3('Documento vinculado a la reserva','Document linked to the reservation','Documento vinculado à reserva'):tfL3('Vínculo eliminado','Link removed','Vínculo removido')):tfL3('Vínculo guardado en este dispositivo','Link saved on this device','Vínculo salvo neste dispositivo'));
     updateOfflineToast();
   }catch(e){docObj.reservationId=previous.reservationId;docObj.linkExplicit=previous.linkExplicit;docObj.tripId=previous.tripId;await guardarDocsEnCache(allDocs);renderList();document.getElementById('doc-link-feedback').textContent=e.message;}
   finally{button.disabled=false;}
@@ -1444,13 +1444,13 @@ window.openReservationLinkDialog = reservationId => {
   if (!allDocs.length) {
     const option = document.createElement('option');
     option.value = '';
-    option.textContent = 'Todavía no tenés documentos guardados';
+    option.textContent = tfL3('Todavía no tenés documentos guardados','You don\'t have any saved documents yet','Você ainda não tem documentos salvos');
     select.append(option);
   } else {
     allDocs.forEach(d => {
       const option = document.createElement('option');
       option.value = d.id;
-      option.textContent = d.name || 'Documento';
+      option.textContent = d.name || tfL3('Documento','Document','Documento');
       select.append(option);
     });
   }
@@ -1469,7 +1469,7 @@ document.getElementById('reservation-link-save').onclick = async () => {
   const reservationId = dialog.dataset.reservationId;
   const chosen = document.getElementById('reservation-link-doc').value;
   const docObj = allDocs.find(d => d.id === chosen);
-  if (!docObj) { document.getElementById('reservation-link-feedback').textContent = 'Elegí un documento.'; return; }
+  if (!docObj) { document.getElementById('reservation-link-feedback').textContent = tfL3('Elegí un documento.','Choose a document.','Escolha um documento.'); return; }
   const button = document.getElementById('reservation-link-save');
   button.disabled = true;
   const previous = {reservationId: docObj.reservationId, linkExplicit: docObj.linkExplicit, tripId: docObj.tripId};
@@ -1477,7 +1477,7 @@ document.getElementById('reservation-link-save').onclick = async () => {
     docObj.reservationId = reservationId;
     docObj.linkExplicit = true;
     if ((docObj.tripId || 'unassigned') === 'unassigned') docObj.tripId = window.TripContext.assign(window._uid, perfilId);
-    if (!await idbSet(DOCS_CACHE_KEY_PFX+window._uid+'::'+perfilId, allDocs)) throw Error('No se pudo guardar en este dispositivo.');
+    if (!await idbSet(DOCS_CACHE_KEY_PFX+window._uid+'::'+perfilId, allDocs)) throw Error(tfL3('No se pudo guardar en este dispositivo.','Couldn\'t save on this device.','Não foi possível salvar neste dispositivo.'));
     renderList();
     const q = await loadQueue(), pendingSave = q.find(o => o.docId === docObj.id && o.type === 'save_doc');
     if (pendingSave) { pendingSave.docObj.reservationId = reservationId; pendingSave.docObj.tripId = docObj.tripId; pendingSave.docObj.linkExplicit = true; await saveQueue(q); }
@@ -1487,7 +1487,7 @@ document.getElementById('reservation-link-save').onclick = async () => {
     const params = new URLSearchParams(location.search);
     params.delete('linkReservation');
     history.replaceState(null, '', location.pathname + (params.size ? '?'+params : ''));
-    showSyncOk(navigator.onLine ? 'Documento vinculado a la reserva' : 'Vínculo guardado en este dispositivo');
+    showSyncOk(navigator.onLine ? tfL3('Documento vinculado a la reserva','Document linked to the reservation','Documento vinculado à reserva') : tfL3('Vínculo guardado en este dispositivo','Link saved on this device','Vínculo salvo neste dispositivo'));
     updateOfflineToast();
   } catch(e) { docObj.reservationId = previous.reservationId; docObj.linkExplicit = previous.linkExplicit; docObj.tripId = previous.tripId; await guardarDocsEnCache(allDocs); renderList(); document.getElementById('reservation-link-feedback').textContent = e.message; }
   finally { button.disabled = false; }
@@ -2249,7 +2249,7 @@ window.onSearchInput = () => {
       _matchIdxs.push(i);
     }
   });
-  document.getElementById("searchCount").textContent = _matchIdxs.length ? `1 / ${_matchIdxs.length}` : "Sin resultados";
+  document.getElementById("searchCount").textContent = _matchIdxs.length ? `1 / ${_matchIdxs.length}` : tfL3("Sin resultados","No results","Sem resultados");
   if (_matchIdxs.length) {
     _curMatch = 0;
     scrollToMatch(0);

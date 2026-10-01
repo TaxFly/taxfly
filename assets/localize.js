@@ -1,7 +1,26 @@
 (function () {
   "use strict";
+  // Helper global para mensajes escritos desde JS: tfL3("es", "en", "pt")
+  window.tfL3 = function (es, en, pt) {
+    var l = "es";
+    try { l = localStorage.getItem("appLang") || "es"; } catch (_) {}
+    return l === "en" ? en : l === "pt" ? pt : es;
+  };
   const words = {
     "Cancelar": ["Cancel", "Cancelar"],
+    "Cerrar": ["Close", "Fechar"],
+    "Cerrar cámara": ["Close camera", "Fechar câmera"],
+    "Cerrar visor": ["Close viewer", "Fechar visualizador"],
+    "✕ Cerrar": ["✕ Close", "✕ Fechar"],
+    "🗑️ Eliminar foto": ["🗑️ Delete photo", "🗑️ Excluir foto"],
+    "💾 Guardar": ["💾 Save", "💾 Salvar"],
+    "🖨️ Imprimir": ["🖨️ Print", "🖨️ Imprimir"],
+    "Analizar con IA — ¿Dónde conviene comprarlo?": ["Analyze with AI — Where is it best to buy it?", "Analisar com IA — Onde vale mais a pena comprar?"],
+    "Vincular documento": ["Link document", "Vincular documento"],
+    "Vincular documento existente": ["Link existing document", "Vincular documento existente"],
+    "Reserva de Planificación": ["Planning reservation", "Reserva do Planejamento"],
+    "Guardar vínculo": ["Save link", "Salvar vínculo"],
+    "Documento": ["Document", "Documento"],
     "Abrir en Maps": ["Open in Maps", "Abrir no Maps"],
     "Filas por atracción": ["Wait times by attraction", "Filas por atração"],
     "Maps": ["Maps", "Mapas"],

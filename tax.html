@@ -1182,7 +1182,7 @@ const i18n = {
   en: {
     nav_expenses: "EXPENSES",
     nav_home: "HOME",
-    nav_itinerary: "ITINERARY",
+    nav_itinerary: "PLANNING",
     nav_compare: "COMPARE",
     nav_units: "Help & References",
     nav_tickets: "DOCUMENTS",
@@ -1271,7 +1271,7 @@ const i18n = {
   pt: {
     nav_expenses: "GASTOS",
     nav_home: "INÍCIO",
-    nav_itinerary: "PLANIFICACIÓN",
+    nav_itinerary: "PLANEJAMENTO",
     nav_compare: "COMPARAR",
     nav_units: "Ajuda e Referências",
     nav_tickets: "DOCUMENTOS",
@@ -1636,16 +1636,16 @@ window.lookupZipTax = async () => {
   const statusEl = document.getElementById("zip-status");
   const zip = (zipInput?.value || "").trim();
   if (!/^\d{5}$/.test(zip)) {
-    statusEl.textContent = "⚠ Ingresá un ZIP de 5 dígitos";
+    statusEl.textContent = "⚠ " + tfL3("Ingresá un ZIP de 5 dígitos", "Enter a 5-digit ZIP code", "Digite um ZIP de 5 dígitos");
     statusEl.style.color = "var(--warn)";
     return;
   }
   if (!navigator.onLine) {
-    statusEl.textContent = "⚠ Sin conexión — usando tasa de ciudad";
+    statusEl.textContent = "⚠ " + tfL3("Sin conexión — usando tasa de ciudad", "Offline — using city rate", "Sem conexão — usando a taxa da cidade");
     statusEl.style.color = "var(--warn)";
     return;
   }
-  statusEl.textContent = "Buscando…";
+  statusEl.textContent = tfL3("Buscando…", "Searching…", "Buscando…");
   statusEl.style.color = "var(--text-sub)";
   try {
     const res = await fetch(`https://salestaxzip.com/api/v1/rate/${zip}`);
@@ -1653,11 +1653,11 @@ window.lookupZipTax = async () => {
     const json = await res.json();
     if (!json.success || !json.data) throw new Error("bad response");
     zipTaxOverride = validateZipTax(json.data, document.getElementById("state-select")?.value);
-    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${zipTaxOverride.toFixed(3)}% estimado por ZIP`;
+    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${zipTaxOverride.toFixed(3)}% ${tfL3("estimado por ZIP", "estimated by ZIP", "estimado por ZIP")}`;
     statusEl.style.color = "var(--success)";
   } catch (e) {
     zipTaxOverride = null;
-    statusEl.textContent = "⚠ ZIP no encontrado — usando tasa de ciudad";
+    statusEl.textContent = "⚠ " + tfL3("ZIP no encontrado — usando tasa de ciudad", "ZIP not found — using city rate", "ZIP não encontrado — usando a taxa da cidade");
     statusEl.style.color = "var(--warn)";
   }
   calculate();
@@ -1683,16 +1683,16 @@ window.lookupCartZipTax = async () => {
   const statusEl = document.getElementById("cart-zip-status");
   const zip = (zipInput?.value || "").trim();
   if (!/^\d{5}$/.test(zip)) {
-    statusEl.textContent = "⚠ Ingresá un ZIP de 5 dígitos";
+    statusEl.textContent = "⚠ " + tfL3("Ingresá un ZIP de 5 dígitos", "Enter a 5-digit ZIP code", "Digite um ZIP de 5 dígitos");
     statusEl.style.color = "var(--warn)";
     return;
   }
   if (!navigator.onLine) {
-    statusEl.textContent = "⚠ Sin conexión — usando tasa de ciudad";
+    statusEl.textContent = "⚠ " + tfL3("Sin conexión — usando tasa de ciudad", "Offline — using city rate", "Sem conexão — usando a taxa da cidade");
     statusEl.style.color = "var(--warn)";
     return;
   }
-  statusEl.textContent = "Buscando…";
+  statusEl.textContent = tfL3("Buscando…", "Searching…", "Buscando…");
   statusEl.style.color = "var(--text-sub)";
   try {
     const res = await fetch(`https://salestaxzip.com/api/v1/rate/${zip}`);
@@ -1700,11 +1700,11 @@ window.lookupCartZipTax = async () => {
     const json = await res.json();
     if (!json.success || !json.data) throw new Error("bad response");
     cartZipTaxOverride = validateZipTax(json.data, document.getElementById("cart-state-select")?.value);
-    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${cartZipTaxOverride.toFixed(3)}% estimado por ZIP`;
+    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${cartZipTaxOverride.toFixed(3)}% ${tfL3("estimado por ZIP", "estimated by ZIP", "estimado por ZIP")}`;
     statusEl.style.color = "var(--success)";
   } catch (e) {
     cartZipTaxOverride = null;
-    statusEl.textContent = "⚠ ZIP no encontrado — usando tasa de ciudad";
+    statusEl.textContent = "⚠ " + tfL3("ZIP no encontrado — usando tasa de ciudad", "ZIP not found — using city rate", "ZIP não encontrado — usando a taxa da cidade");
     statusEl.style.color = "var(--warn)";
   }
   if (typeof renderCart === "function") renderCart();
@@ -1989,7 +1989,7 @@ window.doChangePassword = async () => {
   if (!currentUser) return;
   try {
     await sendPasswordResetEmail(auth, currentUser.email);
-    showAlert("Correo de recuperación enviado.");
+    showAlert(tfL3("Correo de recuperación enviado.", "Recovery email sent.", "E-mail de recuperação enviado."));
   } catch (er) {
     showAlert(er.message);
   }

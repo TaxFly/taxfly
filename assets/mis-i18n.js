@@ -182,3 +182,11 @@ I18N.add({
   "{n} (este ítem ya no tiene lugar — sacá otra foto primero)": [ "{n} (this item has no room left — remove another photo first)", "{n} (este item não tem mais espaço — remova outra foto primeiro)" ],
   "{n} (tardó demasiado — probá con otra foto)": [ "{n} (took too long — try another photo)", "{n} (demorou demais — tente outra foto)" ]
 });
+
+// Etiquetas de accesibilidad (aria-label) de Mis cosas
+I18N.add({
+  "Navegación principal": [ "Main navigation", "Navegação principal" ],
+  "Viaje del perfil": [ "Profile trip", "Viagem do perfil" ],
+  "Ver opciones anteriores": [ "Show previous options", "Ver opções anteriores" ],
+  "Ver más opciones": [ "Show more options", "Ver mais opções" ]
+});

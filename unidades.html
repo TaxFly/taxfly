@@ -604,7 +604,7 @@ window.i18n = {
     nav_home: "HOME",
     nav_tax: "TAXES",
     nav_expenses: "EXPENSES",
-    nav_itinerary: "ITINERARY",
+    nav_itinerary: "PLANNING",
     nav_tickets: "DOCUMENTS",
     nav_group: "GROUP",
     nav_routes: "ROUTES",
@@ -671,7 +671,7 @@ window.i18n = {
     nav_home: "INÍCIO",
     nav_tax: "TAXES",
     nav_expenses: "GASTOS",
-    nav_itinerary: "ITINERÁRIO",
+    nav_itinerary: "PLANEJAMENTO",
     nav_tickets: "DOCUMENTOS",
     nav_group: "GRUPO",
     nav_routes: "ROTAS",
@@ -1550,7 +1550,7 @@ onAuthStateChanged(auth, async user => {
     const msgEl = document.getElementById("offline-toast-msg");
     const hasPendingPin = !!localStorage.getItem("taxusa_pin_pending_sync");
     if (!navigator.onLine) {
-      if (msgEl) msgEl.textContent = hasPendingPin ? "Sin conexión — el PIN se sincronizará al reconectar" : "Sin conexión — los conversores funcionan normalmente";
+      if (msgEl) msgEl.textContent = hasPendingPin ? tfL3("Sin conexión — el PIN se sincronizará al reconectar", "Offline — your PIN will sync when you reconnect", "Sem conexão — o PIN será sincronizado ao reconectar") : tfL3("Sin conexión — los conversores funcionan normalmente", "Offline — converters work normally", "Sem conexão — os conversores funcionam normalmente");
       toast.classList.add("show");
     } else {
       toast.classList.remove("show");

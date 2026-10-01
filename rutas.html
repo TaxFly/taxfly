@@ -761,7 +761,7 @@ const i18n = {
     nav_home: "HOME",
     nav_tax: "TAXES",
     nav_shopping: "EXPENSES",
-    nav_itinerary: "ITINERARY",
+    nav_itinerary: "PLANNING",
     nav_units: "Help & References",
     nav_tickets: "DOCUMENTS",
     nav_group: "GROUP",
@@ -821,7 +821,7 @@ const i18n = {
     nav_home: "INÍCIO",
     nav_tax: "TAXES",
     nav_shopping: "GASTOS",
-    nav_itinerary: "ITINERÁRIO",
+    nav_itinerary: "PLANEJAMENTO",
     nav_units: "Ajuda e Referências",
     nav_tickets: "DOCUMENTOS",
     nav_group: "GRUPO",
@@ -1392,7 +1392,7 @@ function parseLinks() {
   });
   document.getElementById("links-input").value = "";
   renderStops();
-  showToast(`✅ ${added} parada${added > 1 ? "s" : ""} agregada${added > 1 ? "s" : ""}`);
+  showToast(addedToastMsg(added));
 }
 
 function handleCSV(input) {
@@ -1428,13 +1428,13 @@ function parseCSV() {
   });
   document.getElementById("csv-text").value = "";
   renderStops();
-  showToast(`✅ ${added} parada${added > 1 ? "s" : ""} agregada${added > 1 ? "s" : ""}`);
+  showToast(addedToastMsg(added));
 }
 
 function addManual() {
   const name = document.getElementById("manual-name").value.trim();
   if (!name) {
-    showToast("⚠️ Escribí un nombre");
+    showToast("⚠️ " + L3("Escribí un nombre", "Enter a name", "Digite um nome"));
     return;
   }
   const desc = document.getElementById("manual-desc").value.trim();
@@ -1449,7 +1449,7 @@ function addManual() {
   document.getElementById("manual-url").value = "";
   document.getElementById("manual-ac").classList.remove("show");
   renderStops();
-  showToast("✅ Parada agregada");
+  showToast("✅ " + L3("Parada agregada", "Stop added", "Parada adicionada"));
 }
 
 function renderStops() {
@@ -1827,7 +1827,7 @@ function downloadHTML() {
   a.href = URL.createObjectURL(blob);
   a.download = "mi-ruta-taxusa.html";
   a.click();
-  showToast("⬇️ Archivo descargado");
+  showToast("⬇️ " + L3("Archivo descargado", "File downloaded", "Arquivo baixado"));
 }
 
 function launchConfetti() {
@@ -1842,6 +1842,17 @@ function launchConfetti() {
   }
 }
 
+function L3(es, en, pt) {
+  const l = localStorage.getItem("appLang") || "es";
+  return l === "en" ? en : l === "pt" ? pt : es;
+}
+function addedToastMsg(added) {
+  return "✅ " + L3(
+    `${added} parada${added > 1 ? "s" : ""} agregada${added > 1 ? "s" : ""}`,
+    `${added} stop${added > 1 ? "s" : ""} added`,
+    `${added} parada${added > 1 ? "s" : ""} adicionada${added > 1 ? "s" : ""}`
+  );
+}
 function showToast(msg) {
   if (window.tfToast) { window.tfToast(msg, { duration: 2800 }); return; }
   const t = document.getElementById("toast");

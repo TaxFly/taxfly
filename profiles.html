@@ -604,6 +604,10 @@ const i18n = {
     err_photo_too_big: "La foto no puede superar los {mb} MB.",
     err_image_too_small: "La imagen es muy pequeña. Mínimo {dim}×{dim} px.",
     err_security_retry: "Verificación de seguridad fallida. Intentá de nuevo.",
+    mod_checking: "Verificando imagen...",
+    mod_ok: "✓ Foto verificada y aprobada",
+    mod_rejected: "✗ Foto rechazada: {reason}",
+    mod_error: "✗ No se pudo verificar la foto. Intentá de nuevo.",
     err_confirm_rights: "Por favor confirmá que tenés los derechos sobre la foto antes de guardar."
   },
   en: {
@@ -629,6 +633,10 @@ const i18n = {
     err_photo_too_big: "The photo can't be larger than {mb} MB.",
     err_image_too_small: "The image is too small. Minimum {dim}×{dim} px.",
     err_security_retry: "Security check failed. Please try again.",
+    mod_checking: "Verifying image...",
+    mod_ok: "✓ Photo verified and approved",
+    mod_rejected: "✗ Photo rejected: {reason}",
+    mod_error: "✗ Could not verify the photo. Please try again.",
     err_confirm_rights: "Please confirm you have the rights to the photo before saving."
   },
   pt: {
@@ -654,6 +662,10 @@ const i18n = {
     err_photo_too_big: "A foto não pode ultrapassar {mb} MB.",
     err_image_too_small: "A imagem é muito pequena. Mínimo {dim}×{dim} px.",
     err_security_retry: "Falha na verificação de segurança. Tente novamente.",
+    mod_checking: "Verificando imagem...",
+    mod_ok: "✓ Foto verificada e aprovada",
+    mod_rejected: "✗ Foto rejeitada: {reason}",
+    mod_error: "✗ Não foi possível verificar a foto. Tente novamente.",
     err_confirm_rights: "Confirme que você tem os direitos sobre a foto antes de salvar."
   }
 };
@@ -1108,7 +1120,7 @@ async function moderateAndApplyPhoto(dataUrl) {
   const statusText = document.getElementById("modStatusText");
   const termsRow = document.getElementById("termsRow");
   statusEl.className = "mod-status checking";
-  statusText.textContent = "Verificando imagen...";
+  statusText.textContent = tr("mod_checking");
   termsRow.style.display = "none";
   document.getElementById("previewAvatar").style.backgroundImage = `url('${dataUrl}')`;
   try {
@@ -1126,19 +1138,19 @@ async function moderateAndApplyPhoto(dataUrl) {
       customPhotoDataUrl = dataUrl;
       selectedPhoto = dataUrl;
       statusEl.className = "mod-status approved";
-      statusText.textContent = "✓ Foto verificada y aprobada";
+      statusText.textContent = tr("mod_ok");
       termsRow.style.display = "flex";
       updatePreview();
     } else {
       statusEl.className = "mod-status rejected";
-      statusText.textContent = `✗ Foto rechazada: ${result.reason}`;
+      statusText.textContent = tr("mod_rejected", { reason: result.reason });
       document.getElementById("previewAvatar").style.backgroundImage = `url('${selectedPhoto}')`;
       customPhotoDataUrl = null;
     }
   } catch (err) {
     console.warn("Moderation error:", err);
     statusEl.className = "mod-status rejected";
-    statusText.textContent = "✗ No se pudo verificar la foto. Intentá de nuevo.";
+    statusText.textContent = tr("mod_error");
     document.getElementById("previewAvatar").style.backgroundImage = `url('${selectedPhoto}')`;
     customPhotoDataUrl = null;
   }
