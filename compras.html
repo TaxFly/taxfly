@@ -65,42 +65,13 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         input::placeholder{color:var(--text-dim);font-weight:500;}
         .input-group{margin-bottom:12px;}
 
-        .budget-card{background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:20px 22px;border-radius:var(--radius);width:100%;margin-bottom:14px;box-shadow:0 8px 24px rgba(37,99,235,.3);transition:background .4s ease,box-shadow .4s ease;}
-        .budget-card.bc-over{background:linear-gradient(135deg,#dc2626,#9f1239);box-shadow:0 8px 24px rgba(220,38,38,.3);}
-        .bc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;min-height:22px;}
-        .bc-trip{font-size:.65rem;font-weight:800;background:rgba(255,255,255,.18);padding:4px 10px;border-radius:999px;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .budget-label{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.9;}
-        .budget-value{font-size:2.2rem;font-weight:900;margin-bottom:10px;line-height:1.1;}
-        .bc-progress{height:8px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;margin-bottom:6px;}
-        .bc-progress-fill{height:100%;width:0;border-radius:99px;background:#34d399;transition:width .4s ease,background .3s ease;}
-        .bc-progress-txt{font-size:.72rem;font-weight:700;opacity:.95;margin-bottom:10px;}
-        .bc-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
-        .bc-chip{font-size:.7rem;font-weight:800;background:rgba(255,255,255,.15);color:white;padding:5px 10px;border-radius:999px;text-decoration:none;}
-        a.bc-chip:active{background:rgba(255,255,255,.3);}
-        .bc-total-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px;}
-        .bc-total-row span{font-size:.7rem;font-weight:700;opacity:.9;}
-        .bc-edit-btn{background:rgba(255,255,255,.25);border:none;color:white;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;}
-        .bc-empty-title{font-size:1.35rem;font-weight:900;margin-bottom:4px;}
-        .bc-empty-sub{font-size:.78rem;opacity:.92;margin-bottom:14px;line-height:1.4;}
-        .bc-hint{font-size:.65rem;opacity:.85;margin-top:10px;line-height:1.35;}
-        .budget-set{display:flex;gap:8px;background:rgba(255,255,255,.15);border-radius:12px;padding:8px 12px;align-items:center;margin-top:10px;}
-        .bc-cur{font-weight:800;font-size:.85rem;opacity:.9;flex-shrink:0;}
-        .budget-set input{background:transparent;border:none;color:white;padding:4px 8px;font-weight:700;font-size:1rem;flex:1;width:60px;box-shadow:none!important;}
+        .budget-card{background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:20px 22px;border-radius:var(--radius);width:100%;margin-bottom:14px;box-shadow:0 8px 24px rgba(37,99,235,.3);}
+        .budget-label{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.9;margin-bottom:6px;}
+        .budget-value{font-size:2.2rem;font-weight:900;margin-bottom:14px;}
+        .budget-set{display:flex;gap:8px;background:rgba(255,255,255,.15);border-radius:12px;padding:8px 12px;align-items:center;}
+        .budget-set input{background:transparent;border:none;color:white;padding:4px 8px;font-weight:700;flex:1;width:60px;box-shadow:none!important;}
         .budget-set input::placeholder{color:rgba(255,255,255,.7);}
         .budget-set button{background:white;color:var(--primary);border:none;padding:8px 16px;border-radius:8px;font-weight:800;font-size:.8rem;cursor:pointer;flex-shrink:0;}
-        .budget-set button.bc-cancel{background:rgba(255,255,255,.2);color:white;padding:8px 12px;}
-        .caps-box{margin-top:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);padding:0 14px;}
-        .caps-box summary{padding:13px 0;font-weight:800;font-size:.8rem;color:var(--text);cursor:pointer;list-style:none;}
-        .caps-box summary::-webkit-details-marker{display:none;}
-        .caps-box summary::after{content:"▾";float:right;color:var(--text-dim);}
-        .caps-box[open] summary::after{content:"▴";}
-        .caps-help{font-size:.75rem;color:var(--text-sub);margin:0 0 10px;line-height:1.4;}
-        .caps-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-        .caps-name{flex:1;font-size:.82rem;font-weight:700;color:var(--text);}
-        .caps-row input{width:118px;padding:9px 11px;font-size:.9rem;text-align:right;}
-        .caps-total{font-size:.72rem;font-weight:700;color:var(--text-sub);margin:6px 0 12px;}
-        .caps-total.warn{color:var(--danger);}
-        .caps-box .btn{margin-bottom:14px;}
 
         .tab-bar{display:flex;background:var(--surface-2);padding:4px;border-radius:14px;margin-bottom:16px;gap:3px;}
         .tab-btn{flex:1;padding:9px 4px;border:none;border-radius:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--text-sub);font-size:.68rem;font-family:inherit;transition:var(--tr);letter-spacing:-.1px;white-space:nowrap;min-width:0;}
@@ -179,16 +150,13 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .sz-brand-header{padding:9px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--input-bg);}
         .sz-brand-badge{font-size:.65rem;font-weight:900;padding:3px 9px;border-radius:10px;}
         .sz-table{width:100%;border-collapse:collapse;table-layout:auto;}
-        .sz-table th,.sz-table td{white-space:nowrap;}
-        .sz-table th{font-size:.58rem;font-weight:900;color:var(--text-dim);padding:9px 7px;text-align:center;border-bottom:1px solid var(--border);background:var(--input-bg);text-transform:uppercase;letter-spacing:.4px;}
-        .sz-table td{font-size:.76rem;font-weight:700;padding:10px 7px;text-align:center;color:var(--text-sub);border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;}
-        .sz-table th:first-child,.sz-table td:first-child{width:1%;text-align:left;padding-left:14px;padding-right:16px;position:sticky;left:0;background:var(--surface-2);z-index:1;}
-        .sz-table th:first-child{background:var(--input-bg);}
+        .sz-table th{font-size:.55rem;font-weight:900;color:var(--text-dim);padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);background:var(--input-bg);text-transform:uppercase;letter-spacing:.4px;}
+        .sz-table td{font-size:.72rem;font-weight:700;padding:8px 8px;text-align:center;color:var(--text-sub);border-bottom:1px solid var(--border);}
         .sz-table tr:last-child td{border-bottom:none;}
-        .sz-table tbody tr:hover td{background:rgba(37,99,235,.05);}
+        .sz-table tr:hover td{background:rgba(37,99,235,.04);}
         .sz-table td.sz-hl{color:var(--primary);font-weight:900;}
-        .sz-table td.sz-row-lbl{color:var(--text);font-weight:800;}
-        .sz-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .sz-table td.sz-row-lbl{color:var(--text);font-weight:800;text-align:left;}
+        .sz-table-wrap{overflow-x:auto;}
         .sz-note{font-size:.72rem;color:var(--text-sub);font-weight:600;padding:10px 14px;border-top:1px solid var(--border);line-height:1.5;}
 
         
@@ -516,36 +484,6 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         #offline-label{display:flex;flex-direction:column;gap:1px;}
         #offline-label strong{font-size:.82rem;color:var(--text);}
         #offline-label span{font-size:.7rem;font-weight:600;color:var(--text-sub);}
-    
-        /* Gastos: cotizaciones plegables, lista por día, edición, toast */
-        .quote-section{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:14px;background:var(--surface-2);}
-        .quote-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;background:none;border:none;cursor:pointer;font-family:inherit;color:var(--text-dim);font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;}
-        .quote-toggle svg{flex-shrink:0;transition:transform .2s;}
-        .quote-toggle[aria-expanded="true"] svg{transform:rotate(180deg);}
-        .quote-body{padding:0 12px 12px;}
-        .quote-body[hidden]{display:none;}
-        .btn-stack{flex-direction:column;gap:3px;padding:12px 10px;}
-        .btn-stack .btn-main{display:flex;align-items:center;justify-content:center;gap:8px;}
-        .btn-stack small{font-size:.6rem;font-weight:600;text-transform:none;letter-spacing:0;line-height:1.25;opacity:.85;text-align:center;}
-        .exp-body{padding-top:2px;}
-        .exp-day-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);}
-        .exp-day-head:first-child{margin-top:4px;}
-        .exp-day-head b{color:var(--text-sub);font-weight:800;}
-        /* Una tarjeta por día: encabezado con subtotal + gastos separados por línea fina */
-        .exp-day-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;}
-        .exp-day-card .exp-day-head{margin:0;padding:10px 14px;border-bottom:1px solid var(--border);}
-        .exp-day-card .exp-day-head b{font-size:.72rem;color:var(--text);}
-        .exp-day-card .history-item{background:transparent;border-radius:0;margin:0;padding:12px 14px;border-top:1px solid color-mix(in srgb,var(--border) 55%,transparent);}
-        .exp-day-card .exp-day-head + .history-item{border-top:0;}
-        .h-main{flex:1;min-width:0;padding:0 8px;cursor:pointer;}
-        .h-main:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px;}
-        .exp-toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);background:#111827;color:#fff;padding:10px 16px;border-radius:999px;font-size:.8rem;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:10001;box-shadow:0 6px 20px rgba(0,0,0,.3);}
-        .exp-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto;}
-        .exp-toast button{background:none;border:none;color:#93c5fd;font:inherit;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;padding:0;}
-        #edit-gasto-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:9998;align-items:flex-end;justify-content:center;}
-        #edit-gasto-overlay.open{display:flex;}
-        #edit-gasto-box{background:var(--surface);border-radius:24px 24px 0 0;padding:20px 20px 28px;width:100%;max-width:460px;box-shadow:var(--shadow-lg);border:1px solid var(--border);border-bottom:none;animation:ocrModalIn .3s cubic-bezier(.34,1.56,.64,1);}
-        #edit-gasto-box select{width:100%;}
     </style>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
@@ -592,42 +530,27 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     <script src="assets/trip-context.js"></script>
 
     <div class="taxfly-trip-filter" hidden aria-hidden="true"><label for="trip-filter-expenses">Viaje</label><select id="trip-filter-expenses" aria-label="Filtrar por viaje"></select><a href="index.html#viajes">Gestionar viajes</a></div>
-    <div class="budget-card" id="budget-card">
-        <div class="bc-top">
-            <div class="budget-label" id="bc-label">Presupuesto Restante</div>
-            <div class="bc-trip" id="bc-trip" style="display:none;"></div>
+    <div class="budget-card">
+        <div class="budget-label" data-i18n="label_budget">Presupuesto Restante</div>
+        <div class="budget-value" id="disp-fondo">USD 0.00</div>
+        <div id="budget-maps-note" style="display:none;font-size:.68rem;font-weight:700;opacity:.8;margin:-4px 0 8px;"></div>
+        <div style="font-size:.65rem;opacity:.8;margin-bottom:8px;">Presupuesto general de TaxFly; el saldo usa los gastos del filtro elegido.</div>
+
+        
+        <div id="budget-info-row" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 12px;">
+            <span style="font-size:.7rem;font-weight:700;opacity:.85;">Total: <span id="budget-base-val">—</span></span>
+            <button onclick="toggleBudgetEdit()" id="btn-change-budget" style="background:rgba(255,255,255,.25);border:none;color:white;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;" data-i18n="btn_change_budget">✏️ Cambiar</button>
         </div>
 
-        <div id="bc-empty">
-            <div class="bc-empty-title" data-i18n="bc_empty_title">Definí tu presupuesto</div>
-            <div class="bc-empty-sub" data-i18n="bc_empty_sub">Ingresá cuánto pensás gastar en este viaje y te mostramos cuánto te queda.</div>
-        </div>
-
-        <div id="bc-main" style="display:none;">
-            <div class="budget-value" id="disp-fondo">USD 0.00</div>
-            <div class="bc-progress"><div class="bc-progress-fill" id="bc-fill"></div></div>
-            <div class="bc-progress-txt" id="bc-progress-txt"></div>
-            <div class="bc-chips">
-                <span class="bc-chip" id="bc-chip-gastos"></span>
-                <a class="bc-chip" id="budget-maps-note" href="planificacion.html?section=walmart"></a>
-            </div>
-            <div class="bc-total-row" id="budget-info-row">
-                <span><span id="bc-total-lbl">Presupuesto total</span>: <span id="budget-base-val">—</span></span>
-                <button class="bc-edit-btn" onclick="toggleBudgetEdit()" id="btn-change-budget" data-i18n="btn_change_budget">✏️ Cambiar</button>
-            </div>
-        </div>
-
-        <div class="budget-set" id="budget-set-row">
-            <span class="bc-cur">USD</span>
-            <input type="number" id="input-fondo" placeholder="0.00" step="0.01" min="0" inputmode="decimal" enterkeyhint="done" aria-label="Presupuesto en USD">
-            <button class="bc-cancel" id="bc-cancel-btn" onclick="cancelBudgetEdit()" aria-label="Cancelar" style="display:none;">✕</button>
-            <button onclick="updateFondo()" data-i18n="btn_save_budget">GUARDAR</button>
-        </div>
-
-        <div class="bc-hint" id="bc-hint"></div>
-
+        
         <div id="notif-banner" style="display:none;margin-top:8px;">
             <button id="btn-activar-notif" onclick="activarNotificaciones()" style="width:100%;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);color:white;padding:8px 14px;border-radius:10px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.3px;">🔔 Activar alertas de presupuesto</button>
+        </div>
+
+        
+        <div class="budget-set" id="budget-set-row">
+            <input type="number" id="input-fondo" placeholder="USD 0" step="0.01" inputmode="decimal">
+            <button onclick="updateFondo()" data-i18n="btn_set">SET</button>
         </div>
     </div>
 
@@ -647,7 +570,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
             <span class="st-icon">🛍️</span>
             <div>
                 <div class="st-label" data-i18n="shopping_guide">GUÍA DE COMPRAS</div>
-                <div id="tip-text" aria-busy="true"><span class="tf-skel" style="display:inline-block;width:200px;height:14px;margin:0;vertical-align:middle"></span></div>
+                <div id="tip-text">Cargando consejos...</div>
             </div>
         </div>
 
@@ -659,12 +582,16 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         </div>
 
         <div id="sec-gastos">
-            <div class="quote-section" id="quote-section">
-                <button type="button" class="quote-toggle" id="quote-toggle" aria-expanded="false" aria-controls="quote-body" onclick="toggleQuotes()">
-                    <span data-i18n="label_exchange">Cotizaciones</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-                </button>
-                <div class="quote-body" id="quote-body" hidden>
-<div class="rates-grid">
+            <div class="scanner-warn" id="scanner-warning" data-i18n="scanner_beta_msg">⚠️ El escáner está en beta. Verificá siempre el monto detectado.</div>
+            <div class="scan-btns">
+                <button class="btn btn-cyan" onclick="startScanner()" style="margin-bottom:0;">📷 <span data-i18n="btn_camera">CÁMARA</span></button>
+                <button class="btn btn-ghost" onclick="document.getElementById('gallery-input').click()" style="margin-bottom:0;">🖼️ <span data-i18n="btn_gallery">GALERÍA</span></button>
+            </div>
+            <input type="file" id="gallery-input" accept="image/*" style="display:none;" onchange="handleGalleryImage(event)">
+
+            
+            <span class="slabel" style="margin-bottom:10px;" data-i18n="label_exchange">Cotizaciones</span>
+            <div class="rates-grid">
                 <div class="rate-box arg">
                     <div class="rate-label" data-i18n="rate_official">Dólar Oficial</div>
                     <div class="rate-row"><span><img src="https://flagcdn.com/20x15/us.png" alt="🇺🇸" onerror="this.outerHTML='🇺🇸'"></span><input type="text" id="oficial-usd" value="1" oninput="formatVisual(this);convert('oficial','usd')"></div>
@@ -694,23 +621,9 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
                     <div class="rate-row"><span id="flag-brl"><img src="https://flagcdn.com/20x15/br.png" alt="🇧🇷" onerror="this.outerHTML='🇧🇷'"></span><input type="text" id="brl-local" oninput="formatVisual(this);convert('brl','local')"></div>
                 </div>
             </div>
-                </div>
-            </div>
 
-            <div class="quote-section exp-section" id="exp-section">
-                <button type="button" class="quote-toggle" id="exp-toggle" aria-expanded="true" aria-controls="exp-body" onclick="toggleExp()">
-                    <span data-i18n="label_expense_log">Registro de gastos</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-                </button>
-                <div class="quote-body exp-body" id="exp-body">
-<div class="scanner-warn" id="scanner-warning" data-i18n="scanner_beta_msg">⚠️ El escáner está en beta. Verificá siempre el monto detectado.</div>
-            <div class="scan-btns">
-                <button class="btn btn-cyan btn-stack" onclick="startScanner()"><span class="btn-main">📷 <span id="scan-cam-lbl" data-i18n="btn_camera">ESCANEAR</span></span><small id="scan-cam-sub" data-i18n="btn_camera_sub">Escaneá el ticket y detecto el total</small></button>
-                <button class="btn btn-ghost btn-stack" onclick="document.getElementById('gallery-input').click()"><span class="btn-main">🖼️ <span id="scan-gal-lbl" data-i18n="btn_gallery">DESDE GALERÍA</span></span><small id="scan-gal-sub" data-i18n="btn_gallery_sub">Subí una foto de un ticket ya sacado</small></button>
-            </div>
-            <input type="file" id="gallery-input" accept="image/*" style="display:none;" onchange="handleGalleryImage(event)">
-
-<div class="input-group"><input type="text" id="nombre" placeholder="Producto" data-i18n-ph="placeholder_product" enterkeyhint="next" autocomplete="off"></div>
-            <div class="input-group"><input type="number" id="valor" placeholder="Precio USD" step="0.01" inputmode="decimal" enterkeyhint="done" data-i18n-ph="placeholder_price"></div>
+            <div class="input-group"><input type="text" id="nombre" placeholder="Producto" data-i18n-ph="placeholder_product"></div>
+            <div class="input-group"><input type="number" id="valor" placeholder="Precio USD" step="0.01" inputmode="decimal" data-i18n-ph="placeholder_price"></div>
             <span class="cat-tag-label" data-i18n="label_cat_tag">Categoría</span>
             <div class="cat-tag-row" id="cat-tag-row">
                 <button class="cat-tag sel" data-cat="🛍️ Compras" data-i18n="cat_shopping">🛍️ Compras</button>
@@ -724,9 +637,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
                 <button class="cat-tag" data-cat="📦 Otros" data-i18n="cat_other">📦 Otros</button>
             </div>
             <button class="btn btn-primary" onclick="addGasto()">💾 <span data-i18n="btn_save_expense">GUARDAR GASTO</span></button>
-            <div id="listaGastos" aria-busy="true"><div class="tf-skel" style="height:56px"></div><div class="tf-skel" style="height:56px"></div><div class="tf-skel" style="height:56px"></div></div>
-                </div>
-            </div>
+            <div id="listaGastos"><p style="text-align:center;color:var(--text-dim);font-size:.85rem;" data-i18n="loading">Cargando...</p></div>
         </div>
 
         
@@ -780,14 +691,6 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
                     <span>📤</span><span data-i18n="btn_export_share">COMPARTIR RESUMEN</span>
                 </button>
             </div>
-
-            <details class="caps-box" id="caps-box">
-                <summary data-i18n="caps_title">Topes por categoría</summary>
-                <p class="caps-help" data-i18n="caps_help">Poné un máximo para las categorías que quieras controlar. Dejalo vacío si no querés tope.</p>
-                <div id="caps-list"></div>
-                <div class="caps-total" id="caps-total"></div>
-                <button class="btn btn-primary" id="caps-save-btn" onclick="guardarTopes()" data-i18n="caps_save">GUARDAR TOPES</button>
-            </details>
         </div>
 
         
@@ -899,15 +802,15 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     
     <div id="pinStep1">
       <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel1">PIN Nuevo (4–6 dígitos)</label>
-      <input id="pinInput1" type="text" name="tf-pininput1" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
-        style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;transition:all .2s;"
+      <input id="pinInput1" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*"
+        style="width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;transition:all .2s;"
         oninput="this.value=this.value.replace(/[^0-9]/g,'');pinInputFocus(this)"
         onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
         onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
         placeholder="••••">
       <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel2">Confirmar PIN</label>
-      <input id="pinInput2" type="text" name="tf-pininput2" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
-        style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
+      <input id="pinInput2" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*"
+        style="width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
         onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
@@ -1066,8 +969,6 @@ async function flushPendingGastos() {
         await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), op.data);
       } else if (op.type === "del") {
         await deleteDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", op.id));
-      } else if (op.type === "upd") {
-        await updateDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", op.id), op.data);
       }
     } catch (e) {
       failed.push(op);
@@ -1083,7 +984,6 @@ window.addEventListener("online", () => {
 const perfilFoto = localStorage.getItem("perfilActivoFoto");
 
 let presupuestoBase = 0;
-let catBudgets = {};
 
 let mapsSpent = 0;
 
@@ -1111,7 +1011,8 @@ function listenTripPlanningSpent() {
     const path = id === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", id, "data", "budget"];
     tripBudgetUnsubs.push(onSnapshot(doc(db, ...path), snap => {
       const d = snap.exists() ? snap.data() : null;
-      totals.set(id, (d?.gastos || []).reduce((s, g) => s + (Number(g.monto) || 0), 0));
+      const wm = d?.countMarket ? Number(d.walmartSpent) || 0 : 0;
+      totals.set(id, wm + (d?.gastos || []).reduce((s, g) => s + (Number(g.monto) || 0), 0));
       mapsSpent = [...totals.values()].reduce((a, b) => a + b, 0);
       updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
     }, () => {}));
@@ -1161,26 +1062,6 @@ const i18n = {
     label_budget: "Presupuesto Restante",
     btn_set: "SET",
     btn_change_budget: "✏️ Cambiar",
-    bc_empty_title: "Definí tu presupuesto",
-    bc_empty_sub: "Ingresá cuánto pensás gastar en este viaje y te mostramos cuánto te queda.",
-    btn_save_budget: "GUARDAR",
-    bc_total: "Presupuesto total",
-    bc_over_label: "Te pasaste por",
-    bc_progress: "Gastaste USD {spent} de USD {total} ({pct}%)",
-    bc_spent_expenses: "🧾 Gastos",
-    bc_spent_plan: "🗺️ Planificación",
-    bc_hint: "Vale para este viaje. Se descuentan tus gastos y lo cargado en Planificación.",
-    bc_hint_unassigned: "Sin viaje: este presupuesto se guarda solo en este dispositivo.",
-    bc_no_trip: "Sin viaje",
-    bc_invalid: "Ingresá un monto mayor a 0.",
-    caps_title: "Topes por categoría",
-    caps_help: "Poné un máximo para las categorías que quieras controlar. Dejalo vacío si no querés tope.",
-    caps_placeholder: "Sin tope",
-    caps_assigned: "Topes asignados: USD {sum} de USD {total}",
-    caps_assigned_nobudget: "Topes asignados: USD {sum}",
-    caps_over_total: "Los topes suman más que tu presupuesto total.",
-    caps_save: "GUARDAR TOPES",
-    caps_saved: "✅ Guardado",
     ocr_analyzing: "Analizando ticket... 🧐",
     ocr_detecting: "Detectando Totales y Taxes",
     shopping_guide: "GUÍA DE COMPRAS",
@@ -1190,14 +1071,11 @@ const i18n = {
     tab_compare: "COMPARAR",
     scanner_beta_msg: "⚠️ El escáner está en beta. Verificá siempre el monto detectado.",
     btn_scan_ticket: "ESCANEAR TICKET",
-    btn_camera: "ESCANEAR",
-    btn_gallery: "DESDE GALERÍA",
+    btn_camera: "CÁMARA",
+    btn_gallery: "GALERÍA",
     rate_official: "Dólar Oficial",
     rate_card: "Dólar Tarjeta",
     label_exchange: "Cotizaciones",
-    label_expense_log: "Registro de gastos",
-    btn_camera_sub: "Escaneá el ticket y detecto el total",
-    btn_gallery_sub: "Subí una foto de un ticket ya sacado",
     opt_pound: "Libra",
     opt_real: "Real",
     opt_clp: "P. Chileno",
@@ -1219,20 +1097,6 @@ const i18n = {
     cat_other: "📦 Otros",
     btn_save_expense: "GUARDAR GASTO",
     loading: "Cargando...",
-    empty_expenses: "No hay gastos.",
-    fill_product_msg: "Completá el nombre del producto.",
-    day_today: "Hoy",
-    day_yesterday: "Ayer",
-    day_nodate: "Sin fecha",
-    toast_saved: "Guardado",
-    toast_deleted: "Gasto eliminado",
-    toast_updated: "Gasto actualizado",
-    undo: "Deshacer",
-    edit_title: "Editar gasto",
-    edit_save: "Guardar cambios",
-    edit_cancel: "Cancelar",
-    aria_edit: "Editar gasto",
-    aria_delete: "Eliminar gasto",
     dash_total: "Total gastado",
     dash_count: "Compras",
     dash_avg: "Promedio",
@@ -1333,26 +1197,6 @@ const i18n = {
     label_budget: "Remaining Budget",
     btn_set: "SET",
     btn_change_budget: "✏️ Change",
-    bc_empty_title: "Set your budget",
-    bc_empty_sub: "Enter how much you plan to spend on this trip and we'll show what's left.",
-    btn_save_budget: "SAVE",
-    bc_total: "Total budget",
-    bc_over_label: "Over budget by",
-    bc_progress: "Spent USD {spent} of USD {total} ({pct}%)",
-    bc_spent_expenses: "🧾 Expenses",
-    bc_spent_plan: "🗺️ Planning",
-    bc_hint: "Applies to this trip. Your expenses and what's logged in Planning are deducted.",
-    bc_hint_unassigned: "No trip: this budget is saved only on this device.",
-    bc_no_trip: "No trip",
-    bc_invalid: "Enter an amount greater than 0.",
-    caps_title: "Category limits",
-    caps_help: "Set a maximum for the categories you want to control. Leave blank for no limit.",
-    caps_placeholder: "No limit",
-    caps_assigned: "Limits assigned: USD {sum} of USD {total}",
-    caps_assigned_nobudget: "Limits assigned: USD {sum}",
-    caps_over_total: "The limits add up to more than your total budget.",
-    caps_save: "SAVE LIMITS",
-    caps_saved: "✅ Saved",
     ocr_analyzing: "Analyzing ticket... 🧐",
     ocr_detecting: "Detecting Totals and Taxes",
     shopping_guide: "SHOPPING GUIDE",
@@ -1362,14 +1206,11 @@ const i18n = {
     tab_compare: "COMPARE",
     scanner_beta_msg: "⚠️ Scanner is in beta. Always verify the detected amount.",
     btn_scan_ticket: "SCAN TICKET",
-    btn_camera: "SCAN",
-    btn_gallery: "FROM GALLERY",
+    btn_camera: "CAMERA",
+    btn_gallery: "GALLERY",
     rate_official: "Official Dollar",
     rate_card: "Card Dollar",
     label_exchange: "Exchange Rates",
-    label_expense_log: "Expense log",
-    btn_camera_sub: "Scan a receipt and I detect the total",
-    btn_gallery_sub: "Upload a photo of an existing receipt",
     opt_pound: "Pound",
     opt_real: "Real",
     opt_clp: "Chilean P.",
@@ -1391,20 +1232,6 @@ const i18n = {
     cat_other: "📦 Other",
     btn_save_expense: "SAVE EXPENSE",
     loading: "Loading...",
-    empty_expenses: "No expenses.",
-    fill_product_msg: "Please fill in the product name.",
-    day_today: "Today",
-    day_yesterday: "Yesterday",
-    day_nodate: "No date",
-    toast_saved: "Saved",
-    toast_deleted: "Expense deleted",
-    toast_updated: "Expense updated",
-    undo: "Undo",
-    edit_title: "Edit expense",
-    edit_save: "Save changes",
-    edit_cancel: "Cancel",
-    aria_edit: "Edit expense",
-    aria_delete: "Delete expense",
     dash_total: "Total spent",
     dash_count: "Purchases",
     dash_avg: "Average",
@@ -1505,26 +1332,6 @@ const i18n = {
     label_budget: "Orçamento Restante",
     btn_set: "SET",
     btn_change_budget: "✏️ Alterar",
-    bc_empty_title: "Defina seu orçamento",
-    bc_empty_sub: "Informe quanto pretende gastar nesta viagem e mostramos quanto resta.",
-    btn_save_budget: "SALVAR",
-    bc_total: "Orçamento total",
-    bc_over_label: "Você passou em",
-    bc_progress: "Gastou USD {spent} de USD {total} ({pct}%)",
-    bc_spent_expenses: "🧾 Gastos",
-    bc_spent_plan: "🗺️ Planejamento",
-    bc_hint: "Vale para esta viagem. Seus gastos e o lançado em Planejamento são descontados.",
-    bc_hint_unassigned: "Sem viagem: este orçamento fica salvo só neste dispositivo.",
-    bc_no_trip: "Sem viagem",
-    bc_invalid: "Insira um valor maior que 0.",
-    caps_title: "Limites por categoria",
-    caps_help: "Defina um máximo para as categorias que quiser controlar. Deixe vazio para não ter limite.",
-    caps_placeholder: "Sem limite",
-    caps_assigned: "Limites atribuídos: USD {sum} de USD {total}",
-    caps_assigned_nobudget: "Limites atribuídos: USD {sum}",
-    caps_over_total: "Os limites somam mais que seu orçamento total.",
-    caps_save: "SALVAR LIMITES",
-    caps_saved: "✅ Salvo",
     ocr_analyzing: "Analisando ticket... 🧐",
     ocr_detecting: "Detectando Totais e Taxes",
     shopping_guide: "GUIA DE COMPRAS",
@@ -1534,14 +1341,11 @@ const i18n = {
     tab_compare: "COMPARAR",
     scanner_beta_msg: "⚠️ O scanner está em beta. Verifique sempre o valor detectado.",
     btn_scan_ticket: "ESCANEAR TICKET",
-    btn_camera: "ESCANEAR",
-    btn_gallery: "DA GALERIA",
+    btn_camera: "CÂMERA",
+    btn_gallery: "GALERIA",
     rate_official: "Dólar Oficial",
     rate_card: "Dólar Cartão",
     label_exchange: "Cotações",
-    label_expense_log: "Registro de gastos",
-    btn_camera_sub: "Escaneie o ticket e detecto o total",
-    btn_gallery_sub: "Envie a foto de um ticket já tirado",
     opt_pound: "Libra",
     opt_real: "Real",
     opt_clp: "P. Chileno",
@@ -1563,20 +1367,6 @@ const i18n = {
     cat_other: "📦 Outros",
     btn_save_expense: "SALVAR GASTO",
     loading: "Carregando...",
-    empty_expenses: "Sem gastos.",
-    fill_product_msg: "Por favor preencha o nome do produto.",
-    day_today: "Hoje",
-    day_yesterday: "Ontem",
-    day_nodate: "Sem data",
-    toast_saved: "Salvo",
-    toast_deleted: "Gasto excluído",
-    toast_updated: "Gasto atualizado",
-    undo: "Desfazer",
-    edit_title: "Editar gasto",
-    edit_save: "Salvar alterações",
-    edit_cancel: "Cancelar",
-    aria_edit: "Editar gasto",
-    aria_delete: "Excluir gasto",
     dash_total: "Total gasto",
     dash_count: "Compras",
     dash_avg: "Média",
@@ -1751,10 +1541,9 @@ window.changeLanguage = lang => {
   if (ocrSave) ocrSave.textContent = t.ocr_save || "";
   const donutLbl = document.getElementById("donut-lbl");
   if (donutLbl) donutLbl.textContent = t.donut_total_lbl || "TOTAL";
-  [ [ "scan-cam-lbl", "btn_camera" ], [ "scan-cam-sub", "btn_camera_sub" ], [ "scan-gal-lbl", "btn_gallery" ], [ "scan-gal-sub", "btn_gallery_sub" ] ].forEach(([ id, k ]) => {
-    const el = document.getElementById(id);
-    if (el && t[k]) el.textContent = t[k];
-  });
+  const scanBtns = document.querySelectorAll(".scan-btns .btn span");
+  if (scanBtns[0]) scanBtns[0].textContent = t.btn_camera || "";
+  if (scanBtns[1]) scanBtns[1].textContent = t.btn_gallery || "";
   const emptyDash = document.getElementById("dash-empty");
   if (emptyDash && t.empty_dash) {
     const parts = t.empty_dash.split("\n");
@@ -1763,8 +1552,6 @@ window.changeLanguage = lang => {
   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
   if (window.szReRender) window.szReRender();
   if (typeof allGastos !== "undefined" && allGastos.length) renderDashboard(allGastos);
-  try { renderBudgetCard(); renderCapsEditor(); } catch (e) {}
-  try { if (typeof allGastos !== "undefined" && allGastos.length) renderGastosList(allGastos); } catch (e) {}
 };
 
 (function() {
@@ -1990,7 +1777,7 @@ window.changeLanguage = lang => {
       const colHdr = d.cols.map(c => `<th>${c}</th>`).join("");
       const rowsHtml = b.rows.map((row, ri) => {
         const cells = row.map((cell, ci) => {
-          if (ci === 0) return `<td class="sz-row-lbl">${szT(cell) || cell}</td>`;
+          if (ci === 0) return `<td class="sz-table td sz-row-lbl">${szT(cell) || cell}</td>`;
           return `<td class="${ri === 0 ? "sz-hl" : ""}">${cell}</td>`;
         }).join("");
         return `<tr>${cells}</tr>`;
@@ -2075,417 +1862,93 @@ window.convert = (type, dir) => {
   if (dir === "usd") l.value = fmt(cleanVal(u.value) * r); else u.value = fmt(cleanVal(l.value) / r);
 };
 
-// ═══════════ Presupuesto: tarjeta, edición inline y topes por categoría ═══════════
-function bt(key, vars) {
-  const lang = localStorage.getItem("appLang") || "es";
-  let str = (i18n[lang] && i18n[lang][key]) || i18n.es[key] || key;
-  if (vars) Object.keys(vars).forEach(k => { str = str.split("{" + k + "}").join(vars[k]); });
-  return str;
-}
-
-function budgetTripName() {
-  if (!currentUser || !perfilId) return "";
-  const tc = window.TripContext;
-  const id = tc.view(currentUser.uid, perfilId);
-  if (id === "unassigned") return bt("bc_no_trip");
-  const trip = tc.readTrips(currentUser.uid, perfilId).find(t => t.id === id);
-  return trip ? trip.name : "";
-}
-
-function renderBudgetCard() {
-  const card = document.getElementById("budget-card");
-  const row = document.getElementById("budget-set-row");
-  if (!card || !row) return;
-  const has = presupuestoBase > 0;
-  const editing = row._editing === true;
-  // Lo registrado desde Supermercado ("Registrar como gasto") se muestra en el chip Planificación, no en Gastos.
-  // El total (eff) no cambia: solo se reparte entre los dos chips.
-  let superSum = 0;
-  try {
-    superSum = filteredGastos().filter(g => g.source === "walmart" && !pendingDeletes.has(g.id)).reduce((t, g) => t + (Number(g.valor) || 0), 0);
-  } catch (e) {}
-  const spentG = Math.max(0, (lastGastosTotal || 0) - superSum), spentP = (mapsSpent || 0) + superSum;
-  const eff = (lastGastosTotal || 0) + (mapsSpent || 0);
-  const pct = has ? eff / presupuestoBase * 100 : 0;
-  const over = has && eff > presupuestoBase;
-  const show = (id, on, disp) => { const el = document.getElementById(id); if (el) el.style.display = on ? (disp || "block") : "none"; };
-
-  card.classList.toggle("bc-over", over);
-
-  const tripEl = document.getElementById("bc-trip");
-  const name = budgetTripName();
-  if (tripEl) { tripEl.textContent = name ? "✈️ " + name : ""; tripEl.style.display = name ? "" : "none"; }
-
-  const lbl = document.getElementById("bc-label");
-  if (lbl) lbl.textContent = !has ? "" : over ? bt("bc_over_label") : (i18n[localStorage.getItem("appLang") || "es"]?.label_budget || "Presupuesto Restante");
-
-  show("bc-empty", !has);
-  show("bc-main", has);
-  show("budget-info-row", has && !editing, "flex");
-  row.style.display = (!has || editing) ? "flex" : "none";
-  const cancel = document.getElementById("bc-cancel-btn");
-  if (cancel) cancel.style.display = editing ? "" : "none";
-
-  if (has) {
-    const rest = presupuestoBase - eff;
-    const disp = document.getElementById("disp-fondo");
-    if (disp) disp.textContent = "USD " + fmt(Math.abs(rest));
-    const fill = document.getElementById("bc-fill");
-    if (fill) {
-      fill.style.width = Math.min(100, Math.max(0, pct)).toFixed(1) + "%";
-      fill.style.background = pct >= 100 ? "#fecaca" : pct >= 90 ? "#fb923c" : pct >= 70 ? "#fbbf24" : "#34d399";
-    }
-    const txt = document.getElementById("bc-progress-txt");
-    if (txt) txt.textContent = bt("bc_progress", { spent: fmt(eff), total: fmt(presupuestoBase), pct: Math.round(pct) });
-    const cg = document.getElementById("bc-chip-gastos");
-    if (cg) cg.textContent = bt("bc_spent_expenses") + " USD " + fmt(spentG);
-    const cp = document.getElementById("budget-maps-note");
-    if (cp) cp.textContent = bt("bc_spent_plan") + " USD " + fmt(spentP);
-    const base = document.getElementById("budget-base-val");
-    if (base) base.textContent = "USD " + fmt(presupuestoBase);
-    const tl = document.getElementById("bc-total-lbl");
-    if (tl) tl.textContent = bt("bc_total");
-  }
-
-  const hint = document.getElementById("bc-hint");
-  if (hint) {
-    const unassigned = currentUser && perfilId && window.TripContext.view(currentUser.uid, perfilId) === "unassigned";
-    hint.textContent = unassigned ? bt("bc_hint_unassigned") : bt("bc_hint");
-  }
-}
-
-window.refreshBudgetInfoRow = function refreshBudgetInfoRow() { renderBudgetCard(); };
-
 window.toggleBudgetEdit = () => {
   const row = document.getElementById("budget-set-row");
-  const input = document.getElementById("input-fondo");
-  if (!row || !input) return;
-  if (row._editing) { window.cancelBudgetEdit(); return; }
-  row._editing = true;
-  input.value = presupuestoBase > 0 ? String(presupuestoBase) : "";
-  renderBudgetCard();
-  setTimeout(() => { input.focus(); input.select(); }, 50);
+  const visible = row.style.display !== "none";
+  row._editing = !visible;
+  row.style.display = visible ? "none" : "flex";
+  if (!visible) setTimeout(() => document.getElementById("input-fondo").focus(), 50);
 };
 
-window.cancelBudgetEdit = () => {
-  const row = document.getElementById("budget-set-row");
-  const input = document.getElementById("input-fondo");
-  if (!row || !input) return;
-  row._editing = false;
-  input.value = "";
-  renderBudgetCard();
+window.refreshBudgetInfoRow = function refreshBudgetInfoRow() {
+  const infoRow = document.getElementById("budget-info-row");
+  const baseVal = document.getElementById("budget-base-val");
+  const setRow = document.getElementById("budget-set-row");
+  if (!infoRow || !setRow) return;
+  if (presupuestoBase > 0) {
+    infoRow.style.display = "flex";
+    if (baseVal) baseVal.textContent = "USD " + fmt(presupuestoBase);
+    if (setRow._editing !== true) setRow.style.display = "none";
+  } else {
+    infoRow.style.display = "none";
+    setRow.style.display = "flex";
+  }
 };
-
-(function initBudgetInput() {
-  const input = document.getElementById("input-fondo");
-  const row = document.getElementById("budget-set-row");
-  if (!input || !row) return;
-  input.addEventListener("focus", () => { input._skipBlur = false; });
-  input.addEventListener("keydown", e => {
-    if (e.key === "Enter") { e.preventDefault(); input._skipBlur = true; window.updateFondo(); }
-    else if (e.key === "Escape") { input._skipBlur = true; window.cancelBudgetEdit(); }
-  });
-  // iOS no da foco a los botones: pointerdown avisa que el toque va a un botón, no a "salir del campo"
-  row.addEventListener("pointerdown", e => {
-    if (e.target.closest("button")) { row._pressing = true; setTimeout(() => { row._pressing = false; }, 500); }
-  });
-  input.addEventListener("blur", () => {
-    if (input._skipBlur) { input._skipBlur = false; return; }
-    if (row._pressing) return;
-    const v = parseFloat(input.value);
-    if (isFinite(v) && v > 0 && v !== presupuestoBase) window.updateFondo();
-    else if (row._editing) window.cancelBudgetEdit();
-  });
-})();
 
 window.updateFondo = async () => {
   const input = document.getElementById("input-fondo");
-  const v = parseFloat(String(input.value).replace(",", "."));
-  if (!isFinite(v) || v <= 0) {
-    showAlert(bt("bc_invalid"));
+  const v = parseFloat(input.value);
+  if (isNaN(v) || v < 0) {
+    const lang = localStorage.getItem("appLang") || "es";
+    const m = {
+      es: "Ingresá un presupuesto mayor a 0.",
+      en: "Enter a budget greater than 0.",
+      pt: "Insira um orçamento maior que 0."
+    };
+    showAlert(m[lang] || m.es);
     return;
   }
   presupuestoBase = v;
   guardarPresupuestoEnCache(v);
-  const row = document.getElementById("budget-set-row");
-  if (row) row._editing = false;
-  input.value = "";
   const spent = filteredGastos().reduce((s, g) => s + (Number(g.valor) || 0), 0);
   updateBudgetDisplay(spent);
+  input.value = "";
+  input.placeholder = "USD 0";
+  const setRow2 = document.getElementById("budget-set-row");
+  if (setRow2) setRow2._editing = false;
+  refreshBudgetInfoRow();
   if (currentUser && perfilId) {
     try {
-      const ref = currentBudgetRef();
-      if (ref) await setDoc(ref, { [currentBudgetField()]: v }, { merge: true });
+      const ref=currentBudgetRef();
+      if (ref) await setDoc(ref,{[currentBudgetField()]:v},{merge:true});
     } catch (e) {
       console.warn("Budget save failed, cached locally", e);
     }
   }
 };
 
-// ── Topes por categoría (se guardan junto al presupuesto, por clave i18n: cat_shopping, cat_food…) ──
-function normalizeCatBudgets(o) {
-  const out = {};
-  Object.keys(o || {}).forEach(k => { const n = Number(o[k]); if (isFinite(n) && n > 0) out[k] = n; });
-  return out;
-}
-function catBudgetsCacheKey() { return currentBudgetKey() + "::cats"; }
-function guardarTopesEnCache(obj) {
-  try { localStorage.setItem(catBudgetsCacheKey(), JSON.stringify(obj || {})); } catch (e) {}
-}
-function cargarTopesDesdeCache() {
-  try {
-    const o = JSON.parse(localStorage.getItem(catBudgetsCacheKey()) || "{}");
-    return normalizeCatBudgets(o && typeof o === "object" ? o : {});
-  } catch (e) { return {}; }
-}
-
-function renderCapsEditor() {
-  const list = document.getElementById("caps-list");
-  if (!list) return;
-  list.innerHTML = Object.keys(CAT_I18N_KEY).map(cat => {
-    const key = CAT_I18N_KEY[cat];
-    const val = catBudgets[key] ? String(catBudgets[key]) : "";
-    return `<div class="caps-row"><span class="caps-name">${catLabel(cat)}</span><input type="number" inputmode="decimal" min="0" step="0.01" data-capkey="${key}" placeholder="${bt("caps_placeholder")}" value="${val}"></div>`;
-  }).join("");
-  updateCapsTotal();
-}
-
-function updateCapsTotal() {
-  const out = document.getElementById("caps-total");
-  if (!out) return;
-  let sum = 0;
-  document.querySelectorAll("#caps-list input[data-capkey]").forEach(i => { const v = parseFloat(i.value); if (isFinite(v) && v > 0) sum += v; });
-  if (presupuestoBase > 0) {
-    out.textContent = bt("caps_assigned", { sum: fmt(sum), total: fmt(presupuestoBase) }) + (sum > presupuestoBase ? " — " + bt("caps_over_total") : "");
-    out.classList.toggle("warn", sum > presupuestoBase);
-  } else {
-    out.textContent = bt("caps_assigned_nobudget", { sum: fmt(sum) });
-    out.classList.remove("warn");
-  }
-}
-
-(function initCapsUi() {
-  const list = document.getElementById("caps-list");
-  const box = document.getElementById("caps-box");
-  if (list) list.addEventListener("input", updateCapsTotal);
-  if (box) box.addEventListener("toggle", () => { if (box.open) renderCapsEditor(); });
-})();
-
-window.guardarTopes = async () => {
-  const obj = {};
-  document.querySelectorAll("#caps-list input[data-capkey]").forEach(i => {
-    const v = parseFloat(i.value);
-    obj[i.dataset.capkey] = isFinite(v) && v > 0 ? v : 0;   // 0 = sin tope (así un merge también borra topes viejos)
-  });
-  catBudgets = normalizeCatBudgets(obj);
-  guardarTopesEnCache(catBudgets);
-  if (typeof allGastos !== "undefined") renderDashboard(allGastos);
-  updateCapsTotal();
-  const btn = document.getElementById("caps-save-btn");
-  if (btn) {
-    btn.textContent = bt("caps_saved");
-    setTimeout(() => { btn.textContent = bt("caps_save"); }, 1600);
-  }
-  if (currentUser && perfilId) {
-    try {
-      const ref = currentBudgetRef();
-      if (ref) await setDoc(ref, { presupuestoCats: obj }, { merge: true });
-    } catch (e) {
-      console.warn("Caps save failed, cached locally", e);
-    }
-  }
-};
-
-function renderCatBars(cats, total) {
-  const rows = cats.slice();
-  Object.keys(CAT_I18N_KEY).forEach(cat => {
-    if (catBudgets[CAT_I18N_KEY[cat]] && !rows.some(r => r[0] === cat)) rows.push([cat, 0]);
-  });
-  return rows.map(([cat, val]) => {
-    const cap = catBudgets[CAT_I18N_KEY[cat]] || 0;
-    if (cap > 0) {
-      const p = val / cap * 100;
-      const color = p >= 100 ? "var(--danger)" : p >= 80 ? "#f59e0b" : catColor(cat);
-      return `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabel(cat)}${p >= 100 ? " ⚠️" : ""}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">/ ${fmt(cap)}</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.min(100, Math.round(p))}%;background:${color};"></div></div></div>`;
-    }
-    return `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabel(cat)}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">${Math.round(val / total * 100)}%</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.round(val / total * 100)}%;background:${catColor(cat)};"></div></div></div>`;
-  }).join("");
-}
-
 window.addGasto = async () => {
   await addGastoWithThumb("");
 };
 
-function showExpToast(msg, actionLabel, onAction, ms) {
-  const el = document.getElementById("exp-toast");
-  if (!el) return;
-  clearTimeout(el._t);
-  el.textContent = "";
-  const span = document.createElement("span");
-  span.textContent = msg;
-  el.appendChild(span);
-  if (actionLabel) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = actionLabel;
-    btn.onclick = () => {
-      el.classList.remove("show");
-      if (onAction) onAction();
-    };
-    el.appendChild(btn);
-  }
-  el.classList.add("show");
-  el._t = setTimeout(() => el.classList.remove("show"), ms || 2200);
-}
-
-function dropPendingAdd(g) {
-  const ops = getPendingGastos();
-  const i = ops.findIndex(o => o.type === "add" && o.data && o.data.fecha === g.fecha && o.data.nombre === g.nombre);
-  if (i > -1) {
-    ops.splice(i, 1);
-    savePendingGastos(ops);
-  }
-}
-
-async function removeGastoRemote(g) {
-  const id = g.id;
-  if (String(id).startsWith("local_")) {
-    dropPendingAdd(g);
-    return;
-  }
+window.deleteGasto = async id => {
+  const lang = localStorage.getItem("appLang") || "es";
+  const msgs = {
+    es: "¿Eliminar este gasto?",
+    en: "Delete this expense?",
+    pt: "Excluir este gasto?"
+  };
+  if (!await showConfirm(msgs[lang] || msgs.es) || !perfilId) return;
+  const cached = cargarGastosDesdeCache() || [];
+  guardarGastosEnCache(cached.filter(g => g.id !== id));
+  allGastos = allGastos.filter(g => g.id !== id);
+  renderGastosList(allGastos);
   if (!navigator.onLine || !currentUser) {
-    queueGastoOp({ type: "del", id: id });
+    queueGastoOp({
+      type: "del",
+      id: id
+    });
     return;
   }
   try {
     await deleteDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", id));
   } catch (e) {
-    queueGastoOp({ type: "del", id: id });
-  }
-}
-
-function commitDelete(id) {
-  const p = pendingDeletes.get(id);
-  if (!p) return;
-  clearTimeout(p.timer);
-  pendingDeletes.delete(id);
-  removeGastoRemote(p.gasto);
-}
-
-function commitAllDeletesNow() {
-  [ ...pendingDeletes.keys() ].forEach(commitDelete);
-}
-
-function undoDelete(id) {
-  const p = pendingDeletes.get(id);
-  if (!p) return;
-  clearTimeout(p.timer);
-  pendingDeletes.delete(id);
-  if (!allGastos.some(x => x.id === id)) allGastos.push(p.gasto);
-  allGastos.sort((x, y) => (Number(y.fecha) || 0) - (Number(x.fecha) || 0));
-  guardarGastosEnCache(allGastos);
-  renderGastosList(allGastos);
-}
-
-window.deleteGasto = id => {
-  if (!perfilId) return;
-  const g = allGastos.find(x => x.id === id);
-  if (!g || pendingDeletes.has(id)) return;
-  commitAllDeletesNow();
-  const cached = cargarGastosDesdeCache() || [];
-  guardarGastosEnCache(cached.filter(x => x.id !== id));
-  allGastos = allGastos.filter(x => x.id !== id);
-  pendingDeletes.set(id, { gasto: g, timer: setTimeout(() => commitDelete(id), 6000) });
-  renderGastosList(allGastos);
-  showExpToast(bt("toast_deleted"), bt("undo"), () => undoDelete(id), 6000);
-};
-
-function persistPendingDeletesSafely() {
-  if (!pendingDeletes.size) return;
-  pendingDeletes.forEach(p => {
-    clearTimeout(p.timer);
-    if (String(p.gasto.id).startsWith("local_")) dropPendingAdd(p.gasto); else queueGastoOp({ type: "del", id: p.gasto.id });
-  });
-  pendingDeletes.clear();
-  document.getElementById("exp-toast")?.classList.remove("show");
-  flushPendingGastos();
-}
-
-window.addEventListener("pagehide", persistPendingDeletesSafely);
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") persistPendingDeletesSafely();
-});
-
-let _editGastoId = null;
-
-window.editGasto = id => {
-  const g = allGastos.find(x => x.id === id);
-  if (!g) return;
-  _editGastoId = id;
-  document.getElementById("edit-gasto-name").value = g.nombre || "";
-  document.getElementById("edit-gasto-val").value = parseFloat(g.valor) || 0;
-  const sel = document.getElementById("edit-gasto-cat");
-  const current = g.cat || "📦 Otros";
-  const cats = Object.keys(CAT_COLORS);
-  if (!cats.includes(current)) cats.push(current);
-  sel.innerHTML = cats.map(c => `<option value="${esc(c)}"${c === current ? " selected" : ""}>${esc(catLabel(c))}</option>`).join("");
-  document.getElementById("edit-gasto-overlay").classList.add("open");
-  setTimeout(() => document.getElementById("edit-gasto-name").focus(), 50);
-};
-
-window.closeEditGasto = () => {
-  document.getElementById("edit-gasto-overlay").classList.remove("open");
-  _editGastoId = null;
-};
-
-window.saveEditGasto = async () => {
-  const id = _editGastoId;
-  const g = allGastos.find(x => x.id === id);
-  if (!g) { closeEditGasto(); return; }
-  const nombre = document.getElementById("edit-gasto-name").value.trim();
-  const valor = parseFloat(document.getElementById("edit-gasto-val").value);
-  const cat = document.getElementById("edit-gasto-cat").value || "📦 Otros";
-  if (!nombre || isNaN(valor) || valor < 0) {
-    showAlert(bt("fill_product_msg"));
-    return;
-  }
-  const patch = { nombre: nombre, valor: valor, cat: cat };
-  const before = { ...g };
-  allGastos = allGastos.map(x => x.id === id ? { ...x, ...patch } : x);
-  const cached = cargarGastosDesdeCache() || [];
-  guardarGastosEnCache(cached.map(x => x.id === id ? { ...x, ...patch } : x));
-  closeEditGasto();
-  renderGastosList(allGastos);
-  showExpToast(bt("toast_updated"));
-  if (String(id).startsWith("local_")) {
-    const ops = getPendingGastos();
-    const op = ops.find(o => o.type === "add" && o.data && o.data.fecha === before.fecha && o.data.nombre === before.nombre);
-    if (op) {
-      op.data = { ...op.data, ...patch };
-      savePendingGastos(ops);
-    }
-    return;
-  }
-  if (!navigator.onLine || !currentUser) {
-    queueGastoOp({ type: "upd", id: id, data: patch });
-    return;
-  }
-  try {
-    await updateDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", id), patch);
-  } catch (e) {
-    queueGastoOp({ type: "upd", id: id, data: patch });
+    queueGastoOp({
+      type: "del",
+      id: id
+    });
   }
 };
-
-document.addEventListener("keydown", e => {
-  const ov = document.getElementById("edit-gasto-overlay");
-  if (!ov || !ov.classList.contains("open")) return;
-  if (e.key === "Escape") closeEditGasto();
-  if (e.key === "Enter" && !e.isComposing && e.target.tagName !== "SELECT") {
-    e.preventDefault();
-    if (e.target.id === "edit-gasto-name" && document.getElementById("edit-gasto-val").value === "") document.getElementById("edit-gasto-val").focus(); else saveEditGasto();
-  }
-});
 
 let allGastos = [];
 
@@ -2523,79 +1986,24 @@ function catLabel(cat) {
   return key && i18n[lang]?.[key] || cat;
 }
 
-const pendingDeletes = new Map();
-
-function dayKey(ts) {
-  const n = Number(ts);
-  const d = new Date(n);
-  if (!n || isNaN(d.getTime())) return "none";
-  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-}
-
-function dayLabel(key, ts) {
-  if (key === "none") return bt("day_nodate");
-  const now = new Date();
-  const yest = new Date(now);
-  yest.setDate(now.getDate() - 1);
-  if (key === dayKey(now.getTime())) return bt("day_today");
-  if (key === dayKey(yest.getTime())) return bt("day_yesterday");
-  const lang = localStorage.getItem("appLang") || "es";
-  const loc = { es: "es-AR", en: "en-US", pt: "pt-BR" }[lang] || "es-AR";
-  return new Date(Number(ts)).toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "short" });
-}
-
-function zeroLabel() {
-  const lg = localStorage.getItem("appLang") || "es";
-  return { es: "Sin costo", en: "No cost", pt: "Sem custo" }[lg] || "Sin costo";
-}
-function amountLabel(v) {
-  return (parseFloat(v) || 0) > 0 ? "-" + fmt(v) : zeroLabel();
-}
-
-function gastoItemHtml(g) {
-  const cat = g.cat || "📦 Otros";
-  const catEmoji = cat.match(/^(\S+)/)?.[1] || "📦";
-  const catDisplayLabel = catLabel(cat).replace(/^\S+\s*/, "");
-  const thumbHtml = g.thumb ? `<img class="h-thumb" src="${g.thumb}" alt="recibo" onclick="openReceiptViewer('${g.thumb}','${g.id}')">` : `<div class="h-thumb-placeholder">${catEmoji}</div>`;
-  const editLbl = esc(bt("aria_edit") + ": " + (g.nombre || ""));
-  return `<div class="history-item" style="border-left-color:${catColor(cat)}">
-                ${thumbHtml}
-                <div class="h-main" role="button" tabindex="0" aria-label="${editLbl}" onclick="editGasto('${g.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();editGasto('${g.id}')}">
-                    <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.nombre)}${window.tfSyncBadge ? tfSyncBadge(String(g.id).startsWith("local_") ? "pending" : "ok", true) : ""}</div>
-                    <div style="font-size:.62rem;color:var(--text-dim);margin-top:1px;">${catDisplayLabel}</div>
-                </div>
-                <div class="h-right">
-                    <div class="h-amount"${(parseFloat(g.valor) || 0) > 0 ? "" : ' style="color:var(--text-dim);font-size:.8rem;"'}>${amountLabel(g.valor)}</div>
-                    <button class="h-del" onclick="deleteGasto('${g.id}')" aria-label="${esc(bt("aria_delete"))}">✕</button>
-                </div>
-            </div>`;
-}
-
 function renderGastosList(gastos) {
   if (currentUser && perfilId) gastos = window.TripContext.filter(gastos, currentUser.uid, perfilId);
-  gastos = (gastos || []).filter(g => !pendingDeletes.has(g.id));
   const c = document.getElementById("listaGastos");
-  if (!gastos.length) {
-    c.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:.85rem;" data-i18n="empty_expenses">' + esc(bt("empty_expenses")) + '</p>';
+  if (!gastos || !gastos.length) {
+    c.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:.85rem;">No hay gastos.</p>';
     updateBudgetDisplay(0);
     renderDashboard([]);
     return;
   }
   let total = 0;
   gastos.forEach(g => total += parseFloat(g.valor) || 0);
-  const sorted = gastos.slice().sort((x, y) => (Number(y.fecha) || 0) - (Number(x.fecha) || 0));
-  const groups = [];
-  const byKey = {};
-  sorted.forEach(g => {
-    const k = dayKey(g.fecha);
-    if (!byKey[k]) {
-      byKey[k] = { key: k, ts: g.fecha, sub: 0, items: [] };
-      groups.push(byKey[k]);
-    }
-    byKey[k].sub += parseFloat(g.valor) || 0;
-    byKey[k].items.push(g);
-  });
-  c.innerHTML = groups.map(grp => `<section class="exp-day-card"><div class="exp-day-head"><span>${esc(dayLabel(grp.key, grp.ts))}</span><b>${amountLabel(grp.sub)}</b></div>` + grp.items.map(gastoItemHtml).join("") + `</section>`).join("");
+  c.innerHTML = gastos.map(g => {
+    const cat = g.cat || "📦 Otros";
+    const catEmoji = cat.match(/^(\S+)/)?.[1] || "📦";
+    const catDisplayLabel = catLabel(cat).replace(/^\S+\s*/, "");
+    const thumbHtml = g.thumb ? `<img class="h-thumb" src="${g.thumb}" alt="recibo" onclick="openReceiptViewer('${g.thumb}','${g.id}')">` : `<div class="h-thumb-placeholder">${catEmoji}</div>`;
+    return `<div class="history-item" style="border-left-color:${catColor(cat)}">\n                ${thumbHtml}\n                <div style="flex:1;min-width:0;padding:0 8px;">\n                    <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.nombre)}</div>\n                    <div style="font-size:.62rem;color:var(--text-dim);margin-top:1px;">${catDisplayLabel}</div>\n                </div>\n                <div class="h-right">\n                    <div class="h-amount">-${fmt(g.valor)}</div>\n                    <button class="h-del" onclick="deleteGasto('${g.id}')" aria-label="Eliminar gasto">✕</button>\n                </div>\n            </div>`;
+  }).join("");
   updateBudgetDisplay(total);
   renderDashboard(gastos);
 }
@@ -2637,15 +2045,7 @@ function listenPresupuestoYOrlando() {
   if (!currentUser || !perfilId) return;
   const ref=currentBudgetRef(), field=currentBudgetField();
   if (ref) onSnapshot(ref,snap=>{
-    if (!snap.exists()) return;
-    const cats=snap.data().presupuestoCats;
-    if (cats && typeof cats==="object") {
-      catBudgets=normalizeCatBudgets(cats);
-      guardarTopesEnCache(catBudgets);
-      if (!document.getElementById("caps-box")?.open) renderCapsEditor();
-      if (typeof allGastos!=="undefined") renderDashboard(allGastos);
-    }
-    if (snap.data()[field]===undefined) return;
+    if (!snap.exists() || snap.data()[field]===undefined) return;
     presupuestoBase=Number(snap.data()[field])||0;
     guardarPresupuestoEnCache(presupuestoBase);
     updateBudgetDisplay(lastGastosTotal);
@@ -2657,7 +2057,16 @@ function listenPresupuestoYOrlando() {
 function updateBudgetDisplay(spent) {
   lastGastosTotal = spent;
   const eff = spent + mapsSpent;
-  renderBudgetCard();
+  const el = document.getElementById("disp-fondo");
+  if (el) el.innerText = "USD " + fmt(presupuestoBase - eff);
+  const mn = document.getElementById("budget-maps-note");
+  if (mn) {
+    if (mapsSpent > 0) {
+      mn.textContent = "incluye USD " + fmt(mapsSpent) + " de Planificación";
+      mn.style.display = "block";
+    } else mn.style.display = "none";
+  }
+  refreshBudgetInfoRow();
   if (presupuestoBase > 0) checkBudgetAlerts(eff);
 }
 
@@ -2924,7 +2333,7 @@ function renderDashboard(gastos) {
   });
   svg.innerHTML = paths;
   document.getElementById("donut-legend").innerHTML = cats.slice(0, 5).map(([cat, val]) => `<div class="legend-item"><div class="legend-dot" style="background:${catColor(cat)}"></div><div class="legend-name">${catLabel(cat)}</div><div class="legend-val">${fmt(val)}</div><div class="legend-pct">${Math.round(val / total * 100)}%</div></div>`).join("");
-  document.getElementById("cat-bars").innerHTML = renderCatBars(cats, total);
+  document.getElementById("cat-bars").innerHTML = cats.map(([cat, val]) => `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabel(cat)}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">${Math.round(val / total * 100)}%</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.round(val / total * 100)}%;background:${catColor(cat)};"></div></div></div>`).join("");
 }
 
 window.abrirExportSheet = function() {
@@ -3195,52 +2604,7 @@ onReady(() => {
       btn.classList.add("sel");
     });
   });
-  try {
-    const last = localStorage.getItem(LAST_CAT_KEY);
-    const tags = [ ...document.querySelectorAll("#cat-tag-row .cat-tag") ];
-    const hit = last && tags.find(b => b.dataset.cat === last);
-    if (hit) {
-      tags.forEach(b => b.classList.remove("sel"));
-      hit.classList.add("sel");
-    }
-  } catch (e) {}
-  const nombreEl = document.getElementById("nombre");
-  const valorEl = document.getElementById("valor");
-  if (nombreEl && valorEl) {
-    nombreEl.addEventListener("keydown", e => {
-      if (e.key !== "Enter" || e.isComposing) return;
-      e.preventDefault();
-      if (valorEl.value === "") valorEl.focus(); else addGasto();
-    });
-    valorEl.addEventListener("keydown", e => {
-      if (e.key !== "Enter" || e.isComposing) return;
-      e.preventDefault();
-      addGasto();
-    });
-  }
-  window.toggleQuotes(localStorage.getItem("taxfly_quotes_open") === "1");
-  window.toggleExp(localStorage.getItem("taxfly_exp_open") !== "0");
 });
-
-window.toggleExp = force => {
-  const btn = document.getElementById("exp-toggle");
-  const body = document.getElementById("exp-body");
-  if (!btn || !body) return;
-  const open = typeof force === "boolean" ? force : btn.getAttribute("aria-expanded") !== "true";
-  btn.setAttribute("aria-expanded", String(open));
-  body.hidden = !open;
-  try { localStorage.setItem("taxfly_exp_open", open ? "1" : "0"); } catch (e) {}
-};
-
-window.toggleQuotes = force => {
-  const btn = document.getElementById("quote-toggle");
-  const body = document.getElementById("quote-body");
-  if (!btn || !body) return;
-  const open = typeof force === "boolean" ? force : btn.getAttribute("aria-expanded") !== "true";
-  btn.setAttribute("aria-expanded", String(open));
-  body.hidden = !open;
-  try { localStorage.setItem("taxfly_quotes_open", open ? "1" : "0"); } catch (e) {}
-};
 
 window.startScanner = async () => {
   document.getElementById("scanner-ui").style.display = "block";
@@ -3530,8 +2894,6 @@ window.confirmOcrScan = async () => {
   await addGastoWithThumb(_lastThumb);
 };
 
-const LAST_CAT_KEY = "taxfly_last_expense_cat";
-
 window.addGastoWithThumb = async thumb => {
   const n = document.getElementById("nombre").value;
   const v = parseFloat(document.getElementById("valor").value);
@@ -3569,9 +2931,6 @@ window.addGastoWithThumb = async thumb => {
   renderGastosList(allGastos);
   document.getElementById("nombre").value = "";
   document.getElementById("valor").value = "";
-  try { localStorage.setItem(LAST_CAT_KEY, cat); } catch (e) {}
-  showExpToast(bt("toast_saved"));
-  if (!thumb) document.getElementById("nombre").focus();
   if (!navigator.onLine || !currentUser) {
     queueGastoOp({
       type: "add",
@@ -3783,7 +3142,6 @@ onAuthStateChanged(auth, async user => {
   currentUser = user;
   const cachedBudget = cargarPresupuestoDesdeCache();
   presupuestoBase = cachedBudget ?? 0;
-  catBudgets = cargarTopesDesdeCache();
   if (cachedBudget !== null) {
     presupuestoBase = cachedBudget;
     const inputFondo = document.getElementById("input-fondo");
@@ -3810,10 +3168,6 @@ onAuthStateChanged(auth, async user => {
     const ref=currentBudgetRef();
     const snap=ref ? await getDoc(ref) : null;
     const field=currentBudgetField();
-    if (snap?.exists() && snap.data().presupuestoCats && typeof snap.data().presupuestoCats === "object") {
-      catBudgets = normalizeCatBudgets(snap.data().presupuestoCats);
-      guardarTopesEnCache(catBudgets);
-    }
     if (snap?.exists() && snap.data()[field] !== undefined) {
       presupuestoBase = Number(snap.data()[field]);
       guardarPresupuestoEnCache(presupuestoBase);
@@ -4586,21 +3940,6 @@ window.compInit = function() {
 </script>
 
 
-
-<div id="edit-gasto-overlay" onclick="if(event.target===this)closeEditGasto()">
-  <div id="edit-gasto-box" role="dialog" aria-modal="true" aria-labelledby="edit-gasto-title">
-    <div class="ocr-modal-handle"></div>
-    <div class="ocr-modal-title" id="edit-gasto-title" data-i18n="edit_title">Editar gasto</div>
-    <div class="input-group"><input type="text" id="edit-gasto-name" data-i18n-ph="placeholder_product" placeholder="Producto" enterkeyhint="next" autocomplete="off"></div>
-    <div class="input-group"><input type="number" id="edit-gasto-val" data-i18n-ph="placeholder_price" placeholder="Precio USD" step="0.01" inputmode="decimal" enterkeyhint="done"></div>
-    <div class="input-group"><select id="edit-gasto-cat" aria-label="Categoría"></select></div>
-    <div class="ocr-btns">
-      <button type="button" class="ocr-btn-cancel" onclick="closeEditGasto()" data-i18n="edit_cancel">Cancelar</button>
-      <button type="button" class="ocr-btn-confirm" onclick="saveEditGasto()" data-i18n="edit_save">Guardar cambios</button>
-    </div>
-  </div>
-</div>
-<div id="exp-toast" class="exp-toast" role="status" aria-live="polite"></div>
 
 <div id="ocr-modal-overlay">
   <div id="ocr-modal-box">

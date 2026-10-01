@@ -358,7 +358,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 
         <span class="slabel" data-i18n="label_name">Nombre</span>
         <div class="input-group">
-            <input type="text" id="inp-name" placeholder="Ej: Vuelo AA123 — MIA" data-i18n-ph="ph_name" autocomplete="off" enterkeyhint="next">
+            <input type="text" id="inp-name" placeholder="Ej: Vuelo AA123 — MIA" data-i18n-ph="ph_name">
         </div>
 
         <span class="slabel" data-i18n="label_type">Tipo</span>
@@ -411,7 +411,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     </div>
     
     <div class="viewer-search" id="viewerSearch">
-        <input type="search" id="searchInput" placeholder="Buscar en el documento…" oninput="onSearchInput()" onkeydown="onSearchKey(event)" enterkeyhint="search" autocomplete="off">
+        <input type="search" id="searchInput" placeholder="Buscar en el documento…" oninput="onSearchInput()" onkeydown="onSearchKey(event)">
         <span class="search-count" id="searchCount"></span>
         <div class="search-nav">
             <button onclick="navMatch(-1)">▲</button>
@@ -502,19 +502,19 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     <div style="font-size:.75rem;font-weight:600;color:var(--text-sub);margin-bottom:20px;" id="pinModalSub">Este PIN se usa para acceder sin conexión</div>
     <div id="pinStep1">
       <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel1">PIN Nuevo (4–6 dígitos)</label>
-      <input id="pinInput1" type="text" name="tf-pininput1" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
-        style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;transition:all .2s;"
+      <input id="pinInput1" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*"
+        style="width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;transition:all .2s;"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
         onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
-        placeholder="••••" enterkeyhint="next">
+        placeholder="••••">
       <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel2">Confirmar PIN</label>
-      <input id="pinInput2" type="text" name="tf-pininput2" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
-        style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
+      <input id="pinInput2" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*"
+        style="width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
         onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
-        placeholder="••••" enterkeyhint="next">
+        placeholder="••••">
       <div id="pinError" style="display:none;background:rgba(239,68,68,.1);border:1.5px solid var(--danger);border-radius:10px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--danger);margin-bottom:12px;text-align:center;"></div>
       <button onclick="confirmarPIN()" style="width:100%;padding:15px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:white;font-family:inherit;font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.3);transition:.2s;" id="pinConfirmBtn">Guardar PIN</button>
     </div>
@@ -1320,7 +1320,6 @@ async function initDocs() {
       allDocs = [];
     }
   }
-  await refreshPendingDocs();
   renderList();
   updateStorage();
   openRequestedDocument();
@@ -1542,7 +1541,7 @@ function renderList() {
   const lbl = LABELS[lang] || LABELS.es;
   const list = document.getElementById("doc-list");
   const empty = document.getElementById("empty-state");
-  const visible=window._uid?allDocs.filter(d => !(window._tfHidden && window._tfHidden.has(d.id))):[];
+  const visible=window._uid?allDocs:[];
   const filtered = activeFilter === "all" ? visible : visible.filter(d => d.type === activeFilter);
   if (!filtered.length) {
     list.innerHTML = "";
@@ -1588,7 +1587,7 @@ function renderList() {
     }
     const typeLabel = lbl[doc.type] || "Doc";
     const totalFiles = doc.files?.length || 0;
-    return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}${window.tfSyncBadge ? tfSyncBadge(window._tfPendingDocs && window._tfPendingDocs.has(doc.id) ? "pending" : "ok", true) : ""}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            ${linked ? `<span class="doc-meta-dot"></span><span>Reserva: ${esc(linked.name)}</span>` : ""}\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${t.lbl_pgs || "pág."}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        ${linked ? `<a class="doc-view-btn" href="planificacion.html?section=reservas&reservation=${encodeURIComponent(linked.id)}" onclick="event.stopPropagation()" style="text-decoration:none;">VER RESERVA</a>` : ""}\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${linked?'CAMBIAR VÍNCULO':'VINCULAR'}</button>
+    return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            ${linked ? `<span class="doc-meta-dot"></span><span>Reserva: ${esc(linked.name)}</span>` : ""}\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${t.lbl_pgs || "pág."}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        ${linked ? `<a class="doc-view-btn" href="planificacion.html?section=reservas&reservation=${encodeURIComponent(linked.id)}" onclick="event.stopPropagation()" style="text-decoration:none;">VER RESERVA</a>` : ""}\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${linked?'CAMBIAR VÍNCULO':'VINCULAR'}</button>
                         <button class="doc-view-btn" onclick="event.stopPropagation();openViewer('${doc.id}')">${t.lbl_ver || "VER"}</button>\n                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar" aria-label="Eliminar documento">🗑️</button>\n                    </div>\n                </div>\n                ${!linked && suggested ? `<div class="doc-link-hint">🔗 Podría corresponder a <button type="button" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${esc(suggested.reservation.name)}</button></div>` : ""}\n                ${preview}\n                ${offlineBadge}\n            </div>\n        </div>`;
   }).join("");
 }
@@ -1863,19 +1862,7 @@ function showSyncOk(msg) {
 
 window.showSyncOk = showSyncOk;
 
-async function refreshPendingDocs() {
-  try {
-    const q = await loadQueue();
-    const ids = new Set(q.filter(o => o.docId && (o.type === "save_doc" || o.type === "link_doc") && o.uid === window._uid && o.perfilId === perfilId).map(o => o.docId));
-    const prev = window._tfPendingDocs;
-    const changed = !prev || prev.size !== ids.size || [ ...ids ].some(i => !prev.has(i));
-    window._tfPendingDocs = ids;
-    if (changed && typeof renderList === "function" && allDocs) renderList();
-  } catch (e) {}
-}
-
 async function updateOfflineToast() {
-  refreshPendingDocs();
   const toast = document.getElementById("offline-toast");
   if (!toast) return;
   const msgEl = document.getElementById("offline-toast-msg");
@@ -1997,21 +1984,19 @@ window.saveDoc = async () => {
   }
 };
 
-window.deleteDoc = id => {
-  const idx = allDocs.findIndex(d => d.id === id);
-  if (idx < 0) return;
-  const item = allDocs[idx];
-  window._tfHidden = window._tfHidden || new Set();
-  tfDeleteWithUndo({
-    remove: () => { window._tfHidden.add(id); renderList(); },
-    restore: () => { window._tfHidden.delete(id); renderList(); },
-    commit: async () => {
+window.deleteDoc = async id => {
+  const lang = localStorage.getItem("appLang") || "es";
+  const msg = {
+    es: "¿Eliminar este documento?",
+    en: "Delete this document?",
+    pt: "Excluir este documento?"
+  };
+  if (!await showConfirm(msg[lang] || msg.es)) return;
   const q = await loadQueue();
   const wasPending = q.some(o => o.docId === id && o.type === "save_doc");
   if (wasPending) {
     await dequeue(id);
   }
-  window._tfHidden.delete(id);
   allDocs = allDocs.filter(d => d.id !== id);
   await guardarDocsEnCache(allDocs);
   renderList();
@@ -2034,8 +2019,6 @@ window.deleteDoc = id => {
     });
     updateOfflineToast();
   }
-    }
-  });
 };
 
 window.deleteFromViewer = async () => {

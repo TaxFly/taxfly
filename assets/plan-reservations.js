@@ -8,7 +8,6 @@ const reservationGroups = [
 let reservations = [];
 let reservationFormType = null;
 let reservationEditingId = null;
-const reservationOpen = new Set();
 
 window.reservationsInit = function() {
   const saved = syncedLoad(RESERVATIONS_KEY, window._reservationsFromFb);
@@ -180,32 +179,14 @@ function reservationForm(type, item) {
 function renderReservations() {
   const panel = document.getElementById("panel-reservas");
   if (!panel) return;
-  const linkedItem = reservations.find(r => r.id === new URLSearchParams(location.search).get("reservation"));
   panel.innerHTML = `<div class="reservations-intro"><h2>Reservas del viaje</h2><p>Todo lo que necesitás para abrir tus reservas, organizado por viaje.</p></div>` + reservationGroups.map(group => {
     const entries = reservations.filter(item => item.type === group.id);
     const selected = reservationFormType === group.id;
-    const open = selected || reservationOpen.has(group.id) || (linkedItem && linkedItem.type === group.id);
-    return `<section class="reservation-group${open ? " is-open" : ""}"><div class="reservation-group-head" data-res-toggle="${group.id}" role="button" tabindex="0" aria-expanded="${open ? "true" : "false"}"><span class="reservation-group-icon">${ic(group.icon, 19)}</span><div><h3>${group.title}</h3><small>${entries.length} ${entries.length === 1 ? "reserva" : "reservas"}</small></div><button type="button" class="reservation-add" data-res-action="add" data-res-type="${group.id}">${ic("plus", 15)} Agregar</button><span class="reservation-chevron" aria-hidden="true"></span></div><div class="reservation-body">
+    return `<section class="reservation-group"><div class="reservation-group-head"><span class="reservation-group-icon">${ic(group.icon, 19)}</span><div><h3>${group.title}</h3><small>${entries.length} ${entries.length === 1 ? "reserva" : "reservas"}</small></div><button type="button" class="reservation-add" data-res-action="add" data-res-type="${group.id}">${ic("plus", 15)} Agregar</button></div>
       ${entries.length ? `<div class="reservation-list">${entries.map(reservationCard).join("")}</div>` : `<p class="reservation-empty">${group.empty}</p>`}
-      ${selected ? reservationForm(group.id, reservations.find(r => r.id === reservationEditingId)) : ""}</div></section>`;
+      ${selected ? reservationForm(group.id, reservations.find(r => r.id === reservationEditingId)) : ""}</section>`;
   }).join("");
   panel.querySelectorAll("[data-res-action]").forEach(button => button.addEventListener("click", onReservationAction));
-  panel.querySelectorAll("[data-res-toggle]").forEach(head => {
-    const toggle = () => {
-      const id = head.dataset.resToggle;
-      if (reservationFormType === id) return; // con el formulario abierto el grupo queda abierto
-      const section = head.closest(".reservation-group");
-      const nowOpen = !section.classList.contains("is-open");
-      section.classList.toggle("is-open", nowOpen);
-      head.setAttribute("aria-expanded", nowOpen ? "true" : "false");
-      if (nowOpen) reservationOpen.add(id); else reservationOpen.delete(id);
-    };
-    head.addEventListener("click", e => { if (e.target.closest(".reservation-add")) return; toggle(); });
-    head.addEventListener("keydown", e => {
-      if (e.target !== head || (e.key !== "Enter" && e.key !== " ")) return;
-      e.preventDefault(); toggle();
-    });
-  });
   const form = panel.querySelector("#reservation-form");
   if (form) {
     form.addEventListener("submit", saveReservation);
@@ -241,7 +222,6 @@ async function onReservationAction(event) {
   if (action === "add" || action === "edit") {
     reservationFormType = item?.type || button.dataset.resType;
     reservationEditingId = item?.id || null;
-    reservationOpen.add(reservationFormType);
     renderReservations();
     document.querySelector("#reservation-form input[name=reservationTitle]")?.focus();
     return;

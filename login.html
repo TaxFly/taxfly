@@ -575,7 +575,7 @@ window.addEventListener("beforeinstallprompt", e => {
 
 window.installAndroid = async () => {
   if (!deferredPrompt) {
-    (window.showAlert||alert)("Para instalar TaxFly, abrí el menú del navegador y elegí ‘Instalar app’ o ‘Agregar a pantalla de inicio’. Si ya está instalada, abrila desde el ícono de TaxFly.");
+    alert("Para instalar TaxFly, abrí el menú del navegador y elegí ‘Instalar app’ o ‘Agregar a pantalla de inicio’. Si ya está instalada, abrila desde el ícono de TaxFly.");
     return;
   }
   deferredPrompt.prompt();

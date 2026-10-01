@@ -379,11 +379,7 @@ if ("serviceWorker" in navigator) {
     
     <div class="tab-panel active" id="panel-lugares">
         <div class="card">
-            <div onclick="togglePlacesCard()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
-                <span class="slabel" style="margin-bottom:0;" data-i18n="itinerary_title">📍 Lugares del viaje</span>
-                <span id="places-chevron" style="font-size:1rem;color:var(--text-dim);transition:transform .3s;">▾</span>
-            </div>
-            <div id="places-body" style="margin-top:14px;">
+            <span class="slabel" data-i18n="itinerary_title">📍 Lugares del viaje</span>
             <select id="citySelector" onchange="renderCityData()" style="margin-bottom:14px;">
                 <option value="orlando" data-i18n="city_orlando">Orlando</option>
                 <option value="nyc" data-i18n="city_nyc">Nueva York</option>
@@ -402,7 +398,6 @@ if ("serviceWorker" in navigator) {
                     <div class="st-label" data-i18n="tip_label">TIP DE VIAJE</div>
                     <div id="tip-text">Cargando tips...</div>
                 </div>
-            </div>
             </div>
 
         </div>
@@ -466,7 +461,7 @@ if ("serviceWorker" in navigator) {
             </div>
             <div id="act-form-body" style="display:none;overflow:hidden;">
                 <div style="margin-top:14px;" class="act-form">
-                    <input type="text" id="actName" data-i18n-placeholder="act_placeholder" placeholder="Ej: Vuelo EZE → MCO" style="margin-bottom:0;" autocomplete="off" enterkeyhint="next">
+                    <input type="text" id="actName" data-i18n-placeholder="act_placeholder" placeholder="Ej: Vuelo EZE → MCO" style="margin-bottom:0;">
                     <div class="input-row">
                         <div class="input-group">
                             <label data-i18n="label_date">Fecha</label>
@@ -505,7 +500,6 @@ if ("serviceWorker" in navigator) {
         <div class="reminder-toast" id="reminder-toast"></div>
 
 
-            <input type="search" id="searchActs" class="tf-search" placeholder="🔎 Buscar actividades…" aria-label="🔎 Buscar actividades…" enterkeyhint="search" autocomplete="off" style="margin:0 0 12px;">
             <div class="act-list" id="activitiesList">
                 <div class="empty-state">
                     <div class="empty-icon">🗺️</div>
@@ -513,14 +507,14 @@ if ("serviceWorker" in navigator) {
                 </div>
             </div>
         </div>
+    </div>
 
     
-    <div class="tab-panel" id="panel-notas" style="width:100%;margin:0 auto;">
+    <div class="tab-panel" id="panel-notas" style="width:100%;max-width:460px;margin:0 auto;">
         <div class="card">
         <span class="slabel" data-i18n="label_notes">📝 Notas y Recordatorios</span>
         <textarea id="noteInput" rows="3" data-i18n-placeholder="note_placeholder" placeholder="Vuelos, hoteles, recordatorios..." style="margin-bottom:10px;"></textarea>
         <button class="btn btn-primary" onclick="addNote()" data-i18n="btn_add_note">AGREGAR NOTA</button>
-        <input type="search" id="searchNotes" class="tf-search" placeholder="🔎 Buscar notas…" aria-label="🔎 Buscar notas…" enterkeyhint="search" autocomplete="off" style="margin:0 0 12px;">
         <div id="notesList" style="margin-top:16px;"></div>
     </div>
 
@@ -536,7 +530,7 @@ if ("serviceWorker" in navigator) {
         </div>
 
         <div style="display:flex;gap:8px;margin-bottom:14px;">
-            <input type="text" id="customCheckInput" name="trip-checklist-item" autocomplete="new-password" readonly onpointerdown="this.readOnly=false" onfocus="this.readOnly=false;if(!this.dataset.checklistReady){this.value='';this.dataset.checklistReady='1'}" data-i18n-placeholder="custom_check_placeholder" placeholder="Agregar ítem..." style="flex:1;margin-bottom:0;" enterkeyhint="next">
+            <input type="text" id="customCheckInput" name="trip-checklist-item" autocomplete="new-password" readonly onpointerdown="this.readOnly=false" onfocus="this.readOnly=false;if(!this.dataset.checklistReady){this.value='';this.dataset.checklistReady='1'}" data-i18n-placeholder="custom_check_placeholder" placeholder="Agregar ítem..." style="flex:1;margin-bottom:0;">
             <button onclick="addCustomCheckItem()" class="btn btn-primary btn-sm">+</button>
         </div>
 
@@ -611,19 +605,19 @@ if ("serviceWorker" in navigator) {
     <div style="font-size:.75rem;font-weight:600;color:var(--text-sub);margin-bottom:20px;" id="pinModalSub">Este PIN se usa para acceder sin conexión</div>
     <div id="pinStep1">
       <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel1">PIN Nuevo (4–6 dígitos)</label>
-      <input id="pinInput1" type="text" name="tf-pininput1" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
-        style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;transition:all .2s;"
+      <input id="pinInput1" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*"
+        style="width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;transition:all .2s;"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
         onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
-        placeholder="••••" enterkeyhint="next">
+        placeholder="••••">
       <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel2">Confirmar PIN</label>
-      <input id="pinInput2" type="text" name="tf-pininput2" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
-        style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
+      <input id="pinInput2" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*"
+        style="width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
         onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
-        placeholder="••••" enterkeyhint="next">
+        placeholder="••••">
       <div id="pinError" style="display:none;background:rgba(239,68,68,.1);border:1.5px solid var(--danger);border-radius:10px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--danger);margin-bottom:12px;text-align:center;"></div>
       <button onclick="confirmarPIN()" style="width:100%;padding:15px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:white;font-family:inherit;font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.3);transition:.2s;" id="pinConfirmBtn">Guardar PIN</button>
     </div>
@@ -1145,14 +1139,11 @@ window.renderCityData = async () => {
         const result = await ParkLive.parkSummary(park);
         if (el && document.getElementById("citySelector").value===cityKey)
           {
-            if (!result.level) { el.closest(".park-live-card")?.remove(); return; }
             el.className="park-level " + (result.level === "low" ? "q-low" : result.level === "medium" ? "q-med" : result.level === "high" ? "q-high" : "q-off");
-            el.textContent=`${t[result.level]} ${result.level === "closed" ? "☾" : ""}`.trim();
+            el.textContent=result.level ? `${t[result.level]} ${result.level === "closed" ? "☾" : ""}`.trim() : t.unavailable;
           }
-      } catch (_) { if (el && document.getElementById("citySelector").value===cityKey) el.closest(".park-live-card")?.remove(); }
+      } catch (_) { if (el && document.getElementById("citySelector").value===cityKey) el.textContent=t.unavailable; }
     }));
-    if (document.getElementById("citySelector").value===cityKey && !parkBox.querySelector(".park-live-card"))
-      parkBox.insertAdjacentHTML("beforeend", `<p class="park-source">${t.unavailable}</p>`);
   } catch (_) { if (document.getElementById("citySelector").value===cityKey) parkBox.innerHTML=`<h3>${t.parks}</h3><p class="park-source">${t.unavailable}</p>`; }
 };
 
@@ -1340,17 +1331,13 @@ window.toggleActivity = async (id, currentDone) => {
   }
 };
 
-window.deleteActivity = id => {
-  const idx = localActivities.findIndex(x => x.id === id);
-  if (idx < 0) return;
-  const item = localActivities[idx];
-  window._tfHidden = window._tfHidden || new Set();
-  tfDeleteWithUndo({
-    remove: () => { window._tfHidden.add(id); localActivities = localActivities.filter(x => x.id !== id); renderActivities(localActivities); },
-    restore: () => { window._tfHidden.delete(id); if (!localActivities.some(x => x.id === id)) localActivities.splice(Math.min(idx, localActivities.length), 0, item); renderActivities(localActivities); },
-    commit: async unloading => {
-  const wasPending = item._pending;
-  if (!navigator.onLine || wasPending || unloading) {
+window.deleteActivity = async id => {
+  const lang = localStorage.getItem("appLang") || "es";
+  if (!await showConfirm(i18n[lang].confirm_delete)) return;
+  const wasPending = localActivities.find(a => a.id === id)?._pending;
+  localActivities = localActivities.filter(a => a.id !== id);
+  renderActivities(localActivities);
+  if (!navigator.onLine || wasPending) {
     const ops = getPending().filter(op => op.tempId !== id);
     if (!wasPending) ops.push({
       type: "del_activity",
@@ -1367,13 +1354,9 @@ window.deleteActivity = id => {
       });
     }
   }
-  window._tfHidden.delete(id);
-    }
-  });
 };
 
 function renderActivities(acts) {
-  if (window._tfHidden && window._tfHidden.size) acts = acts.filter(a => !window._tfHidden.has(a.id));
   if (currentUser && perfilId) acts = window.TripContext.filter(acts, currentUser.uid, perfilId);
   const lang = localStorage.getItem("appLang") || "es";
   const container = document.getElementById("activitiesList");
@@ -1401,7 +1384,7 @@ function renderActivities(acts) {
     const dayActs = grouped[dateKey];
     const dateLabel = dateKey === "sin-fecha" ? "📌" : formatDate(dateKey, lang);
     const dayDone = dayActs.filter(a => a.done).length;
-    return `\n                <div>\n                    <div class="act-group-header">\n                        <span class="act-group-date">${dateLabel}</span>\n                        <span class="act-group-count">${dayDone}/${dayActs.length}</span>\n                    </div>\n                    ${dayActs.sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99")).map(act => `\n                        <div class="act-item ${act.done ? "done" : ""}" id="act-item-${act.id}" data-type="${act.type}">\n                            <div class="act-check ${act.done ? "checked" : ""}" onclick="toggleActivity('${act.id}', ${act.done})"></div>\n                            <div class="act-info">\n                                <div class="act-name">${typeIconMap[act.type] || "📌"} ${esc(act.name)}${window.tfSyncBadge ? tfSyncBadge(act._pending ? "pending" : "ok", true) : ""}</div>\n                                <div class="act-meta">\n                                    ${act.time ? `<span class="act-time">🕐 ${act.time}</span>` : ""}\n                                    <span class="act-badge badge-${act.type}">${getBadgeLabel(act.type, lang)}</span>\n                                </div>\n                            </div>\n                            <button class="act-bell ${isReminderOn(act.id) ? "on" : ""}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g, "\\'")}','${act.date}','${act.time || ""}')" title="Recordatorio">🔔</button>\n                            <button class="act-del" onclick="deleteActivity('${act.id}')" aria-label="Eliminar actividad">✕</button>\n                        </div>\n                    `).join("")}\n                </div>\n            `;
+    return `\n                <div>\n                    <div class="act-group-header">\n                        <span class="act-group-date">${dateLabel}</span>\n                        <span class="act-group-count">${dayDone}/${dayActs.length}</span>\n                    </div>\n                    ${dayActs.sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99")).map(act => `\n                        <div class="act-item ${act.done ? "done" : ""}" id="act-item-${act.id}" data-type="${act.type}">\n                            <div class="act-check ${act.done ? "checked" : ""}" onclick="toggleActivity('${act.id}', ${act.done})"></div>\n                            <div class="act-info">\n                                <div class="act-name">${typeIconMap[act.type] || "📌"} ${esc(act.name)}</div>\n                                <div class="act-meta">\n                                    ${act.time ? `<span class="act-time">🕐 ${act.time}</span>` : ""}\n                                    <span class="act-badge badge-${act.type}">${getBadgeLabel(act.type, lang)}</span>\n                                </div>\n                            </div>\n                            <button class="act-bell ${isReminderOn(act.id) ? "on" : ""}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g, "\\'")}','${act.date}','${act.time || ""}')" title="Recordatorio">🔔</button>\n                            <button class="act-del" onclick="deleteActivity('${act.id}')" aria-label="Eliminar actividad">✕</button>\n                        </div>\n                    `).join("")}\n                </div>\n            `;
   }).join("");
 }
 
@@ -1503,7 +1486,6 @@ window.addNote = async () => {
 };
 
 function renderNotes(notes) {
-  if (window._tfHidden && window._tfHidden.size) notes = notes.filter(n => !window._tfHidden.has(n.id));
   if (currentUser && perfilId) notes = window.TripContext.filter(notes, currentUser.uid, perfilId);
   const lang = localStorage.getItem("appLang") || "es";
   const notesList = document.getElementById("notesList");
@@ -1513,7 +1495,7 @@ function renderNotes(notes) {
   }
   notesList.innerHTML = notes.map(d => {
     const ts = d.createdAt ? new Date(d.createdAt).toLocaleDateString(lang === "en" ? "en-US" : lang === "pt" ? "pt-BR" : "es-AR") : "";
-    return `\n            <div class="note-item" style="${d._pending ? "opacity:.7;" : ""}">\n                <div>\n                    <div class="note-text">${d.text}${window.tfSyncBadge ? tfSyncBadge(d._pending ? "pending" : "ok", true) : ""}</div>\n                    ${ts ? `<div class="note-meta">${ts}</div>` : ""}\n                </div>\n                <button class="note-del" onclick="window.deleteNote('${d.id}')" aria-label="Eliminar nota">✕</button>\n            </div>`;
+    return `\n            <div class="note-item" style="${d._pending ? "opacity:.7;" : ""}">\n                <div>\n                    <div class="note-text">${d.text}${d._pending ? ' <span style="font-size:.6rem;color:var(--text-dim);">📥</span>' : ""}</div>\n                    ${ts ? `<div class="note-meta">${ts}</div>` : ""}\n                </div>\n                <button class="note-del" onclick="window.deleteNote('${d.id}')" aria-label="Eliminar nota">✕</button>\n            </div>`;
   }).join("");
 }
 
@@ -1534,17 +1516,13 @@ function listenNotes() {
   });
 }
 
-window.deleteNote = id => {
-  const idx = localNotes.findIndex(x => x.id === id);
-  if (idx < 0) return;
-  const item = localNotes[idx];
-  window._tfHidden = window._tfHidden || new Set();
-  tfDeleteWithUndo({
-    remove: () => { window._tfHidden.add(id); localNotes = localNotes.filter(x => x.id !== id); renderNotes(localNotes); },
-    restore: () => { window._tfHidden.delete(id); if (!localNotes.some(x => x.id === id)) localNotes.splice(Math.min(idx, localNotes.length), 0, item); renderNotes(localNotes); },
-    commit: async unloading => {
-  const wasPending = item._pending;
-  if (!navigator.onLine || wasPending || unloading) {
+window.deleteNote = async id => {
+  const lang = localStorage.getItem("appLang") || "es";
+  if (!await showConfirm(i18n[lang].confirm_delete)) return;
+  const wasPending = localNotes.find(n => n.id === id)?._pending;
+  localNotes = localNotes.filter(n => n.id !== id);
+  renderNotes(localNotes);
+  if (!navigator.onLine || wasPending) {
     const ops = getPending().filter(op => op.tempId !== id);
     if (!wasPending) ops.push({
       type: "del_note",
@@ -1561,9 +1539,6 @@ window.deleteNote = id => {
       });
     }
   }
-  window._tfHidden.delete(id);
-    }
-  });
 };
 
 window.addCustomCheckItem = () => {
@@ -2588,15 +2563,6 @@ window.updateInlineTransport = function() {
   }
 };
 
-window.togglePlacesCard = function() {
-  const body = document.getElementById("places-body");
-  const chev = document.getElementById("places-chevron");
-  if (!body) return;
-  const open = body.style.display !== "none";
-  body.style.display = open ? "none" : "block";
-  if (chev) chev.style.transform = open ? "rotate(-90deg)" : "";
-};
-
 window.toggleInlineTransport = function() {
   const body = document.getElementById("inline-transport-body-a");
   const chev = document.getElementById("inline-transport-chevron-a");
@@ -3068,30 +3034,5 @@ window.doSwitchApp = function(destino) {
 <script src="assets/reconnect-sync.js" defer></script>
 <link rel="stylesheet" href="assets/travel-tools.css">
 <script src="assets/travel-tools.js" defer></script>
-<script>
-/* Buscador de actividades y notas (filtra lo ya renderizado; se reaplica al re-renderizar) */
-(function () {
-  function norm(x) { return (x || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
-  function setup(inputId, listId, itemSel) {
-    var inp = document.getElementById(inputId), list = document.getElementById(listId);
-    if (!inp || !list) return;
-    function apply() {
-      var q = norm(inp.value.trim());
-      list.querySelectorAll(itemSel).forEach(function (it) { it.style.display = !q || norm(it.textContent).indexOf(q) > -1 ? "" : "none"; });
-      list.querySelectorAll(".act-group-header").forEach(function (h) {      // oculta días sin resultados
-        var g = h.parentElement; if (!g || g === list) return;
-        var any = Array.prototype.some.call(g.querySelectorAll(itemSel), function (it) { return it.style.display !== "none"; });
-        g.style.display = !q || any ? "" : "none";
-      });
-    }
-    inp.addEventListener("input", apply);
-    new MutationObserver(apply).observe(list, { childList: true, subtree: true });
-  }
-  document.addEventListener("DOMContentLoaded", function () {
-    setup("searchActs", "activitiesList", ".act-item");
-    setup("searchNotes", "notesList", ".note-item");
-  });
-})();
-</script>
 </body>
 </html>

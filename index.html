@@ -100,7 +100,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         
         .widget-budget{background:linear-gradient(135deg,var(--primary),var(--accent));color:white;border-radius:var(--radius-sm);padding:16px 18px;box-shadow:0 6px 20px rgba(37,99,235,.25);margin-bottom:14px;cursor:pointer;transition:var(--tr);}
-        .widget-budget.is-over{background:linear-gradient(135deg,#dc2626,#ef4444);box-shadow:0 6px 20px rgba(220,38,38,.25);}
         .widget-budget:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(37,99,235,.3);}
         .widget-budget:active{transform:scale(.98);}
         .wb-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.8;margin-bottom:4px;}
@@ -278,7 +277,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     <div class="home-section-heading" id="homePlanHeading">Tu viaje</div>
     <section id="offline-readiness" class="offline-readiness" role="status" aria-live="polite"></section>
-    <div class="section-grid home-primary-grid" id="sectionList" aria-busy="true"><div class="tf-skel" style="height:78px;margin:0"></div><div class="tf-skel" style="height:78px;margin:0"></div><div class="tf-skel" style="height:78px;margin:0"></div><div class="tf-skel" style="height:78px;margin:0"></div></div>
+    <div class="section-grid home-primary-grid" id="sectionList"></div>
 
     
     <div class="widget-budget" onclick="location.href='compras.html'">
@@ -337,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
             </button>
         </div>
-        <div id="ww-body" aria-busy="true"><div class="tf-skel" style="height:44px;margin:4px 0"></div><div class="tf-skel" style="height:44px;margin:4px 0"></div></div>
+        <div id="ww-body"><div class="ww-loading"><div class="ww-spinner"></div><span data-i18n="loading">Cargando...</span></div></div>
     </div>
 
     
@@ -425,7 +424,9 @@ let mapsSpentCache = 0;
 
 function computeMapsSpent(data) {
   if (!data) return 0;
-  return (data.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
+  const wm = data.countMarket ? parseFloat(data.walmartSpent) || 0 : 0;
+  const manual = (data.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
+  return wm + manual;
 }
 
 function listenMapsBudget() {
@@ -467,8 +468,6 @@ const I18N = {
     q_perfil: "Perfil",
     label_budget: "Presupuesto Restante",
     budget_hint: "Tocá para ver tus gastos →",
-    budget_over_label: "Te pasaste por",
-    budget_spent_sfx: "gastado",
     budget_no_data: "Sin presupuesto configurado",
     widget_fx: "Dólar hoy",
     fx_oficial: "Oficial",
@@ -480,7 +479,6 @@ const I18N = {
     widget_weather: "Clima en destino",
     next_event_label: "Próximo evento",
     next_event_empty: "Sin eventos próximos",
-    next_event_add: "＋ Agregar actividad",
     tip_label: "Tip de viaje",
     tip_hint: "Tocá para ver otro tip →",
     sections_title: "Secciones",
@@ -591,8 +589,6 @@ const I18N = {
     q_perfil: "Profile",
     label_budget: "Remaining Budget",
     budget_hint: "Tap to view your expenses →",
-    budget_over_label: "Over budget by",
-    budget_spent_sfx: "spent",
     budget_no_data: "No budget configured",
     widget_fx: "Dollar today",
     fx_oficial: "Official",
@@ -604,7 +600,6 @@ const I18N = {
     widget_weather: "Weather at destination",
     next_event_label: "Next event",
     next_event_empty: "No upcoming events",
-    next_event_add: "＋ Add activity",
     tip_label: "Travel tip",
     tip_hint: "Tap to see another tip →",
     sections_title: "Sections",
@@ -715,8 +710,6 @@ const I18N = {
     q_perfil: "Perfil",
     label_budget: "Orçamento Restante",
     budget_hint: "Toque para ver seus gastos →",
-    budget_over_label: "Você passou em",
-    budget_spent_sfx: "gasto",
     budget_no_data: "Sem orçamento configurado",
     widget_fx: "Dólar hoje",
     fx_oficial: "Oficial",
@@ -728,7 +721,6 @@ const I18N = {
     widget_weather: "Clima no destino",
     next_event_label: "Próximo evento",
     next_event_empty: "Sem eventos próximos",
-    next_event_add: "＋ Adicionar atividade",
     tip_label: "Dica de viagem",
     tip_hint: "Toque para ver outra dica →",
     sections_title: "Seções",
@@ -843,7 +835,6 @@ function applyI18n() {
   [ "es", "en", "pt" ].forEach(l => document.getElementById("lang-" + l)?.classList.toggle("active", l === lang));
   renderSections();
   renderTip();
-  if (window._lastBudgetArgs) { try { renderBudgetUI(...window._lastBudgetArgs); } catch (e) {} }
   if (document.getElementById("fx-content")?.style.display !== "none") fxRender();
 }
 
@@ -879,7 +870,6 @@ function updateGreeting() {
 }
 
 function renderBudgetUI(base, gastos) {
-  window._lastBudgetArgs = [ base, gastos ];
   if (currentUser && perfilId) {
     const tripId=window.TripContext.view(currentUser.uid,perfilId);
     if (tripId!=="orlando") base=tripId==="unassigned"?0:Number(localStorage.getItem("taxusa_budget_cache_"+perfilId+"::"+currentUser.uid+"::"+tripId))||0;
@@ -919,31 +909,18 @@ function renderBudgetUI(base, gastos) {
   if (base <= 0) {
     document.getElementById("wb-value").textContent = t.budget_no_data || "—";
     document.getElementById("wb-pct").textContent = "—";
-    const lbl0 = document.querySelector(".widget-budget .wb-label");
-    if (lbl0) { lbl0.setAttribute("data-i18n", "label_budget"); lbl0.textContent = t.label_budget; }
-    if (wbEl) { wbEl.classList.add("is-empty"); wbEl.classList.remove("is-over"); }
+    if (wbEl) wbEl.classList.add("is-empty");
     return;
   }
   if (wbEl) wbEl.classList.remove("is-empty");
-  const restante = base - gastado;
-  const spentPct = Math.round(gastado / base * 100);
-  const over = gastado > base;
-  const labelEl = document.querySelector(".widget-budget .wb-label");
-  if (labelEl) {
-    labelEl.setAttribute("data-i18n", over ? "budget_over_label" : "label_budget");
-    labelEl.textContent = over ? t.budget_over_label : t.label_budget;
-  }
-  if (wbEl) wbEl.classList.toggle("is-over", over);
-  document.getElementById("wb-value").textContent = `USD ${Math.abs(restante).toLocaleString("en-US", {
+  const restante = base - gastado, pct = Math.max(0, Math.min(100, Math.round(restante / base * 100)));
+  document.getElementById("wb-value").textContent = `USD ${restante.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })}`;
-  const pctEl = document.getElementById("wb-pct");
-  pctEl.textContent = spentPct + "% " + (t.budget_spent_sfx || "");
-  const bar = document.getElementById("wb-bar");
-  bar.style.width = Math.min(100, Math.max(0, spentPct)) + "%";
-  bar.style.background = over ? "#fecaca" : "";
-  if (spentPct >= 90) pctEl.style.background = "rgba(239,68,68,.35)"; else if (spentPct >= 70) pctEl.style.background = "rgba(245,158,11,.35)"; else pctEl.style.background = "";
+  document.getElementById("wb-pct").textContent = pct + "%";
+  document.getElementById("wb-bar").style.width = pct + "%";
+  if (pct < 20) document.getElementById("wb-pct").style.background = "rgba(239,68,68,.35)"; else if (pct < 40) document.getElementById("wb-pct").style.background = "rgba(245,158,11,.35)"; else document.getElementById("wb-pct").style.background = "";
 }
 
 function loadBudget() {
@@ -1368,10 +1345,7 @@ function loadNextEvent() {
       titleEl.textContent = t.next_event_empty || "Sin eventos próximos";
       titleEl.removeAttribute("data-has-event");
     }
-    const timeEl = document.getElementById("ne-time");
-    timeEl.textContent = t.next_event_add || "＋ Agregar actividad";
-    timeEl.style.fontWeight = "700";
-    timeEl.style.color = "var(--primary, #4f8cff)";
+    document.getElementById("ne-time").textContent = "";
     document.getElementById("ne-dot").textContent = "📅";
   }
   if (!currentUser || !perfilId) {
