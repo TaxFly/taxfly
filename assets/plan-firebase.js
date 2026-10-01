@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, getDoc, getDocFromCache, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
@@ -64,8 +64,14 @@ window.addEventListener("storage", e => {
 async function loadTrips() {
   window._taxflyTripUid=currentUid; window._taxflyTripProfile=currentPerfilId;
   window.TripContext.configure({db,doc,collection,getDocs,setDoc,updateDoc,deleteDoc});
-  await window.TripContext.hydrate(db,currentUid,currentPerfilId,getDocs,collection,publishTrip);
+  // Camino rapido: si ya hay viajes guardados en este dispositivo, se arranca con ellos
+  // y la sincronizacion con el servidor sigue en segundo plano.
   publishTrip();
+  const startedWith = activeTripId;
+  const hydrating = window.TripContext.hydrate(db,currentUid,currentPerfilId,getDocs,collection,publishTrip)
+    .catch(() => {}).then(() => publishTrip());
+  if (!trips.length) { await hydrating; return; }
+  hydrating.then(() => { if (activeTripId !== startedWith) location.reload(); });
 }
 function listenTripDocuments() {
   return onSnapshot(collection(db, "users", currentUid, "profiles", currentPerfilId, "docs"), snap => {
@@ -123,7 +129,14 @@ function fbSet(docId, data) {
 
 async function fbGet(docId) {
   try {
-    const snap = await getDoc(orlandoDocRef(docId));
+    const ref = orlandoDocRef(docId);
+    // Cache local primero (instantaneo). Los listeners onSnapshot que se activan
+    // despues del primer render traen la version del servidor y actualizan la pantalla.
+    try {
+      const cached = await getDocFromCache(ref);
+      if (cached.exists()) return cached.data();
+    } catch (_) {}
+    const snap = await getDoc(ref);
     return snap.exists() ? snap.data() : null;
   } catch (e) {
     devError("fbGet error", e);
@@ -213,6 +226,37 @@ async function migrateManualExpenses() {
   await window._clearLegacyBudgetExpenses?.();
 }
 
+async function addTaxflyGasto(data) {
+  if (!currentUid || !currentPerfilId) return false;
+  const gasto = {
+    nombre: String(data.nombre || "Gasto"),
+    valor: Number(data.valor) || 0,
+    cat: data.cat || "📦 Otros",
+    fecha: Date.now(),
+    thumb: "",
+    tripId: activeTripId,
+    source: data.source || "trip-planning"
+  };
+  if (!(gasto.valor > 0)) return false;
+  try {
+    if (navigator.onLine) {
+      await addDoc(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "gastos"), gasto);
+      return true;
+    }
+  } catch (e) {
+    devError("addTaxflyGasto error", e);
+  }
+  try {
+    const key = "taxusa_gastos_pending_" + currentPerfilId + "::" + currentUid;
+    const ops = JSON.parse(localStorage.getItem(key) || "[]");
+    ops.push({ type: "add", data: gasto, ts: Date.now() });
+    localStorage.setItem(key, JSON.stringify(ops));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 window._fb = {
   fbSet: fbSet,
   fbGet: fbGet,
@@ -220,7 +264,8 @@ window._fb = {
   stableStringify: stableStringify,
   fbSetPresupuesto: fbSetPresupuesto,
   listenTaxflyPresupuesto: listenTaxflyPresupuesto,
-  listenTaxflyGastos: listenTaxflyGastos
+  listenTaxflyGastos: listenTaxflyGastos,
+  addTaxflyGasto: addTaxflyGasto
 };
 
 window._fbSignOut = async function() {
@@ -235,7 +280,7 @@ async function startApp() {
   if (!trips.length) { location.replace("index.html#viajes"); return; }
   listenTripDocuments();
   const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
-  const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 1e4), withTimeout(fbGet("days"), 1e4), withTimeout(fbGet("visited"), 1e4), withTimeout(fbGet("meals"), 1e4), withTimeout(fbGet("walmart"), 1e4), withTimeout(fbGet("wmChecked"), 1e4), withTimeout(fbGet("shopping"), 1e4), withTimeout(fbGet("customParks"), 1e4), withTimeout(fbGet("parquesExtra"), 1e4), withTimeout(fbGet("coordOverrides"), 1e4), withTimeout(fbGet("parques"), 1e4), withTimeout(fbGet("budget"), 1e4), withTimeout(fbGet("itinerario"), 1e4), withTimeout(fbGet("tips"), 1e4), withTimeout(fbGet("parquesExcel"), 1e4), withTimeout(fbGet("reservations"), 1e4) ]);
+  const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 6e3), withTimeout(fbGet("days"), 6e3), withTimeout(fbGet("visited"), 6e3), withTimeout(fbGet("meals"), 6e3), withTimeout(fbGet("walmart"), 6e3), withTimeout(fbGet("wmChecked"), 6e3), withTimeout(fbGet("shopping"), 6e3), withTimeout(fbGet("customParks"), 6e3), withTimeout(fbGet("parquesExtra"), 6e3), withTimeout(fbGet("coordOverrides"), 6e3), withTimeout(fbGet("parques"), 6e3), withTimeout(fbGet("budget"), 6e3), withTimeout(fbGet("itinerario"), 6e3), withTimeout(fbGet("tips"), 6e3), withTimeout(fbGet("parquesExcel"), 6e3), withTimeout(fbGet("reservations"), 6e3) ]);
   const val = r => r.status === "fulfilled" ? r.value : null;
   const [hotelData, daysData, visitedData, mealDataFb, wmDataFb, wmCheckedFb, shopDataFb, customParksDataFb, parquesExtraDataFb, coordOverridesDataFb, parquesDataFb, budgetDataFb, itinDataFb, tipsDataFb, parquesExcelDataFb, reservationsDataFb] = results.map(val);
   if (hotelData) window._hotelFromFb = hotelData;

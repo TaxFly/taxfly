@@ -71,3 +71,31 @@ body,[data-theme="dark"] body,.header{background:var(--bg);background-image:none
 .day-tabs-arrow{flex:none;width:28px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font:600 23px/1 'DM Sans',sans-serif;cursor:pointer}
 .day-tabs-arrow:hover{border-color:var(--theme-accent);color:var(--theme-accent)}
 @media(max-width:500px){.day-tabs-control{display:block}.day-tabs-control>.outlets-day-tabs{width:100%;margin-bottom:14px}.day-tabs-arrow{display:none}}
+
+
+/* ===== Pantallas anchas: aprovechar el espacio lateral (solo Planificación) ===== */
+@media (min-width: 600px) and (max-width: 999px) {
+  body[data-page="planificacion"] .header, body[data-page="planificacion"] .nav-bar-wrap, body[data-page="planificacion"] .panel, body[data-page="planificacion"] .plan-food-switch, body[data-page="planificacion"] #plan-places-root { max-width: 720px; }
+}
+@media (min-width: 1000px) {
+  body[data-page="planificacion"] .header, body[data-page="planificacion"] .nav-bar-wrap, body[data-page="planificacion"] .panel, body[data-page="planificacion"] .plan-food-switch, body[data-page="planificacion"] #plan-places-root { max-width: 960px; }
+  body[data-page="planificacion"] .nav-bar { max-width: 960px; }
+  /* Supermercado, comidas y reservas en dos columnas */
+  body[data-page="planificacion"] .wm-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; align-items: start; }
+  body[data-page="planificacion"] .wm-panel > :not(.wm-section) { grid-column: 1 / -1; }
+  body[data-page="planificacion"] .wm-panel > .wm-section { margin: 0; }
+  body[data-page="planificacion"] .comidas-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; align-items: start; }
+  body[data-page="planificacion"] .comidas-panel > :not(.day-meal-card) { grid-column: 1 / -1; }
+  body[data-page="planificacion"] .comidas-panel > .day-meal-card { margin: 0; }
+  body[data-page="planificacion"] #panel-reservas.active { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+  body[data-page="planificacion"] #panel-reservas.active > .reservations-intro { grid-column: 1 / -1; max-width: none; margin: 20px 0 2px; }
+  body[data-page="planificacion"] #panel-reservas.active > .reservation-group { max-width: none; margin: 0; }
+}
+@media (min-width: 1200px) {
+  body[data-page="planificacion"] .header, body[data-page="planificacion"] .nav-bar-wrap, body[data-page="planificacion"] .panel, body[data-page="planificacion"] .plan-food-switch, body[data-page="planificacion"] #plan-places-root { max-width: 1080px; }
+  body[data-page="planificacion"] .nav-bar { max-width: 1080px; }
+}
+@media (min-width: 1700px) {
+  body[data-page="planificacion"] .header, body[data-page="planificacion"] .nav-bar-wrap, body[data-page="planificacion"] .panel, body[data-page="planificacion"] .plan-food-switch, body[data-page="planificacion"] #plan-places-root { max-width: 1240px; }
+  body[data-page="planificacion"] .nav-bar { max-width: 1240px; }
+}

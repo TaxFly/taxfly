@@ -31,7 +31,16 @@ function devError(...args) {
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="assets/icon-192.png?v=5">
 <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="assets/plan-styles.css">
 <link rel="stylesheet" href="assets/app-settings.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -53,7 +62,7 @@ if ("serviceWorker" in navigator) {
     <link rel="stylesheet" href="assets/ux.css">
     <script src="assets/ux.js" defer></script>
 </head>
-<body class="theme-parques">
+<body class="theme-parques" data-page="planificacion">
 
 
 <header class="header">
@@ -102,7 +111,13 @@ if ("serviceWorker" in navigator) {
 
 <div class="plan-food-switch" id="plan-food-switch" hidden><button id="nav-comidas" onclick="switchSection('comidas')">Comidas</button><button id="nav-walmart" onclick="switchSection('walmart')">Supermercado</button></div>
 
-<div id="trip-loading" class="trip-inline-loading" role="status">Cargando los datos de tu viaje…</div>
+<div id="trip-loading" class="trip-inline-loading trip-skel" role="status" aria-live="polite">
+  <span class="sr-only">Cargando los datos de tu viaje…</span>
+  <div class="skel skel-line skel-w60"></div>
+  <div class="skel skel-card"></div>
+  <div class="skel skel-card"></div>
+  <div class="skel skel-card skel-short"></div>
+</div>
 <div id="panel-outlets" class="panel"></div>
 <div id="panel-comidas" class="panel"></div>
 <div id="panel-walmart" class="panel"></div>
