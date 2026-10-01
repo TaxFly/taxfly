@@ -147,7 +147,7 @@ test('backup includes each existing trip branch without inventing an ID', () => 
 test('travel tips stay hidden and profile documents remain visible across trips', () => {
   assert.doesNotMatch(between(read('assets/plan-app.js'),'function renderOutlets()', 'function switchOutletTab('),/renderTips\(\)/);
   assert.match(read('tickets.html'),/tripId: docObj.tripId \|\| "unassigned"/);
-  assert.match(read('tickets.html'),/const visible=window\._uid\?allDocs:\[\]/);
+  assert.match(read('tickets.html'),/const visible=window\._uid\?allDocs\.filter\(d => !\(window\._tfHidden && window\._tfHidden\.has\(d\.id\)\)\):\[\]/);
   assert.doesNotMatch(read('tickets.html'),/TripContext\.filter\(allDocs/);
 });
 
@@ -407,7 +407,7 @@ test('park migration matches attraction names and preserves the legacy marks unt
 });
 
 test('Maps links offer a choice on iOS, open Google Maps on Android, and a new tab on desktop', () => {
-  const src=between(read('assets/plan-app.js'),'function tripMapLink(address,','window._syncedWriteLog');
+  const src=between(read('assets/plan-app.js'),'function tripMapLink(address,','function openAttachChoice(');
   const setup=userAgent=>context(src,{navigator:{userAgent,platform:'',maxTouchPoints:0},
     escapeHtml:s=>s,ic:()=>'<pin/>',encodeURIComponent}).tripMapLink('850 Savanna Dr, Kissimmee');
   assert.match(setup('iPhone'),/onclick="openMapChooser\(this\.dataset\.mapQuery\)"/);

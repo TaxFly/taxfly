@@ -17,4 +17,4 @@ jobs:
         with:
           node-version: 20
       - name: Run flow and PWA tests
-        run: node --test tests/flow.test.cjs
+        run: npm test
