@@ -184,11 +184,6 @@ document.addEventListener("DOMContentLoaded", function() {
         .section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
         .home-primary-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
         .home-primary-grid .section-card{min-height:88px;aspect-ratio:1;}
-        /* Dashboard: sin cuadrados de fondo, solo logo + nombre */
-        .home-primary-grid .section-card{background:transparent;border:none;box-shadow:none;}
-        .home-primary-grid .section-card::before{display:none;}
-        .home-primary-grid .section-card:hover{border:none;box-shadow:none;}
-        .home-primary-grid .sc-emoji.ui-slot[data-tone],.home-primary-grid .sc-emoji{background:transparent;}
         
         .home-section-heading{font-size:.7rem;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}
         .section-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:inherit;transition:var(--tr);cursor:pointer;aspect-ratio:1;position:relative;overflow:hidden;}

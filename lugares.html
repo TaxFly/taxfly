@@ -379,7 +379,11 @@ if ("serviceWorker" in navigator) {
     
     <div class="tab-panel active" id="panel-lugares">
         <div class="card">
-            <span class="slabel" data-i18n="itinerary_title">📍 Lugares del viaje</span>
+            <div onclick="togglePlacesCard()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
+                <span class="slabel" style="margin-bottom:0;" data-i18n="itinerary_title">📍 Lugares del viaje</span>
+                <span id="places-chevron" style="font-size:1rem;color:var(--text-dim);transition:transform .3s;">▾</span>
+            </div>
+            <div id="places-body" style="margin-top:14px;">
             <select id="citySelector" onchange="renderCityData()" style="margin-bottom:14px;">
                 <option value="orlando" data-i18n="city_orlando">Orlando</option>
                 <option value="nyc" data-i18n="city_nyc">Nueva York</option>
@@ -398,6 +402,7 @@ if ("serviceWorker" in navigator) {
                     <div class="st-label" data-i18n="tip_label">TIP DE VIAJE</div>
                     <div id="tip-text">Cargando tips...</div>
                 </div>
+            </div>
             </div>
 
         </div>
@@ -507,7 +512,6 @@ if ("serviceWorker" in navigator) {
                 </div>
             </div>
         </div>
-    </div>
 
     
     <div class="tab-panel" id="panel-notas" style="width:100%;margin:0 auto;">
@@ -1139,11 +1143,14 @@ window.renderCityData = async () => {
         const result = await ParkLive.parkSummary(park);
         if (el && document.getElementById("citySelector").value===cityKey)
           {
+            if (!result.level) { el.closest(".park-live-card")?.remove(); return; }
             el.className="park-level " + (result.level === "low" ? "q-low" : result.level === "medium" ? "q-med" : result.level === "high" ? "q-high" : "q-off");
-            el.textContent=result.level ? `${t[result.level]} ${result.level === "closed" ? "☾" : ""}`.trim() : t.unavailable;
+            el.textContent=`${t[result.level]} ${result.level === "closed" ? "☾" : ""}`.trim();
           }
-      } catch (_) { if (el && document.getElementById("citySelector").value===cityKey) el.textContent=t.unavailable; }
+      } catch (_) { if (el && document.getElementById("citySelector").value===cityKey) el.closest(".park-live-card")?.remove(); }
     }));
+    if (document.getElementById("citySelector").value===cityKey && !parkBox.querySelector(".park-live-card"))
+      parkBox.insertAdjacentHTML("beforeend", `<p class="park-source">${t.unavailable}</p>`);
   } catch (_) { if (document.getElementById("citySelector").value===cityKey) parkBox.innerHTML=`<h3>${t.parks}</h3><p class="park-source">${t.unavailable}</p>`; }
 };
 
@@ -2561,6 +2568,15 @@ window.updateInlineTransport = function() {
     const subtitle = document.getElementById("inline-transport-subtitle");
     if (subtitle) subtitle.textContent = city.system;
   }
+};
+
+window.togglePlacesCard = function() {
+  const body = document.getElementById("places-body");
+  const chev = document.getElementById("places-chevron");
+  if (!body) return;
+  const open = body.style.display !== "none";
+  body.style.display = open ? "none" : "block";
+  if (chev) chev.style.transform = open ? "rotate(-90deg)" : "";
 };
 
 window.toggleInlineTransport = function() {
