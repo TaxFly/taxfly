@@ -1,0 +1,58 @@
+{
+  "name": "TaxFly — Tu viaje",
+  "short_name": "TaxFly",
+  "description": "Plan, reservas, rutas, gastos y documentos del viaje en un solo lugar.",
+  "start_url": "./login.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "lang": "es",
+  "categories": ["travel", "finance", "utilities"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calculadora de Tax",
+      "short_name": "Tax",
+      "url": "./login.html?next=index.html",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Gastos",
+      "short_name": "Gastos",
+      "url": "./login.html?next=compras.html",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Plan del viaje",
+      "short_name": "Plan",
+      "url": "./login.html?next=planificacion.html",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Grupo",
+      "short_name": "Grupo",
+      "url": "./login.html?next=grupo.html",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

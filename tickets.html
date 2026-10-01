@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
+    <script src="assets/security.js"></script>
+    <script src="assets/recaptcha.js"></script>
+    <script src="assets/account.js"></script>
+    <script src="config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>TaxFly — Documentos</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
+    <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
+    
+    <script>
+if (navigator.onLine) {
+  var s = document.createElement("script");
+  s.src = "https://www.google.com/recaptcha/api.js?render=6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME";
+  s.async = true;
+  s.defer = true;
+  document.head.appendChild(s);
+}
+</script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800;900&display=swap" rel="stylesheet"></noscript>
+    <script>
+const _t = localStorage.getItem("theme");
+
+if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.setAttribute("data-theme", "dark");
+</script>
+    <link rel="stylesheet" href="assets/shared-chrome.css">
+    <style>
+        :root {
+            --primary:#2563eb; --primary-dim:rgba(37,99,235,0.1);
+            --accent:#7c3aed; --accent-dim:rgba(124,58,237,0.1);
+            --danger:#ef4444; --success:#10b981; --warn:#f59e0b;
+            --bg:#f1f5f9; --surface:#ffffff; --surface-2:#f8fafc;
+            --border:#e2e8f0; --input-bg:#f8fafc;
+            --text:#0f172a; --text-sub:#64748b; --text-dim:#94a3b8;
+            --header-color:#1e3a8a;
+            --radius:20px; --radius-sm:12px;
+            --shadow:0 4px 20px rgba(0,0,0,0.06); --shadow-lg:0 12px 40px rgba(0,0,0,0.1);
+            --tr:all 0.25s cubic-bezier(0.4,0,0.2,1);
+        }
+        [data-theme="dark"] {
+            --bg:#0f172a; --surface:#1e293b; --surface-2:#273549;
+            --border:#334155; --input-bg:#273549;
+            --text:#f1f5f9; --text-sub:#94a3b8; --text-dim:#64748b;
+            --header-color:#2563eb;
+            --shadow:0 4px 20px rgba(0,0,0,0.3); --shadow-lg:0 12px 40px rgba(0,0,0,0.4);
+        }
+        body{padding:20px 16px 48px;}
+        .wrap{width:100%;max-width:460px;}
+        .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+        .logo{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:900;color:var(--header-color);letter-spacing:-.5px;}
+        .logo svg{width:28px;height:28px;flex-shrink:0;}
+        .nav-bar{display:flex;align-items:center;background:var(--surface);border-radius:16px;padding:6px;margin-bottom:18px;border:1px solid var(--border);box-shadow:var(--shadow);gap:2px;position:relative;}        @keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}        .page-heading{margin-bottom:14px;}
+        .page-heading h1{font-size:1.3rem;font-weight:900;color:var(--text);letter-spacing:-.3px;}
+        .page-heading p{font-size:.75rem;color:var(--text-sub);font-weight:600;margin-top:2px;}
+        .btn-add{width:100%;padding:14px;border:2px dashed var(--border);border-radius:var(--radius);background:transparent;color:var(--text-sub);font-family:inherit;font-size:.85rem;font-weight:800;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:8px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:18px;}
+        .btn-add:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-dim);}
+        .filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none;}
+        .filter-row::-webkit-scrollbar{display:none;}
+        .filter-pill{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:.7rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);white-space:nowrap;font-family:inherit;flex-shrink:0;}
+        .filter-pill.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
+        .empty-state{text-align:center;padding:48px 20px;color:var(--text-dim);}
+        .empty-state .empty-icon{font-size:3rem;margin-bottom:12px;display:block;}
+        .empty-state p{font-size:.85rem;font-weight:600;line-height:1.6;}
+        .doc-list{display:flex;flex-direction:column;gap:10px;}
+
+        
+        .doc-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);border-left:4px solid var(--border);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:var(--tr);display:flex;flex-direction:column;}
+        .doc-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+        .doc-card:active{transform:scale(.98);}
+
+        
+        .doc-stripe{display:none;}
+
+        
+        .doc-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+
+        
+        .doc-top{display:flex;align-items:center;gap:12px;}
+        .doc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+        .doc-info{flex:1;min-width:0;}
+        .doc-name{font-size:.9rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .doc-meta{font-size:.65rem;font-weight:600;color:var(--text-dim);margin-top:3px;display:flex;gap:8px;align-items:center;}
+        .doc-meta-dot{width:3px;height:3px;border-radius:50%;background:var(--text-dim);flex-shrink:0;}
+        .doc-btns{display:flex;gap:6px;flex-shrink:0;}
+        .doc-view-btn{padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface-2);font-size:.68rem;font-weight:800;color:var(--text-sub);cursor:pointer;font-family:inherit;transition:var(--tr);white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;}
+        .doc-view-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-dim);}
+        .doc-del-btn{padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface-2);font-size:.75rem;cursor:pointer;font-family:inherit;transition:var(--tr);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+        .doc-del-btn:hover{border-color:var(--danger);background:rgba(239,68,68,.08);}
+        @media (max-width:600px){.doc-top{flex-wrap:wrap}.doc-meta{flex-wrap:wrap}.doc-btns{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}}
+
+        
+        .doc-thumb{width:100%;height:100px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:block;}
+
+        
+        .doc-pdf-preview{display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border);}
+        .doc-pdf-icon{width:38px;height:46px;background:linear-gradient(135deg,#ef4444,#dc2626);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(239,68,68,.35);}
+        .doc-pdf-icon::before{content:'';position:absolute;top:0;right:0;width:11px;height:11px;background:rgba(255,255,255,.2);border-bottom-left-radius:6px;}
+        .doc-pdf-icon span{font-size:.42rem;font-weight:900;color:white;letter-spacing:.8px;text-transform:uppercase;}
+        .doc-pdf-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+        .doc-pdf-filename{font-size:.8rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .doc-pdf-size{font-size:.65rem;font-weight:600;color:var(--text-dim);}
+        .doc-pdf-badge{font-size:.6rem;font-weight:800;padding:3px 8px;border-radius:20px;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2);white-space:nowrap;flex-shrink:0;}
+
+        .doc-actions{display:flex;gap:6px;padding-top:2px;border-top:1px solid var(--border);}
+        .doc-act-btn{flex:1;padding:8px;border:none;border-radius:8px;background:transparent;font-size:.72rem;font-weight:800;color:var(--text-sub);cursor:pointer;font-family:inherit;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:4px;}
+        .doc-act-btn:hover{color:var(--primary);background:var(--primary-dim);}
+        .doc-act-btn.del:hover{color:var(--danger);background:rgba(239,68,68,.08);}
+        .storage-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+        .storage-track{flex:1;height:5px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--border);}
+        .storage-fill{height:100%;border-radius:99px;transition:width .5s ease;}
+        .storage-lbl{font-size:.62rem;font-weight:800;color:var(--text-dim);white-space:nowrap;}
+        .app-footer{margin-top:8px;padding:12px 0;text-align:center;font-size:.7rem;color:var(--text-dim);font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;}
+        .app-footer img{width:16px;border-radius:2px;}
+
+        
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;justify-content:center;z-index:2000;backdrop-filter:blur(10px);}
+        .modal.show{display:flex;animation:fadeIn .2s ease;}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        .sheet{background:var(--surface);border-radius:28px 28px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(.4,0,.2,1);max-height:92vh;overflow-y:auto;}
+        @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 20px;}
+        .sheet-title{font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:16px;}
+        .slabel{font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block;}
+        input,select{width:100%;padding:13px 15px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:.9rem;font-weight:600;outline:none;transition:var(--tr);-webkit-appearance:none;}
+        input:focus,select:focus{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px var(--primary-dim);}
+        input::placeholder{color:var(--text-dim);font-weight:500;}
+        .input-group{margin-bottom:12px;}
+        .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+        .type-btn{padding:12px 6px;border:1.5px solid var(--border);border-radius:12px;background:var(--input-bg);font-size:.62rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit;text-transform:uppercase;letter-spacing:.3px;text-align:center;line-height:1.3;}
+        .type-btn .t-icon{font-size:1.3rem;}
+        .type-btn.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
+        .upload-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:22px 16px;text-align:center;cursor:pointer;transition:var(--tr);margin-bottom:12px;position:relative;overflow:hidden;}
+        .upload-zone:hover{border-color:var(--primary);background:var(--primary-dim);}
+        .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+        .upload-icon{font-size:1.8rem;display:block;margin-bottom:5px;}
+        .upload-text{font-size:.8rem;font-weight:700;color:var(--text-sub);}
+        .upload-sub{font-size:.65rem;color:var(--text-dim);margin-top:2px;font-weight:600;}
+        .source-row{display:flex;gap:8px;margin-bottom:12px;}
+        .source-btn{flex:1;padding:11px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.72rem;font-weight:800;color:var(--text-sub);cursor:pointer;font-family:inherit;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:6px;}
+        .source-btn:hover{border-color:var(--primary);color:var(--primary);}
+        .camera-ui{display:none;margin-bottom:12px;border-radius:var(--radius-sm);overflow:hidden;background:#000;position:relative;}
+        #cam-video{width:100%;display:block;max-height:220px;object-fit:cover;}
+        .cam-close{position:absolute;top:8px;right:8px;width:30px;height:30px;background:rgba(0,0,0,.5);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-size:.8rem;font-weight:900;z-index:10;}
+        .cam-ring{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;border:3px solid white;opacity:.6;pointer-events:none;}
+        .cam-capture{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.3);border:3px solid white;color:white;font-size:1.3rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;}
+        .preview-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none;}
+        .preview-strip::-webkit-scrollbar{display:none;}
+        .preview-item{position:relative;flex-shrink:0;}
+        .preview-thumb{width:70px;height:70px;border-radius:10px;object-fit:cover;border:2px solid var(--border);display:block;}
+        .preview-pdf{width:70px;height:70px;border-radius:10px;background:var(--surface-2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-direction:column;gap:2px;}
+        .preview-pdf small{font-size:.5rem;font-weight:800;color:var(--danger);}
+        .preview-remove{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:var(--danger);color:white;border:none;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;font-weight:900;}
+        .btn{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+        .btn:active{transform:scale(.97);}
+        .btn-primary{background:var(--primary);color:white;box-shadow:0 4px 14px rgba(37,99,235,.3);}
+        .btn-ghost{background:transparent;color:var(--text-sub);border:1.5px solid var(--border);}
+
+        
+        .viewer-modal{position:fixed;inset:0;background:rgba(0,0,0,.96);display:none;flex-direction:column;z-index:3000;}
+        .viewer-modal.show{display:flex;animation:fadeIn .2s ease;}
+        .viewer-header{display:flex;align-items:center;gap:8px;padding:max(20px, calc(12px + env(safe-area-inset-top, 0px))) 14px 12px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.08);}
+        .viewer-title{font-size:.85rem;font-weight:800;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
+        .viewer-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);color:white;border:none;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        
+        .viewer-search{display:none;padding:8px 14px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.08);gap:8px;align-items:center;}
+        .viewer-search.open{display:flex;}
+        .viewer-search input{flex:1;padding:9px 13px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:white;font-family:inherit;font-size:.85rem;font-weight:600;outline:none;}
+        .viewer-search input::placeholder{color:rgba(255,255,255,.35);}
+        .viewer-search input:focus{border-color:var(--primary);}
+        .search-count{font-size:.7rem;font-weight:800;color:rgba(255,255,255,.45);white-space:nowrap;}
+        .search-nav{display:flex;gap:4px;}
+        .search-nav button{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.1);color:white;border:none;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;}
+        .search-nav button:active{background:var(--primary);}
+        
+        .viewer-body{flex:1;overflow-y:auto;padding:10px;-webkit-overflow-scrolling:touch;}
+        .viewer-page{margin-bottom:10px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.07);position:relative;}
+        .viewer-page img{width:100%;display:block;}
+        .viewer-page canvas{width:100%!important;height:auto!important;display:block;}
+        
+        .viewer-page .text-layer{position:absolute;inset:0;pointer-events:auto;overflow:hidden;}
+        .viewer-page .text-layer span{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;}
+        .viewer-page .text-layer .highlight{background:rgba(255,220,0,.45);border-radius:2px;color:transparent;}
+        .viewer-page .text-layer .highlight.selected{background:rgba(255,140,0,.65);}
+        
+        .pdf-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;color:rgba(255,255,255,.4);font-size:.78rem;font-weight:700;}
+        .pdf-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        
+        .doc-link-dialog{position:fixed;inset:0;margin:auto;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:18px;padding:20px;width:min(420px,calc(100vw - 28px));max-height:calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;box-shadow:var(--shadow-lg);}
+        .doc-link-dialog::backdrop{background:rgba(7,17,35,.65)}
+        .doc-link-dialog h2{font-size:1.15rem;margin:0 0 7px}.doc-link-dialog p{color:var(--text-sub);font-size:.8rem;line-height:1.5}
+        .doc-link-dialog label{display:block;margin:14px 0 6px;font-size:.76rem;font-weight:800}.doc-link-dialog select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font:inherit}
+        .doc-link-suggestion{background:var(--primary-dim);border-radius:10px;padding:11px;margin:12px 0;font-size:.78rem}.doc-link-suggestion strong{display:block;margin-bottom:4px}.doc-link-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.doc-link-actions button{border:1px solid var(--border);border-radius:9px;padding:10px 12px;background:var(--surface-2);color:var(--text);font:inherit;font-weight:750;cursor:pointer}.doc-link-actions .doc-link-save{background:var(--primary);color:white;border-color:var(--primary)}
+        .doc-link-hint{font-size:.72rem;color:var(--text-sub);padding:8px 14px 10px}.doc-link-hint button{border:0;background:none;color:var(--primary);font:inherit;font-weight:800;cursor:pointer;padding:0;text-align:left}
+        .viewer-actions{padding:10px 14px 28px;display:flex;gap:8px;flex-shrink:0;}
+        .viewer-btn{flex:1;padding:12px;border-radius:10px;border:none;font-family:inherit;font-size:.78rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr);}
+        .viewer-btn.share{background:var(--primary);color:white;}
+        .viewer-btn.search-toggle{background:rgba(255,255,255,.1);color:white;}
+        .viewer-btn.search-toggle.active{background:var(--primary);color:white;}
+        .viewer-btn.del{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.25);}        .lang-opt img{width:18px;border-radius:2px;}        .btn-danger-d{color:var(--danger)!important;border-color:rgba(239,68,68,.3)!important;}
+        .doc-offline-badge{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 10px;border-radius:20px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);font-size:.62rem;font-weight:800;color:#b45309;letter-spacing:.3px;}
+        [data-theme="dark"] .doc-offline-badge{background:rgba(245,158,11,.08);color:#f59e0b;}
+    
+        @keyframes pinBoxIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+        
+        #offline-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:9px;padding:10px 18px;background:var(--surface);border:1.5px solid var(--warn);border-radius:14px;font-size:.78rem;font-weight:700;color:var(--text);box-shadow:var(--shadow-lg);z-index:9998;white-space:nowrap;animation:ot-in .3s cubic-bezier(.34,1.56,.64,1);}
+        #offline-toast.show{display:flex;}
+        #offline-toast .ot-dot{width:8px;height:8px;border-radius:50%;background:var(--warn);flex-shrink:0;animation:ot-pulse 1.8s ease-in-out infinite;}
+        @keyframes ot-in{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        @keyframes ot-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+        
+        #sync-ok-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:9px;padding:10px 18px;background:rgba(16,185,129,.12);border:1.5px solid var(--success);border-radius:14px;font-size:.78rem;font-weight:700;color:var(--success);box-shadow:var(--shadow-lg);z-index:9998;white-space:nowrap;animation:ot-in .3s cubic-bezier(.34,1.56,.64,1);}
+        #sync-ok-toast.show{display:flex;}
+    </style>
+    <link rel="stylesheet" href="assets/ui.css">
+<script defer src="assets/autofill.js"></script>
+<link rel="stylesheet" href="assets/cohesion.css">
+<script defer src="assets/localize.js"></script>
+<script src="assets/offline-status.js"></script>
+    <link rel="stylesheet" href="assets/ux.css">
+    <script src="assets/ux.js" defer></script>
+</head>
+<body>
+
+<div id="offline-toast">
+  <span class="ot-dot"></span>
+  <span id="offline-toast-msg">Sin conexión — los documentos se sincronizarán al reconectar</span>
+</div>
+<div id="sync-ok-toast">✅ <span id="sync-ok-msg">Todo sincronizado</span></div>
+<div class="wrap">
+
+    
+    <div class="app-header">
+        <a href="index.html" class="logo" style="text-decoration:none;">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tg19" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#2563eb"/></linearGradient><clipPath id="tc19"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="url(#tg19)"/><g clip-path="url(#tc19)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
+            <span class="wm">Tax<span class="wm-usa">USA</span></span>
+</a>
+    </div>
+
+    
+    <nav class="nav-bar">
+        <a href="index.html"      class="btn-nav"><span class="ni">🏠</span><span data-i18n="nav_home">INICIO</span></a>
+        <a href="tax.html"        class="btn-nav"><span class="ni">📊</span><span data-i18n="nav_taxes">TAXES</span></a>
+        <a href="compras.html"    class="btn-nav"><span class="ni">🛍️</span><span data-i18n="nav_expenses">GASTOS</span></a>
+        <a href="planificacion.html" class="btn-nav"><span class="ni">📍</span><span data-i18n="nav_itinerary">PLANIFICACIÓN</span></a>
+        <button class="btn-nav-more" id="btnMore" onclick="toggleMoreMenu(event)">
+            <div class="more-dots"><div class="more-dot"></div><div class="more-dot"></div><div class="more-dot"></div></div>
+            <span class="more-lbl" data-i18n="nav_more">MÁS</span>
+            <div class="nav-dropdown" id="navDropdown">
+                <div class="dd-arrow"></div>
+                <a href="rutas.html"    class="dd-item"><span class="dd-icon">🗺️</span><div><div class="dd-name" data-i18n="nav_routes">RUTAS</div><div class="dd-desc" data-i18n="nav_routes_desc">Mapas y direcciones</div></div></a>
+                <a href="unidades.html" class="dd-item"><span class="dd-icon">💡</span><div><div class="dd-name" data-i18n="nav_units">AYUDA Y REFERENCIAS</div><div class="dd-desc" data-i18n="nav_units_desc">Conversor de unidades y ayudas varias</div></div></a>
+                <a href="grupo.html"    class="dd-item"><span class="dd-icon">👥</span><div><div class="dd-name" data-i18n="nav_group">GRUPO</div><div class="dd-desc" data-i18n="nav_group_desc">Gastos compartidos</div></div></a>
+            </div>
+        </button>
+        <button class="btn-nav-set active" id="btnSettings" onclick="toggleSettings()"></button>
+    </nav>
+    <script src="assets/ui.js"></script>
+
+    <div class="taxfly-trip-filter" hidden aria-hidden="true"><label for="trip-filter-docs">Viaje</label><select id="trip-filter-docs" aria-label="Filtrar documentos por viaje"></select><a href="index.html#viajes">Gestionar viajes</a></div>
+
+    
+    <div class="page-heading">
+        <h1 data-i18n="docs_title">🗂️ Mis Documentos</h1>
+        <p data-i18n="docs_sub">Boarding passes, vouchers y documentación de viaje</p>
+    </div>
+
+    
+    <div class="storage-bar">
+        <span class="storage-lbl" id="storage-lbl">0 docs</span>
+        <div class="storage-track"><div class="storage-fill" id="storage-fill" style="width:0%;background:var(--primary)"></div></div>
+        <span class="storage-lbl" id="storage-size">0 MB</span>
+    </div>
+
+    
+    <div class="filter-row">
+        <button class="filter-pill active" data-filter="all"  onclick="setFilter('all')"  data-i18n="filter_all">Todos</button>
+        <button class="filter-pill"        data-filter="✈️"   onclick="setFilter('✈️')"  data-i18n="filter_flights">✈️ Vuelos</button>
+        <button class="filter-pill"        data-filter="🏨"   onclick="setFilter('🏨')"  data-i18n="filter_hotel">🏨 Hotel</button>
+        <button class="filter-pill"        data-filter="🚗"   onclick="setFilter('🚗')"  data-i18n="filter_car">🚗 Auto</button>
+        <button class="filter-pill"        data-filter="🎟️"  onclick="setFilter('🎟️')" data-i18n="filter_tickets">🎟️ Entradas</button>
+        <button class="filter-pill"        data-filter="🛡️"  onclick="setFilter('🛡️')" data-i18n="filter_insurance">🛡️ Seguro</button>
+        <button class="filter-pill"        data-filter="🩺"   onclick="setFilter('🩺')"  data-i18n="filter_medical">🩺 Médico</button>
+        <button class="filter-pill"        data-filter="📋"   onclick="setFilter('📋')"  data-i18n="filter_esta">📋 ESTA</button>
+        <button class="filter-pill"        data-filter="📦"   onclick="setFilter('📦')"  data-i18n="filter_other">📦 Otros</button>
+    </div>
+
+    
+    <button class="btn-add" onclick="openAddModal()">
+        <span style="font-size:1.1rem;">＋</span>
+        <span data-i18n="btn_add_doc">AGREGAR DOCUMENTO</span>
+    </button>
+
+    
+    <div class="doc-list" id="doc-list"></div>
+
+    
+    <div class="empty-state" id="empty-state" style="display:none;">
+        <span class="empty-icon">🗂️</span>
+        <p data-i18n="empty_docs">Todavía no tenés documentos guardados.<br>Agregá tu boarding pass, vouchers y más.</p>
+    </div>
+
+    <div class="app-footer"><span data-i18n="footer_by">Creado por Juan Cruz Bria</span><img src="https://flagcdn.com/w40/ar.png" alt="AR" onerror="this.outerHTML='🇦🇷';"></div>
+</div>
+
+
+<div class="modal" id="addModal" onclick="bgClick(event)">
+    <div class="sheet" id="addSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" data-i18n="sheet_title">Nuevo Documento</div>
+
+        <span class="slabel" data-i18n="label_name">Nombre</span>
+        <div class="input-group">
+            <input type="text" id="inp-name" placeholder="Ej: Vuelo AA123 — MIA" data-i18n-ph="ph_name" autocomplete="off" enterkeyhint="next">
+        </div>
+
+        <span class="slabel" data-i18n="label_type">Tipo</span>
+        <div class="type-grid">
+            <button class="type-btn active" data-type="✈️" onclick="setType(this)"><span class="t-icon">✈️</span><span data-i18n="type_boarding">Boarding Pass</span></button>
+            <button class="type-btn" data-type="🏨" onclick="setType(this)"><span class="t-icon">🏨</span><span data-i18n="type_hotel">Hotel / Airbnb</span></button>
+            <button class="type-btn" data-type="🚗" onclick="setType(this)"><span class="t-icon">🚗</span><span data-i18n="type_car">Alquiler Auto</span></button>
+            <button class="type-btn" data-type="🎟️" onclick="setType(this)"><span class="t-icon">🎟️</span><span data-i18n="type_ticket">Entrada / Ticket</span></button>
+            <button class="type-btn" data-type="🛡️" onclick="setType(this)"><span class="t-icon">🛡️</span><span data-i18n="type_insurance">Seguro Viaje</span></button>
+            <button class="type-btn" data-type="🩺" onclick="setType(this)"><span class="t-icon">🩺</span><span data-i18n="type_medical">Cob. Médica</span></button>
+            <button class="type-btn" data-type="💉" onclick="setType(this)"><span class="t-icon">💉</span><span data-i18n="type_vaccine">Cert. Vacunas</span></button>
+            <button class="type-btn" data-type="📋" onclick="setType(this)"><span class="t-icon">📋</span><span data-i18n="type_esta">ESTA / Visa</span></button>
+            <button class="type-btn" data-type="📦" onclick="setType(this)"><span class="t-icon">📦</span><span data-i18n="type_other">Otro</span></button>
+        </div>
+
+        <small id="doc-type-hint" aria-live="polite" style="display:block;margin:0 0 12px;color:var(--text-sub)"></small>
+        <span class="slabel" data-i18n="label_source">Agregar archivo</span>
+        <div class="source-row">
+            <button class="source-btn" onclick="openCamera()">📷 <span data-i18n="src_cam">Cámara</span></button>
+            <button class="source-btn" onclick="document.getElementById('file-inp').click()">📁 <span data-i18n="src_file">Galería / PDF</span></button>
+        </div>
+
+        <input type="file" id="file-inp" accept="image/*,.pdf" multiple style="display:none" onchange="handleFiles(this.files)">
+
+        
+        <div class="camera-ui" id="camera-ui">
+            <video id="cam-video" autoplay playsinline></video>
+            <button class="cam-close" onclick="stopCamera()" aria-label="Cerrar cámara">✕</button>
+            <div class="cam-ring"></div>
+            <button class="cam-capture" onclick="capturePhoto()">📸</button>
+        </div>
+        <canvas id="cam-canvas" style="display:none"></canvas>
+
+        
+        <div class="preview-strip" id="preview-strip" style="display:none"></div>
+
+        <div style="display:flex;gap:8px;margin-top:6px;">
+            <button class="btn btn-ghost" onclick="closeAddModal()" style="flex:1" data-i18n="btn_cancel">CANCELAR</button>
+            <button class="btn btn-primary" onclick="saveDoc()" style="flex:2">💾 <span data-i18n="btn_save">GUARDAR</span></button>
+        </div>
+    </div>
+</div>
+
+
+<div class="viewer-modal" id="viewerModal">
+    <div class="viewer-header">
+        <button class="viewer-close" onclick="closeViewer()" aria-label="Cerrar visor">✕</button>
+        <div class="viewer-title" id="viewer-title">—</div>
+        <button class="viewer-close" id="btnSearchToggle" onclick="toggleSearch()" style="display:none;">🔍</button>
+    </div>
+    
+    <div class="viewer-search" id="viewerSearch">
+        <input type="search" id="searchInput" placeholder="Buscar en el documento…" data-i18n-ph="search_placeholder" oninput="onSearchInput()" onkeydown="onSearchKey(event)" enterkeyhint="search" autocomplete="off">
+        <span class="search-count" id="searchCount"></span>
+        <div class="search-nav">
+            <button onclick="navMatch(-1)">▲</button>
+            <button onclick="navMatch(1)">▼</button>
+        </div>
+    </div>
+    <div class="viewer-body" id="viewer-body"></div>
+    <div class="viewer-actions">
+        <button class="viewer-btn search-toggle" onclick="openDocumentLink()">🔗 Vincular</button>
+        <button class="viewer-btn share" onclick="shareDoc()">📤 <span data-i18n="btn_share">Compartir</span></button>
+        <button class="viewer-btn del"   onclick="deleteFromViewer()">🗑️ <span data-i18n="btn_del">Eliminar</span></button>
+    </div>
+</div>
+
+
+<dialog id="docLinkDialog" class="doc-link-dialog" aria-labelledby="doc-link-title">
+  <h2 id="doc-link-title">Vincular documento</h2>
+  <p id="doc-link-description"></p>
+  <div id="doc-link-suggestion"></div>
+  <label for="doc-link-reservation">Reserva de Planificación</label>
+  <select id="doc-link-reservation"></select>
+  <div class="doc-link-actions"><button type="button" class="doc-link-save" id="doc-link-save">Guardar vínculo</button><button type="button" id="doc-link-cancel">Cancelar</button></div>
+  <p id="doc-link-feedback" role="status" aria-live="polite"></p>
+</dialog>
+
+<dialog id="reservationLinkDialog" class="doc-link-dialog" aria-labelledby="reservation-link-title">
+  <h2 id="reservation-link-title">Vincular documento existente</h2>
+  <p id="reservation-link-description"></p>
+  <label for="reservation-link-doc">Documento</label>
+  <select id="reservation-link-doc"></select>
+  <div class="doc-link-actions"><button type="button" class="doc-link-save" id="reservation-link-save">Guardar vínculo</button><button type="button" id="reservation-link-cancel">Cancelar</button></div>
+  <p id="reservation-link-feedback" role="status" aria-live="polite"></p>
+</dialog>
+<script src="assets/trip-context.js"></script>
+<script src="assets/docs-tree.js"></script>
+<script src="assets/settings.js"></script>
+
+
+<div class="modal" id="heavyPdfModal" style="align-items:center;justify-content:center;">
+    <div class="modal-content" style="text-align:left;">
+        <div id="heavy-pdf-title" style="font-size:1.3rem;margin-bottom:6px;">📄 Archivo muy pesado</div>
+        <p id="heavy-pdf-sub" style="font-size:.82rem;color:var(--text-sub);margin-bottom:18px;line-height:1.5;">
+            Este PDF supera los <strong>3 MB</strong>. Elegí cómo querés continuar:
+        </p>
+
+        
+        <div onclick="compressHerePdf()" style="cursor:pointer;background:var(--primary-dim);border:1.5px solid var(--primary);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;">
+            <div id="heavy-opt-a-title" style="font-weight:800;color:var(--primary);font-size:.88rem;margin-bottom:4px;">⚡ Comprimir acá (automático)</div>
+            <div id="heavy-opt-a-body" style="font-size:.75rem;color:var(--text-sub);line-height:1.4;">
+                El PDF se convierte en imágenes para reducir el tamaño.<br>
+                <strong>⚠️ El texto ya no va a ser seleccionable ni copiable.</strong><br>
+                Ideal para boarding passes y vouchers.
+            </div>
+        </div>
+
+        
+        <div onclick="openIlovePdf()" style="cursor:pointer;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;">
+            <div id="heavy-opt-b-title" style="font-weight:800;color:var(--text);font-size:.88rem;margin-bottom:4px;">🌐 Comprimir en ilovepdf.com</div>
+            <div id="heavy-opt-b-body" style="font-size:.75rem;color:var(--text-sub);line-height:1.4;">
+                Se abre ilovepdf en una nueva pestaña. Comprimís el archivo,<br>
+                lo guardás y lo volvés a subir acá.<br>
+                <strong>✅ El texto sigue siendo seleccionable y copiable.</strong>
+            </div>
+        </div>
+
+        
+        <div onclick="addPdfAnyway()" style="cursor:pointer;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:18px;">
+            <div id="heavy-opt-c-title" style="font-weight:800;color:var(--text-sub);font-size:.88rem;margin-bottom:4px;">📤 Subir igual sin comprimir</div>
+            <div id="heavy-opt-c-body" style="font-size:.75rem;color:var(--text-sub);line-height:1.4;">
+                Puede fallar si el archivo es muy grande.<br>
+                Recomendado solo si el PDF tiene entre 3 y 4 MB.
+            </div>
+        </div>
+
+        <button id="heavy-cancel-btn" onclick="closeHeavyPdfModal()" style="width:100%;padding:12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-sub);font-weight:800;font-size:.82rem;cursor:pointer;font-family:inherit;">
+            CANCELAR
+        </button>
+    </div>
+</div>
+
+
+
+
+<div id="pinModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closePinModal()">
+  <div id="pinModalBox" style="background:var(--surface);border-radius:var(--radius);padding:28px 24px;width:calc(100% - 40px);max-width:360px;box-shadow:var(--shadow-lg);border:1px solid var(--border);position:relative;animation:pinBoxIn .28s cubic-bezier(0.34,1.56,0.64,1);">
+    <button onclick="closePinModal()" aria-label="Cerrar" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
+    <div style="font-size:1.4rem;margin-bottom:6px;">🔢</div>
+    <div style="font-size:1rem;font-weight:900;color:var(--text);margin-bottom:4px;" id="pinModalTitle">Cambiar PIN Offline</div>
+    <div style="font-size:.75rem;font-weight:600;color:var(--text-sub);margin-bottom:20px;" id="pinModalSub">Este PIN se usa para acceder sin conexión</div>
+    <div id="pinStep1">
+      <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel1">PIN Nuevo (4–6 dígitos)</label>
+      <input id="pinInput1" type="text" name="tf-pininput1" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
+        style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;transition:all .2s;"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+        onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
+        onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
+        placeholder="••••" enterkeyhint="next">
+      <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel2">Confirmar PIN</label>
+      <input id="pinInput2" type="text" name="tf-pininput2" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
+        style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+        onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
+        onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
+        placeholder="••••" enterkeyhint="next">
+      <div id="pinError" style="display:none;background:rgba(239,68,68,.1);border:1.5px solid var(--danger);border-radius:10px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--danger);margin-bottom:12px;text-align:center;"></div>
+      <button onclick="confirmarPIN()" style="width:100%;padding:15px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:white;font-family:inherit;font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.3);transition:.2s;" id="pinConfirmBtn">Guardar PIN</button>
+    </div>
+    <div id="pinStep2" style="display:none;text-align:center;padding:8px 0;">
+      <div style="font-size:2.8rem;margin-bottom:10px;">✅</div>
+      <div style="font-size:1rem;font-weight:900;color:var(--success);margin-bottom:6px;" id="pinSuccessMsg">¡PIN actualizado!</div>
+      <div style="font-size:.8rem;font-weight:600;color:var(--text-sub);" id="pinSuccessSub">Podés usarlo para entrar sin conexión</div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/document-links.js"></script>
+<script type="module" src="assets/tickets.js"></script>
+
+
+<style>
+#ai-bubble {
+    position: fixed; bottom: 24px; left: 20px; z-index: 3000;
+    width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
+    background: linear-gradient(135deg,#2563eb,#1d4ed8);
+    box-shadow: 0 4px 20px rgba(37,99,235,0.45);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .2s, box-shadow .2s;
+}
+#ai-bubble:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(37,99,235,0.55); }
+#ai-bubble:active { transform: scale(0.95); }
+#ai-bubble svg { width: 26px; height: 26px; }
+#ai-badge {
+    position:absolute; top:6px; right:6px; width:10px; height:10px;
+    background:#22c55e; border-radius:50%; border:2px solid #1e3a8a; display:none;
+}
+#ai-chat {
+    position: fixed; bottom: 88px; left: 16px; z-index: 2999;
+    width: 340px; max-height: 520px; border-radius: 16px; overflow: hidden;
+    display: none; flex-direction: column;
+    background: var(--card, #1e293b);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+    border: 1px solid var(--border, #334155);
+    animation: chatIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+#ai-chat.open { display: flex; }
+@keyframes chatIn {
+    from { opacity:0; transform:translateY(16px) scale(0.96); }
+    to   { opacity:1; transform:translateY(0)   scale(1); }
+}
+#ai-header {
+    display:flex; align-items:center; gap:10px; padding:12px 14px;
+    background: linear-gradient(135deg,#2563eb,#1d4ed8); flex-shrink:0;
+}
+#ai-header svg { width:22px; height:22px; flex-shrink:0; }
+.ai-header-text { flex:1; }
+.ai-header-title { font-size:0.9rem; font-weight:800; color:white; line-height:1; }
+.ai-header-sub   { font-size:0.65rem; color:rgba(255,255,255,0.75); font-weight:600; margin-top:2px; }
+#ai-close {
+    background:rgba(255,255,255,0.15); border:none; color:white; cursor:pointer;
+    width:24px; height:24px; border-radius:50%; font-size:0.75rem; display:flex;
+    align-items:center; justify-content:center; transition:background .15s;
+}
+#ai-close:hover { background:rgba(255,255,255,0.3); }
+#ai-messages {
+    flex:1; overflow-y:auto; padding:12px 12px 4px; display:flex;
+    flex-direction:column; gap:8px; scroll-behavior:smooth;
+}
+#ai-messages::-webkit-scrollbar { width:4px; }
+#ai-messages::-webkit-scrollbar-track { background:transparent; }
+#ai-messages::-webkit-scrollbar-thumb { background:var(--border,#334155); border-radius:4px; }
+.ai-msg {
+    max-width:88%; padding:9px 12px; border-radius:12px; font-size:0.82rem;
+    line-height:1.5; word-break:break-word; animation:msgIn .18s ease;
+}
+@keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.ai-msg.user {
+    align-self:flex-end; background:#2563eb; color:white; border-bottom-right-radius:4px;
+}
+.ai-msg.bot {
+    align-self:flex-start; background:var(--hover,#273548); color:var(--text,#e2e8f0);
+    border-bottom-left-radius:4px;
+}
+.ai-msg.bot ul  { margin:4px 0 4px 0; padding-left:18px; }
+.ai-msg.bot li  { margin:2px 0; }
+.ai-msg.bot p   { margin:4px 0; }
+.ai-msg.bot strong { color:#93c5fd; }
+.ai-msg.bot h3  { font-size:0.85rem; font-weight:700; margin:6px 0 2px; color:#93c5fd; }
+.ai-msg.bot a   { color:#60a5fa; }
+.ai-msg.bot.typing {
+    display:flex; gap:5px; align-items:center; padding:10px 14px;
+}
+.ai-dot {
+    width:7px; height:7px; background:var(--muted,#64748b); border-radius:50%;
+    animation:dot .9s infinite ease-in-out;
+}
+.ai-dot:nth-child(2){animation-delay:.18s}
+.ai-dot:nth-child(3){animation-delay:.36s}
+@keyframes dot { 0%,80%,100%{transform:scale(0.7);opacity:.5} 40%{transform:scale(1);opacity:1} }
+#ai-suggestions {
+    display:flex; gap:6px; flex-wrap:wrap; padding:6px 10px 2px; flex-shrink:0;
+}
+.ai-chip {
+    background:var(--hover,#273548); border:1px solid var(--border,#334155);
+    color:var(--text,#e2e8f0); border-radius:20px; padding:4px 10px; font-size:0.72rem;
+    cursor:pointer; transition:background .15s, transform .1s; white-space:nowrap;
+}
+.ai-chip:hover { background:var(--border,#334155); transform:scale(1.04); }
+#ai-input-area {
+    display:flex; gap:6px; padding:10px; border-top:1px solid var(--border,#334155);
+    flex-shrink:0; background:var(--card,#1e293b);
+}
+#ai-input {
+    flex:1; background:var(--hover,#273548); border:1px solid var(--border,#334155);
+    border-radius:10px; padding:8px 12px; color:var(--text,#e2e8f0); font-size:0.83rem;
+    resize:none; outline:none; line-height:1.4; max-height:80px; overflow-y:auto; font-family:inherit;
+}
+#ai-input:focus { border-color:#2563eb; }
+#ai-send {
+    width:36px; height:36px; border-radius:10px; border:none; background:#2563eb;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background .15s, transform .1s; flex-shrink:0; align-self:flex-end;
+}
+#ai-send:hover { background:#1d4ed8; transform:scale(1.05); }
+#ai-send:disabled { background:var(--border,#334155); cursor:not-allowed; transform:none; }
+#ai-send svg { width:16px; fill:white; }
+</style>
+
+<link rel="stylesheet" href="assets/taxie-corner.css">
+<button id="ai-bubble" aria-label="Taxie — Asistente de viaje">
+    <span id="ai-badge"></span>
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="tc20"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="#fff" fill-opacity=".15"/><g clip-path="url(#tc20)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#fb7185" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#fb7185" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
+</button>
+
+<div id="ai-chat">
+    <div id="ai-header">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="tc21"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="#fff" fill-opacity=".15"/><g clip-path="url(#tc21)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#fb7185" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#fb7185" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
+        <div class="ai-header-text">
+            <div class="ai-header-title">Taxie ✈️</div>
+            <div class="ai-header-sub" id="ai-header-sub">Tu guia de viaje a USA</div>
+        </div>
+        <button id="ai-close" aria-label="Cerrar chat">✕</button>
+    </div>
+    <div id="ai-messages"></div>
+    <div id="ai-suggestions"></div>
+    <div id="ai-input-area">
+        <textarea id="ai-input" rows="1"></textarea>
+        <button id="ai-send">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+    </div>
+</div>
+
+<script src="assets/taxie.js" data-profile="docs"></script>
+
+
+
+<script>
+(function() {
+  function tryUpdate() {
+    if (window.updateOfflineToast) window.updateOfflineToast();
+  }
+  window.addEventListener("online", async () => {
+    tryUpdate();
+    if (window._flushTicketsPending) {
+      try {
+        await window._flushTicketsPending();
+      } catch (e) {
+        console.warn("Flush error", e);
+      }
+    }
+    if (typeof renderList === "function") renderList();
+  });
+  window.addEventListener("offline", tryUpdate);
+  function checkOnLoad() {
+    if (window.updateOfflineToast) {
+      window.updateOfflineToast();
+    } else {
+      setTimeout(checkOnLoad, 100);
+    }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", checkOnLoad);
+  } else {
+    checkOnLoad();
+  }
+})();
+</script>
+
+
+
+<div id="switchAppModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border-radius:28px;padding:28px 24px;width:100%;max-width:340px;box-shadow:var(--shadow-lg);border:1px solid var(--border);text-align:center;">
+    <div id="switchAppTitle" style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:6px;">Cambiar Aplicación</div>
+    <div id="switchAppSub" style="font-size:.8rem;font-weight:600;color:var(--text-sub);margin-bottom:22px;">¿A qué destino querés ir?</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button onclick="doSwitchApp('usa')" style="width:100%;padding:14px;border-radius:14px;border:2px solid rgba(239,68,68,.4);background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(239,68,68,.08));cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;color:var(--text);display:flex;align-items:center;gap:12px;transition:all .2s;">
+        <img src="https://flagcdn.com/w40/us.png" style="width:32px;border-radius:4px;flex-shrink:0;" alt="US" onerror="this.outerHTML='🇺🇸';">
+        <div style="text-align:left;">
+          <div style="color:#ef4444;font-weight:900;">TaxUSA</div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--text-sub);">Estados Unidos</div>
+        </div>
+      </button>
+      <button onclick="doSwitchApp('europe')" style="width:100%;padding:14px;border-radius:14px;border:2px solid rgba(0,51,153,.4);background:linear-gradient(135deg,rgba(0,51,153,.1),rgba(255,204,0,.06));cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;color:var(--text);display:flex;align-items:center;gap:12px;transition:all .2s;">
+        <img src="https://flagcdn.com/w40/eu.png" style="width:32px;border-radius:4px;flex-shrink:0;" alt="EU" onerror="this.outerHTML='🇪🇺';">
+        <div style="text-align:left;">
+          <div style="color:#003399;font-weight:900;">TaxEurope</div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--text-sub);">Europa</div>
+        </div>
+      </button>
+      <button onclick="document.getElementById('switchAppModal').style.display='none'" id="switchAppCancel" style="width:100%;padding:11px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface-2);cursor:pointer;font-family:inherit;font-weight:700;font-size:.85rem;color:var(--text-sub);margin-top:4px;">Cancelar</button>
+    </div>
+  </div>
+</div>
+<script>
+window.openSwitchApp = function() {
+  const lang = localStorage.getItem("taxfly_lang") || "es";
+  const texts = {
+    es: {
+      title: "Cambiar Aplicación",
+      sub: "¿A qué destino querés ir?",
+      cancel: "Cancelar"
+    },
+    en: {
+      title: "Switch App",
+      sub: "Which destination do you want?",
+      cancel: "Cancel"
+    },
+    pt: {
+      title: "Trocar Aplicativo",
+      sub: "Para qual destino você quer ir?",
+      cancel: "Cancelar"
+    }
+  };
+  const t = texts[lang] || texts.es;
+  document.getElementById("switchAppTitle").textContent = t.title;
+  document.getElementById("switchAppSub").textContent = t.sub;
+  document.getElementById("switchAppCancel").textContent = t.cancel;
+  document.getElementById("switchAppModal").style.display = "flex";
+};
+
+window.doSwitchApp = function(destino) {
+  if (destino === "europe") { window.location.href = "selector.html"; return; }
+  localStorage.setItem("taxfly_destino", destino);
+  document.getElementById("switchAppModal").style.display = "none";
+  if (destino === "usa") {
+    window.location.href = "index.html";
+  } else {
+    window.location.href = "selector.html";
+  }
+};
+</script>
+
+<script src="assets/map-links.js" defer></script>
+<script src="assets/reconnect.js" defer></script>
+<script src="assets/reconnect-sync.js" defer></script>
+<link rel="stylesheet" href="assets/travel-tools.css">
+<script src="assets/travel-tools.js" defer></script>
+</body>
+</html>

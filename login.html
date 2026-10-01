@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/splash.css">
+    <script src="assets/dialogs.js"></script>
+    <script src="assets/security.js"></script>
+    <script src="config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaxFly — Login</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
+    <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TaxFly">
+    <meta name="theme-color" content="#EF9F27">
+    <script>
+if (navigator.onLine) {
+  var s = document.createElement("script");
+  s.src = "https://www.google.com/recaptcha/api.js?render=6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME";
+  s.async = true;
+  s.defer = true;
+  document.head.appendChild(s);
+}
+</script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet"></noscript>
+    <style>
+        :root {
+            --primary:#EF9F27; --primary-dark:#BA7517; --primary-glow:rgba(239,159,39,0.18);
+            --accent:#854F0B; --danger:#ef4444; --success:#10b981;
+            --bg:#fdf8f0; --surface:#ffffff; --border:#f0e0c0; --input-bg:#fdf5e8;
+            --text:#1a0f00; --text-sub:#7a5c2e; --text-dim:#b8924a;
+            --radius:20px; --radius-sm:12px;
+            --shadow:0 4px 20px rgba(186,117,23,0.10); --shadow-lg:0 20px 60px rgba(186,117,23,0.18);
+            --tr:all 0.25s cubic-bezier(0.4,0,0.2,1);
+            color-scheme: light;
+        }
+        [data-theme="dark"] {
+            --bg:#120d04; --surface:#1e1508; --border:#3d2e10; --input-bg:#2a1f0a;
+            --text:#fdf5e8; --text-sub:#c4924a; --text-dim:#7a5c2e;
+            --shadow:0 4px 20px rgba(0,0,0,0.45); --shadow-lg:0 20px 60px rgba(0,0,0,0.6);
+            color-scheme: dark;
+        }
+        body{
+            font-family:'DM Sans',-apple-system,system-ui,sans-serif;
+            background:var(--bg);color:var(--text);min-height:100vh;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            padding:24px;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;
+        }
+        body::before{
+            content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+            background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(239,159,39,0.12),transparent);
+        }
+
+        
+        .splash-loading .screen,
+        .splash-loading .lang-selector-top { visibility: hidden; }
+
+        
+        .lang-selector-top{
+            position:fixed;top:16px;right:16px;z-index:100;
+            background:var(--surface);border:1.5px solid var(--border);
+            border-radius:12px;cursor:pointer;user-select:none;min-width:90px;
+            box-shadow:0 2px 12px rgba(0,0,0,0.1);
+        }
+        .selected-lang{padding:8px 12px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:.85rem;}
+        .selected-lang .arrow{font-size:.55rem;color:var(--primary);margin-left:auto;}
+        .lang-options{display:none;position:absolute;top:calc(100% + 6px);left:0;width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.12);}
+        .lang-options.show{display:block;}
+        .lang-option{padding:10px 12px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:.85rem;cursor:pointer;transition:.15s;}
+        .lang-option:hover{background:var(--input-bg);}
+        .lang-option img{width:18px;height:13px;object-fit:cover;border-radius:2px;}
+
+        
+        .screen{position:relative;z-index:1;width:100%;max-width:400px;animation:fadeUp .45s cubic-bezier(0.34,1.56,0.64,1) both;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .screen.hidden{display:none;}
+
+        
+        .login-card{
+            background:var(--surface);padding:36px 28px;border-radius:28px;
+            box-shadow:var(--shadow-lg);border:1.5px solid var(--border);
+        }
+        .card-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px;font-size:1.6rem;font-weight:900;color:var(--primary-dark);}
+        .logo-svg{animation:logoBounce .6s cubic-bezier(0.34,1.56,0.64,1) both;}
+        .logo-text{animation:textSlide .5s .15s cubic-bezier(0.34,1.56,0.64,1) both;color:var(--primary-dark);}
+        @keyframes logoBounce{from{opacity:0;transform:scale(.4) rotate(-15deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+        @keyframes textSlide{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+
+        .card-title{font-size:1.5rem;font-weight:900;text-align:center;margin-bottom:24px;color:var(--text);}
+        .card-sub{font-size:.82rem;font-weight:600;color:var(--text-sub);text-align:center;margin-bottom:20px;line-height:1.5;}
+
+        input{
+            width:100%;padding:15px 16px;background:var(--input-bg);
+            border:1.5px solid var(--border);border-radius:14px;margin-bottom:12px;
+            font-size:.95rem;font-weight:600;font-family:inherit;color:var(--text);
+            outline:none;transition:var(--tr);-webkit-appearance:none;
+        }
+        input:focus{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px rgba(239,159,39,.15);}
+        input::placeholder{color:var(--text-dim);font-weight:500;}
+
+        .btn{
+            width:100%;padding:16px;border:none;border-radius:14px;font-family:inherit;
+            font-size:.9rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+            cursor:pointer;transition:var(--tr);margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;
+        }
+        .btn:active{transform:scale(.97);}
+        .btn-primary{background:var(--primary);color:white;box-shadow:0 4px 16px rgba(239,159,39,.4);}
+        .btn-primary:hover{background:var(--primary-dark);}
+        .btn-ghost{background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);}
+        .btn-ghost:hover{border-color:var(--primary);color:var(--primary);}
+        .btn-danger{background:transparent;color:var(--danger);border:1.5px solid rgba(239,68,68,.3);}
+
+        .verif-notice{
+            display:none;background:rgba(239,159,39,.1);color:var(--primary-dark);
+            padding:12px 14px;border-radius:12px;font-size:.8rem;font-weight:600;
+            margin-bottom:14px;line-height:1.45;border:1.5px solid rgba(239,159,39,.25);
+            opacity:0;transition:opacity .35s ease;
+        }
+        .verif-notice.visible{opacity:1;}
+        .links{display:flex;flex-direction:column;gap:10px;text-align:center;}
+        .link-danger{color:var(--danger);font-size:.8rem;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;}
+        .link-toggle{color:var(--text-sub);font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s;background:none;border:none;font-family:inherit;}
+        .link-toggle:hover{color:var(--primary);}
+
+        
+        .offline-badge{
+            display:none;align-items:center;gap:8px;
+            background:rgba(245,158,11,.1);border:1.5px solid rgba(245,158,11,.3);
+            color:#d97706;border-radius:12px;padding:10px 14px;
+            font-size:.78rem;font-weight:700;margin-bottom:20px;
+        }
+        .offline-badge.show{display:flex;}
+
+        
+        .pin-header{text-align:center;margin-bottom:28px;}
+        .pin-user-avatar{
+            width:72px;height:72px;border-radius:16px;margin:0 auto 12px;
+            background:var(--input-bg) no-repeat center/cover;
+            border:2.5px solid var(--border);
+        }
+        .pin-user-name{font-size:1rem;font-weight:800;color:var(--text);margin-bottom:4px;}
+        .pin-user-email{font-size:.75rem;font-weight:600;color:var(--text-dim);}
+
+        .pin-dots{display:flex;gap:16px;justify-content:center;margin-bottom:32px;}
+        .pin-dot{
+            width:18px;height:18px;border-radius:50%;
+            border:2.5px solid var(--border);background:transparent;
+            transition:var(--tr);
+        }
+        .pin-dot.filled{background:var(--primary);border-color:var(--primary);}
+        .pin-dot.error{background:var(--danger);border-color:var(--danger);animation:shake .4s ease;}        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+        .pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+        .pin-key{
+            padding:0;border:1.5px solid var(--border);border-radius:16px;
+            background:var(--surface);font-family:inherit;font-size:1.4rem;font-weight:700;
+            color:var(--text);cursor:pointer;transition:var(--tr);aspect-ratio:1;
+            display:flex;align-items:center;justify-content:center;
+        }
+        .pin-key:hover{background:var(--input-bg);border-color:var(--primary);}
+        .pin-key:active{transform:scale(.93);background:var(--primary);color:white;border-color:var(--primary);}
+        .pin-key.del{font-size:1.1rem;color:var(--text-sub);}
+        .pin-key.empty{border:none;background:transparent;pointer-events:none;}
+
+        .pin-error-msg{
+            text-align:center;font-size:.8rem;font-weight:700;color:var(--danger);
+            min-height:20px;margin-bottom:12px;transition:opacity .3s;
+        }
+
+        
+        .pin-step-indicator{display:flex;gap:8px;justify-content:center;margin-bottom:24px;}
+        .pin-step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:var(--tr);}
+        .pin-step-dot.active{background:var(--primary);transform:scale(1.2);}
+        .pin-step-dot.done{background:var(--success);}
+
+        .pin-create-title{font-size:1.2rem;font-weight:900;text-align:center;margin-bottom:8px;}
+        .pin-create-sub{font-size:.82rem;font-weight:600;color:var(--text-sub);text-align:center;margin-bottom:28px;line-height:1.5;}
+
+        
+        .info-box{
+            background:rgba(239,159,39,.08);border:1.5px solid rgba(239,159,39,.22);
+            border-radius:14px;padding:16px;margin-bottom:20px;
+            font-size:.82rem;font-weight:600;color:var(--text-sub);line-height:1.5;
+            display:flex;gap:10px;align-items:flex-start;
+        }
+        .info-box-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px;}
+
+        
+        .install-wrap{display:none;flex-direction:column;gap:8px;margin-top:16px;}
+
+        
+        .offline-info-wrap{
+            margin-top:16px;border-radius:18px;
+            border:1.5px solid rgba(239,159,39,.25);
+            overflow:hidden;background:rgba(239,159,39,.06);
+        }
+        .offline-info-trigger{
+            width:100%;display:flex;align-items:center;gap:10px;
+            padding:14px 16px;background:none;border:none;
+            font-family:inherit;cursor:pointer;text-align:left;
+            color:var(--text);
+        }
+        .offline-info-trigger:hover{ background:rgba(239,159,39,.07); }
+        .oi-icon{ font-size:1.05rem; flex-shrink:0; }
+        .oi-title{
+            flex:1;font-size:.85rem;font-weight:800;color:var(--primary-dark);
+        }
+        .oi-arrow{
+            font-size:1.1rem;font-weight:900;color:var(--primary);
+            transition:transform .3s cubic-bezier(0.4,0,0.2,1);
+            display:inline-block;line-height:1;
+        }
+        .oi-arrow.open{ transform:rotate(90deg); }
+
+        .offline-info-body{
+            max-height:0;overflow:hidden;
+            transition:max-height .4s cubic-bezier(0.4,0,0.2,1);
+            padding:0 16px;
+        }
+        .offline-info-body.open{
+            max-height:300px;
+            padding:0 16px 16px;
+        }
+        .oi-step{
+            display:flex;align-items:flex-start;gap:12px;
+            padding:9px 0;border-bottom:1px solid rgba(239,159,39,.15);
+        }
+        .oi-step:last-of-type{ border-bottom:none; }
+        .oi-step-num{
+            width:22px;height:22px;border-radius:50%;flex-shrink:0;
+            background:var(--primary);color:white;
+            font-size:.7rem;font-weight:900;
+            display:flex;align-items:center;justify-content:center;
+            margin-top:1px;
+        }
+        .oi-step-text{
+            font-size:.82rem;font-weight:600;
+            color:var(--text-sub);line-height:1.45;
+        }
+        .oi-note{
+            display:flex;align-items:flex-start;gap:8px;
+            margin-top:12px;padding:10px 12px;
+            background:rgba(239,159,39,.1);border-radius:10px;
+            border:1px solid rgba(239,159,39,.2);
+        }
+        .oi-note span:first-child{ font-size:.9rem;flex-shrink:0; }
+        #oi-note-txt{
+            font-size:.78rem;font-weight:700;
+            color:var(--primary-dark);line-height:1.4;
+        }
+        .btn-install{
+            width:100%;padding:13px 16px;border:none;border-radius:14px;
+            font-family:inherit;font-size:.85rem;font-weight:800;letter-spacing:.4px;
+            cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;
+        }
+        .btn-install:active{transform:scale(.97);}
+        .btn-android{background:#16a34a;color:white;box-shadow:0 4px 14px rgba(22,163,74,.3);}
+        .btn-ios{background:#0284c7;color:white;box-shadow:0 4px 14px rgba(2,132,199,.3);}
+
+        
+        .ios-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
+        .ios-modal-overlay.show{display:flex;}
+        .ios-modal{background:var(--surface);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:460px;border:1.5px solid var(--border);box-shadow:0 -12px 40px rgba(0,0,0,.3);animation:slideUp .3s ease;}
+        @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        .ios-modal-title{font-size:1rem;font-weight:900;text-align:center;margin-bottom:20px;}
+        .ios-step{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);}
+        .ios-step:last-of-type{border-bottom:none;}
+        .ios-step-num{width:28px;height:28px;border-radius:50%;background:#0ea5e9;color:white;font-size:.75rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .ios-step-text{font-size:.82rem;font-weight:600;color:var(--text-sub);line-height:1.4;}
+        .ios-step-text strong{color:var(--text);}
+        .ios-step-icon{font-size:1.2rem;flex-shrink:0;}
+        .ios-modal-close{width:100%;margin-top:20px;padding:14px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:14px;font-family:inherit;font-size:.85rem;font-weight:800;cursor:pointer;color:var(--text);}
+    </style>
+
+    <script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+    <script>
+window._connectivityPromise = (async () => {
+  try {
+    await fetch("https://www.gstatic.com/generate_204", {
+      method: "HEAD",
+      cache: "no-store",
+      mode: "no-cors",
+      signal: AbortSignal.timeout(1500)
+    });
+    window._isOnline = true;
+  } catch (e) {
+    window._isOnline = false;
+  }
+  window._connectivityPromise = null;
+  return window._isOnline;
+})();
+
+document.documentElement.classList.add("splash-loading");
+
+window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1250);
+</script>
+    <link rel="stylesheet" href="assets/ux.css">
+    <script src="assets/ux.js" defer></script>
+</head>
+<body>
+
+
+<div id="splash-screen" class="tf-splash" role="status" aria-label="Cargando TaxFly">
+  <div class="tf-splash-content">
+    <div class="tf-globe" aria-hidden="true"><svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60 5 Q5 5 5 60 Q5 115 60 115 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
+                <path d="M60 5 Q34 34 34 60 Q34 86 60 115" fill="none" stroke="#EF9F27" stroke-width="0.9" opacity="0.5"/>
+                <path d="M60 5 Q12 32 12 60 Q12 88 60 115" fill="none" stroke="#EF9F27" stroke-width="0.6" opacity="0.3"/>
+                <path d="M60 5 Q115 5 115 60 Q115 115 60 115 Z" fill="#FAC775" stroke="#BA7517" stroke-width="1.5"/>
+                <path d="M60 5 Q86 34 86 60 Q86 86 60 115" fill="none" stroke="#854F0B" stroke-width="0.9" opacity="0.4"/>
+                <path d="M60 5 Q108 32 108 60 Q108 88 60 115" fill="none" stroke="#854F0B" stroke-width="0.6" opacity="0.25"/>
+                <line x1="5" y1="60" x2="115" y2="60" stroke="#854F0B" stroke-width="0.8" opacity="0.35"/>
+                <line x1="60" y1="5" x2="60" y2="115" stroke="#854F0B" stroke-width="1.5"/>
+                <g transform="translate(60,48)"><g class="tf-plane">
+                    <polygon points="0,-26 20,9 0,3 -20,9" fill="#633806"/>
+                    <polygon points="0,3 -20,9 -10,17" fill="#854F0B"/>
+                    <polygon points="0,3 20,9 10,17" fill="#854F0B"/>
+                    <polygon points="0,3 -6,21 0,16" fill="#BA7517"/>
+                    <polygon points="0,3 6,21 0,16" fill="#BA7517"/>
+                </g></g>
+            <path class="tf-route" d="M22 89 C-5 65 10 13 59 9 C108 5 130 62 97 91" pathLength="1" fill="none" stroke="#EF9F27" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div class="tf-wordmark"><span>Tax</span>Fly</div>
+    <div class="tf-tagline">Global Travel Assistance</div>
+  </div>
+</div>
+
+
+<div class="lang-selector-top" id="langSelector" onclick="toggleLangMenu()">
+    <div class="selected-lang">
+        <span id="selectedFlag" style="display:inline-flex;align-items:center;"><svg width="18" height="13" viewBox="0 0 18 13" xmlns="http://www.w3.org/2000/svg"><rect width="18" height="4.3" y="0" fill="#74acdf"/><rect width="18" height="4.4" y="4.3" fill="#fff"/><rect width="18" height="4.3" y="8.7" fill="#74acdf"/><circle cx="9" cy="6.5" r="1.5" fill="#f6b40e"/></svg></span>
+        <span id="selectedCode">ES</span>
+        <span class="arrow">▼</span>
+    </div>
+    <div class="lang-options" id="langOptions">
+        <div class="lang-option" onclick="applyLanguage('es')"><svg width="18" height="13" viewBox="0 0 18 13" xmlns="http://www.w3.org/2000/svg"><rect width="18" height="4.3" y="0" fill="#74acdf"/><rect width="18" height="4.4" y="4.3" fill="#fff"/><rect width="18" height="4.3" y="8.7" fill="#74acdf"/><circle cx="9" cy="6.5" r="1.5" fill="#f6b40e"/></svg> ES</div>
+        <div class="lang-option" onclick="applyLanguage('en')"><svg width="18" height="13" viewBox="0 0 18 13" xmlns="http://www.w3.org/2000/svg"><rect width="18" height="13" fill="#B22234"/><rect width="18" height="1" y="1" fill="#fff"/><rect width="18" height="1" y="3" fill="#fff"/><rect width="18" height="1" y="5" fill="#fff"/><rect width="18" height="1" y="7" fill="#fff"/><rect width="18" height="1" y="9" fill="#fff"/><rect width="18" height="1" y="11" fill="#fff"/><rect width="7" height="7" fill="#3C3B6E"/></svg> EN</div>
+        <div class="lang-option" onclick="applyLanguage('pt')"><svg width="18" height="13" viewBox="0 0 18 13" xmlns="http://www.w3.org/2000/svg"><rect width="18" height="13" fill="#009c3b"/><polygon points="9,1 17,6.5 9,12 1,6.5" fill="#FEDF00"/><circle cx="9" cy="6.5" r="2.6" fill="#002776"/></svg> PT</div>
+    </div>
+</div>
+
+
+<div class="screen" id="screen-login">
+    <div class="login-card">
+        <div class="card-logo">
+            <svg class="logo-svg" width="38" height="38" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60 5 Q5 5 5 60 Q5 115 60 115 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="3"/>
+                <path d="M60 5 Q34 34 34 60 Q34 86 60 115" fill="none" stroke="#EF9F27" stroke-width="2" opacity="0.5"/>
+                <path d="M60 5 Q115 5 115 60 Q115 115 60 115 Z" fill="#FAC775" stroke="#BA7517" stroke-width="3"/>
+                <path d="M60 5 Q86 34 86 60 Q86 86 60 115" fill="none" stroke="#854F0B" stroke-width="2" opacity="0.4"/>
+                <line x1="5" y1="60" x2="115" y2="60" stroke="#854F0B" stroke-width="2" opacity="0.3"/>
+                <line x1="60" y1="5" x2="60" y2="115" stroke="#854F0B" stroke-width="3"/>
+                <g transform="translate(60,48)">
+                    <polygon points="0,-24 18,8 0,2 -18,8" fill="#633806"/>
+                    <polygon points="0,2 -18,8 -9,15" fill="#854F0B"/>
+                    <polygon points="0,2 18,8 9,15" fill="#854F0B"/>
+                    <polygon points="0,2 -5,19 0,14" fill="#BA7517"/>
+                    <polygon points="0,2 5,19 0,14" fill="#BA7517"/>
+                </g>
+            </svg>
+            <span class="logo-text">Tax<span style="color:#EF9F27">Fly</span></span>
+        </div>
+        <h1 class="card-title" id="login-title">Bienvenido</h1>
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <div class="verif-notice" id="verifNotice"></div>
+        <button class="btn btn-primary" id="mainBtn" onclick="handleAuth()">INGRESAR</button>
+        <div class="links">
+            <button class="link-danger" onclick="resetPassword()" id="forgotLink">¿Olvidaste tu contraseña?</button>
+            <button class="link-toggle" id="toggleLink" onclick="toggleMode()">¿No tenés cuenta? Registrate aquí</button>
+        </div>
+    </div>
+    <div class="install-wrap" id="installWrap">
+        <button class="btn-install btn-android" id="btnAndroid" onclick="installAndroid()">➕ Agregar a inicio (Android)</button>
+        <button class="btn-install btn-ios" id="btnIos" onclick="showIosModal()">📲 Agregar a inicio (iPhone)</button>
+    </div>
+
+    
+    <div class="offline-info-wrap" id="offlineInfoWrap">
+        <button class="offline-info-trigger" onclick="toggleOfflineInfo()" id="offlineInfoBtn" aria-expanded="false">
+            <span class="oi-icon">✈️</span>
+            <span class="oi-title" id="oi-title-txt">¿Cómo usarla sin internet?</span>
+            <span class="oi-arrow" id="offlineInfoArrow">›</span>
+        </button>
+        <div class="offline-info-body" id="offlineInfoBody">
+            <div class="oi-step">
+                <div class="oi-step-num">1</div>
+                <div class="oi-step-text" id="oi-step1">Iniciá sesión al menos una vez con WiFi.</div>
+            </div>
+            <div class="oi-step">
+                <div class="oi-step-num">2</div>
+                <div class="oi-step-text" id="oi-step2">Creá tu PIN de 4 dígitos cuando te lo pida.</div>
+            </div>
+            <div class="oi-step">
+                <div class="oi-step-num">3</div>
+                <div class="oi-step-text" id="oi-step3">¡Listo! La próxima vez podés entrar con el PIN aunque no tengas conexión.</div>
+            </div>
+            <div class="oi-note" id="oi-note">
+                <span>💡</span>
+                <span id="oi-note-txt">Todavía en desarrollo. La calculadora, propina, conversores y gastos siguen funcionando offline.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="screen hidden" id="screen-pin-offline">
+    <div class="login-card">
+        <div class="offline-badge show">
+            <span>📵</span>
+            <span id="offline-badge-text">Sin conexión — ingresá con tu PIN</span>
+        </div>
+        <div class="pin-header">
+            <div class="pin-user-avatar" id="pin-avatar"></div>
+            <div class="pin-user-name" id="pin-name">Usuario</div>
+            <div class="pin-user-email" id="pin-email-display"></div>
+        </div>
+        <div class="pin-dots" id="pin-dots-offline">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+        <div class="pin-error-msg" id="pin-error-offline"></div>
+        <div class="pin-keypad" id="pin-keypad-offline"></div>
+        <button class="btn btn-ghost" onclick="showOnlineLogin()" id="try-online-btn">🌐 Intentar con internet</button>
+    </div>
+</div>
+
+
+<div class="screen hidden" id="screen-create-pin">
+    <div class="login-card">
+        <div class="card-logo">
+            <svg width="38" height="38" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60 5 Q5 5 5 60 Q5 115 60 115 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="3"/>
+                <path d="M60 5 Q34 34 34 60 Q34 86 60 115" fill="none" stroke="#EF9F27" stroke-width="2" opacity="0.5"/>
+                <path d="M60 5 Q115 5 115 60 Q115 115 60 115 Z" fill="#FAC775" stroke="#BA7517" stroke-width="3"/>
+                <path d="M60 5 Q86 34 86 60 Q86 86 60 115" fill="none" stroke="#854F0B" stroke-width="2" opacity="0.4"/>
+                <line x1="5" y1="60" x2="115" y2="60" stroke="#854F0B" stroke-width="2" opacity="0.3"/>
+                <line x1="60" y1="5" x2="60" y2="115" stroke="#854F0B" stroke-width="3"/>
+                <g transform="translate(60,48)">
+                    <polygon points="0,-24 18,8 0,2 -18,8" fill="#633806"/>
+                    <polygon points="0,2 -18,8 -9,15" fill="#854F0B"/>
+                    <polygon points="0,2 18,8 9,15" fill="#854F0B"/>
+                    <polygon points="0,2 -5,19 0,14" fill="#BA7517"/>
+                    <polygon points="0,2 5,19 0,14" fill="#BA7517"/>
+                </g>
+            </svg>
+        </div>
+        <div class="pin-step-indicator">
+            <div class="pin-step-dot active" id="step-dot-1"></div>
+            <div class="pin-step-dot" id="step-dot-2"></div>
+        </div>
+        <div class="pin-create-title" id="create-pin-title">Creá tu PIN offline</div>
+        <div class="pin-create-sub" id="create-pin-sub">Este PIN de 4 dígitos te permite entrar a la app aunque no tengas conexión a internet.</div>
+        <div class="pin-dots" id="pin-dots-create">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+        <div class="pin-error-msg" id="pin-error-create"></div>
+        <div class="pin-keypad" id="pin-keypad-create"></div>
+        <button class="btn btn-ghost" style="margin-top:4px" onclick="skipPinCreation()" id="skip-pin-btn">Omitir por ahora</button>
+    </div>
+</div>
+
+
+<div class="screen hidden" id="screen-change-pin">
+    <div class="login-card">
+        <div class="card-logo">
+            <svg width="38" height="38" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+
+                <path d="M60 5 Q5 5 5 60 Q5 115 60 115 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="3"/>
+                <path d="M60 5 Q34 34 34 60 Q34 86 60 115" fill="none" stroke="#EF9F27" stroke-width="2" opacity="0.5"/>
+                <path d="M60 5 Q115 5 115 60 Q115 115 60 115 Z" fill="#FAC775" stroke="#BA7517" stroke-width="3"/>
+                <path d="M60 5 Q86 34 86 60 Q86 86 60 115" fill="none" stroke="#854F0B" stroke-width="2" opacity="0.4"/>
+                <line x1="5" y1="60" x2="115" y2="60" stroke="#854F0B" stroke-width="2" opacity="0.3"/>
+                <line x1="60" y1="5" x2="60" y2="115" stroke="#854F0B" stroke-width="3"/>
+                <g transform="translate(60,48)">
+                    <polygon points="0,-24 18,8 0,2 -18,8" fill="#633806"/>
+                    <polygon points="0,2 -18,8 -9,15" fill="#854F0B"/>
+                    <polygon points="0,2 18,8 9,15" fill="#854F0B"/>
+                    <polygon points="0,2 -5,19 0,14" fill="#BA7517"/>
+                    <polygon points="0,2 5,19 0,14" fill="#BA7517"/>
+                </g>
+            </svg>
+        </div>
+        <h2 class="card-title" id="change-pin-title" style="margin-bottom:16px;">Cambiar PIN</h2>
+        <div class="info-box">
+            <span class="info-box-icon">📧</span>
+            <span id="change-pin-info">Para cambiar tu PIN, te enviaremos un correo de verificación. Una vez confirmado, podrás crear uno nuevo.</span>
+        </div>
+        <button class="btn btn-primary" onclick="sendChangePinEmail()" id="send-verify-btn">Enviar correo de verificación</button>
+        <button class="btn btn-ghost" onclick="goBackFromChangePin()">Cancelar</button>
+
+        
+        <div id="new-pin-section" style="display:none;margin-top:8px;border-top:1.5px solid var(--border);padding-top:24px;">
+            <div class="pin-create-title" id="new-pin-title" style="margin-bottom:8px;">Nuevo PIN</div>
+            <div class="pin-create-sub" id="new-pin-sub" style="margin-bottom:20px;">Ingresá tu nuevo PIN de 4 dígitos</div>
+            <div class="pin-dots" id="pin-dots-change">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+            </div>
+            <div class="pin-error-msg" id="pin-error-change"></div>
+            <div class="pin-keypad" id="pin-keypad-change"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="ios-modal-overlay" id="iosOverlay" onclick="hideIosModal()">
+    <div class="ios-modal" onclick="event.stopPropagation()">
+        <div class="ios-modal-title" id="ios-title">📲 Agregar TaxFly al inicio</div>
+        <div class="ios-step">
+            <div class="ios-step-num">1</div>
+            <div class="ios-step-icon">⬆️</div>
+            <div class="ios-step-text" id="ios-step1">Tocá el botón <strong>Compartir</strong> en Safari</div>
+        </div>
+        <div class="ios-step">
+            <div class="ios-step-num">2</div>
+            <div class="ios-step-icon">📋</div>
+            <div class="ios-step-text" id="ios-step2">Tocá <strong>"Agregar a pantalla de inicio"</strong></div>
+        </div>
+        <div class="ios-step">
+            <div class="ios-step-num">3</div>
+            <div class="ios-step-icon">✅</div>
+            <div class="ios-step-text" id="ios-step3">Tocá <strong>"Agregar"</strong></div>
+        </div>
+        <button class="ios-modal-close" id="ios-close" onclick="hideIosModal()">Entendido</button>
+    </div>
+</div>
+
+
+<script>
+let deferredPrompt = null;
+
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+const isAndroid = /android/i.test(navigator.userAgent);
+
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+const installRequested = new URLSearchParams(location.search).has("install");
+
+function showInstallButtons() {
+  if (isStandalone) return;
+  const wrap = document.getElementById("installWrap");
+  if (!wrap) return;
+  if (isAndroid || installRequested && !isIos) {
+    wrap.style.display = "flex";
+    document.getElementById("btnIos").style.display = "none";
+  } else if (isIos) {
+    wrap.style.display = "flex";
+    document.getElementById("btnAndroid").style.display = "none";
+  }
+}
+
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallButtons();
+});
+
+window.installAndroid = async () => {
+  if (!deferredPrompt) {
+    (window.showAlert||alert)(t("installHelp"));
+    return;
+  }
+  deferredPrompt.prompt();
+  const {outcome: outcome} = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  if (outcome === "accepted") document.getElementById("installWrap").style.display = "none";
+};
+
+window.showIosModal = () => document.getElementById("iosOverlay").classList.add("show");
+
+window.hideIosModal = () => document.getElementById("iosOverlay").classList.remove("show");
+
+if (isIos && !isStandalone) showInstallButtons();
+
+window.toggleOfflineInfo = () => {
+  const body = document.getElementById("offlineInfoBody");
+  const arrow = document.getElementById("offlineInfoArrow");
+  const btn = document.getElementById("offlineInfoBtn");
+  const open = body.classList.toggle("open");
+  arrow.classList.toggle("open", open);
+  btn.setAttribute("aria-expanded", open);
+};
+
+window.toggleLangMenu = () => document.getElementById("langOptions").classList.toggle("show");
+
+window.onclick = e => {
+  if (!e.target.closest("#langSelector")) document.getElementById("langOptions").classList.remove("show");
+};
+</script>
+
+<script type="module" src="assets/login-app.js"></script>
+
+
+<script src="assets/ui.js"></script>
+</body>
+</html>
