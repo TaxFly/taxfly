@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     <div class="home-section-heading" id="homePlanHeading">Tu viaje</div>
     <section id="offline-readiness" class="offline-readiness" role="status" aria-live="polite"></section>
-    <div class="section-grid home-primary-grid" id="sectionList"></div>
+    <div class="section-grid home-primary-grid" id="sectionList" aria-busy="true"><div class="tf-skel" style="height:78px;margin:0"></div><div class="tf-skel" style="height:78px;margin:0"></div><div class="tf-skel" style="height:78px;margin:0"></div><div class="tf-skel" style="height:78px;margin:0"></div></div>
 
     
     <div class="widget-budget" onclick="location.href='compras.html'">
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
             </button>
         </div>
-        <div id="ww-body"><div class="ww-loading"><div class="ww-spinner"></div><span data-i18n="loading">Cargando...</span></div></div>
+        <div id="ww-body" aria-busy="true"><div class="tf-skel" style="height:44px;margin:4px 0"></div><div class="tf-skel" style="height:44px;margin:4px 0"></div></div>
     </div>
 
     
@@ -480,6 +480,7 @@ const I18N = {
     widget_weather: "Clima en destino",
     next_event_label: "Próximo evento",
     next_event_empty: "Sin eventos próximos",
+    next_event_add: "＋ Agregar actividad",
     tip_label: "Tip de viaje",
     tip_hint: "Tocá para ver otro tip →",
     sections_title: "Secciones",
@@ -603,6 +604,7 @@ const I18N = {
     widget_weather: "Weather at destination",
     next_event_label: "Next event",
     next_event_empty: "No upcoming events",
+    next_event_add: "＋ Add activity",
     tip_label: "Travel tip",
     tip_hint: "Tap to see another tip →",
     sections_title: "Sections",
@@ -726,6 +728,7 @@ const I18N = {
     widget_weather: "Clima no destino",
     next_event_label: "Próximo evento",
     next_event_empty: "Sem eventos próximos",
+    next_event_add: "＋ Adicionar atividade",
     tip_label: "Dica de viagem",
     tip_hint: "Toque para ver outra dica →",
     sections_title: "Seções",
@@ -1365,7 +1368,10 @@ function loadNextEvent() {
       titleEl.textContent = t.next_event_empty || "Sin eventos próximos";
       titleEl.removeAttribute("data-has-event");
     }
-    document.getElementById("ne-time").textContent = "";
+    const timeEl = document.getElementById("ne-time");
+    timeEl.textContent = t.next_event_add || "＋ Agregar actividad";
+    timeEl.style.fontWeight = "700";
+    timeEl.style.color = "var(--primary, #4f8cff)";
     document.getElementById("ne-dot").textContent = "📅";
   }
   if (!currentUser || !perfilId) {

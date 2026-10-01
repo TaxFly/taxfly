@@ -660,6 +660,7 @@ function showSection(id) {
 }
 
 function showToast(msg) {
+  if (window.tfToast) { window.tfToast(msg, { duration: 2800 }); return; }
   const t = $("toast");
   t.textContent = msg;
   t.classList.add("show");
@@ -1217,42 +1218,48 @@ window.eliminarGrupo = async () => {
   }
 };
 
-window.eliminarGasto = async gastoId => {
+window.eliminarGasto = gastoId => {
   if (!currentGroup) return;
-  const lang = localStorage.getItem("appLang") || "es";
-  const t = i18n[lang] || i18n.es;
-  if (!await showConfirm(t.confirm_eliminar_gasto || "¿Eliminar este gasto?")) return;
-  if (currentGroup._demo) {
-    currentGroup.data.gastos = currentGroup.data.gastos.filter(g => g.id !== gastoId);
-    renderGrupo();
-    showToast("🗑️ Gasto eliminado");
-    return;
-  }
-  if (!navigator.onLine) {
-    currentGroup.data.gastos = currentGroup.data.gastos.filter(g => g.id !== gastoId);
-    const ops = getPending().filter(op => !(op.type === "add_gasto" && op.gasto.id === gastoId));
-    const wasLocal = getPending().some(op => op.type === "add_gasto" && op.gasto.id === gastoId);
-    savePending(wasLocal ? ops : [ ...ops, {
-      type: "del_gasto",
-      groupId: currentGroup.id,
-      gastoId: gastoId
-    } ]);
-    renderGrupo();
-    showToast("📥 Eliminado localmente — se sincronizará al volver la conexión");
-    return;
-  }
-  try {
-    const ref = doc(db, "grupos", currentGroup.id);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return;
-    const nuevosGastos = snap.data().gastos.filter(g => g.id !== gastoId);
-    await updateDoc(ref, {
-      gastos: nuevosGastos
-    });
-    showToast("🗑️ Gasto eliminado");
-  } catch (e) {
-    showToast("❌ Error: " + e.message);
-  }
+  const grp = currentGroup;
+  const item = grp.data.gastos.find(g => g.id === gastoId);
+  if (!item) return;
+  window._tfHidden = window._tfHidden || new Set();
+  tfDeleteWithUndo({
+    remove: () => { window._tfHidden.add(gastoId); if (currentGroup === grp) renderGrupo(); },
+    restore: () => { window._tfHidden.delete(gastoId); if (currentGroup === grp) renderGrupo(); },
+    commit: async unloading => {
+      try {
+        if (grp._demo) {
+          grp.data.gastos = grp.data.gastos.filter(g => g.id !== gastoId);
+          return;
+        }
+        if (!navigator.onLine || unloading) {
+          grp.data.gastos = grp.data.gastos.filter(g => g.id !== gastoId);
+          const ops = getPending().filter(op => !(op.type === "add_gasto" && op.gasto.id === gastoId));
+          const wasLocal = getPending().some(op => op.type === "add_gasto" && op.gasto.id === gastoId);
+          savePending(wasLocal ? ops : [ ...ops, {
+            type: "del_gasto",
+            groupId: grp.id,
+            gastoId: gastoId
+          } ]);
+          if (!unloading) showToast("📥 Eliminado localmente — se sincronizará al volver la conexión");
+          return;
+        }
+        const ref = doc(db, "grupos", grp.id);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) return;
+        const nuevosGastos = snap.data().gastos.filter(g => g.id !== gastoId);
+        await updateDoc(ref, {
+          gastos: nuevosGastos
+        });
+      } catch (e) {
+        showToast("❌ Error: " + e.message);
+      } finally {
+        window._tfHidden.delete(gastoId);
+        if (currentGroup === grp && !unloading) renderGrupo();
+      }
+    }
+  });
 };
 
 window.eliminarMiembro = async uid => {
@@ -1359,7 +1366,8 @@ window.copiarCodigo = () => {
 };
 
 function renderGrupo() {
-  const {nombre: nombre, codigo: codigo, miembros: miembros, gastos: gastos, creadoPor: creadoPor} = currentGroup.data;
+  const {nombre: nombre, codigo: codigo, miembros: miembros, gastos: _gastosAll, creadoPor: creadoPor} = currentGroup.data;
+  const gastos = window._tfHidden && window._tfHidden.size ? _gastosAll.filter(g => !window._tfHidden.has(g.id)) : _gastosAll;
   $("g-titulo").textContent = nombre || currentGroup.data.nome || "—";
   $("g-codigo").textContent = codigo;
   window._formOpen = document.getElementById("form-gasto")?.classList.contains("open") ?? window._formOpen ?? false;

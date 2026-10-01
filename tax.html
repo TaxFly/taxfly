@@ -452,7 +452,7 @@ if ("serviceWorker" in navigator) {
 
     <div class="countdown-box" onclick="openTripModal()">
         <span class="edit-hint">✏️</span>
-        <div class="countdown-label" id="tripLabel">Cargando viaje...</div>
+        <div class="countdown-label" id="tripLabel"><span class="tf-skel" style="display:inline-block;width:120px;height:14px;margin:0;vertical-align:middle"></span></div>
         <div id="timer">0d 0h 0m 0s</div>
     </div>
 
@@ -475,7 +475,7 @@ if ("serviceWorker" in navigator) {
     <div class="card">
         <div class="input-group">
             <span class="slabel" data-i18n="label_price">Precio en Etiqueta (USD)</span>
-            <input type="number" id="price" placeholder="0.00" oninput="calculate()" step="0.01" inputmode="decimal">
+            <input type="number" id="price" placeholder="0.00" oninput="calculate()" step="0.01" inputmode="decimal" enterkeyhint="done">
         </div>
 
         <span class="slabel" data-i18n="label_category">Categoría</span>
@@ -513,7 +513,7 @@ if ("serviceWorker" in navigator) {
         <div class="input-group">
             <span class="slabel" data-i18n="label_zip">ZIP preciso (opcional)</span>
             <div style="display:flex;gap:8px;">
-                <input type="text" id="zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;min-width:0;" oninput="this.value=this.value.replace(/\D/g,'')">
+                <input type="text" id="zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;min-width:0;" oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="off" enterkeyhint="next">
                 <button class="btn btn-ghost" style="width:auto;flex:0 0 auto;padding:14px 14px;" onclick="lookupZipTax()" data-i18n="btn_zip_search">Buscar</button>
             </div>
             <div id="zip-status" style="font-size:.68rem;font-weight:700;margin-top:6px;color:var(--text-sub);"></div>
@@ -521,7 +521,7 @@ if ("serviceWorker" in navigator) {
         
         <div class="input-group" id="manual-tax-group" style="display:none;">
             <span class="slabel">TAX MANUAL (%)</span>
-            <input type="number" id="manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="applyManualTax()" style="border-color:var(--warn);">
+            <input type="number" id="manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="applyManualTax()" style="border-color:var(--warn);" enterkeyhint="done">
             <div style="font-size:.65rem;font-weight:600;color:var(--text-dim);margin-top:4px;">Ingresá el % de tax si no encontrás tu ciudad.</div>
         </div>
         <button id="toggle-manual-tax" onclick="toggleManualTax()" style="background:none;border:none;color:var(--text-dim);font-size:.65rem;font-weight:700;cursor:pointer;padding:2px 0 10px;text-decoration:none;display:block;">✏️ <span data-i18n="btn_manual_tax">Ingresar tax manualmente</span></button>
@@ -550,7 +550,7 @@ if ("serviceWorker" in navigator) {
                 <div class="custom-tip">
                     <div class="custom-tip-row">
                         <span data-i18n="label_other">OTRO</span>
-                        <input type="number" id="custom-tip-input" placeholder="0" oninput="setCustomTip()" inputmode="numeric">
+                        <input type="number" id="custom-tip-input" placeholder="0" oninput="setCustomTip()" inputmode="numeric" enterkeyhint="done">
                         <span>%</span>
                     </div>
                     <span id="val-tip-custom">$0.00</span>
@@ -613,7 +613,7 @@ if ("serviceWorker" in navigator) {
         <div class="input-group">
             <span class="slabel" data-i18n="label_zip">ZIP preciso (opcional)</span>
             <div style="display:flex;gap:8px;">
-                <input type="text" id="cart-zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;min-width:0;" oninput="this.value=this.value.replace(/\D/g,'')">
+                <input type="text" id="cart-zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;min-width:0;" oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="off" enterkeyhint="next">
                 <button class="btn btn-ghost" style="width:auto;flex:0 0 auto;padding:14px 14px;" onclick="lookupCartZipTax()" data-i18n="btn_zip_search">Buscar</button>
             </div>
             <div id="cart-zip-status" style="font-size:.68rem;font-weight:700;margin-top:6px;color:var(--text-sub);"></div>
@@ -621,12 +621,12 @@ if ("serviceWorker" in navigator) {
         
         <div class="input-group" id="cart-manual-tax-group" style="display:none;">
             <span class="slabel">TAX MANUAL (%)</span>
-            <input type="number" id="cart-manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="renderCart()" style="border-color:var(--warn);">
+            <input type="number" id="cart-manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="renderCart()" style="border-color:var(--warn);" enterkeyhint="done">
         </div>
         <button id="cart-toggle-manual-tax" onclick="toggleCartManualTax()" style="background:none;border:none;color:var(--text-dim);font-size:.65rem;font-weight:700;cursor:pointer;padding:2px 0 14px;text-decoration:none;display:block;">✏️ <span data-i18n="btn_manual_tax">Ingresar tax manualmente</span></button>
 
         <div class="cart-add-row">
-            <input type="number" id="cart-price-input" placeholder="0.00" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}">
+            <input type="number" id="cart-price-input" placeholder="0.00" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}" enterkeyhint="done">
             <button class="cart-add-btn" onclick="addCartItem()" aria-label="Agregar">+</button>
         </div>
 
@@ -676,7 +676,7 @@ if ("serviceWorker" in navigator) {
 
             <span class="slabel" data-i18n="split_base">Base (precio en etiqueta)</span>
             <div class="input-group">
-                <input type="number" id="split-price" placeholder="0.00" oninput="calcSplit()" step="0.01" inputmode="decimal">
+                <input type="number" id="split-price" placeholder="0.00" oninput="calcSplit()" step="0.01" inputmode="decimal" enterkeyhint="done">
             </div>
 
             <div class="split-result" id="split-result" style="display:none;">
@@ -737,7 +737,7 @@ if ("serviceWorker" in navigator) {
         <span class="st-icon">💡</span>
         <div>
             <div class="st-label" data-i18n="tip_label">CONSEJO ECONÓMICO</div>
-            <div id="tip-content">Cargando consejos...</div>
+            <div id="tip-content" aria-busy="true"><span class="tf-skel" style="display:inline-block;width:200px;height:14px;margin:0;vertical-align:middle"></span></div>
         </div>
     </div>
 
@@ -754,7 +754,7 @@ if ("serviceWorker" in navigator) {
         <h3 class="modal-title" data-i18n="modal_trip_title">Mi Viaje</h3>
         <div class="input-group">
             <span class="slabel" data-i18n="modal_city_label">¿A qué ciudad vas?</span>
-            <input type="text" id="input-destination" placeholder="Orlando">
+            <input type="text" id="input-destination" placeholder="Orlando" autocomplete="off" enterkeyhint="next">
         </div>
         <div class="input-group">
             <span class="slabel" data-i18n="modal_date_label">Fecha del viaje</span>
@@ -785,14 +785,14 @@ if ("serviceWorker" in navigator) {
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
         onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
-        placeholder="••••">
+        placeholder="••••" enterkeyhint="next">
       <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel2">Confirmar PIN</label>
       <input id="pinInput2" type="text" name="tf-pininput2" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" inputmode="numeric" maxlength="6" pattern="[0-9]*"
         style="-webkit-text-security:disc;text-security:disc;width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
         onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
-        placeholder="••••">
+        placeholder="••••" enterkeyhint="next">
       <div id="pinError" style="display:none;background:rgba(239,68,68,.1);border:1.5px solid var(--danger);border-radius:10px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--danger);margin-bottom:12px;text-align:center;"></div>
       <button onclick="confirmarPIN()" style="width:100%;padding:15px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:white;font-family:inherit;font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.3);transition:.2s;" id="pinConfirmBtn">Guardar PIN</button>
     </div>
@@ -2939,22 +2939,30 @@ window.addCartItem = () => {
 };
 
 window.removeCartItem = id => {
-  cartItems = cartItems.filter(it => it.id !== id);
-  renderCart();
+  const idx = cartItems.findIndex(it => it.id === id);
+  if (idx < 0) return;
+  const item = cartItems[idx];
+  const lang = localStorage.getItem("appLang") || "es";
+  const msgs = { es: "Ítem eliminado", en: "Item removed", pt: "Item removido" };
+  tfDeleteWithUndo({
+    message: msgs[lang] || msgs.es,
+    remove: () => { cartItems = cartItems.filter(it => it.id !== id); renderCart(); },
+    restore: () => { if (!cartItems.some(it => it.id === id)) cartItems.splice(Math.min(idx, cartItems.length), 0, item); renderCart(); },
+    commit: () => {}
+  });
 };
 
-window.clearCart = async () => {
+window.clearCart = () => {
   if (!cartItems.length) return;
+  const prev = cartItems;
   const lang = localStorage.getItem("appLang") || "es";
-  const msgs = {
-    es: "¿Vaciar el carrito?",
-    en: "Clear the cart?",
-    pt: "Esvaziar o carrinho?"
-  };
-  const ok = window.showConfirm ? await window.showConfirm(msgs[lang] || msgs.es) : confirm(msgs[lang] || msgs.es);
-  if (!ok) return;
-  cartItems = [];
-  renderCart();
+  const msgs = { es: "Carrito vaciado", en: "Cart cleared", pt: "Carrinho esvaziado" };
+  tfDeleteWithUndo({
+    message: msgs[lang] || msgs.es,
+    remove: () => { cartItems = []; renderCart(); },
+    restore: () => { cartItems = prev; renderCart(); },
+    commit: () => {}
+  });
 };
 
 function renderCart() {
@@ -3010,7 +3018,7 @@ window.saveIndividualAsExpense = async () => {
   const L = (es, en, pt) => ({ es, en, pt })[lang] || es;
   if (!(total > 0)) {
     const m = L("Ingresá un precio para guardar el gasto.", "Enter a price to save the expense.", "Informe um preço para salvar o gasto.");
-    if (window.showAlert) window.showAlert(m); else alert(m);
+    if (window.showAlert) window.showAlert(m); else if (window.tfToast) window.tfToast(m);
     return;
   }
   const promptMsg = L("¿Qué compraste? (nombre del gasto)", "What did you buy? (expense name)", "O que você comprou? (nome do gasto)");
@@ -3049,13 +3057,13 @@ window.saveIndividualAsExpense = async () => {
     }
     const fmt2 = n => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const ok = L(`Guardado en Gastos: ${fmt2(total)} (${gastoData.nombre}).`, `Saved to Expenses: ${fmt2(total)} (${gastoData.nombre}).`, `Salvo em Gastos: ${fmt2(total)} (${gastoData.nombre}).`);
-    if (window.showAlert) window.showAlert(ok); else alert(ok);
+    if (window.showAlert) window.showAlert(ok); else if (window.tfToast) window.tfToast(ok);
     const priceEl = document.getElementById("price");
     if (priceEl) priceEl.value = "";
     calculate();
   } catch (e) {
     const err = L("No se pudo guardar el gasto.", "Could not save the expense.", "Não foi possível salvar o gasto.");
-    if (window.showAlert) window.showAlert(err); else alert(err);
+    if (window.showAlert) window.showAlert(err); else if (window.tfToast) window.tfToast(err);
   }
 };
 
@@ -3110,7 +3118,7 @@ window.saveCartAsExpense = async () => {
       en: `Saved to Expenses: ${fmt(total)} at ${store}.`,
       pt: `Salvo em Gastos: ${fmt(total)} em ${store}.`
     };
-    if (window.showAlert) window.showAlert(okMsgs[lang] || okMsgs.es); else alert(okMsgs[lang] || okMsgs.es);
+    if (window.showAlert) window.showAlert(okMsgs[lang] || okMsgs.es); else if (window.tfToast) window.tfToast(okMsgs[lang] || okMsgs.es);
     cartItems = [];
     renderCart();
   } catch (e) {
@@ -3119,7 +3127,7 @@ window.saveCartAsExpense = async () => {
       en: "Could not save the expense.",
       pt: "Não foi possível salvar o gasto."
     };
-    if (window.showAlert) window.showAlert(errMsgs[lang] || errMsgs.es); else alert(errMsgs[lang] || errMsgs.es);
+    if (window.showAlert) window.showAlert(errMsgs[lang] || errMsgs.es); else if (window.tfToast) window.tfToast(errMsgs[lang] || errMsgs.es);
   }
 };
 

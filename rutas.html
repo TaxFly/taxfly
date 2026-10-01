@@ -1841,6 +1841,7 @@ function launchConfetti() {
 }
 
 function showToast(msg) {
+  if (window.tfToast) { window.tfToast(msg, { duration: 2800 }); return; }
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.classList.add("show");
