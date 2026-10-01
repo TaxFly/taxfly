@@ -189,9 +189,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .sz-table td.sz-hl{color:var(--primary);font-weight:900;}
         .sz-table td.sz-row-lbl{color:var(--text);font-weight:800;}
         .sz-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-        .sz-tips{display:flex;flex-direction:column;gap:6px;margin:0 0 14px;padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:var(--primary-dim);}
-        .sz-tip{font-size:.74rem;color:var(--text-sub);font-weight:600;line-height:1.45;}
-        @media (min-width:900px){#sz-tables-out{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}#sz-tables-out .sz-brand-card,#sz-tables-out .sz-tips{margin-bottom:0;}#sz-tables-out .sz-tips{grid-column:1/-1;}}
+        .sz-note{font-size:.72rem;color:var(--text-sub);font-weight:600;padding:10px 14px;border-top:1px solid var(--border);line-height:1.5;}
 
         
         .donut-wrap{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:20px;background:linear-gradient(135deg,rgba(37,99,235,.05),rgba(124,58,237,.05));border:1px solid var(--border);border-radius:20px;padding:16px 14px;overflow:hidden;}
@@ -1982,7 +1980,6 @@ window.changeLanguage = lang => {
       return;
     }
     let html = "";
-    const tips = [];
     d.brands.forEach(b => {
       const colHdr = d.cols.map(c => `<th>${c}</th>`).join("");
       const rowsHtml = b.rows.map((row, ri) => {
@@ -1993,10 +1990,8 @@ window.changeLanguage = lang => {
         return `<tr>${cells}</tr>`;
       }).join("");
       const note = szT(b.noteKey);
-      if (note && note !== b.noteKey && tips.indexOf(note) === -1) tips.push(note);
-      html += `<div class="sz-brand-card">\n                <div class="sz-brand-header">\n                    <span class="sz-brand-badge" style="background:${b.bg};color:${b.color}">${esc(b.name)}</span>\n                </div>\n                <div class="sz-table-wrap"><table class="sz-table"><thead><tr>${colHdr}</tr></thead><tbody>${rowsHtml}</tbody></table></div>\n            </div>`;
+      html += `<div class="sz-brand-card">\n                <div class="sz-brand-header">\n                    <span class="sz-brand-badge" style="background:${b.bg};color:${b.color}">${esc(b.name)}</span>\n                </div>\n                <div class="sz-table-wrap"><table class="sz-table"><thead><tr>${colHdr}</tr></thead><tbody>${rowsHtml}</tbody></table></div>\n                ${note ? `<div class="sz-note">💡 ${note}</div>` : ""}\n            </div>`;
     });
-    if (tips.length) html = `<div class="sz-tips">${tips.map(t => `<div class="sz-tip">💡 ${t}</div>`).join("")}</div>` + html;
     out.innerHTML = html;
   }
   window.szSetCat = function(btn) {
