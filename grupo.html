@@ -303,6 +303,7 @@ if ("serviceWorker" in navigator) {
 </script>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
+<script defer src="assets/numinput.js"></script>
 <link rel="stylesheet" href="assets/cohesion.css">
 <script defer src="assets/localize.js"></script>
     <link rel="stylesheet" href="assets/ux.css">
@@ -450,7 +451,7 @@ if ("serviceWorker" in navigator) {
                         <input id="g-desc" type="text" placeholder="Descripción (ej: Cena en Miami)" data-i18n-ph="ph_desc">
                     </div>
                     <div class="input-group">
-                        <input id="g-monto" type="number" placeholder="Monto en USD" min="0.01" step="0.01" inputmode="decimal" data-i18n-ph="ph_amount">
+                        <input id="g-monto" type="text" placeholder="Monto en USD" inputmode="decimal" data-i18n-ph="ph_amount" data-num>
                     </div>
                     <div class="cat-bar">
                         <button class="cat-pill active" onclick="setCategoria('comida',this)">🍽️ <span data-i18n="cat_food">Comida</span></button>

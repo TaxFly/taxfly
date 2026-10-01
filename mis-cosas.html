@@ -488,6 +488,7 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
 <script type="module" src="assets/mis-firebase.js"></script>
 <link rel="stylesheet" href="assets/app-settings.css">
 <script defer src="assets/autofill.js"></script>
+<script defer src="assets/numinput.js"></script>
 <link rel="stylesheet" href="assets/cohesion.css">
 <link rel="stylesheet" href="assets/plan-cohesion.css">
 <link rel="stylesheet" href="assets/mis-cohesion.css">
@@ -616,7 +617,7 @@ label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--theme
     </div>
     <label class="chk2"><input type="checkbox" id="edDiaria"> Va en la mochila del día</label>
     <label class="f"><span id="edCantLbl">Cantidad</span>
-      <input id="edCant" type="number" min="1" step="1" value="1" style="max-width:110px">
+      <input id="edCant" type="text" value="1" style="max-width:110px" inputmode="numeric" data-num="int">
     </label>
     <label class="f">Notas (opcional)
       <textarea id="edNotas" rows="2"></textarea>

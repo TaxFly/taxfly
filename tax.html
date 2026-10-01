@@ -407,6 +407,7 @@ if ("serviceWorker" in navigator) {
 </script>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
+<script defer src="assets/numinput.js"></script>
 <link rel="stylesheet" href="assets/cohesion.css">
 <script defer src="assets/localize.js"></script>
     <link rel="stylesheet" href="assets/ux.css">
@@ -475,7 +476,7 @@ if ("serviceWorker" in navigator) {
     <div class="card">
         <div class="input-group">
             <span class="slabel" data-i18n="label_price">Precio en Etiqueta (USD)</span>
-            <input type="number" id="price" placeholder="0.00" oninput="calculate()" step="0.01" inputmode="decimal" enterkeyhint="done">
+            <input type="text" id="price" placeholder="0.00" oninput="calculate()" inputmode="decimal" enterkeyhint="done" data-num>
         </div>
 
         <span class="slabel" data-i18n="label_category">Categoría</span>
@@ -521,7 +522,7 @@ if ("serviceWorker" in navigator) {
         
         <div class="input-group" id="manual-tax-group" style="display:none;">
             <span class="slabel">TAX MANUAL (%)</span>
-            <input type="number" id="manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="applyManualTax()" style="border-color:var(--warn);" enterkeyhint="done">
+            <input type="text" id="manual-tax-input" placeholder="Ej: 8.25" inputmode="decimal" oninput="applyManualTax()" style="border-color:var(--warn);" enterkeyhint="done" data-num>
             <div style="font-size:.65rem;font-weight:600;color:var(--text-dim);margin-top:4px;">Ingresá el % de tax si no encontrás tu ciudad.</div>
         </div>
         <button id="toggle-manual-tax" onclick="toggleManualTax()" style="background:none;border:none;color:var(--text-dim);font-size:.65rem;font-weight:700;cursor:pointer;padding:2px 0 10px;text-decoration:none;display:block;">✏️ <span data-i18n="btn_manual_tax">Ingresar tax manualmente</span></button>
@@ -550,7 +551,7 @@ if ("serviceWorker" in navigator) {
                 <div class="custom-tip">
                     <div class="custom-tip-row">
                         <span data-i18n="label_other">OTRO</span>
-                        <input type="number" id="custom-tip-input" placeholder="0" oninput="setCustomTip()" inputmode="numeric" enterkeyhint="done">
+                        <input type="text" id="custom-tip-input" placeholder="0" oninput="setCustomTip()" inputmode="numeric" enterkeyhint="done" data-num>
                         <span>%</span>
                     </div>
                     <span id="val-tip-custom">$0.00</span>
@@ -621,12 +622,12 @@ if ("serviceWorker" in navigator) {
         
         <div class="input-group" id="cart-manual-tax-group" style="display:none;">
             <span class="slabel">TAX MANUAL (%)</span>
-            <input type="number" id="cart-manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="renderCart()" style="border-color:var(--warn);" enterkeyhint="done">
+            <input type="text" id="cart-manual-tax-input" placeholder="Ej: 8.25" inputmode="decimal" oninput="renderCart()" style="border-color:var(--warn);" enterkeyhint="done" data-num>
         </div>
         <button id="cart-toggle-manual-tax" onclick="toggleCartManualTax()" style="background:none;border:none;color:var(--text-dim);font-size:.65rem;font-weight:700;cursor:pointer;padding:2px 0 14px;text-decoration:none;display:block;">✏️ <span data-i18n="btn_manual_tax">Ingresar tax manualmente</span></button>
 
         <div class="cart-add-row">
-            <input type="number" id="cart-price-input" placeholder="0.00" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}" enterkeyhint="done">
+            <input type="text" id="cart-price-input" placeholder="0.00" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}" enterkeyhint="done" data-num>
             <button class="cart-add-btn" onclick="addCartItem()" aria-label="Agregar">+</button>
         </div>
 
@@ -676,7 +677,7 @@ if ("serviceWorker" in navigator) {
 
             <span class="slabel" data-i18n="split_base">Base (precio en etiqueta)</span>
             <div class="input-group">
-                <input type="number" id="split-price" placeholder="0.00" oninput="calcSplit()" step="0.01" inputmode="decimal" enterkeyhint="done">
+                <input type="text" id="split-price" placeholder="0.00" oninput="calcSplit()" inputmode="decimal" enterkeyhint="done" data-num>
             </div>
 
             <div class="split-result" id="split-result" style="display:none;">

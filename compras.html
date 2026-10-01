@@ -549,6 +549,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     </style>
     <link rel="stylesheet" href="assets/ui.css">
 <script defer src="assets/autofill.js"></script>
+<script defer src="assets/numinput.js"></script>
 <link rel="stylesheet" href="assets/cohesion.css">
 <script defer src="assets/localize.js"></script>
 <script src="assets/offline-status.js"></script>
@@ -619,7 +620,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 
         <div class="budget-set" id="budget-set-row">
             <span class="bc-cur">USD</span>
-            <input type="number" id="input-fondo" placeholder="0.00" step="0.01" min="0" inputmode="decimal" enterkeyhint="done" aria-label="Presupuesto en USD">
+            <input type="text" id="input-fondo" placeholder="0.00" inputmode="decimal" enterkeyhint="done" aria-label="Presupuesto en USD" data-num>
             <button class="bc-cancel" id="bc-cancel-btn" onclick="cancelBudgetEdit()" aria-label="Cancelar" style="display:none;">✕</button>
             <button onclick="updateFondo()" data-i18n="btn_save_budget">GUARDAR</button>
         </div>
@@ -710,7 +711,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
             <input type="file" id="gallery-input" accept="image/*" style="display:none;" onchange="handleGalleryImage(event)">
 
 <div class="input-group"><input type="text" id="nombre" placeholder="Producto" data-i18n-ph="placeholder_product" enterkeyhint="next" autocomplete="off"></div>
-            <div class="input-group"><input type="number" id="valor" placeholder="Precio USD" step="0.01" inputmode="decimal" enterkeyhint="done" data-i18n-ph="placeholder_price"></div>
+            <div class="input-group"><input type="text" id="valor" placeholder="Precio USD" inputmode="decimal" enterkeyhint="done" data-i18n-ph="placeholder_price" data-num></div>
             <span class="cat-tag-label" data-i18n="label_cat_tag">Categoría</span>
             <div class="cat-tag-row" id="cat-tag-row">
                 <button class="cat-tag sel" data-cat="🛍️ Compras" data-i18n="cat_shopping">🛍️ Compras</button>
@@ -2246,7 +2247,7 @@ function renderCapsEditor() {
   list.innerHTML = Object.keys(CAT_I18N_KEY).map(cat => {
     const key = CAT_I18N_KEY[cat];
     const val = catBudgets[key] ? String(catBudgets[key]) : "";
-    return `<div class="caps-row"><span class="caps-name">${catLabel(cat)}</span><input type="number" inputmode="decimal" min="0" step="0.01" data-capkey="${key}" placeholder="${bt("caps_placeholder")}" value="${val}"></div>`;
+    return `<div class="caps-row"><span class="caps-name">${catLabel(cat)}</span><input type="text" inputmode="decimal" data-capkey="${key}" placeholder="${bt("caps_placeholder")}" value="${val}" data-num></div>`;
   }).join("");
   updateCapsTotal();
 }
@@ -4593,7 +4594,7 @@ window.compInit = function() {
     <div class="ocr-modal-handle"></div>
     <div class="ocr-modal-title" id="edit-gasto-title" data-i18n="edit_title">Editar gasto</div>
     <div class="input-group"><input type="text" id="edit-gasto-name" data-i18n-ph="placeholder_product" placeholder="Producto" enterkeyhint="next" autocomplete="off"></div>
-    <div class="input-group"><input type="number" id="edit-gasto-val" data-i18n-ph="placeholder_price" placeholder="Precio USD" step="0.01" inputmode="decimal" enterkeyhint="done"></div>
+    <div class="input-group"><input type="text" id="edit-gasto-val" data-i18n-ph="placeholder_price" placeholder="Precio USD" inputmode="decimal" enterkeyhint="done" data-num></div>
     <div class="input-group"><select id="edit-gasto-cat" aria-label="Categoría"></select></div>
     <div class="ocr-btns">
       <button type="button" class="ocr-btn-cancel" onclick="closeEditGasto()" data-i18n="edit_cancel">Cancelar</button>
@@ -4612,7 +4613,7 @@ window.compInit = function() {
     <div class="ocr-fields">
       <div class="ocr-field">
         <div class="ocr-field-label">Total</div>
-        <input class="ocr-field-val editable" id="ocr-total-input" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        <input class="ocr-field-val editable" id="ocr-total-input" type="text" inputmode="decimal" placeholder="0.00" data-num>
       </div>
       <div class="ocr-field">
         <div class="ocr-field-label">Tax</div>
