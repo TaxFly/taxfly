@@ -7,6 +7,8 @@ const os = require('node:os');
 const {cacheVersion, extractPrecachePaths} = require('../scripts/bump-cache.js');
 const root = path.resolve(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
+// Contenido completo de una página: su HTML más los JS que separamos a assets/.
+const readPage = name => [read(name + '.html'), ...(typeof EXTERNAL_JS === 'undefined' ? [] : (EXTERNAL_JS[name] || []).map(([f]) => read(f)))].join('\n');
 const between = (src, a, b) => src.slice(src.indexOf(a), src.indexOf(b, src.indexOf(a)));
 function context(src, values) { const c = vm.createContext(values); vm.runInContext(src, c); return c; }
 const docsTree = require('../assets/docs-tree.js');
@@ -149,9 +151,9 @@ test('backup includes each existing trip branch without inventing an ID', () => 
 
 test('travel tips stay hidden and profile documents remain visible across trips', () => {
   assert.doesNotMatch(between(read('assets/plan-app.js'),'function renderOutlets()', 'function switchOutletTab('),/renderTips\(\)/);
-  assert.match(read('tickets.html'),/tripId: docObj.tripId \|\| "unassigned"/);
-  assert.match(read('tickets.html'),/const visible=window\._uid\?allDocs\.filter\(d => !\(window\._tfHidden && window\._tfHidden\.has\(d\.id\)\)\):\[\]/);
-  assert.doesNotMatch(read('tickets.html'),/TripContext\.filter\(allDocs/);
+  assert.match(readPage('tickets'),/tripId: docObj.tripId \|\| "unassigned"/);
+  assert.match(readPage('tickets'),/const visible=window\._uid\?allDocs\.filter\(d => !\(window\._tfHidden && window\._tfHidden\.has\(d\.id\)\)\):\[\]/);
+  assert.doesNotMatch(readPage('tickets'),/TripContext\.filter\(allDocs/);
 });
 
 test('archiving and deleting a trip removes its data without affecting another trip', async () => {
@@ -257,7 +259,7 @@ test('expense queue survives a failed sync and clears after retry', async () => 
 });
 
 test('document queue retains failed upload then syncs and removes it', async () => {
-  const src=between(read('tickets.html'),'const QUEUE_KEY = ', 'window.saveDoc = async () => {');
+  const src=between(read('assets/tickets.js'),'const QUEUE_KEY = ', 'window.saveDoc = async () => {');
   const data=new Map();let fail=true,uploaded=0;
   const c=context(src,{window:{fsSave:async()=>{if(fail)throw Error('offline');uploaded++},fsDelete:async()=>{}},
     idbGet:async k=>data.get(k),idbSet:async(k,v)=>data.set(k,v),navigator:{onLine:true},
@@ -269,7 +271,7 @@ test('document queue retains failed upload then syncs and removes it', async () 
 });
 
 test('offline document cache cannot show another user’s profile', async () => {
-  const source=between(read('tickets.html'),'async function guardarDocsEnCache(docs)', 'window.addEventListener("offline"');
+  const source=between(read('assets/tickets.js'),'async function guardarDocsEnCache(docs)', 'window.addEventListener("offline"');
   const data=new Map(),w={_uid:'u1'};
   const c=context(source,{window:w,DOCS_CACHE_KEY_PFX:'docs-',getPerfilId:()=> 'p',
     idbSet:async(k,v)=>data.set(k,v),idbGet:async k=>data.get(k)});
@@ -279,7 +281,7 @@ test('offline document cache cannot show another user’s profile', async () => 
 });
 
 test('pending documents stay with their original user and profile', async () => {
-  const src=between(read('tickets.html'),'const QUEUE_KEY = ', 'window.saveDoc = async () => {');
+  const src=between(read('assets/tickets.js'),'const QUEUE_KEY = ', 'window.saveDoc = async () => {');
   const data=new Map(),sent=[];
   const c=context(src,{window:{_uid:'u1',fsSave:async(uid,p)=>sent.push([uid,p]),fsDelete:async()=>{}},
     idbGet:async k=>data.get(k),idbSet:async(k,v)=>data.set(k,v),navigator:{onLine:true},
@@ -292,7 +294,7 @@ test('pending documents stay with their original user and profile', async () => 
 });
 
 test('pending reminders stay in the matching user and profile', () => {
-  const src=between(read('lugares.html'),'const PENDING_KEY = ', 'async function flushPending()');
+  const src=between(read('assets/lugares.js'),'const PENDING_KEY = ', 'async function flushPending()');
   const c=context(src,{currentUser:{uid:'u1'},perfilId:'p1',localStorage:storage(),JSON});
   c.queueOp({type:'add_activity',data:{name:'Flight'}});
   assert.equal(c.getPending().length,1);
@@ -301,7 +303,7 @@ test('pending reminders stay in the matching user and profile', () => {
 });
 
 test('pending reminders remain visible after a cached snapshot replaces the list', () => {
-  const source=between(read('lugares.html'),'function listenActivities()','let localNotes =');
+  const source=between(read('assets/lugares.js'),'function listenActivities()','let localNotes =');
   let rendered;
   const c=context(source,{currentUser:{uid:'u'},perfilId:'p',db:{},collection:()=>({}),query:()=>({}),orderBy:()=>({}),
     getPending:()=>[{type:'add_activity',tempId:'temp',data:{name:'Flight',tripId:'orlando'}}],
@@ -487,8 +489,8 @@ test('park data uses real, fresh wait times and never guesses the status of city
   assert.equal(rides[0].wait,35);
   assert.equal(rides[1].wait,null);
   assert.equal(rides[1].status,null);
-  assert.doesNotMatch(read('lugares.html'),/corsproxy\.io|localHour|updateStatusDisplay/);
-  assert.doesNotMatch(read('lugares.html'),/city_nyc: "🍎/);
+  assert.doesNotMatch(readPage('lugares'),/corsproxy\.io|localHour|updateStatusDisplay/);
+  assert.doesNotMatch(readPage('lugares'),/city_nyc: "🍎/);
 });
 
 test('a reservation shows the existing voucher from Documents as part of its card', () => {
@@ -723,10 +725,25 @@ test('firestore.rules: el árbol viejo users/ es solo lectura y borrado', () => 
   assert.ok(!/allow [^;]*\bwrite\b/.test(block) && !/allow [^;]*\b(create|update)\b/.test(block));
 });
 
-test('compras.html carga su lógica desde assets/compras.js (precacheada) y no la lleva inline', () => {
-  const html = read('compras.html');
-  assert.ok(html.includes('<script type="module" src="assets/compras.js"></script>'));
-  const inlineModule = /<script type="module">([\s\S]*?)<\/script>/.exec(html);
-  assert.equal(inlineModule, null, 'no debe quedar un módulo inline');
-  assert.ok(extractPrecachePaths(read('sw.js')).includes('./assets/compras.js'), 'compras.js tiene que estar en PRECACHE para funcionar sin conexión');
-});
+// Páginas cuyo JS ya vive en assets/ (src, ¿módulo?). Al separar otra página, agregarla acá.
+const EXTERNAL_JS = {
+  compras: [['assets/compras.js', true]],
+  tax: [['assets/tax.js', true]],
+  unidades: [['assets/unidades-i18n.js', false], ['assets/unidades.js', true], ['assets/unidades-farma.js', false], ['assets/unidades-frases.js', false]],
+  tickets: [['assets/tickets.js', true]],
+  grupo: [['assets/grupo.js', true], ['assets/grupo-ui.js', false]],
+  'mis-cosas': [['assets/mis-cosas.js', false]],
+  rutas: [['assets/rutas.js', true], ['assets/rutas-app.js', false]],
+  lugares: [['assets/lugares.js', true], ['assets/lugares-ciudades.js', false], ['assets/lugares-selector.js', false]]
+};
+for (const [name, files] of Object.entries(EXTERNAL_JS)) {
+  test(`${name}.html carga su lógica desde assets/ (precacheada), sin bloques grandes inline`, () => {
+    const html = read(`${name}.html`), precache = extractPrecachePaths(read('sw.js'));
+    for (const [file, isModule] of files) {
+      assert.ok(html.includes(isModule ? `<script type="module" src="${file}"></script>` : `<script src="${file}"></script>`), file + ' no está referenciado');
+      assert.ok(precache.includes('./' + file), file + ' tiene que estar en PRECACHE para funcionar sin conexión');
+    }
+    const big = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].filter(m => m[1].length >= 20000);
+    assert.equal(big.length, 0, 'queda un script inline de 20 KB o más');
+  });
+}
