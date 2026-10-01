@@ -9,6 +9,7 @@
   var IDX = lang === "en" ? 0 : lang === "pt" ? 1 : -1;
   var listeners = [];
   var DICT = Object.create(null);
+  var LDICT = Object.create(null);
   var PATS = [];
   var cache = new Map;
   function norm(s) {
@@ -39,6 +40,8 @@
         });
       } else {
         DICT[key] = val;
+        var lk = key.toLowerCase();
+        if (LDICT[lk] === undefined) LDICT[lk] = val;
       }
     });
     cache.clear();
@@ -104,6 +107,10 @@
   function core(s) {
     var r = DICT[s];
     if (r !== undefined) return r[IDX];
+    if (s === s.toUpperCase() && s !== s.toLowerCase()) {
+      var lr = LDICT[s.toLowerCase()];
+      if (lr !== undefined && lr[IDX] !== undefined) return lr[IDX].toUpperCase();
+    }
     for (var i = 0; i < PATS.length; i++) {
       var p = PATS[i], m = s.match(p.re);
       if (!m) continue;

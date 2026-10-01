@@ -2,6 +2,21 @@
 (function () {
   const prefix = 'taxfly-offline-data::';
   const labels = {plan:'Planificación',docs:'Documentos',expenses:'Gastos',places:'Lugares y notas',things:'Mis cosas'};
+  const TXT = {
+    es: {locale:'es-AR', labels, ready:'✓ Pantallas principales guardadas para uso offline', notReady:'Preparación offline incompleta',
+      data:'Datos consultados en este dispositivo: ', last:'. Última preparación local: ', open:'Abrí las secciones del viaje con internet para guardar sus datos en este dispositivo.',
+      one:' cambio pendiente de sincronizar. ', many:' cambios pendientes de sincronizar. ', live:'Clima, filas, mapas y Taxie requieren conexión para datos actuales.',
+      close:'Cerrar aviso', legacyA:' cambio(s) de una versión anterior sin perfil verificable. No se enviarán automáticamente; conservá un respaldo de este dispositivo.'},
+    en: {locale:'en-US', labels:{plan:'Planning',docs:'Documents',expenses:'Expenses',places:'Places & notes',things:'My things'}, ready:'✓ Main screens saved for offline use', notReady:'Offline preparation incomplete',
+      data:'Data viewed on this device: ', last:'. Last local preparation: ', open:'Open the trip sections while online to save their data on this device.',
+      one:' change pending sync. ', many:' changes pending sync. ', live:'Weather, wait times, maps and Taxie need a connection for live data.',
+      close:'Dismiss notice', legacyA:' change(s) from an older version without a verifiable profile. They will not be sent automatically; keep a backup of this device.'},
+    pt: {locale:'pt-BR', labels:{plan:'Planejamento',docs:'Documentos',expenses:'Gastos',places:'Lugares e notas',things:'Minhas coisas'}, ready:'✓ Telas principais salvas para uso offline', notReady:'Preparação offline incompleta',
+      data:'Dados consultados neste dispositivo: ', last:'. Última preparação local: ', open:'Abra as seções da viagem com internet para salvar seus dados neste dispositivo.',
+      one:' alteração pendente de sincronização. ', many:' alterações pendentes de sincronização. ', live:'Clima, filas, mapas e Taxie precisam de conexão para dados atuais.',
+      close:'Fechar aviso', legacyA:' alteração(ões) de uma versão anterior sem perfil verificável. Não serão enviadas automaticamente; mantenha um backup deste dispositivo.'}
+  };
+  const tx = () => { let l = 'es'; try { l = localStorage.getItem('appLang') || 'es'; } catch (_) {} return TXT[l] || TXT.es; };
   let dismissed = false;
   let dismissTimer;
   const key = (uid, profile, trip) => prefix + uid + '::' + profile + '::' + trip;
@@ -52,21 +67,22 @@
     const ready = await shellReady();
     if (dismissed) return;
     const latest = Math.max(0, ...Object.values(data).filter(Number.isFinite));
-    const sections = Object.keys(labels).filter(section => data[section]).map(section => labels[section]);
+    const T = tx();
+    const sections = Object.keys(labels).filter(section => data[section]).map(section => T.labels[section]);
     const n = pending(uid, profile);
     box.replaceChildren();
     const title = document.createElement('strong');
-    title.textContent = ready ? '✓ Pantallas principales guardadas para uso offline' : 'Preparación offline incompleta';
+    title.textContent = ready ? T.ready : T.notReady;
     const detail = document.createElement('span');
     detail.textContent = sections.length
-      ? 'Datos consultados en este dispositivo: ' + sections.join(', ') + '. Última preparación local: ' + new Date(latest).toLocaleString('es-AR') + '.'
-      : 'Abrí las secciones del viaje con internet para guardar sus datos en este dispositivo.';
+      ? T.data + sections.join(', ') + T.last + new Date(latest).toLocaleString(T.locale) + '.'
+      : T.open;
     const foot = document.createElement('small');
-    foot.textContent = (n ? n + ' cambio' + (n === 1 ? '' : 's') + ' pendiente' + (n === 1 ? '' : 's') + ' de sincronizar. ' : '') + 'Clima, filas, mapas y Taxie requieren conexión para datos actuales.';
+    foot.textContent = (n ? n + (n === 1 ? T.one : T.many) : '') + T.live;
     const close = document.createElement('button');
     close.type = 'button';
     close.className = 'offline-readiness-close';
-    close.setAttribute('aria-label', 'Cerrar aviso');
+    close.setAttribute('aria-label', T.close);
     close.textContent = '×';
     const dismiss = () => {
       dismissed = true;
@@ -79,7 +95,7 @@
       .reduce((sum,k) => sum + (() => { try { const v=JSON.parse(localStorage.getItem(k)||'[]'); return Array.isArray(v)?v.length:0; } catch (_) { return 0; } })(),0);
     if (legacy) {
       const warning = document.createElement('small');
-      warning.textContent = legacy + ' cambio(s) de una versión anterior sin perfil verificable. No se enviarán automáticamente; conservá un respaldo de este dispositivo.';
+      warning.textContent = legacy + T.legacyA;
       box.append(warning);
     }
     box.dataset.ready = String(ready);

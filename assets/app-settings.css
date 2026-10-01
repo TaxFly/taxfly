@@ -19,3 +19,6 @@
 #sxInstallModal .sxi-n{width:28px;height:28px;border-radius:50%;background:var(--theme-accent);color:#fff;font-size:.75rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 #sxInstallModal button.sxi-ok{width:100%;margin-top:12px;padding:12px;border-radius:12px;border:1.5px solid var(--theme-accent);background:var(--theme-accent);color:#fff;font-weight:800;font-size:.85rem;font-family:inherit;cursor:pointer}
 #settingsDrawer .sx-row .sx-lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#settingsDrawer .sx-row:has(> .sx-lang){flex-wrap:wrap;row-gap:8px}
+#settingsDrawer .sx-row:has(> .sx-lang) > .sx-lbl{flex:0 0 auto;min-width:max-content;overflow:visible;text-overflow:clip}
+#settingsDrawer .sx-row:has(> .sx-lang) > .sx-lang{flex:1 1 180px;min-width:180px;margin-left:auto}
