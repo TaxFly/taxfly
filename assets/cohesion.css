@@ -20,27 +20,3 @@ a, a:visited, a:hover, a:focus-visible { text-decoration:none; }
 .offline-readiness{display:grid;gap:4px;padding:12px 14px;margin:0 0 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);font-size:12px}
 .offline-readiness:empty{display:none}.offline-readiness strong{font-size:13px}.offline-readiness span,.offline-readiness small{color:var(--text-sub,var(--muted));line-height:1.4}.offline-readiness[data-ready="false"] strong{color:#b45309}
 .offline-readiness[hidden]{display:none!important}.offline-readiness{position:relative;padding-right:39px}.offline-readiness-close{position:absolute;right:8px;top:6px;border:0;background:transparent;color:var(--text-sub,var(--muted));font:600 22px/1 sans-serif;cursor:pointer;padding:4px 7px;border-radius:7px}.offline-readiness-close:hover{background:var(--surface-2,var(--surface));color:var(--text)}
-
-
-/* ===== Pantallas anchas: aprovechar el espacio lateral ===== */
-@media (min-width: 600px) and (max-width: 999px) {
-  body > .wrap { width: min(100%, 720px); max-width: 720px; }
-}
-@media (min-width: 1000px) {
-  body > .wrap { width: min(100%, 960px); max-width: 960px; }
-  /* Gastos: formulario a la izquierda, lista a la derecha */
-  #exp-body:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); column-gap: 18px; align-items: start; }
-  #exp-body > * { grid-column: 1; }
-  #exp-body > #listaGastos { grid-column: 2; grid-row: 1 / span 14; }
-}
-@media (min-width: 1200px) {
-  body > .wrap { width: min(100%, 1080px); max-width: 1080px; }
-}
-@media (min-width: 1700px) {
-  body > .wrap { width: min(100%, 1240px); max-width: 1240px; }
-}
-/* Notas y checklist en dos columnas */
-@media (min-width: 900px) {
-  #panel-notas.active { max-width: none !important; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
-  #panel-notas.active > .card { margin: 0; }
-}
