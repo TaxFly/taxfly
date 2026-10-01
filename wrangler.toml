@@ -1,0 +1,20 @@
+name = "taxfly-claude"
+main = "claude-worker.js"
+compatibility_date = "2026-09-25"
+
+[[ratelimits]]
+name = "COST_LIMITER"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 8
+  period = 60
+
+[[ratelimits]]
+name = "GENERAL_LIMITER"
+namespace_id = "1002"
+  [ratelimits.simple]
+  limit = 30
+  period = 60
+
+[vars]
+ALLOWED_ORIGINS = "https://taxfly.github.io"
