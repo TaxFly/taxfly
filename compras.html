@@ -531,6 +531,12 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .exp-day-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:16px 2px 8px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);}
         .exp-day-head:first-child{margin-top:4px;}
         .exp-day-head b{color:var(--text-sub);font-weight:800;}
+        /* Una tarjeta por día: encabezado con subtotal + gastos separados por línea fina */
+        .exp-day-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;}
+        .exp-day-card .exp-day-head{margin:0;padding:10px 14px;border-bottom:1px solid var(--border);}
+        .exp-day-card .exp-day-head b{font-size:.72rem;color:var(--text);}
+        .exp-day-card .history-item{background:transparent;border-radius:0;margin:0;padding:12px 14px;border-top:1px solid color-mix(in srgb,var(--border) 55%,transparent);}
+        .exp-day-card .exp-day-head + .history-item{border-top:0;}
         .h-main{flex:1;min-width:0;padding:0 8px;cursor:pointer;}
         .h-main:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px;}
         .exp-toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);background:#111827;color:#fff;padding:10px 16px;border-radius:999px;font-size:.8rem;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:10001;box-shadow:0 6px 20px rgba(0,0,0,.3);}
@@ -2538,6 +2544,14 @@ function dayLabel(key, ts) {
   return new Date(Number(ts)).toLocaleDateString(loc, { weekday: "short", day: "numeric", month: "short" });
 }
 
+function zeroLabel() {
+  const lg = localStorage.getItem("appLang") || "es";
+  return { es: "Sin costo", en: "No cost", pt: "Sem custo" }[lg] || "Sin costo";
+}
+function amountLabel(v) {
+  return (parseFloat(v) || 0) > 0 ? "-" + fmt(v) : zeroLabel();
+}
+
 function gastoItemHtml(g) {
   const cat = g.cat || "📦 Otros";
   const catEmoji = cat.match(/^(\S+)/)?.[1] || "📦";
@@ -2551,7 +2565,7 @@ function gastoItemHtml(g) {
                     <div style="font-size:.62rem;color:var(--text-dim);margin-top:1px;">${catDisplayLabel}</div>
                 </div>
                 <div class="h-right">
-                    <div class="h-amount">-${fmt(g.valor)}</div>
+                    <div class="h-amount"${(parseFloat(g.valor) || 0) > 0 ? "" : ' style="color:var(--text-dim);font-size:.8rem;"'}>${amountLabel(g.valor)}</div>
                     <button class="h-del" onclick="deleteGasto('${g.id}')" aria-label="${esc(bt("aria_delete"))}">✕</button>
                 </div>
             </div>`;
@@ -2581,7 +2595,7 @@ function renderGastosList(gastos) {
     byKey[k].sub += parseFloat(g.valor) || 0;
     byKey[k].items.push(g);
   });
-  c.innerHTML = groups.map(grp => `<div class="exp-day-head"><span>${esc(dayLabel(grp.key, grp.ts))}</span><b>-${fmt(grp.sub)}</b></div>` + grp.items.map(gastoItemHtml).join("")).join("");
+  c.innerHTML = groups.map(grp => `<section class="exp-day-card"><div class="exp-day-head"><span>${esc(dayLabel(grp.key, grp.ts))}</span><b>${amountLabel(grp.sub)}</b></div>` + grp.items.map(gastoItemHtml).join("") + `</section>`).join("");
   updateBudgetDisplay(total);
   renderDashboard(gastos);
 }
