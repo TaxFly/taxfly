@@ -1,0 +1,30 @@
+/* TaxFly · mejoras de uso compartidas (scroll con mouse, teclado, foco, movimiento) */
+
+/* Barras horizontales sin scrollbar visible: se pueden arrastrar con el mouse */
+.hs-scrollable{cursor:grab;overscroll-behavior-x:contain}
+.hs-dragging{cursor:grabbing!important;user-select:none;-webkit-user-select:none}
+.hs-dragging *{pointer-events:none!important}
+
+/* Foco visible para quien navega con teclado */
+:where(a,button,[role="button"],[tabindex],summary,label):focus-visible{
+  outline:2px solid var(--primary,#4f8cff);outline-offset:2px}
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--primary,#4f8cff) 35%,transparent)}
+[data-ux-kb]{cursor:pointer}
+
+/* Evita el retraso y el zoom por doble toque en botones y links */
+a,button,[role="button"],input,select,textarea,label{touch-action:manipulation}
+
+/* En celulares, inputs de 16px para que iOS no haga zoom al enfocar
+   (necesario ahora que se permite el zoom con pellizco) */
+@media (pointer:coarse){
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+  select,textarea{font-size:16px!important}
+}
+
+/* Respeta la preferencia de "reducir movimiento" del sistema */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
