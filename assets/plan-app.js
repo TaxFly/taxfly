@@ -2215,7 +2215,7 @@ function coordsFromMapsUrl(raw) {
 function stopSearchAddress(stop) {
   const address = (stop.desc || "").split(/[·•]/)[0].replace(/\b(?:Abre|Cierra)\b.*$/i, "").replace(/\b(?:Ste|Suite|Unit)\s*[A-Za-z0-9-]+$/i, "").trim();
   const destination = window._trip?.destinations?.[window._trip.activeDestination || 0];
-  const area = [destination?.city || "Orlando", destination?.countryName || destination?.state || "Florida", window.TripContext.region()==="europe"?"":"USA"].join(", ");
+  const area = [destination?.city || "Orlando", destination?.countryName || destination?.state || "Florida", "USA"].join(", ");
   return (address || stop.name) + ", " + area;
 }
 

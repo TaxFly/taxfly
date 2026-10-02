@@ -53,7 +53,6 @@ const i18n = {
     btn_email: "Cambiar Correo",
     btn_password: "Cambiar Contraseña",
     btn_pin: "Cambiar PIN Offline",
-    btn_switch_app: "Cambiar Aplicación",
     btn_logout: "Cerrar Sesión",
     btn_delete: "Eliminar Cuenta",
     ac_searching: "Buscando...",
@@ -113,7 +112,6 @@ const i18n = {
     btn_email: "Change Email",
     btn_password: "Change Password",
     btn_pin: "Change Offline PIN",
-    btn_switch_app: "Switch App",
     btn_logout: "Sign Out",
     btn_delete: "Delete Account",
     ac_searching: "Searching...",
@@ -173,7 +171,6 @@ const i18n = {
     btn_email: "Alterar E-mail",
     btn_password: "Alterar Senha",
     btn_pin: "Alterar PIN Offline",
-    btn_switch_app: "Trocar Aplicativo",
     btn_logout: "Sair",
     btn_delete: "Excluir Conta",
     ac_searching: "Buscando...",
@@ -311,7 +308,6 @@ window.gestionarPIN = () => {
   setTimeout(() => document.getElementById("pinInput1").focus(), 100);
 };
 
-window.openSwitchApp = () => window.TaxflyRoutes.showSwitcher();
 function changeDays(d) {
   days = Math.max(1, Math.min(20, days + d));
   document.getElementById("days-count").textContent = days;

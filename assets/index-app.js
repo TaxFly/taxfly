@@ -112,7 +112,6 @@ const I18N = {
     btn_change_profile: "Cambiar Perfil",
     btn_theme: "Cambiar Tema",
     btn_update: "Actualizar App",
-    btn_switch_app: "Cambiar Aplicación",
     btn_logout: "Cerrar Sesión",
     btn_email: "Cambiar Correo",
     btn_password: "Cambiar Contraseña",
@@ -236,7 +235,6 @@ const I18N = {
     btn_change_profile: "Change Profile",
     btn_theme: "Change Theme",
     btn_update: "Update App",
-    btn_switch_app: "Switch App",
     btn_logout: "Log Out",
     btn_email: "Change Email",
     btn_password: "Change Password",
@@ -360,7 +358,6 @@ const I18N = {
     btn_change_profile: "Trocar Perfil",
     btn_theme: "Mudar Tema",
     btn_update: "Atualizar App",
-    btn_switch_app: "Trocar Aplicativo",
     btn_logout: "Sair",
     btn_email: "Alterar E-mail",
     btn_password: "Alterar Senha",
@@ -1154,11 +1151,6 @@ window.changeProfile = () => {
 
 window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
 
-window.openSwitchApp = () => {
-  document.getElementById("switchAppModal").style.display = "flex";
-};
-
-window.doSwitchApp = function(d) { window.TaxflyRoutes.enter(d); };
 async function probeConnectivity() {
   const cached = sessionStorage.getItem("taxfly_connectivity");
   if (cached !== null) return cached === "1";

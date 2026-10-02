@@ -1,11 +1,11 @@
 (function () {
-  const region=()=>window.TaxflyRoutes?.region?.()||(safeGet('taxfly_destino')==='europe'?'europe':'usa');
+  const region=()=>'usa';
   const legacy = {id:'orlando', name:'Mi viaje a Orlando', destinations:[{city:'Orlando',state:'Florida'}]};
   let sdk = null;
   function keys(uid, profile) {
-    return {active:`trip-planning-active::${uid}::${profile}${region()==='europe'?'::europe':''}`,
+    return {active:`trip-planning-active::${uid}::${profile}`,
       list:`trip-planning-trips::${uid}::${profile}`,
-      view:`trip-planning-view::${uid}::${profile}${region()==='europe'?'::europe':''}`,
+      view:`trip-planning-view::${uid}::${profile}`,
       pending:`trip-planning-pending::${uid}::${profile}`};
   }
   const orphanKey=(uid,profile)=>`trip-planning-orphan-count::${uid}::${profile}`;
@@ -31,14 +31,14 @@
       ? (record.tripId||'unassigned') : 'unassigned';
     return id===selection;
   }
-  function filter(items,uid,profile) { const selected=view(uid,profile); if(region()==='europe'&&selected==='unassigned')return []; return (items||[]).filter(x=>matches(x,selected)); }
+  function filter(items,uid,profile) { const selected=view(uid,profile); return (items||[]).filter(x=>matches(x,selected)); }
   function assign(uid,profile) { return view(uid,profile); }
   function emit(uid,profile) {
     window.dispatchEvent?.(new CustomEvent('taxfly:tripchange',{detail:{uid,profile,id:active(uid,profile)}}));
   }
   function select(uid,profile,id) {
     const k=keys(uid,profile);
-    if (id==='unassigned') {if(region()==='europe')return false;safeSet(k.view,id);}
+    if (id==='unassigned') {safeSet(k.view,id);}
     else if (readTrips(uid,profile).some(t=>t.id===id)) {
       safeSet(k.active,id); safeSet(k.view,id);
     } else return false;
@@ -241,7 +241,7 @@
     });
   }
   async function orphanCount(uid,profile) {
-    if(region()==='europe')return 0;
+    
     if (!sdk||!navigator.onLine) return null;
     let count=0;
     for(const group of ['gastos','actividades','notas']) {
@@ -255,7 +255,7 @@
     return count;
   }
   async function removeOrphans(uid,profile) {
-    if(region()==='europe')return false;
+    
     if(!sdk||!navigator.onLine) return false;
     try {await purgeTagged(uid,profile,'unassigned');await clearLocal(uid,profile,'unassigned');
       safeSet(orphanKey(uid,profile),'0');

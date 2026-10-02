@@ -656,7 +656,7 @@ if (firebaseOk) onAuthStateChanged(auth, async user => {
 function goToApp() {
   if (installRequested) return;
   localStorage.removeItem('taxusa_pending_redirect');
-  hideSplash(() => window.location.replace(window.TaxflyRoutes.selector()));
+  hideSplash(() => window.location.replace("index.html"));
 }
 
 async function initScreen() {

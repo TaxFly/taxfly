@@ -76,9 +76,9 @@ if (navigator.onLine) {
   } catch (e) {}
 }
 
-const destino = window.TaxflyRoutes.region();
 
-const destinoLabel = destino === "europe" ? "TaxEurope" : "TaxUSA";
+
+const destinoLabel = "TaxUSA";
 
 const i18n = {
   es: {
@@ -400,11 +400,11 @@ window.handleClick = (id, nombre, fotoEnc) => {
     if (pending) localStorage.removeItem("taxusa_pending_redirect");
   } catch (e) {}
   if (pending) {
-    window.location.replace(window.TaxflyRoutes.destination(pending) || window.TaxflyRoutes.home(window.TaxflyRoutes.region()));
+    window.location.replace("index.html");
     return;
   }
-  const destino = window.TaxflyRoutes.region();
-  window.location.replace(window.TaxflyRoutes.home(destino));
+  
+  window.location.replace("index.html");
 };
 
 window.openEditor = id => {
