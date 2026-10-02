@@ -4,11 +4,16 @@ window.TAXFLY_CONFIG = {
   SUPPORT_CAFECITO_URL: "https://cafecito.app/taxflyapp",
   // Los enlaces de pago quedan vacíos hasta conectar el proveedor (Stripe/Mercado Pago/etc.).
   // Cuando exista un checkout por paquete, pegá su URL en el campo url correspondiente.
+  AI_CREDIT_CURRENCY: "USD",
+  // Se completa cuando definamos el precio real de los créditos. Mantener null hasta entonces.
+  AI_CREDIT_USD_PER_CREDIT: null,
+  // Endpoint/checkout para compras personalizadas. Queda vacío hasta conectar el proveedor de pagos.
+  AI_CUSTOM_CREDIT_CHECKOUT_URL: "",
   AI_CREDIT_PACKAGES: [
-    { credits: 50, label: "Paquete inicial", url: "" },
-    { credits: 100, label: "Paquete estándar", url: "" },
-    { credits: 250, label: "Paquete viajero", url: "" },
-    { credits: 500, label: "Paquete intensivo", url: "" }
+    { credits: 50, priceUsd: null, label: "Paquete inicial", url: "" },
+    { credits: 100, priceUsd: null, label: "Paquete estándar", url: "" },
+    { credits: 250, priceUsd: null, label: "Paquete viajero", url: "" },
+    { credits: 500, priceUsd: null, label: "Paquete intensivo", url: "" }
   ],
   // Proxy propio de Firestore (sync-worker/). Se usa solo si un bloqueador corta firestore.googleapis.com.
   // Dejalo vacío ("") para desactivarlo.

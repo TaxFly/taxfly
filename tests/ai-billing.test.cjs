@@ -51,7 +51,12 @@ test('settings exposes an aesthetic AI credits center with purchase, history and
   assert.match(settings, /buy-credits/);
   assert.match(settings, /ai-history/);
   assert.match(settings, /cafecito/);
-  assert.match(settings, /sx-ai/);
+  assert.match(settings, /<details class=\"sx-ai\">/);
+  assert.match(settings, /sxmCustomCredits/);
+  assert.match(settings, /price_currency_note/);
+  assert.match(settings, /taxes_note/);
   assert.match(config, /SUPPORT_CAFECITO_URL/);
   assert.match(config, /AI_CREDIT_PACKAGES/);
+  assert.match(config, /AI_CREDIT_CURRENCY: \"USD\"/);
+  assert.match(config, /AI_CUSTOM_CREDIT_CHECKOUT_URL/);
 });

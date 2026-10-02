@@ -31,3 +31,20 @@ AI_CREDIT_PACKAGES: [
 ```
 
 No pongas una URL de pago real hasta que el backend pueda validar el webhook y acreditar créditos del lado servidor. Un checkout no debe acreditar créditos desde JavaScript del navegador.
+
+
+## UX de créditos (v2)
+
+- El bloque de IA en Ajustes está colapsado por defecto.
+- La compra ofrece 50 / 100 / 250 / 500 créditos y una cantidad personalizada.
+- Los importes se muestran siempre en USD.
+- La UI aclara que el importe final puede variar por impuestos, tasas o conversión de moneda del país, banco o medio de pago.
+- Hasta conectar el proveedor de pagos, los precios y checkouts permanecen deshabilitados.
+
+Config relacionada:
+
+```js
+AI_CREDIT_CURRENCY: "USD",
+AI_CREDIT_USD_PER_CREDIT: null,
+AI_CUSTOM_CREDIT_CHECKOUT_URL: ""
+```
