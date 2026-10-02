@@ -36,7 +36,7 @@
     {
       "name": "Calculadora de IVA",
       "short_name": "IVA",
-      "url": "./login.html?next=tax.html",
+      "url": "../login.html",
       "icons": [
         {
           "src": "assets/icon-192.png",
@@ -47,7 +47,7 @@
     {
       "name": "Gastos",
       "short_name": "Gastos",
-      "url": "./login.html?next=compras.html",
+      "url": "../login.html",
       "icons": [
         {
           "src": "assets/icon-192.png",
@@ -58,7 +58,7 @@
     {
       "name": "Plan del viaje",
       "short_name": "Plan",
-      "url": "./login.html?next=planificacion.html",
+      "url": "../login.html",
       "icons": [
         {
           "src": "assets/icon-192.png",
@@ -69,7 +69,7 @@
     {
       "name": "Grupo",
       "short_name": "Grupo",
-      "url": "./login.html?next=grupo.html",
+      "url": "../login.html",
       "icons": [
         {
           "src": "assets/icon-192.png",
@@ -80,7 +80,7 @@
     {
       "name": "Tax Free",
       "short_name": "Tax Free",
-      "url": "./login.html?next=taxfree.html"
+      "url": "../login.html"
     }
   ],
   "prefer_related_applications": false

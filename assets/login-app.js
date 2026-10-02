@@ -655,37 +655,8 @@ if (firebaseOk) onAuthStateChanged(auth, async user => {
 
 function goToApp() {
   if (installRequested) return;
-  const requested = new URLSearchParams(location.search).get("next");
-  const allowed = new Set(["index.html", "compras.html", "itinerario.html", "planificacion.html", "grupo.html"]);
-  if (requested && window.TaxflyRoutes.destination(requested)) {
-    hideSplash(() => window.location.replace(window.TaxflyRoutes.destination(requested)));
-    return;
-  }
-  const pending = (() => {
-    try {
-      const r = localStorage.getItem("taxusa_pending_redirect");
-      if (r) {
-        localStorage.removeItem("taxusa_pending_redirect");
-        return r;
-      }
-    } catch (e) {}
-    return null;
-  })();
-  if (pending) {
-    hideSplash(() => window.location.replace(window.TaxflyRoutes.destination(pending) || window.TaxflyRoutes.home(window.TaxflyRoutes.region())));
-    return;
-  }
-  const perfilId = localStorage.getItem("perfilActivoId");
-  const perfilNombre = localStorage.getItem("perfilActivoNombre");
-  const cachedUid = localStorage.getItem("taxusa_offline_uid");
-  const online = isOnline();
-  if (window.TaxflyRoutes.region() === "europe") {
-    hideSplash(() => window.location.replace(window.TaxflyRoutes.home("europe")));
-  } else if (!online && perfilId && perfilNombre && cachedUid) {
-    hideSplash(() => window.location.replace("index.html"));
-  } else {
-    hideSplash(() => window.location.replace(window.TaxflyRoutes.selector()));
-  }
+  localStorage.removeItem('taxusa_pending_redirect');
+  hideSplash(() => window.location.replace(window.TaxflyRoutes.selector()));
 }
 
 async function initScreen() {

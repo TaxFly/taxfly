@@ -1,6 +1,6 @@
 import {fsNet} from './fs-net.js';
 const tc=window.TripContext;
-let store=null,identity=null,adapter=null,syncing=false,epoch=0;
+let store=null,identity=null,adapter=null,syncing=false,epoch=0,accountSDK=null;
 const message=(state,text)=>window.dispatchEvent(new CustomEvent('eu:sync',{detail:{state,text}}));
 const emit=()=>window.dispatchEvent(new CustomEvent('eu:context',{detail:{store,identity}}));
 const within=(promise,ms=8000)=>new Promise((resolve,reject)=>{const t=setTimeout(()=>reject(new Error('Tiempo de espera agotado.')),ms);Promise.resolve(promise).then(x=>{clearTimeout(t);resolve(x)},e=>{clearTimeout(t);reject(e)})});
@@ -18,7 +18,15 @@ async function flush(){if(syncing||!adapter||!store||!navigator.onLine||!identit
  if(current===store)message(current.pending.length?'pending':'synced',current.pending.length?'Hay cambios pendientes.':'Cambios guardados en tu cuenta.');
  }catch(e){failed=true;message('local','Guardado local. Pendiente de sincronización: '+(e.code==='permission-denied'?'el servidor rechazó el acceso. Revisá permisos de la cuenta.':'reintentá cuando haya conexión.'));}finally{syncing=false;if(!failed&&store?.pending.length)queueMicrotask(flush)}
 }
-window.TaxEuropeSession={get store(){return store},get identity(){return identity},refresh:hydrate,flush};
+async function accountAction(action){
+ if(!accountSDK)throw new Error('Ingresá desde el login común de TaxFly para administrar tu cuenta.');
+ const {authSDK,auth,fs,db}=accountSDK,user=auth.currentUser;if(!user)throw new Error('No hay una sesión activa.');
+ if(action==='logout'){await authSDK.signOut(auth);window.taxflyClearOfflineUnlock?.();location.replace('../login.html')}
+ if(action==='email')return window.confirmAndChangeEmail({currentUser:user,verifyBeforeUpdateEmail:authSDK.verifyBeforeUpdateEmail});
+ if(action==='password'){await authSDK.sendPasswordResetEmail(auth,user.email);return window.showAlert('Enviamos el correo para restablecer tu contraseña.')}
+ if(action==='delete')return window.confirmAndDeleteAccount({db,doc:fs.doc,deleteDoc:fs.deleteDoc,deleteUser:authSDK.deleteUser,currentUser:user});
+}
+window.TaxEuropeSession={accountAction,get store(){return store},get identity(){return identity},refresh:hydrate,flush};
 window.addEventListener('taxfly:tripchange',()=>{try{bind()}catch(e){message('error',e.message)}});
 window.addEventListener('online',()=>{if(identity)tc.flush(identity.uid,identity.profile);hydrate()});
 window.addEventListener('storage',e=>{if(e.key===store?.key){try{store.reload()}catch(error){message('error',error.message)}}});
@@ -27,13 +35,13 @@ if(new URLSearchParams(location.search).get('demo')==='1'){
  identity={uid:'taxeurope-demo',profile:'demo'};window._taxflyTripUid=identity.uid;window._taxflyTripProfile=identity.profile;
  if(!tc.readTrips(identity.uid,identity.profile).length)await tc.create(identity.uid,identity.profile,{name:'Europa · viaje de ejemplo',startDate:'2026-10-10',endDate:'2026-10-20',destinations:[{countryCode:'ES',countryName:'España',state:'España',city:'Madrid',currency:'EUR'}]});
  bind();message('demo','Demo local: datos separados de tu cuenta.');
- document.querySelectorAll('.eu-sidebar a,.eu-page-title a').forEach(a=>{if(!/profiles|login|tickets/.test(a.getAttribute('href')))a.search='?demo=1'});
+ document.querySelectorAll('.nav-bar a,.section-card,.widget-budget,.eu-page-title a,.eu-current-trip a,.app-header a,.dd-item').forEach(a=>{if(!/profiles|login|tickets/.test(a.getAttribute('href')))a.search='?demo=1'});
 }else try{
  const cfg=window.TAXFLY_CONFIG,base=cfg.FIREBASE_SDK;
  const [appSDK,authSDK,fs]=await Promise.all([import(base+'/firebase-app.js'),import(base+'/firebase-auth.js'),import(base+'/firebase-firestore.js')]);
  const app=appSDK.getApps().length?appSDK.getApp():appSDK.initializeApp(cfg.FIREBASE_CONFIG);
  let db;try{db=fs.initializeFirestore(app,{...(await fsNet()),localCache:fs.persistentLocalCache({tabManager:fs.persistentMultipleTabManager(),cacheSizeBytes:200*1024*1024})})}catch{db=fs.getFirestore(app)}
- adapter={fs,db};tc.configure({db,...fs});
+ accountSDK={authSDK,auth:authSDK.getAuth(app),fs,db};adapter={fs,db};tc.configure({db,...fs});
  try{if(navigator.onLine){const check=await import(base+'/firebase-app-check.js');check.initializeAppCheck(app,{provider:new check.ReCaptchaV3Provider('6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME'),isTokenAutoRefreshEnabled:true})}}catch{}
  authSDK.onAuthStateChanged(authSDK.getAuth(app),async user=>{
   const generation=++epoch;store=null;identity=null;

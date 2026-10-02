@@ -370,7 +370,7 @@
   }
   refresh();
   var tripsUiUrl = new URL("trips-ui.js", document.currentScript.src).href;
-  window.addEventListener("load", function() { import(tripsUiUrl).catch(function(e) { console.warn("[trips]", e); }); });
+  if(!document.body.classList.contains("eu-native"))window.addEventListener("load", function() { import(tripsUiUrl).catch(function(e) { console.warn("[trips]", e); }); });
   new MutationObserver(function() {
     if (drawer.classList.contains("open")) refresh();
   }).observe(drawer, {
@@ -415,7 +415,7 @@
       prompt.prompt();
       return;
     }
-    location.href = new URL("login.html?install=1", document.baseURI).href;
+    location.href = new URL("../login.html?install=1", document.baseURI).href;
   }
   drawer.addEventListener("click", function(e) {
     var lb = e.target.closest("[data-lang]");

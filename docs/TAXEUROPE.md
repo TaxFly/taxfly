@@ -1,6 +1,6 @@
 # TaxEurope — implementación y guía de adaptación
 
-Versión del 02/10/2026. TaxEurope es una aplicación separada dentro de `TaxEurope/`, con interfaz propia en español y cuentas/perfiles Firebase compartidos con TaxUSA.
+Versión del 02/10/2026. TaxEurope es una aplicación separada dentro de `TaxEurope/`, con interfaz en español, estructura visual de TaxUSA y cuentas/perfiles Firebase compartidos. Hay un único login real: `login.html` en la raíz.
 
 ## Qué incluye esta versión
 
@@ -18,7 +18,7 @@ Versión del 02/10/2026. TaxEurope es una aplicación separada dentro de `TaxEur
 | Equipaje | Lista inicial opcional; categorías, cantidad, estado listo; editar, borrar y marcar. |
 | Documentos | Motor existente de PDF/fotos, cámara, caché y pendientes reutilizado. Filtrado por viaje europeo; exige perfil y viaje para guardar. Los adjuntos no forman parte del JSON de registros. |
 | Herramientas | Conversor de monedas con cambio manual; referencia oficial del BCE; temperatura, distancia y peso. |
-| Navegación y aspecto | Diseño azul marino/dorado, menú lateral adaptable a móvil, tema claro/oscuro, iconos europeos, acceso a perfiles y cambio de app. Selector y Cambiar app abren directamente `TaxEurope/index.html`. |
+| Navegación y aspecto | Estructura visual de TaxUSA: cabecera con foto de perfil para ajustes, navegación horizontal con Más, bienvenida, próximo evento, tarjetas y presupuesto. Paleta azul marino/dorado y tipografía europea. Mismo panel de ajustes; tema claro/oscuro e iconos europeos. Selector y Cambiar app abren directamente `TaxEurope/index.html`. |
 
 ## Abrir y comprobar localmente
 
@@ -37,7 +37,7 @@ No abrir con `file://`: módulos, autenticación y service worker requieren un s
 ## Modelo y aislamiento
 
 - TaxUSA conserva las páginas de la raíz. TaxEurope tiene páginas, assets, configuración y manifiesto propios.
-- `assets/app-routes.js` es el punto compartido de rutas. La región de una página se determina por su URL, no por el último selector guardado por otra pestaña. Los destinos `next` se validan contra origen, carpeta y páginas admitidas.
+- `assets/app-routes.js` es el punto compartido de rutas. La región de una página se determina por su URL, no por el último selector guardado por otra pestaña. La autenticación lleva siempre a `selector.html`; no usa `next`, el destino anterior o pendientes para saltar esa elección. Los otros retornos internos se validan contra origen, carpeta y páginas admitidas.
 - Los viajes permanecen en `usuarios/{uid}/perfiles/{perfil}/tripPlanning/{tripId}` y llevan `region: 'europe'`. La lista común conserva los viajes de ambas apps, pero cada pantalla filtra su región. Activo/vista europeos utilizan claves distintas con `::europe`.
 - Los registros europeos nuevos se guardan en `usuarios/{uid}/perfiles/{perfil}/tripPlanning/{tripId}/data/{eu_id}`. Son registros tipados: config, budget, expense, refund, stay, plan, reservation, place, packing, member, note y route.
 - Caché local: `taxeurope-workspace-v1::{uid}::{perfil}::{tripId}`. No se crea almacén para `unassigned`. Los usuarios, perfiles y viajes tienen espacios separados.
@@ -113,7 +113,7 @@ Los comercios incluyen enlaces oficiales de El Corte Inglés, Carrefour, Cortefi
 
 ## Pruebas y límites de validación
 
-`npm test`: 123 pruebas; 121 aprobadas, 1 omitida y 1 fallida. La falla es preexistente: el archivo `firestore.rules` no estaba en el ZIP original y una prueba existente intenta leerlo. No se inventaron ni desplegaron reglas de acceso para ocultar la falla.
+`npm test`: 126 pruebas; 124 aprobadas, 1 omitida y 1 fallida. La falla es preexistente: el archivo `firestore.rules` no estaba en el ZIP original y una prueba existente intenta leerlo. No se inventaron ni desplegaron reglas de acceso para ocultar la falla.
 
 Se verificaron:
 
@@ -129,10 +129,18 @@ No se ejecutó un navegador real porque no hay Chromium instalado en este entorn
 ## Comprobación de integración antes de publicar
 
 1. Recuperar las reglas reales de Firestore del proyecto existente y revisar que un usuario pueda acceder solo a sus perfiles/viajes/registros. El árbol nuevo europeo usa el mismo esquema de propietario `usuarios/{uid}/perfiles/{perfil}/tripPlanning/{tripId}/data/{eu_id}`. Validar el comportamiento de `getDocsFromServer` y transacciones; no sustituir las reglas completas por permisos amplios.
-2. Ingresar desde selector con TaxEurope; elegir perfil; confirmar dashboard europeo. Repetir desde Cambiar app y con `login.html?next=taxfree.html`.
+2. Ingresar desde selector con TaxEurope; elegir perfil; confirmar dashboard europeo. Repetir desde Cambiar app. Incluso con `login.html?next=TaxEurope/taxfree.html`, el login debe abrir primero el selector.
 3. Crear un viaje con Madrid/Barcelona y otro país. Abrir TaxUSA en otra pestaña: no debe cambiar el viaje activo europeo ni mostrar registros europeos.
 4. Guardar gastos EUR/GBP/CHF, confirmar fecha/fuente de cambios y total parcial sin conversión; editar y volver a cargar. Registrar una devolución solicitada y luego una efectivamente cobrada.
 5. Calcular y guardar alojamiento, agregarlo a Presupuesto dos veces y comprobar que se actualiza un único gasto. Confirmar excepciones y monto final con la factura del alojamiento.
 6. Cortar conexión, editar, recargar después de desbloquear el modo sin conexión y volver a conectar; verificar estado sincronizado desde otra sesión. Simular permisos rechazados: debe mantenerse la copia local pendiente.
 7. Probar adjuntos PDF/fotos por viaje; exportación/restauración JSON, CSV y rechazo de una copia de otro perfil. Comprobar cámara, límites de almacenamiento y comportamiento móvil.
 8. Revisar visualmente escritorio y móvil, instalación PWA, cambio de tema y el worker compartido. Publicar el árbol completo conservando `TaxEurope/` y las rutas raíz existentes.
+
+## Ajuste de diseño y login solicitado
+
+Se reutilizaron los estilos de la estructura de inicio y el código del panel de ajustes de TaxUSA. Los módulos europeos conservan su motor de datos; se cambió la presentación de todas las pantallas nativas. La cabecera muestra `perfilActivoFoto` en un botón circular que abre los mismos ajustes. Los accesos están en la barra horizontal y en Más; el dashboard presenta las tarjetas del mismo modo que TaxUSA.
+
+El selector de app cierra el panel y su overlay antes de abrir un diálogo centrado explícitamente con `position: fixed`, `inset: 0` y `margin: auto`, evitando que el reset global de márgenes lo desplace arriba a la izquierda. Respeta el tema claro/oscuro y admite Cancelar, Escape y clic fuera. Las rutas de ambos botones permanecen separadas.
+
+`TaxEurope/login.html` y `TaxEurope/profiles.html` son solo redirecciones compatibles, sin formulario ni sesión propios. El único formulario de ingreso está en el login raíz de TaxFly. Después de autenticarse, siempre se abre el selector, aunque haya una región previa o un retorno pendiente. TaxEurope se elige allí; si falta perfil, se usa el selector de perfiles común antes del dashboard europeo. No se publicó en GitHub Pages desde este entorno.

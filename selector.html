@@ -263,7 +263,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         </a>
 
         
-        <a class="region-card card-europe" href="TaxEurope/index.html" onclick="localStorage.setItem('taxfly_destino','europe');localStorage.removeItem('taxusa_pending_redirect')">
+        <a class="region-card card-europe" href="TaxEurope/index.html" onclick="localStorage.setItem('taxfly_destino','europe');localStorage.removeItem('taxusa_pending_redirect');if(!localStorage.getItem('perfilActivoId')){event.preventDefault();location.href='profiles.html';}">
             <div class="card-inner">
                 <div class="logo-box logo-box-eu">
                     <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
