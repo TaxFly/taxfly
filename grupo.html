@@ -377,7 +377,8 @@ if ("serviceWorker" in navigator) {
         
         <div id="sync-banner">
             <div class="sync-spinner"></div>
-            <span id="sync-text">Sincronizando gastos pendientes…</span>
+            <span id="sync-text" style="flex:1;">Sincronizando gastos pendientes…</span>
+            <button id="sync-discard" onclick="event.stopPropagation(); discardPendingSync();" style="display:none;background:none;border:0;color:var(--success);font-weight:700;font-size:.72rem;text-decoration:underline;cursor:pointer;padding:0;flex-shrink:0;">descartar</button>
         </div>
 
         

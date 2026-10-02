@@ -601,10 +601,12 @@ async function flushPending() {
   const t = i18n[lang] || i18n.es;
   const banner = document.getElementById("sync-banner");
   const syncText = document.getElementById("sync-text");
+  const syncDiscard = document.getElementById("sync-discard");
   if (banner) {
     banner.classList.add("visible");
     banner.onclick = null;
     if (syncText) syncText.textContent = t.sync_syncing;
+    if (syncDiscard) syncDiscard.style.display = "none";
   }
   const tried = [];
   let dropped = 0;
@@ -636,6 +638,7 @@ async function flushPending() {
         if (syncText) syncText.textContent = "⚠️ " + left + " " + (lang === "en" ? "expense" + (left > 1 ? "s" : "") + " not synced · tap to retry" : lang === "pt" ? "despesa" + (left > 1 ? "s" : "") + " não sincronizada" + (left > 1 ? "s" : "") + " · toque para tentar" : "gasto" + (left > 1 ? "s" : "") + " sin sincronizar · tocá para reintentar");
         if (syncText && lastFlushError) syncText.textContent += " [" + lastFlushError + "]";
         banner.onclick = () => flushPending();
+        if (syncDiscard) syncDiscard.style.display = "inline";
       }
     }
     if (dropped) {
@@ -647,6 +650,17 @@ async function flushPending() {
 }
 
 window.taxflyFlush = () => flushPending().then(() => lastFlushError);
+
+// Descarta manualmente los gastos que quedaron sin sincronizar en el grupo actual
+// (botón "descartar" del banner). No reintenta más ni toca pendientes de otros grupos.
+window.discardPendingSync = function() {
+  if (!currentUser || !currentGroup) return;
+  const restantes = getPending().filter(op => !(op.uid === currentUser.uid && op.groupId === currentGroup.id));
+  savePending(restantes);
+  lastFlushError = null;
+  const banner = document.getElementById("sync-banner");
+  if (banner) banner.classList.remove("visible");
+};
 
 // Reintento automático mientras haya pendientes (por si el aviso quedó en "sin sincronizar").
 setInterval(() => {
