@@ -158,6 +158,7 @@ window.fsSave = async (uid, pid, docObj) => {
     tripId: docObj.tripId || "unassigned",
     reservationId: docObj.reservationId || "",
     linkExplicit: !!docObj.linkExplicit,
+    reference:docObj.reference||"",provider:docObj.provider||"",startDate:docObj.startDate||"",endDate:docObj.endDate||"",
     name: docObj.name,
     type: docObj.type,
     createdAt: docObj.createdAt,
@@ -818,6 +819,7 @@ async function initDocs() {
       if (op.uid !== window._uid || op.perfilId !== perfilId) continue;
       if (op.type === "save_doc") byId.set(op.docId,op.docObj);
       if (op.type === "del_doc") byId.delete(op.docId);
+      if(op.type==="metadata_doc"&&byId.has(op.docId))Object.assign(byId.get(op.docId),op.metadata);
       if (op.type === "link_doc" && byId.has(op.docId)) Object.assign(byId.get(op.docId),{reservationId:op.reservationId,tripId:op.tripId,linkExplicit:true});
     }
     allDocs = [...byId.values()];
@@ -982,7 +984,7 @@ async function enqueueLink(docId,reservationId,tripId) {
 async function loadReservationsForDocs() {
   if (!window._uid || !perfilId) return;
   const tripId = window.TripContext.assign(window._uid, perfilId);
-  const cacheKey = `trip-reservations-v1::${perfilId}${tripId === "orlando" ? "" : "::" + tripId}`;
+  const cacheKey = `trip-reservations-v1::${perfilId}${tripId === "orlando" ? "" : "::" + tripId}::${window._uid}`;
   try { linkedReservations = JSON.parse(localStorage.getItem(cacheKey) || "{}").items || []; } catch (_) {}
   renderList();
   fillDocumentFromReservation();
@@ -994,7 +996,7 @@ async function loadReservationsForDocs() {
       : ["usuarios", window._uid, "perfiles", perfilId, "tripPlanning", tripId, "data", "reservations"];
     const snap = await getDoc(doc(db, ...path));
     if (window.TripContext.assign(window._uid, perfilId) !== tripId) return;
-    if (snap.exists() && Array.isArray(snap.data().items)) linkedReservations = snap.data().items;
+    if (!localStorage.getItem(cacheKey+"::pending") && snap.exists() && Array.isArray(snap.data().items)) linkedReservations = snap.data().items;
     renderList();
     fillDocumentFromReservation();
     refreshReservationLinkDialog();
@@ -1007,6 +1009,7 @@ function fillDocumentFromReservation() {
   if (!reservation) return;
   const nameInput = document.getElementById("inp-name");
   if (nameInput && !nameInput.value.trim()) nameInput.value = reservation.name;
+  for(const [field,id] of [['reference','inp-reference'],['provider','inp-provider'],['startDate','inp-start-date'],['endDate','inp-end-date']]){const el=document.getElementById(id);if(el&&!el.value)el.value=reservation[field]||'';}
   const type = reservation.type === "flight" ? "✈️" : reservation.type === "stay" ? "🏨" : "📦";
   document.querySelector(`.type-btn[data-type="${type}"]`)?.click();
 }
@@ -1130,6 +1133,7 @@ window.closeAddModal = () => {
   document.getElementById("addModal").classList.remove("show");
   document.body.style.overflow = "";
   document.getElementById("inp-name").value = "";
+  ["inp-reference","inp-provider","inp-start-date","inp-end-date"].forEach(id=>document.getElementById(id).value="");
   pending = [];
   renderPreview();
   document.querySelectorAll(".type-btn").forEach((b, i) => b.classList.toggle("active", i === 0));
@@ -1302,6 +1306,8 @@ function toDataUrl(file) {
 
 function renderPreview() {
   const strip = document.getElementById("preview-strip");
+  const start=document.getElementById('inp-start-date').value,end=document.getElementById('inp-end-date').value;
+  if(start&&end&&end<start){showAlert('La fecha final debe ser posterior a la inicial.');return;}
   if (!pending.length) {
     strip.style.display = "none";
     strip.innerHTML = "";
@@ -1377,7 +1383,7 @@ window.showSyncOk = showSyncOk;
 async function refreshPendingDocs() {
   try {
     const q = await loadQueue();
-    const ids = new Set(q.filter(o => o.docId && (o.type === "save_doc" || o.type === "link_doc") && o.uid === window._uid && o.perfilId === perfilId).map(o => o.docId));
+    const ids = new Set(q.filter(o => o.docId && (o.type === "save_doc" || o.type === "link_doc" || o.type === "metadata_doc") && o.uid === window._uid && o.perfilId === perfilId).map(o => o.docId));
     const prev = window._tfPendingDocs;
     const changed = !prev || prev.size !== ids.size || [ ...ids ].some(i => !prev.has(i));
     window._tfPendingDocs = ids;
@@ -1439,10 +1445,13 @@ window._flushTicketsPending = async () => {
         await window.fsSave(uid, profile, op.docObj);
       } else if (op.type === "del_doc") {
         await window.fsDelete(uid, profile, op.docId);
+      } else if (op.type === "metadata_doc") {
+        await setDoc(doc(docsCol(uid,profile),op.docId),op.metadata,{merge:true});
       } else if (op.type === "link_doc") {
         await window.fsLink(uid, profile, op.docId, op.reservationId, op.tripId);
       } else break;
-      await dequeue(op.docId);
+      const latest=await loadQueue(),idx=latest.findIndex(o=>JSON.stringify(o)===JSON.stringify(op));
+      if(idx>=0){latest.splice(idx,1);await saveQueue(latest);}
       synced++;
     } catch (e) {
       console.warn("Flush error", e);
@@ -1462,6 +1471,8 @@ window.saveDoc = async () => {
     showAlert(tr('err_enter_name'));
     return;
   }
+  const start=document.getElementById('inp-start-date').value,end=document.getElementById('inp-end-date').value;
+  if(start&&end&&end<start){showAlert('La fecha final debe ser posterior a la inicial.');return;}
   if (!pending.length) {
     showAlert(tr('err_add_image_or_pdf'));
     return;
@@ -1471,6 +1482,7 @@ window.saveDoc = async () => {
     perfilId: perfilId,
     tripId:window._uid?window.TripContext.assign(window._uid,perfilId):"unassigned",
     reservationId: new URLSearchParams(location.search).get("reservation") || "",
+    reference:document.getElementById('inp-reference').value.trim(),provider:document.getElementById('inp-provider').value.trim(),startDate:document.getElementById('inp-start-date').value,endDate:document.getElementById('inp-end-date').value,
     name: name,
     type: selType,
     files: [ ...pending ],
@@ -1583,6 +1595,7 @@ window.openViewer = async id => {
   const docObj = allDocs.find(d => d.id === id);
   if (!docObj) return;
   viewingId = id;
+  document.getElementById("doc-metadata-form").hidden=true;
   _pdfDoc = null;
   _searchItems = [];
   _matchIdxs = [];
@@ -1860,3 +1873,14 @@ onReady(() => {
   const lang = localStorage.getItem("appLang") || "es";
   changeLanguage(lang);
 });
+
+window.editDocumentMetadata=()=>{
+ const item=allDocs.find(d=>d.id===viewingId);if(!item)return;
+ const form=document.getElementById('doc-metadata-form');form.hidden=false;
+ for(const name of ['reference','provider','startDate','endDate'])form.elements[name].value=item[name]||'';
+ form.onsubmit=async e=>{e.preventDefault();const metadata=Object.fromEntries(new FormData(form));
+ if(metadata.endDate&&metadata.startDate&&metadata.endDate<metadata.startDate){showAlert('La fecha final debe ser posterior a la inicial.');return;}
+ const uid=window._uid,pid=perfilId,id=item.id;Object.assign(item,metadata);await guardarDocsEnCache(allDocs);if(window._uid!==uid||perfilId!==pid)return;form.hidden=true;renderList();
+ await enqueue({type:'metadata_doc',docId:id,metadata});if(navigator.onLine)window._flushTicketsPending();else updateOfflineToast();
+ };
+};

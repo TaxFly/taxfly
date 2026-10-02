@@ -520,6 +520,7 @@ window.renderCityData = async () => {
 window.toggleActForm = () => {
   const lang = localStorage.getItem("appLang") || "es";
   const t = i18n[lang];
+  populateActivityZone();
   const body = document.getElementById("act-form-body");
   const toggle = document.getElementById("act-form-toggle");
   const open = body.style.display === "none" || body.style.display === "";
@@ -621,7 +622,15 @@ const typeIconMap = {
 
 let localActivities = [];
 
+function populateActivityZone(){
+ const trip=currentUser?window.TripContext.readTrips(currentUser.uid,perfilId).find(t=>t.id===window.TripContext.assign(currentUser.uid,perfilId)):null;
+ const d=window.TaxflyTravel.destination(trip),el=document.getElementById('act-zone-fields');
+ if(el&&!el.children.length)el.innerHTML=window.TaxflyTravel.zoneFields('activity',d.city,d.timeZone);
+ const arrival=document.getElementById('act-arrival-zone');if(arrival&&!arrival.children.length)arrival.innerHTML=window.TaxflyTravel.zoneFields('arrival',d.city,d.timeZone);
+ const fields=document.getElementById('act-arrival-fields');if(fields)fields.hidden=document.getElementById('actType').value!=='vuelo';
+}
 window.addActivity = async () => {
+  populateActivityZone();
   const nameEl = document.getElementById("actName");
   const dateEl = document.getElementById("actDate");
   const name = nameEl.value.trim();
@@ -632,7 +641,13 @@ window.addActivity = async () => {
     nameEl.focus();
     return;
   }
+  const timeZone=document.querySelector('[name=activityZone]').value,city=document.querySelector('[name=activityCity]').value.trim();
+  if(time&&!Number.isFinite(window.TaxflyTravel.instant(date,time,timeZone))) {showAlert("Ese horario no existe en la zona elegida. Revisá la fecha y hora.");return;}
+  const arrivalDate=type==='vuelo'?document.getElementById('actArrivalDate').value:'',arrivalTime=type==='vuelo'?document.getElementById('actArrivalTime').value:'',arrivalZone=document.querySelector('[name=arrivalZone]').value,arrivalCity=document.querySelector('[name=arrivalCity]').value.trim();
+  if(arrivalTime&&(!arrivalDate||!Number.isFinite(window.TaxflyTravel.instant(arrivalDate,arrivalTime,arrivalZone))||(time&&window.TaxflyTravel.instant(arrivalDate,arrivalTime,arrivalZone)<window.TaxflyTravel.instant(date,time,timeZone)))){showAlert('Revisá la fecha, hora y zona de llegada. Debe ser posterior a la salida.');return;}
   const data = {
+    arrivalDate,arrivalTime,arrivalZone:arrivalTime?arrivalZone:'',arrivalCity:arrivalTime?arrivalCity:'',
+    timeZone,city,
     name: name,
     date: date,
     time: time || "",
@@ -667,6 +682,7 @@ window.addActivity = async () => {
     nameEl.value = "";
     dateEl.value = "";
     document.getElementById("actTime").value = "";
+    document.getElementById("actArrivalDate").value="";document.getElementById("actArrivalTime").value="";
   }
 };
 
@@ -706,28 +722,14 @@ window.deleteActivity = id => {
   if (idx < 0) return;
   const item = localActivities[idx];
   window._tfHidden = window._tfHidden || new Set();
+  const uid=currentUser?.uid,profile=perfilId,storageKey=pendingKey();
+  const queueDelete=()=>{const ops=JSON.parse(localStorage.getItem(storageKey)||'[]').filter(op=>op.tempId!==id);if(!item._pending)ops.push({type:"del_activity",id,uid,perfilId:profile,ts:Date.now()});localStorage.setItem(storageKey,JSON.stringify(ops));};
   tfDeleteWithUndo({
     remove: () => { window._tfHidden.add(id); localActivities = localActivities.filter(x => x.id !== id); renderActivities(localActivities); },
     restore: () => { window._tfHidden.delete(id); if (!localActivities.some(x => x.id === id)) localActivities.splice(Math.min(idx, localActivities.length), 0, item); renderActivities(localActivities); },
     commit: async unloading => {
-  const wasPending = item._pending;
-  if (!navigator.onLine || wasPending || unloading) {
-    const ops = getPending().filter(op => op.tempId !== id);
-    if (!wasPending) ops.push({
-      type: "del_activity",
-      id: id
-    });
-    savePending(ops);
-  } else {
-    try {
-      await deleteDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "actividades", id));
-    } catch (e) {
-      queueOp({
-        type: "del_activity",
-        id: id
-      });
-    }
-  }
+  if(!navigator.onLine||item._pending||unloading)queueDelete();
+  else try{await deleteDoc(doc(db,"usuarios",uid,"perfiles",profile,"actividades",id));}catch(_){queueDelete();}
   window._tfHidden.delete(id);
     }
   });
@@ -762,7 +764,7 @@ function renderActivities(acts) {
     const dayActs = grouped[dateKey];
     const dateLabel = dateKey === "sin-fecha" ? "📌" : formatDate(dateKey, lang);
     const dayDone = dayActs.filter(a => a.done).length;
-    return `\n                <div>\n                    <div class="act-group-header">\n                        <span class="act-group-date">${dateLabel}</span>\n                        <span class="act-group-count">${dayDone}/${dayActs.length}</span>\n                    </div>\n                    ${dayActs.sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99")).map(act => `\n                        <div class="act-item ${act.done ? "done" : ""}" id="act-item-${act.id}" data-type="${act.type}">\n                            <div class="act-check ${act.done ? "checked" : ""}" onclick="toggleActivity('${act.id}', ${act.done})"></div>\n                            <div class="act-info">\n                                <div class="act-name">${typeIconMap[act.type] || "📌"} ${esc(act.name)}${window.tfSyncBadge ? tfSyncBadge(act._pending ? "pending" : "ok", true) : ""}</div>\n                                <div class="act-meta">\n                                    ${act.time ? `<span class="act-time">🕐 ${act.time}</span>` : ""}\n                                    <span class="act-badge badge-${act.type}">${getBadgeLabel(act.type, lang)}</span>\n                                </div>\n                            </div>\n                            <button class="act-bell ${isReminderOn(act.id) ? "on" : ""}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g, "\\'")}','${act.date}','${act.time || ""}')" title="Recordatorio">🔔</button>\n                            <button class="act-del" onclick="deleteActivity('${act.id}')" aria-label="Eliminar actividad">✕</button>\n                        </div>\n                    `).join("")}\n                </div>\n            `;
+    return `\n                <div>\n                    <div class="act-group-header">\n                        <span class="act-group-date">${dateLabel}</span>\n                        <span class="act-group-count">${dayDone}/${dayActs.length}</span>\n                    </div>\n                    ${dayActs.sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99")).map(act => `\n                        <div class="act-item ${act.done ? "done" : ""}" id="act-item-${act.id}" data-type="${act.type}">\n                            <div class="act-check ${act.done ? "checked" : ""}" onclick="toggleActivity('${act.id}', ${act.done})"></div>\n                            <div class="act-info">\n                                <div class="act-name">${typeIconMap[act.type] || "📌"} ${esc(act.name)}${window.tfSyncBadge ? tfSyncBadge(act._pending ? "pending" : "ok", true) : ""}</div>\n                                <div class="act-meta">\n                                    ${act.time ? `<span class="act-time">🕐 ${act.type==='vuelo'?'Salida ':''}${act.time} · hora de ${esc(act.city||act.timeZone||"Orlando")}</span>` : ""}\n                                    ${act.arrivalTime?`<span class="act-time">Llegada ${esc(act.arrivalDate)} ${esc(act.arrivalTime)} · hora de ${esc(act.arrivalCity||act.arrivalZone)}</span>`:""}\n                                    <span class="act-badge badge-${act.type}">${getBadgeLabel(act.type, lang)}</span>\n                                </div>\n                            </div>\n                            <button class="act-bell ${isReminderOn(act.id) ? "on" : ""}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g, "\\'")}','${act.date}','${act.time || ""}')" title="Recordatorio">🔔</button>\n                            <button class="act-del" onclick="deleteActivity('${act.id}')" aria-label="Eliminar actividad">✕</button>\n                        </div>\n                    `).join("")}\n                </div>\n            `;
   }).join("");
 }
 
@@ -900,28 +902,14 @@ window.deleteNote = id => {
   if (idx < 0) return;
   const item = localNotes[idx];
   window._tfHidden = window._tfHidden || new Set();
+  const uid=currentUser?.uid,profile=perfilId,storageKey=pendingKey();
+  const queueDelete=()=>{const ops=JSON.parse(localStorage.getItem(storageKey)||'[]').filter(op=>op.tempId!==id);if(!item._pending)ops.push({type:"del_note",id,uid,perfilId:profile,ts:Date.now()});localStorage.setItem(storageKey,JSON.stringify(ops));};
   tfDeleteWithUndo({
     remove: () => { window._tfHidden.add(id); localNotes = localNotes.filter(x => x.id !== id); renderNotes(localNotes); },
     restore: () => { window._tfHidden.delete(id); if (!localNotes.some(x => x.id === id)) localNotes.splice(Math.min(idx, localNotes.length), 0, item); renderNotes(localNotes); },
     commit: async unloading => {
-  const wasPending = item._pending;
-  if (!navigator.onLine || wasPending || unloading) {
-    const ops = getPending().filter(op => op.tempId !== id);
-    if (!wasPending) ops.push({
-      type: "del_note",
-      id: id
-    });
-    savePending(ops);
-  } else {
-    try {
-      await deleteDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "notas", id));
-    } catch (e) {
-      queueOp({
-        type: "del_note",
-        id: id
-      });
-    }
-  }
+  if(!navigator.onLine||item._pending||unloading)queueDelete();
+  else try{await deleteDoc(doc(db,"usuarios",uid,"perfiles",profile,"notas",id));}catch(_){queueDelete();}
   window._tfHidden.delete(id);
     }
   });
@@ -1447,7 +1435,8 @@ window.toggleReminder = function(actId, actName, actDate, actTime) {
     reminders[actId] = {
       name: actName,
       date: actDate,
-      time: actTime
+      time: actTime,
+      timeZone:localActivities.find(a=>a.id===actId)?.timeZone||"America/New_York"
     };
     saveReminders(reminders);
     showReminderToast(T.bell_on || "🔔 Recordatorio activado");
@@ -1469,7 +1458,7 @@ function scheduleAllReminders() {
   const now = Date.now();
   Object.entries(reminders).forEach(([actId, info]) => {
     if (!info.date || !info.time) return;
-    const actMs = new Date(`${info.date}T${info.time}:00`).getTime();
+    const actMs = window.TaxflyTravel.instant(info.date,info.time,info.timeZone||"America/New_York");
     if (isNaN(actMs)) return;
     const timers = [];
     const dayBefore = actMs - 24 * 60 * 60 * 1e3;
@@ -1528,3 +1517,8 @@ function showReminderToast(msg) {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") scheduleAllReminders();
 });
+
+ document.getElementById("act-form-body")?.addEventListener("focusin",populateActivityZone);
+ document.getElementById("actName")?.addEventListener("focus",populateActivityZone);
+
+document.getElementById("actType")?.addEventListener("change",populateActivityZone);

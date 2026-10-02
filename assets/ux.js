@@ -157,20 +157,21 @@
     function hide() { toastEl.classList.remove("show"); }
   };
 
-  /* ---- Borrar con deshacer: se quita ya de la UI y se confirma a los 5 s ---- */
-  window.tfDeleteWithUndo = function (o) {
-    var delay = o.delay || 5000, undone = false;
-    if (o.remove) o.remove();
-    var t = setTimeout(function () { if (!undone && o.commit) o.commit(); }, delay);
-    var lg = (function () { try { return localStorage.getItem("appLang") || "es"; } catch (e) { return "es"; } })();
-    var T = { es: ["Eliminado", "Deshacer"], en: ["Deleted", "Undo"], pt: ["Excluído", "Desfazer"] }[lg] || ["Eliminado", "Deshacer"];
-    window.tfToast(o.message || T[0], {
-      actionText: o.undoText || T[1], duration: delay,
-      onAction: function () { undone = true; clearTimeout(t); if (o.restore) o.restore(); }
-    });
-    // Si se cierra la pestaña antes, el borrado igual se confirma
-    window.addEventListener("pagehide", function () { if (!undone) { clearTimeout(t); undone = true; if (o.commit) o.commit(true); } }, { once: true });   // true = la página se está cerrando
+  /* ---- Deshacer durante seis segundos; varios borrados comparten el botón ---- */
+  var undoBatch = [], undoTimer;
+  function finishDeletes(restore, unloading) {
+    var batch=undoBatch; undoBatch=[]; clearTimeout(undoTimer);
+    batch.forEach(function(o){ if (restore) { if(o.restore)o.restore(); } else if(o.commit) Promise.resolve(o.commit(!!unloading)).catch(function(e){console.error("No se pudo confirmar el borrado",e);if(o.restore)o.restore();}); });
+  }
+  window.tfDeleteWithUndo = function(o){
+    if(o.remove)o.remove(); undoBatch.push(o); clearTimeout(undoTimer);
+    var delay=o.delay||6000;
+    undoTimer=setTimeout(function(){finishDeletes(false,false);},delay);
+    var lang=localStorage.getItem("appLang")||"es";
+    var labels={es:["Eliminado","Deshacer"],en:["Deleted","Undo"],pt:["Excluído","Desfazer"]}[lang]||["Eliminado","Deshacer"];
+    window.tfToast(undoBatch.length>1?undoBatch.length+" · "+labels[0]:(o.message||labels[0]),{actionText:o.undoText||labels[1],duration:delay,onAction:function(){finishDeletes(true,false);}});
   };
+  window.addEventListener("pagehide",function(){finishDeletes(false,true);});
 
   /* ---- Skeletons ---- */
   window.tfSkeleton = function (el, n, h) {

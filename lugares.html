@@ -318,6 +318,7 @@ if ("serviceWorker" in navigator) {
     </nav>
     <script src="assets/ui.js"></script>
     <script src="assets/trip-context.js"></script>
+<script src="assets/travel-core.js"></script>
 <script src="assets/docs-tree.js"></script>
 
     
@@ -441,6 +442,12 @@ if ("serviceWorker" in navigator) {
                             <label data-i18n="label_time">Hora</label>
                             <input type="time" id="actTime">
                         </div>
+                    </div>
+                    <div id="act-zone-fields"></div>
+                    <div id="act-arrival-fields" hidden>
+                      <label>Fecha de llegada<input id="actArrivalDate" type="date"></label>
+                      <label>Hora de llegada<input id="actArrivalTime" type="time"></label>
+                      <div id="act-arrival-zone"></div>
                     </div>
                     <div class="input-group">
                         <label data-i18n="label_type">Tipo</label>

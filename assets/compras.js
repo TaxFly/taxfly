@@ -110,25 +110,35 @@ function queueGastoOp(op) {
   savePendingGastos(ops);
 }
 
+let flushingExpenses=false;
 async function flushPendingGastos() {
   if (!currentUser || !perfilId) return;
-  const ops = getPendingGastos();
-  if (!ops.length) return;
+  const ops = getPendingGastos(), uid=currentUser.uid, pendingStorageKey=pendingGastosKey();
+  if (!ops.length || flushingExpenses) return;
+  flushingExpenses=true;
   const failed = [];
   for (const op of ops) {
     try {
       if (op.type === "add") {
-        await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), op.data);
+        await addDoc(collection(db, "usuarios", uid, "perfiles", perfilId, "gastos"), op.data);
+      } else if (op.type === "upsert") {
+        await setDoc(doc(db,"usuarios",uid,"perfiles",perfilId,"gastos",op.id),op.data,{merge:true});
       } else if (op.type === "del") {
-        await deleteDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", op.id));
+        await deleteDoc(doc(db, "usuarios", uid, "perfiles", perfilId, "gastos", op.id));
       } else if (op.type === "upd") {
-        await updateDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", op.id), op.data);
+        await updateDoc(doc(db, "usuarios", uid, "perfiles", perfilId, "gastos", op.id), op.data);
       }
     } catch (e) {
-      failed.push(op);
+      failed.push(...ops.slice(ops.indexOf(op)));
+      break; // Preserve order: an earlier failed payment must not overwrite a newer one on retry.
     }
   }
-  savePendingGastos(failed);
+  const latest=JSON.parse(localStorage.getItem(pendingStorageKey)||'[]');
+  const successful=new Set(ops.filter(op=>!failed.includes(op)).map(op=>JSON.stringify(op)));
+  localStorage.setItem(pendingStorageKey,JSON.stringify(latest.filter(op=>!successful.has(JSON.stringify(op)))));
+  flushingExpenses=false;
+  window.dispatchEvent(new Event("taxfly-pending-updated"));
+  if(!failed.length&&latest.some(op=>!ops.some(old=>JSON.stringify(old)===JSON.stringify(op)))&&navigator.onLine&&currentUser?.uid===uid)flushPendingGastos();
 }
 
 window.addEventListener("online", () => {
@@ -143,6 +153,7 @@ let catBudgets = {};
 let mapsSpent = 0;
 
 let tripBudgetUnsubs = [];
+let financeReservations=[], expenseSnapshotReady=false, paymentOpened=false;
 function filteredGastos() {
   return currentUser && perfilId ? window.TripContext.filter(allGastos, currentUser.uid, perfilId) : allGastos;
 }
@@ -161,6 +172,8 @@ function listenTripPlanningSpent() {
   const ids = selection === "all" ? ["orlando", ...trips.filter(t => t.id !== "orlando" && t.status !== "deleted").map(t => t.id)] : selection === "unassigned" ? [] : [selection];
   const totals = new Map();
   mapsSpent = 0;
+  financeReservations=[];
+  tripBudgetUnsubs.push(window.TaxflyTravel.watchReservations({uid:currentUser.uid,pid:perfilId,trip:selection,db,doc,onSnapshot,onChange:items=>{financeReservations=items;renderBudgetCard();offerReservationPayment();}}));
   updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
   ids.forEach(id => {
     const path = id === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", id, "data", "budget"];
@@ -1202,8 +1215,10 @@ function renderBudgetCard() {
 
   if (has) {
     const rest = presupuestoBase - eff;
+    const trip=currentUser?window.TripContext.readTrips(currentUser.uid,perfilId).find(t=>t.id===window.TripContext.view(currentUser.uid,perfilId)):null;
+    const daily=document.getElementById("budget-daily");if(daily)daily.textContent=window.TaxflyTravel.budgetText(window.TaxflyTravel.budget(presupuestoBase,eff,financeReservations,filteredGastos().filter(g=>!pendingDeletes.has(g.id)),trip));
     const disp = document.getElementById("disp-fondo");
-    if (disp) disp.textContent = "USD " + fmt(Math.abs(rest));
+    if (disp) disp.textContent = "USD " + fmt(rest);
     const fill = document.getElementById("bc-fill");
     if (fill) {
       fill.style.width = Math.min(100, Math.max(0, pct)).toFixed(1) + "%";
@@ -1423,6 +1438,11 @@ function dropPendingAdd(g) {
 
 async function removeGastoRemote(g) {
   const id = g.id;
+  if (g.reservationId) {
+    // Remove queued creation/updates first. A delete follows any write already in flight.
+    savePendingGastos(getPendingGastos().filter(o=>o.id!==id));
+    queueGastoOp({type:'del',id});flushPendingGastos();return;
+  }
   if (String(id).startsWith("local_")) {
     dropPendingAdd(g);
     return;
@@ -1496,6 +1516,7 @@ window.editGasto = id => {
   const g = allGastos.find(x => x.id === id);
   if (!g) return;
   _editGastoId = id;
+  const hint=document.getElementById('edit-payment-hint');if(hint)hint.textContent=g.reservationId?'Pago acumulado de la reserva · editá el total ya pagado.':'';
   document.getElementById("edit-gasto-name").value = g.nombre || "";
   document.getElementById("edit-gasto-val").value = parseFloat(g.valor) || 0;
   const sel = document.getElementById("edit-gasto-cat");
@@ -1531,6 +1552,9 @@ window.saveEditGasto = async () => {
   closeEditGasto();
   renderGastosList(allGastos);
   showExpToast(bt("toast_updated"));
+  if (g.reservationId && getPendingGastos().some(o=>o.type==='upsert'&&o.id===id)) {
+    savePendingGastos(getPendingGastos().map(o=>o.type==='upsert'&&o.id===id?{...o,data:{...o.data,...patch},ts:Date.now()}:o));flushPendingGastos();return;
+  }
   if (String(id).startsWith("local_")) {
     const ops = getPendingGastos();
     const op = ops.find(o => o.type === "add" && o.data && o.data.fecha === before.fecha && o.data.nombre === before.nombre);
@@ -1862,7 +1886,7 @@ function gastoItemHtml(g) {
   return `<div class="history-item" style="border-left-color:${catColor(cat)}">
                 ${thumbHtml}
                 <div class="h-main" role="button" tabindex="0" aria-label="${editLbl}" onclick="editGasto('${g.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();editGasto('${g.id}')}">
-                    <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.nombre)}${window.tfSyncBadge ? tfSyncBadge(String(g.id).startsWith("local_") ? "pending" : "ok", true) : ""}</div>
+                    <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.nombre)}${window.tfSyncBadge ? tfSyncBadge(g._pending || String(g.id).startsWith("local_") ? "pending" : "ok", true) : ""}</div>
                     <div style="font-size:.62rem;color:var(--text-dim);margin-top:1px;">${catDisplayLabel}</div>
                 </div>
                 <div class="h-right">
@@ -1905,19 +1929,21 @@ function listenGastos() {
   if (!currentUser || !perfilId) return;
   const cached = cargarGastosDesdeCache();
   if (cached && cached.length) {
-    allGastos = cached;
-    renderGastosList(cached);
+    allGastos = window.TaxflyTravel.overlayExpenses(cached,getPendingGastos());
+    if(!navigator.onLine)expenseSnapshotReady=true;
+    renderGastosList(allGastos);
   }
   const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), orderBy("fecha", "desc"));
   onSnapshot(q, snap => {
     if (!snap.metadata?.fromCache) window.taxflyOfflineStatus?.mark("expenses", currentUser.uid, perfilId);
+    expenseSnapshotReady=!navigator.onLine || !snap.metadata?.fromCache;
     if (snap.empty) {
       const pending = getPendingGastos();
       const hayLocales = allGastos.some(g => String(g.id).startsWith("local_"));
-      if (pending.length > 0 || hayLocales) return;
-      allGastos = [];
-      guardarGastosEnCache([]);
-      renderGastosList([]);
+      if (pending.length > 0 || hayLocales) {allGastos=window.TaxflyTravel.overlayExpenses(allGastos,pending);renderGastosList(allGastos);offerReservationPayment();return;}
+      allGastos = window.TaxflyTravel.overlayExpenses([],getPendingGastos());
+      guardarGastosEnCache(allGastos);
+      renderGastosList(allGastos);offerReservationPayment();
       return;
     }
     const gastosFirestore = snap.docs.map(d => {
@@ -1928,9 +1954,9 @@ function listenGastos() {
         valor: val
       };
     });
-    allGastos = gastosFirestore;
+    allGastos = window.TaxflyTravel.overlayExpenses(gastosFirestore,getPendingGastos());
     guardarGastosEnCache(allGastos);
-    renderGastosList(allGastos);
+    renderGastosList(allGastos);offerReservationPayment();
   });
 }
 
@@ -1968,12 +1994,14 @@ function isVapidConfigured() {
   return VAPID_PUBLIC_KEY.length === 87 && !VAPID_PUBLIC_KEY.endsWith("abcdefg");
 }
 
-const BUDGET_ALERT_KEY = "taxusa_budget_alerted_pct_" + (perfilId || "default");
-const BUDGET_LAST_SPENT_KEY = "taxusa_budget_last_spent_" + (perfilId || "default");
+function budgetAlertKey(kind) {
+  const uid=currentUser?.uid || localStorage.getItem("taxusa_offline_uid");
+  return window.TaxflyTravel.alertKey(kind,uid,perfilId,uid?window.TripContext.view(uid,perfilId):"unassigned");
+}
 
 function getLastAlertedPct() {
   try {
-    const v = localStorage.getItem(BUDGET_ALERT_KEY);
+    const v = localStorage.getItem(budgetAlertKey("alerted_pct"));
     return v ? Number(v) : null;
   } catch (e) {
     return null;
@@ -1982,13 +2010,13 @@ function getLastAlertedPct() {
 
 function setLastAlertedPct(pct) {
   try {
-    if (pct === null) localStorage.removeItem(BUDGET_ALERT_KEY); else localStorage.setItem(BUDGET_ALERT_KEY, String(pct));
+    if (pct === null) localStorage.removeItem(budgetAlertKey("alerted_pct")); else localStorage.setItem(budgetAlertKey("alerted_pct"), String(pct));
   } catch (e) {}
 }
 
 function getLastCheckedSpent() {
   try {
-    const v = localStorage.getItem(BUDGET_LAST_SPENT_KEY);
+    const v = localStorage.getItem(budgetAlertKey("last_spent"));
     return v === null ? null : Number(v);
   } catch (e) {
     return null;
@@ -1996,7 +2024,7 @@ function getLastCheckedSpent() {
 }
 
 function setLastCheckedSpent(spent) {
-  try { localStorage.setItem(BUDGET_LAST_SPENT_KEY, String(spent)); } catch (e) {}
+  try { localStorage.setItem(budgetAlertKey("last_spent"), String(spent)); } catch (e) {}
 }
 
 async function requestPushPermission() {
@@ -2036,6 +2064,7 @@ async function subscribeToPush() {
 }
 
 async function showLocalBudgetNotification(pct, spent, budget) {
+  const notificationTag=budgetAlertKey("notification")+"-"+pct;
   const granted = await requestPushPermission();
   if (!granted) return;
   const lang = localStorage.getItem("appLang") || "es";
@@ -2091,7 +2120,7 @@ async function showLocalBudgetNotification(pct, spent, budget) {
       body: t.body,
       icon: "./assets/icon-192.png",
       badge: "./assets/icon-192.png",
-      tag: "budget-alert-" + pct,
+      tag: notificationTag,
       renotify: true,
       vibrate: [ 200, 100, 200 ],
       data: {
@@ -2111,7 +2140,7 @@ async function showLocalBudgetNotification(pct, spent, budget) {
 }
 
 function checkBudgetAlerts(spent) {
-  if (!presupuestoBase || presupuestoBase <= 0) return;
+  if (!(currentUser?.uid||localStorage.getItem("taxusa_offline_uid")) || !perfilId || !presupuestoBase || presupuestoBase <= 0) return;
   const lastSpent = getLastCheckedSpent();
   const huboGastoNuevo = lastSpent === null || Math.abs(spent - lastSpent) > 0.009;
   setLastCheckedSpent(spent);
@@ -3082,6 +3111,8 @@ onAuthStateChanged(auth, async user => {
     return;
   }
   currentUser = user;
+  const requestedTrip=new URLSearchParams(location.search).get("trip");
+  if(requestedTrip && window.TripContext.readTrips(user.uid,perfilId).some(t=>t.id===requestedTrip))window.TripContext.select(user.uid,perfilId,requestedTrip);
   const cachedBudget = cargarPresupuestoDesdeCache();
   presupuestoBase = cachedBudget ?? 0;
   catBudgets = cargarTopesDesdeCache();
@@ -3497,3 +3528,24 @@ window.compInit = function() {
   compRenderGrid(q);
   compToggleIABtn();
 };
+
+function offerReservationPayment(){
+ const q=new URLSearchParams(location.search),id=q.get('reservation'),tripId=q.get('trip');
+ if(paymentOpened||!id||!currentUser||!expenseSnapshotReady||tripId!==window.TripContext.view(currentUser.uid,perfilId))return;
+ const reservation=financeReservations.find(r=>r.id===id);if(!reservation)return;
+ paymentOpened=true;
+ const existing=allGastos.find(g=>g.reservationId===id&&g.tripId===tripId);
+ if(existing){window.editGasto(existing.id);return;}
+ const panel=document.createElement('section');panel.className='budget-card';panel.style.cssText='padding:20px;margin:16px 0';
+ const title=document.createElement('h3');title.textContent='Registrar pago · '+reservation.name;panel.append(title);
+ const form=document.createElement('form');form.innerHTML='<label>Pagado acumulado (USD)<input name="amount" type="number" min="0.01" step="0.01" required></label><p>Registrá lo que ya pagaste. Los próximos cambios se hacen sobre este mismo gasto.</p><button type="submit">Guardar pago</button> <button type="button" data-cancel>Cancelar</button>';
+ form.elements.amount.value=Number(reservation.totalPrice)>0?Number(reservation.totalPrice).toFixed(2):'';
+ form.querySelector('[data-cancel]').onclick=()=>panel.remove();
+ form.onsubmit=e=>{e.preventDefault();const amount=Number(form.elements.amount.value);if(!Number.isFinite(amount)||amount<=0)return;
+ const uid=currentUser.uid;if(window.TripContext.view(uid,perfilId)!==tripId)return;
+ const existing=allGastos.find(g=>g.reservationId===id&&g.tripId===tripId);if(existing){panel.remove();window.editGasto(existing.id);return;}
+ const expenseId=window.TaxflyTravel.paymentId(tripId,id),data={nombre:reservation.name,valor:amount,cat:'📦 Otros',fecha:Date.now(),thumb:'',tripId,reservationId:id,source:'reservation'};
+ queueGastoOp({type:'upsert',id:expenseId,data});allGastos=window.TaxflyTravel.overlayExpenses(allGastos,getPendingGastos());guardarGastosEnCache(allGastos);renderGastosList(allGastos);panel.remove();flushPendingGastos();showExpToast('Pago registrado');
+ };
+ panel.append(form);document.getElementById('budget-card').after(panel);panel.scrollIntoView({block:'center',behavior:'smooth'});form.elements.amount.focus();
+}

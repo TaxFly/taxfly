@@ -97,11 +97,13 @@ window.openAttachChoice = openAttachChoice;
 window._syncedWriteLog = window._syncedWriteLog || {};
 
 function scopedKey(key) {
-  return key + "::" + (window._perfilId || "sinperfil") + (window._tripId && window._tripId !== "orlando" ? "::" + window._tripId : "");
+  const base=key + "::" + (window._perfilId || "sinperfil") + (window._tripId && window._tripId !== "orlando" ? "::" + window._tripId : "");
+  return key === "trip-reservations-v1" ? base + "::" + (window._taxflyTripUid || "sin-usuario") : base;
 }
 
 function syncedSave(localKey, localValue, docId, fbValue) {
   const payload = fbValue !== undefined ? fbValue : localValue;
+  if (docId === "reservations") window.TaxflyTravel.writeReservations(window._taxflyTripUid,window._perfilId,window._tripId,localValue.items||[]);
   const pendingKey = scopedKey(localKey) + "::pending";
   try {
     localStorage.setItem(scopedKey(localKey), JSON.stringify(localValue));
@@ -138,7 +140,7 @@ function planningSyncEntries() {
   return [[HOTEL_KEY,'hotel'],[DAYS_KEY,'days'],[STORAGE_KEY,'visited'],[MEAL_KEY,'meals'],
     [BUDGET_KEY,'budget'],[WM_DATA_KEY,'walmart'],[WM_CHECKED_KEY,'wmChecked'],[SHOPPING_KEY,'shopping'],
     [PARQUES_KEY,'parques'],[CUSTOM_PARKS_KEY,'customParks'],[EXTRA_ZONES_KEY,'parquesExtra'],
-    [COORD_OVERRIDES_KEY,'coordOverrides'],[PARQUES_EXCEL_KEY,'parquesExcel'],[TIPS_KEY,'tips'],[ITIN_KEY,'itinerario']];
+    [COORD_OVERRIDES_KEY,'coordOverrides'],[PARQUES_EXCEL_KEY,'parquesExcel'],[TIPS_KEY,'tips'],[ITIN_KEY,'itinerario'],['trip-reservations-v1','reservations']];
 }
 window._planPendingPayload = docId => {
   const entry = planningSyncEntries().find(([, id]) => id === docId);

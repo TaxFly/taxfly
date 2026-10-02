@@ -7,3 +7,5 @@ Para abrir localmente: `python3 -m http.server 8765`, luego `http://localhost:87
 Pruebas: `npm test`. Caché: `node scripts/bump-cache.js --check`.
 
 El archivo `firestore.rules` no estaba incluido en el proyecto original; la prueba que lo requiere continúa fallando. No se realizó despliegue ni se modificaron datos de producción.
+
+Las seis mejoras de viajes, reservas, documentos y Deshacer se explican en [la guía de uso y actualización](docs/MEJORAS_TAXUSA.md).

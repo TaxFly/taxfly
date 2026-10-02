@@ -581,6 +581,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     </nav>
     <script src="assets/ui.js"></script>
     <script src="assets/trip-context.js"></script>
+<script src="assets/travel-core.js"></script>
 <script src="assets/docs-tree.js"></script>
 
     <div class="taxfly-trip-filter" hidden aria-hidden="true"><label for="trip-filter-expenses">Viaje</label><select id="trip-filter-expenses" aria-label="Filtrar por viaje"></select><a href="index.html#viajes">Gestionar viajes</a></div>
@@ -599,7 +600,8 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
             <div class="budget-value" id="disp-fondo">USD 0.00</div>
             <div class="bc-progress"><div class="bc-progress-fill" id="bc-fill"></div></div>
             <div class="bc-progress-txt" id="bc-progress-txt"></div>
-            <div class="bc-chips">
+            <div id="budget-daily" style="white-space:pre-line;font-size:.78rem;line-height:1.6;margin:10px 0"></div>
+        <div class="bc-chips">
                 <span class="bc-chip" id="bc-chip-gastos"></span>
                 <a class="bc-chip" id="budget-maps-note" href="planificacion.html?section=walmart"></a>
             </div>
@@ -1003,6 +1005,7 @@ document.addEventListener("click", function(e) {
     <div class="ocr-modal-handle"></div>
     <div class="ocr-modal-title" id="edit-gasto-title" data-i18n="edit_title">Editar gasto</div>
     <div class="input-group"><input type="text" id="edit-gasto-name" data-i18n-ph="placeholder_product" placeholder="Producto" enterkeyhint="next" autocomplete="off"></div>
+    <p id="edit-payment-hint" style="font-size:.78rem"></p>
     <div class="input-group"><input type="text" id="edit-gasto-val" data-i18n-ph="placeholder_price" placeholder="Precio USD" inputmode="decimal" enterkeyhint="done" data-num></div>
     <div class="input-group"><select id="edit-gasto-cat" aria-label="Categoría"></select></div>
     <div class="ocr-btns">

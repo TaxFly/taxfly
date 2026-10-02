@@ -12,13 +12,16 @@ const reservationOpen = new Set();
 
 window.reservationsInit = function() {
   const saved = syncedLoad(RESERVATIONS_KEY, window._reservationsFromFb);
-  reservations = Array.isArray(saved?.items) ? saved.items : [];
+  reservations = Array.isArray(saved?.items) ? saved.items : window.TaxflyTravel.readReservations(window._taxflyTripUid,window._perfilId,window._tripId);
+  window.TaxflyTravel.writeReservations(window._taxflyTripUid,window._perfilId,window._tripId,reservations);
   renderReservations();
 };
 
 window._setReservationsData = function(data) {
   if (!Array.isArray(data?.items)) return;
   reservations = data.items;
+  try{localStorage.setItem(scopedKey(RESERVATIONS_KEY),JSON.stringify(data));}catch(_){}
+  window.TaxflyTravel.writeReservations(window._taxflyTripUid,window._perfilId,window._tripId,reservations);
   renderReservations();
 };
 window.reservationsExport = () => reservations;
@@ -142,17 +145,26 @@ function reservationMapLink(address) {
 
 function reservationCard(item) {
   const href = reservationUrl(item.url);
+  const travel=window.TaxflyTravel, paid=travel.paid(item,window._tripExpenses||[],window._tripId);
+  const total=Number(item.totalPrice)||0;
+  const zoneInfo=item.departureTime?`Salida ${item.departureTime} · hora de ${item.departureCity||item.departureZone}`:"";
+  const arrival=item.arrivalTime?`Llegada ${item.arrivalDate||""} ${item.arrivalTime} · hora de ${item.arrivalCity||item.arrivalZone}`:"";
   const docs = (window._tripDocuments || []).filter(d => d.linkExplicit ? d.reservationId === item.id : d.id === item.documentId || d.reservationId === item.id);
   const dates = [reservationDate(item.startDate), reservationDate(item.endDate)].filter(Boolean).join(" – ");
   return `<article class="reservation-card" id="reservation-${escapeHtml(item.id)}">
     <div class="reservation-card-top"><div class="reservation-flight-title">${item.type === "flight" ? reservationAirlineLogos(item.name) : item.type === "stay" ? reservationStayLogo(item.name) : ""}<strong>${escapeHtml(item.name)}</strong></div>
       <div class="reservation-actions"><button type="button" data-res-action="edit" data-res-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}">${ic("pencil", 15)}</button><button type="button" data-res-action="delete" data-res-id="${escapeHtml(item.id)}" aria-label="Eliminar ${escapeHtml(item.name)}">${ic("x", 15)}</button></div></div>
     ${dates ? `<div class="reservation-meta">${ic("calendar", 14)} ${escapeHtml(dates)}</div>` : ""}
+    ${zoneInfo ? `<div class="reservation-meta">${escapeHtml(zoneInfo)}</div>` : ""}
+    ${arrival ? `<div class="reservation-meta">${escapeHtml(arrival)}</div>` : ""}
+    <div class="reservation-meta">Total: ${item.totalPrice!==null && item.totalPrice!==undefined ? 'USD '+total.toFixed(2) : 'sin precio'} · Pagado: USD ${paid.toFixed(2)} · Pendiente: ${item.totalPrice!==null && item.totalPrice!==undefined ? 'USD '+Math.max(0,total-paid).toFixed(2) : 'completá el precio'}</div>
+    ${item.provider ? `<div class="reservation-meta">Proveedor: ${escapeHtml(item.provider)}</div>` : ""}
     ${item.reference ? `<div class="reservation-meta">Código: <b>${escapeHtml(item.reference)}</b></div>` : ""}
     ${item.address ? `<div class="reservation-meta">${ic("pin", 14)} ${escapeHtml(item.address)}</div>` : ""}
     ${item.notes ? `<p class="reservation-notes">${escapeHtml(item.notes)}</p>` : ""}
     <div class="reservation-footer">${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${ic("link", 15)} Abrir reserva</a>` : "<span class=\"reservation-no-link\">Sin enlace cargado</span>"}
       ${docs.map(d => `<a href="tickets.html?doc=${encodeURIComponent(d.id)}">${ic("file", 14)} ${escapeHtml(d.name || "Documento")}</a>`).join("")}
+      <button type="button" data-res-action="payment" data-res-id="${escapeHtml(item.id)}">${paid>0?"Ver / editar pago":"Registrar pago"}</button>
       <button type="button" data-res-action="attach" data-res-id="${escapeHtml(item.id)}">${ic("plus", 14)} Adjuntar documento</button>
       ${item.type === "stay" && item.address ? `<button type="button" data-res-action="starting-point" data-res-id="${escapeHtml(item.id)}">Usar como punto de partida</button>${reservationMapLink(item.address)}` : ""}
     </div>
@@ -161,12 +173,18 @@ function reservationCard(item) {
 
 function reservationForm(type, item) {
   const stay = type === "stay", flight = type === "flight";
+  const dest=window.TaxflyTravel.destination(window._trip);
   const nameLabel = flight ? "Aerolínea / vuelo" : stay ? "Nombre del alojamiento" : "Nombre de la reserva";
   const nameHint = flight ? "Ej.: LATAM · LA8123" : stay ? "Ej.: Hotel o Airbnb" : "Ej.: Traslado al aeropuerto";
   return `<form class="reservation-form" id="reservation-form" data-type="${type}">
     <div class="reservation-form-head"><h3>${item ? "Editar reserva" : "Nueva reserva"}</h3><button type="button" id="reservation-cancel" aria-label="Cerrar formulario">${ic("x", 17)}</button></div>
     <label>${nameLabel}<input name="reservationTitle" autocomplete="new-password" required maxlength="90" placeholder="${nameHint}" value="${escapeHtml(item?.name || "")}">${flight ? `<small>Si viajás con dos aerolíneas, separalas con / (ej.: Avianca / American Airlines).</small><span class="reservation-airline-preview" aria-live="polite">${reservationAirlineLogos(item?.name)}</span>` : stay ? `<span class="reservation-airline-preview" aria-live="polite">${reservationStayLogo(item?.name)}</span>` : ""}</label>
     <div class="reservation-form-dates"><label>${flight ? "Fecha del vuelo" : "Desde"}<input name="startDate" type="date" value="${escapeHtml(item?.startDate || "")}"></label><label>${flight ? "Regreso (opcional)" : "Hasta (opcional)"}<input name="endDate" type="date" value="${escapeHtml(item?.endDate || "")}"></label></div>
+    <label>Precio total (USD, opcional)<input name="totalPrice" type="number" min="0" step="0.01" value="${item?.totalPrice??''}"><small>El precio no genera un gasto hasta que registres el pago.</small></label>
+    <label>Proveedor<input name="provider" maxlength="100" value="${escapeHtml(item?.provider||'')}" placeholder="Aerolínea, hotel o empresa"></label>
+    ${window.TaxflyTravel.zoneFields('departure',item?.departureCity||dest.city,item?.departureZone||dest.timeZone)}
+    <label>${flight?'Hora de salida':'Hora local del evento'}<input name="departureTime" type="time" value="${escapeHtml(item?.departureTime||'')}"></label>
+    ${flight?`<label>Fecha de llegada<input name="arrivalDate" type="date" value="${escapeHtml(item?.arrivalDate||'')}"></label><label>Hora de llegada<input name="arrivalTime" type="time" value="${escapeHtml(item?.arrivalTime||'')}"></label>${window.TaxflyTravel.zoneFields('arrival',item?.arrivalCity||dest.city,item?.arrivalZone||dest.timeZone)}`:''}
     <label>Código de reserva (opcional)<input name="reference" maxlength="50" autocomplete="off" placeholder="Localizador o número de confirmación" value="${escapeHtml(item?.reference || "")}"></label>
     ${stay ? `<label>Dirección del alojamiento (opcional)<input name="lodgingLocation" autocomplete="new-password" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
     <label>Enlace a mi reserva (opcional)<input name="url" type="url" inputmode="url" placeholder="https://…" value="${escapeHtml(item?.url || "")}"><small>Puede ser el enlace de la aerolínea, Airbnb o el sitio del alojamiento.</small></label>
@@ -247,6 +265,7 @@ async function onReservationAction(event) {
     return;
   }
   if (!item) return;
+  if (action === "payment") { location.href="compras.html?reservation="+encodeURIComponent(item.id)+"&trip="+encodeURIComponent(window._tripId);return; }
   if (action === "attach") {
     window.openAttachChoice?.(item.id, item.name);
     return;
@@ -282,8 +301,15 @@ async function saveReservation(event) {
     form.elements.url.addEventListener("input", () => form.elements.url.setCustomValidity(""), { once: true });
     return;
   }
+  if(values.startDate&&values.endDate&&values.endDate<values.startDate){showMToast("La fecha final debe ser posterior a la inicial.");return;}
   const existing = reservations.find(r => r.id === reservationEditingId);
+  if(values.departureTime && !Number.isFinite(window.TaxflyTravel.instant(values.startDate,values.departureTime,values.departureZone))) {showMToast("Revisá la fecha y hora de salida: ese horario no existe en la zona elegida.");return;}
+  if(values.arrivalTime && (!Number.isFinite(window.TaxflyTravel.instant(values.arrivalDate,values.arrivalTime,values.arrivalZone)) || (values.departureTime && window.TaxflyTravel.instant(values.arrivalDate,values.arrivalTime,values.arrivalZone)<window.TaxflyTravel.instant(values.startDate,values.departureTime,values.departureZone)))) {showMToast("Revisá la llegada: debe tener fecha y ser posterior a la salida en su zona horaria.");return;}
   const item = {
+    ...existing,
+    totalPrice:values.totalPrice===''?null:Number(values.totalPrice), currency:"USD", provider:values.provider.trim(),
+    departureCity:values.departureCity.trim(),departureZone:values.departureZone,departureTime:values.departureTime||"",
+    arrivalCity:values.arrivalCity?.trim()||"",arrivalZone:values.arrivalZone||"",arrivalDate:values.arrivalDate||"",arrivalTime:values.arrivalTime||"",
     id: existing?.id || (crypto.randomUUID?.() || "res-" + Date.now() + "-" + Math.random().toString(36).slice(2)),
     type: reservationFormType,
     name,

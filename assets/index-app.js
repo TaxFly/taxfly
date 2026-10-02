@@ -38,10 +38,13 @@ if (navigator.onLine) {
 }
 
 function mapsBudgetCacheKey() {
-  return "taxusa_maps_budget_cache_" + perfilId + "_" + (localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando");
+  return "taxusa_maps_budget_cache_" + perfilId + "::" + currentUser.uid + "_" + (localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando");
 }
 
-let mapsSpentCache = 0;
+let mapsSpentCache = 0, homeReservations=[], homeReservationUnsub=()=>{}, renderUpcoming=()=>{};
+function homeExpensesKey(){return "taxusa_gastos_cache_"+perfilId+"::"+(currentUser?.uid||localStorage.getItem("taxusa_offline_uid")||"sin-usuario");}
+function homeBudgetKey(){const uid=currentUser?.uid||localStorage.getItem("taxusa_offline_uid")||"sin-usuario",id=window.TripContext.view(uid,perfilId);return "taxusa_budget_cache_"+perfilId+"::"+uid+(id==='orlando'?'':'::'+id);}
+function homePending(){try{return JSON.parse(localStorage.getItem("taxusa_gastos_pending_"+perfilId+"::"+(currentUser?.uid||localStorage.getItem("taxusa_offline_uid")))||'[]');}catch(_){return [];}}
 
 function computeMapsSpent(data) {
   if (!data) return 0;
@@ -59,10 +62,10 @@ function listenMapsBudget() {
     try {
       localStorage.setItem(mapsBudgetCacheKey(), String(mapsSpentCache));
     } catch (e) {}
-    const base = parseFloat(localStorage.getItem("taxusa_budget_cache_" + perfilId)) || 0;
+    const base = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
     let g = [];
     try {
-      g = JSON.parse(localStorage.getItem("taxusa_gastos_cache_" + perfilId) || "[]");
+      g = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
     } catch (e) {}
     renderBudgetUI(base, g);
   }, () => {});
@@ -496,10 +499,11 @@ function updateGreeting() {
 }
 
 function renderBudgetUI(base, gastos) {
+  gastos=window.TaxflyTravel.overlayExpenses(gastos,homePending());
   window._lastBudgetArgs = [ base, gastos ];
   if (currentUser && perfilId) {
     const tripId=window.TripContext.view(currentUser.uid,perfilId);
-    if (tripId!=="orlando") base=tripId==="unassigned"?0:Number(localStorage.getItem("taxusa_budget_cache_"+perfilId+"::"+currentUser.uid+"::"+tripId))||0;
+    base=tripId==="unassigned"?0:Number(localStorage.getItem(homeBudgetKey()))||0;
     gastos = gastos.filter(g => (g.tripId || "unassigned") === window.TripContext.view(currentUser.uid, perfilId));
   }
   const gastadoPropio = gastos.reduce((s, g) => s + (parseFloat(g.valor || g.monto) || 0), 0);
@@ -532,6 +536,8 @@ function renderBudgetUI(base, gastos) {
       mapsNoteEl.style.display = "block";
     } else mapsNoteEl.style.display = "none";
   }
+  const trip=currentUser?window.TripContext.readTrips(currentUser.uid,perfilId).find(r=>r.id===window.TripContext.view(currentUser.uid,perfilId)):null;
+  const daily=document.getElementById('wb-daily');if(daily)daily.textContent=base>0?window.TaxflyTravel.budgetText(window.TaxflyTravel.budget(base,gastado,homeReservations,gastos,trip)):'';
   const wbEl = document.querySelector(".widget-budget");
   if (base <= 0) {
     document.getElementById("wb-value").textContent = t.budget_no_data || "—";
@@ -551,7 +557,7 @@ function renderBudgetUI(base, gastos) {
     labelEl.textContent = over ? t.budget_over_label : t.label_budget;
   }
   if (wbEl) wbEl.classList.toggle("is-over", over);
-  document.getElementById("wb-value").textContent = `USD ${Math.abs(restante).toLocaleString("en-US", {
+  document.getElementById("wb-value").textContent = `USD ${restante.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })}`;
@@ -564,10 +570,12 @@ function renderBudgetUI(base, gastos) {
 }
 
 function loadBudget() {
-  const cachedBase = parseFloat(localStorage.getItem("taxusa_budget_cache_" + perfilId)) || 0;
+  homeReservationUnsub();homeReservations=[];
+  if(currentUser&&perfilId)homeReservationUnsub=window.TaxflyTravel.watchReservations({uid:currentUser.uid,pid:perfilId,trip:window.TripContext.view(currentUser.uid,perfilId),db,doc,onSnapshot,onChange:items=>{homeReservations=items;if(window._lastBudgetArgs)renderBudgetUI(...window._lastBudgetArgs);renderUpcoming();}});
+  const cachedBase = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
   let cachedGastos = [];
   try {
-    cachedGastos = JSON.parse(localStorage.getItem("taxusa_gastos_cache_" + perfilId) || "[]");
+    cachedGastos = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
   } catch (e) {}
   renderBudgetUI(cachedBase, cachedGastos);
   listenMapsBudget();
@@ -578,11 +586,11 @@ function loadBudget() {
     const field=tripId==="orlando"?"presupuesto":"taxflyBudget";
     if (snap.exists() && snap.data()[field] !== undefined) {
       const base = parseFloat(snap.data()[field]) || 0;
-      const key="taxusa_budget_cache_"+perfilId+(tripId==="orlando"?"":"::"+currentUser.uid+"::"+tripId);
+      const key=homeBudgetKey();
       localStorage.setItem(key, String(base));
       let g = [];
       try {
-        g = JSON.parse(localStorage.getItem("taxusa_gastos_cache_" + perfilId) || "[]");
+        g = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
       } catch (e) {}
       renderBudgetUI(base, g);
     }
@@ -594,9 +602,9 @@ function loadBudget() {
       ...d.data()
     }));
     try {
-      localStorage.setItem("taxusa_gastos_cache_" + perfilId, JSON.stringify(gastos));
+      localStorage.setItem(homeExpensesKey(), JSON.stringify(gastos));
     } catch (e) {}
-    const base = parseFloat(localStorage.getItem("taxusa_budget_cache_" + perfilId)) || 0;
+    const base = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
     renderBudgetUI(base, gastos);
   }, () => {});
 }
@@ -977,61 +985,28 @@ window.loadWeather = async function(force = false) {
   }
 };
 
-function loadNextEvent() {
-  const emojis = [ "🎡", "🛍️", "🍔", "🏨", "✈️", "🚗", "🎭", "🌅", "🏊", "⚽", "🎵", "🏰" ];
-  function renderNoEvent() {
-    const titleEl = document.getElementById("ne-title");
-    if (titleEl) {
-      titleEl.textContent = t.next_event_empty || "Sin eventos próximos";
-      titleEl.removeAttribute("data-has-event");
-    }
-    const timeEl = document.getElementById("ne-time");
-    timeEl.textContent = t.next_event_add || "＋ Agregar actividad";
-    timeEl.style.fontWeight = "700";
-    timeEl.style.color = "var(--primary, #4f8cff)";
-    document.getElementById("ne-dot").textContent = "📅";
-  }
-  if (!currentUser || !perfilId) {
-    renderNoEvent();
-    return;
-  }
-  const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "actividades"), orderBy("date", "asc"));
-  onSnapshot(q, snap => {
-    const now = new Date;
-    const upcoming = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    })).filter(a => (a.tripId || "unassigned") === window.TripContext.view(currentUser.uid, perfilId) && !a.done && new Date(a.date + "T" + (a.time || "00:00")) >= now);
-    if (!upcoming.length) {
-      renderNoEvent();
-      return;
-    }
-    const ev = upcoming[0];
-    document.getElementById("ne-title").textContent = ev.name || ev.titulo || ev.title || ev.nombre || "—";
-    const d = new Date(ev.date + "T" + (ev.time || "00:00"));
-    const loc = {
-      es: "es-AR",
-      en: "en-US",
-      pt: "pt-BR"
-    };
-    const dateStr = d.toLocaleDateString(loc[lang] || "es-AR", {
-      weekday: "short",
-      day: "numeric",
-      month: "short"
-    });
-    const timeStr = ev.time ? ` · ${ev.time}` : "";
-    document.getElementById("ne-time").textContent = dateStr + timeStr;
-    const typeEmoji = {
-      vuelo: "✈️",
-      hotel: "🏨",
-      parque: "🎡",
-      comida: "🍔",
-      otro: "📍"
-    };
-    document.getElementById("ne-dot").textContent = typeEmoji[ev.type] || emojis[Math.floor(Math.random() * emojis.length)];
-  }, () => {
-    renderNoEvent();
-  });
+function loadNextEvent(){
+ let activities=[];
+ renderUpcoming=()=>{
+  if(!currentUser||!perfilId)return;
+  const tripId=window.TripContext.view(currentUser.uid,perfilId),trip=window.TripContext.readTrips(currentUser.uid,perfilId).find(t=>t.id===tripId),dest=window.TaxflyTravel.destination(trip);
+  const flights=homeReservations.filter(r=>r.type==='flight').flatMap(r=>[
+   {name:r.name,date:r.startDate,time:r.departureTime,timeZone:r.departureZone,city:r.departureCity,type:'vuelo',tripId,label:'Salida'},
+   {name:r.name,date:r.arrivalDate,time:r.arrivalTime,timeZone:r.arrivalZone,city:r.arrivalCity,type:'vuelo',tripId,label:'Llegada'}
+  ].filter(e=>e.date&&e.time));
+  const activityEvents=activities.flatMap(e=>[e,...(e.arrivalDate&&e.arrivalTime?[{...e,date:e.arrivalDate,time:e.arrivalTime,timeZone:e.arrivalZone,city:e.arrivalCity,label:'Llegada'}]:[])]);
+  const upcoming=[...activityEvents,...flights].filter(e=>(e.tripId||'unassigned')===tripId&&!e.done).map(e=>({...e,instant:window.TaxflyTravel.instant(e.date,e.time||'00:00',e.timeZone||dest.timeZone)})).filter(e=>e.instant>=Date.now()).sort((a,b)=>a.instant-b.instant);
+  const ev=upcoming[0],title=document.getElementById('ne-title'),time=document.getElementById('ne-time');
+  if(!ev){title.textContent=t.next_event_empty||'Sin eventos próximos';time.textContent=t.next_event_add||'＋ Agregar actividad';document.getElementById('ne-dot').textContent='📅';return;}
+  title.textContent=ev.name||'—';
+  const zone=ev.timeZone||dest.timeZone,locale={es:'es-AR',en:'en-US',pt:'pt-BR'}[lang]||'es-AR';
+  const date=new Intl.DateTimeFormat(locale,{timeZone:zone,weekday:'short',day:'numeric',month:'short'}).format(ev.instant);
+  time.textContent=date+(ev.time?' · '+(ev.label?ev.label+' ':'')+ev.time+' · '+tfL3('hora de ','local time in ','hora de ')+(ev.city||zone):'');
+  document.getElementById('ne-dot').textContent={vuelo:'✈️',hotel:'🏨',parque:'🎡',comida:'🍔',otro:'📍'}[ev.type]||'📍';
+ };
+ if(!currentUser||!perfilId)return;
+ onSnapshot(query(collection(db,'usuarios',currentUser.uid,'perfiles',perfilId,'actividades'),orderBy('date','asc')),snap=>{activities=snap.docs.map(d=>({...d.data(),id:d.id}));renderUpcoming();},()=>renderUpcoming());
+ renderUpcoming();
 }
 
 function renderTip() {

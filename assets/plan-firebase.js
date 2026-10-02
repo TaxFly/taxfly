@@ -202,14 +202,20 @@ function listenTaxflyPresupuesto(cb) {
 }
 
 function listenTaxflyGastos(cb) {
+  try{const expenses=JSON.parse(localStorage.getItem("taxusa_gastos_cache_"+currentPerfilId+"::"+currentUid)||'[]'),ops=JSON.parse(localStorage.getItem("taxusa_gastos_pending_"+currentPerfilId+"::"+currentUid)||'[]');window._tripExpenses=window.TaxflyTravel.overlayExpenses(expenses,ops).filter(g=>g.tripId===activeTripId);window.renderReservations?.();}catch(_){}
   return onSnapshot(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "gastos"), snap => {
     let total = 0, n = 0;
+    window._tripExpenses=[];
     snap.forEach(d => {
       const x = d.data() || {};
       if ((x.tripId || "unassigned") !== activeTripId) return;
+      window._tripExpenses.push({...x,id:d.id});
       total += parseFloat(x.valor || x.monto) || 0;
       n++;
     });
+    try { const pending=JSON.parse(localStorage.getItem("taxusa_gastos_pending_"+currentPerfilId+"::"+currentUid)||'[]');window._tripExpenses=window.TaxflyTravel.overlayExpenses(window._tripExpenses,pending).filter(g=>g.tripId===activeTripId); } catch(_){}
+    window.renderReservations?.();
+    total=window._tripExpenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0);n=window._tripExpenses.length;
     cb(total, n);
   }, () => {});
 }

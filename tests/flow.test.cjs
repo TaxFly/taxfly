@@ -495,7 +495,7 @@ test('park data uses real, fresh wait times and never guesses the status of city
 
 test('a reservation shows the existing voucher from Documents as part of its card', () => {
   const src=between(read('assets/plan-reservations.js'),'function reservationCard(item)','function reservationForm(type, item)');
-  const c=context(src,{window:{_tripDocuments:[{id:'doc-pdf',name:'Airbnb Orlando',reservationId:'res-stay'}]},
+  const c=context(src,{window:{TaxflyTravel:require('../assets/travel-core.js'),_tripDocuments:[{id:'doc-pdf',name:'Airbnb Orlando',reservationId:'res-stay'}]},
     reservationUrl:s=>s,reservationDate:s=>s,reservationAirlineLogos:()=>'',reservationStayLogo:()=>'',
     reservationMapLink:()=>'<map-link/>',ic:()=>'<icon/>',escapeHtml:s=>s,encodeURIComponent});
   const card=c.reservationCard({id:'res-stay',type:'stay',name:'Airbnb Orlando',startDate:'2027-01-10',

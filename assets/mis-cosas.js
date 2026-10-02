@@ -329,12 +329,26 @@ function normalizar(o, s) {
 
 const cuerpo = ({id: id, ...r}) => r;
 
+const pendingPackingDeletes = new Set();
+function packingQueueKey(){const uid=localStorage.getItem('taxusa_offline_uid')||'sinusuario',pid=localStorage.getItem('perfilActivoId')||'sinperfil';return 'taxfly-packing-deletes::'+(window._misCosasScope||[uid,pid,window.TripContext.active(uid,pid)].join('::'));}
+function packingQueue(key){try{return JSON.parse(localStorage.getItem(key)||'[]');}catch(_){return [];}}
+function finishPackingOp(key,op){localStorage.setItem(key,JSON.stringify(packingQueue(key).filter(x=>JSON.stringify(x)!==JSON.stringify(op))));}
+function flushPackingDeletes(){
+ if(!DB||modo!=='nube')return;
+ const queueKey=packingQueueKey();
+ for(const op of packingQueue(queueKey)){
+  const key=op.section+'/'+op.id;pendingPackingDeletes.add(key);
+  DB.doc(key).delete().then(()=>{finishPackingOp(queueKey,op);pendingPackingDeletes.delete(key);}).catch(e=>errorNube(e));
+ }
+}
+window.addEventListener('online',flushPackingDeletes);
 function iniciarNube(dbAdapter) {
   DB = dbAdapter;
   modo = "nube";
+  flushPackingDeletes();
   for (const s of SECS) {
     DB.collection(s).onSnapshot(snap => {
-      data[s] = snap.docs.map(d => overrides[s + "/" + d.id] || normalizar({
+      data[s] = snap.docs.filter(d => !pendingPackingDeletes.has(s+"/"+d.id)).map(d => overrides[s + "/" + d.id] || normalizar({
         ...d.data(),
         id: d.id
       }, s));
@@ -427,13 +441,13 @@ function tripLocalKey(k) {
 }
 const guardarLocal = s => putLocal(SEC[s].key, data[s]);
 
-async function putLocal(k, v) {
+async function putLocal(k, v, storedKey = tripLocalKey(k)) {
   if (!localOK) return;
   try {
     const db = await dbp;
     await new Promise((res, rej) => {
       const tx = db.transaction("kv", "readwrite");
-      tx.objectStore("kv").put(v, tripLocalKey(k));
+      tx.objectStore("kv").put(v, storedKey);
       tx.oncomplete = res;
       tx.onerror = () => rej(tx.error);
     });
@@ -1238,11 +1252,24 @@ $("#edCancel").onclick = () => $("#editor").close();
 
 $("#edDel").onclick = async () => {
   const s = draft._sec, id = draft.id, nombre = draft.nombre, extra = draft._nuevas;
-  if (!await confirmar("¿Eliminar?", `Se va a borrar "${nombre}". Esta acción no se puede deshacer.`, "Eliminar")) return;
+
   const orig = data[s].find(i => i.id === id);
   draft._guardado = true;
   $("#editor").close();
-  if (orig) borrarItem(s, orig);
+  if (orig) {
+    const key=s+"/"+id, local=modo==="local", ref=local?null:DB.doc(key), idx=data[s].indexOf(orig),previousWrite=cadenas[key]||Promise.resolve();
+    clearTimeout(timers[key]); delete overrides[key];
+    const storageKey=tripLocalKey(SEC[s].key),queueKey=packingQueueKey();
+    tfDeleteWithUndo({
+      remove:()=>{pendingPackingDeletes.add(key);data[s]=data[s].filter(i=>i.id!==id);if(local)guardarLocal(s);render();},
+      restore:()=>{pendingPackingDeletes.delete(key);if(!data[s].some(i=>i.id===id))data[s].splice(Math.min(idx,data[s].length),0,orig);if(local)putLocal(SEC[s].key,data[s],storageKey);else overrides[key]=orig;render();},
+      commit:async()=>{
+        if(!local){const op={section:s,id,ts:Date.now()};localStorage.setItem(queueKey,JSON.stringify([...packingQueue(queueKey),op]));
+          try{await previousWrite;await ref.delete();finishPackingOp(queueKey,op);}catch(e){finishPackingOp(queueKey,op);errorNube(e);throw e;}}
+        pendingPackingDeletes.delete(key);await borrarAssets(orig.fotos);
+      }
+    });
+  }
   borrarAssets(extra);
   render();
 };

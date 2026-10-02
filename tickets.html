@@ -325,6 +325,12 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
             <input type="text" id="inp-name" placeholder="Ej: Vuelo AA123 — MIA" data-i18n-ph="ph_name" autocomplete="off" enterkeyhint="next">
         </div>
 
+
+        <label class="slabel" for="inp-reference">Localizador / código de reserva</label><div class="input-group"><input id="inp-reference" maxlength="50" autocomplete="off"></div>
+        <label class="slabel" for="inp-provider">Proveedor</label><div class="input-group"><input id="inp-provider" maxlength="100" placeholder="Aerolínea, hotel o empresa"></div>
+        <label class="slabel" for="inp-start-date">Fecha de inicio</label><div class="input-group"><input id="inp-start-date" type="date"></div>
+        <label class="slabel" for="inp-end-date">Fecha de fin (opcional)</label><div class="input-group"><input id="inp-end-date" type="date"></div>
+
         <span class="slabel" data-i18n="label_type">Tipo</span>
         <div class="type-grid">
             <button class="type-btn active" data-type="✈️" onclick="setType(this)"><span class="t-icon">✈️</span><span data-i18n="type_boarding">Boarding Pass</span></button>
@@ -383,7 +389,15 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         </div>
     </div>
     <div class="viewer-body" id="viewer-body"></div>
+    <form id="doc-metadata-form" hidden style="padding:12px 16px;overflow:auto;color:var(--text)">
+      <label>Localizador<input name="reference" maxlength="50"></label>
+      <label>Proveedor<input name="provider" maxlength="100"></label>
+      <label>Fecha de inicio<input name="startDate" type="date"></label>
+      <label>Fecha de fin<input name="endDate" type="date"></label>
+      <button type="submit">Guardar datos</button><button type="button" onclick="document.getElementById('doc-metadata-form').hidden=true">Cancelar</button>
+    </form>
     <div class="viewer-actions">
+        <button class="viewer-btn search-toggle" onclick="editDocumentMetadata()">Datos</button>
         <button class="viewer-btn search-toggle" onclick="openDocumentLink()">🔗 Vincular</button>
         <button class="viewer-btn share" onclick="shareDoc()">📤 <span data-i18n="btn_share">Compartir</span></button>
         <button class="viewer-btn del"   onclick="deleteFromViewer()">🗑️ <span data-i18n="btn_del">Eliminar</span></button>
