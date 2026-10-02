@@ -1,3 +1,5 @@
+import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits } from "./worker-firestore.js";
+
 const FIREBASE_PROJECT_ID = "viajes-db538";
 
 const JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
@@ -11,6 +13,21 @@ const MAX_CHAT_CONTENT = 8000;
 const MAX_CHAT_SYSTEM = 6000;
 
 const AI_TYPES = [ "invoice_ocr", "insurance_analysis", "moderate_image", "optimize_route", "taxie_chat", "compare_shopping" ];
+
+const AI_FEATURES = {
+  invoice_ocr: { credits: 1 },
+  insurance_analysis: { credits: 2 },
+  moderate_image: { credits: 1 },
+  optimize_route: { credits: 3 },
+  taxie_chat: { credits: 1 },
+  compare_shopping: { credits: 2 }
+};
+
+const MODEL_PRICING_USD_PER_M = {
+  "claude-haiku-4-5-20251001": { input: 1, output: 5, cacheRead: 0.10, cacheWrite: 1.25 },
+  "claude-sonnet-5": { input: 2, output: 10, cacheRead: 0.20, cacheWrite: 2.50 }
+};
+const WEB_SEARCH_USD_PER_REQUEST = 0.01;
 
 export default {
   async fetch(request, env) {
@@ -42,73 +59,177 @@ export default {
 };
 
 async function handle(request, env) {
-  if (request.method !== "POST") return json({
-    error: "Method not allowed"
-  }, 405);
+  if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
   let body;
   try {
     const declared = Number(request.headers.get("Content-Length") || 0);
-    if (declared > MAX_BODY_CHARS) return json({
-      error: "Payload too large"
-    }, 413);
+    if (declared > MAX_BODY_CHARS) return json({ error: "Payload too large" }, 413);
     const raw = await request.text();
-    if (raw.length > MAX_BODY_CHARS) return json({
-      error: "Payload too large"
-    }, 413);
+    if (raw.length > MAX_BODY_CHARS) return json({ error: "Payload too large" }, 413);
     body = JSON.parse(raw);
     if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("not an object");
   } catch (e) {
-    return json({
-      error: "Invalid JSON body"
-    }, 400);
+    return json({ error: "Invalid JSON body" }, 400);
   }
+
+  const auth = request.headers.get("Authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  let user = null;
+  if (token) {
+    try { user = await verifyFirebaseToken(token); } catch (e) {
+      if (AI_TYPES.includes(body.type) || body.type === "ai_status" || body.type === "ai_grant_credits") return json({ error: "Invalid or expired session" }, 401);
+    }
+  }
+
+  if (body.type === "ai_status") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleAIStatus(env, user);
+  }
+  if (body.type === "ai_grant_credits") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleAIGrant(body, env, user);
+  }
+
   const isCostRoute = AI_TYPES.includes(body.type);
   if (isCostRoute) {
-    const auth = request.headers.get("Authorization") || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-    if (!token) return json({
-      error: "Login required"
-    }, 401);
-    let user;
-    try {
-      user = await verifyFirebaseToken(token);
-    } catch (e) {
-      return json({
-        error: "Invalid or expired session"
-      }, 401);
-    }
+    if (!user) return json({ error: "Login required" }, 401);
     if (env.COST_LIMITER) {
-      const {success: success} = await env.COST_LIMITER.limit({
-        key: `uid:${user.uid}`
-      });
-      if (!success) return json({
-        error: "Too many requests, try again in a bit"
-      }, 429);
+      const { success } = await env.COST_LIMITER.limit({ key: `uid:${user.uid}` });
+      if (!success) return json({ error: "Too many requests, try again in a bit" }, 429);
     }
     const apiKey = env.ANTHROPIC_API_KEY;
-    if (!apiKey) return json({
-      error: "Anthropic API key not configured"
-    }, 500);
-    if (body.type === "invoice_ocr") return handleInvoice(body, apiKey);
-    if (body.type === "insurance_analysis") return handleInsurance(body, apiKey);
-    if (body.type === "moderate_image") return handleModerate(body, apiKey);
-    if (body.type === "optimize_route") return handleAIChat(body, apiKey, "claude-sonnet-5", 800, .2);
-    if (body.type === "compare_shopping") return handleCompareShopping(body, apiKey);
-    return handleAIChat(body, apiKey, "claude-haiku-4-5-20251001", 800, .7);
+    if (!apiKey) return json({ error: "Anthropic API key not configured" }, 500);
+
+    const feature = body.type;
+    const requestId = normalizeRequestId(body.request_id) || crypto.randomUUID();
+    const isOwner = !!env.OWNER_UID && user.uid === env.OWNER_UID;
+    const credits = Number(AI_FEATURES[feature]?.credits || 1);
+    const billingEnabled = env.AI_BILLING_ENABLED === "true";
+    const fsReady = firestoreConfigured(env);
+    const ctx = { env, user, feature, requestId, isOwner, credits, billingEnabled, fsReady, costUsd: 0, usage: null };
+
+    const safety = await checkSafetyBudgets(ctx);
+    if (safety) return safety;
+
+    let reserved = false;
+    if (billingEnabled && !isOwner) {
+      if (!fsReady) return json({ error: "AI billing is enabled but Firestore service credentials are missing" }, 503);
+      try {
+        const result = await reserveCredits(env, user, feature, credits, requestId, starterCredits(env));
+        if (result.reused && result.reservation?.state === "captured") return json({ error: "This AI request was already processed", code: "REQUEST_ALREADY_CAPTURED", request_id: requestId }, 409);
+        if (result.reused && result.reservation?.state === "released") return json({ error: "This AI request id was already released; retry with a new request id", code: "REQUEST_ALREADY_RELEASED", request_id: requestId }, 409);
+        reserved = true;
+      } catch (e) {
+        if (e.code === "EMAIL_VERIFICATION_REQUIRED") return json({ error: "Verify your email before using free AI credits", code: e.code }, 403);
+        if (e.code === "AI_CREDITS_REQUIRED") return json({ error: "AI credits required", code: e.code, balance: e.balance, required: e.required }, 402);
+        if (e.code === "REQUEST_ID_CONFLICT") return json({ error: "request_id conflict", code: e.code }, 409);
+        console.error("reserveCredits failed", e);
+        return json({ error: "Could not reserve AI credits" }, 503);
+      }
+    }
+
+    let response;
+    try {
+      if (feature === "invoice_ocr") response = await handleInvoice(body, apiKey, ctx);
+      else if (feature === "insurance_analysis") response = await handleInsurance(body, apiKey, ctx);
+      else if (feature === "moderate_image") response = await handleModerate(body, apiKey, ctx);
+      else if (feature === "optimize_route") response = await handleAIChat(body, apiKey, "claude-sonnet-5", 800, .2, ctx);
+      else if (feature === "compare_shopping") response = await handleCompareShopping(body, apiKey, ctx);
+      else response = await handleAIChat(body, apiKey, "claude-haiku-4-5-20251001", 800, .7, ctx);
+    } catch (e) {
+      console.error("AI route failed", e);
+      response = json({ error: "AI request failed" }, 502);
+    }
+
+    if (reserved) {
+      try { await finalizeReservation(env, user, requestId, response.ok, ctx.costUsd, ctx.usage); }
+      catch (e) { console.error("finalizeReservation failed", e); }
+    }
+    const headers = new Headers(response.headers);
+    headers.set("X-TaxFly-AI-Request-Id", requestId);
+    headers.set("X-TaxFly-AI-Credits", isOwner ? "unlimited" : String(credits));
+    return new Response(response.body, { status: response.status, headers });
   }
+
   if (env.GENERAL_LIMITER) {
     const ip = request.headers.get("cf-connecting-ip") || "unknown";
-    const {success: success} = await env.GENERAL_LIMITER.limit({
-      key: `${ip}:${body.type}`
-    });
-    if (!success) return json({
-      error: "Too many requests, try again in a bit"
-    }, 429);
+    const { success } = await env.GENERAL_LIMITER.limit({ key: `${ip}:${body.type}` });
+    if (!success) return json({ error: "Too many requests, try again in a bit" }, 429);
   }
   if (body.type === "verify_recaptcha") return handleRecaptcha(body, env);
-  return json({
-    error: 'Unknown or missing "type"'
-  }, 400);
+  return json({ error: 'Unknown or missing "type"' }, 400);
+}
+
+function normalizeRequestId(value) {
+  if (typeof value !== "string") return "";
+  const v = value.trim();
+  return /^[A-Za-z0-9_-]{12,180}$/.test(v) ? v : "";
+}
+function starterCredits(env) {
+  const n = Number(env.AI_STARTER_CREDITS || 10);
+  return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 10;
+}
+function dayKeyUTC() { return new Date().toISOString().slice(0, 10).replace(/-/g, ""); }
+function weekKeyUTC() {
+  const d = new Date();
+  const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((t - y0) / 86400000) + 1) / 7);
+  return `${t.getUTCFullYear()}W${String(week).padStart(2, "0")}`;
+}
+function positiveLimit(env, key) {
+  const n = Number(env[key]);
+  return Number.isFinite(n) && n > 0 ? n : Infinity;
+}
+async function checkSafetyBudgets(ctx) {
+  if (!ctx.fsReady || ctx.env.AI_SAFETY_BUDGETS_ENABLED !== "true") return null;
+  try {
+    const counters = await getBudgetCounters(ctx.env, ctx.user.uid, dayKeyUTC(), weekKeyUTC());
+    const globalLimit = positiveLimit(ctx.env, "GLOBAL_DAILY_USD_LIMIT");
+    if (counters.globalDaily >= globalLimit) return json({ error: "AI safety budget reached for today", code: "GLOBAL_AI_BUDGET_REACHED" }, 503);
+    if (ctx.isOwner) {
+      if (counters.ownerDaily >= positiveLimit(ctx.env, "OWNER_DAILY_USD_LIMIT")) return json({ error: "Owner AI daily safety limit reached", code: "OWNER_DAILY_AI_LIMIT" }, 429);
+      if (counters.ownerWeekly >= positiveLimit(ctx.env, "OWNER_WEEKLY_USD_LIMIT")) return json({ error: "Owner AI weekly safety limit reached", code: "OWNER_WEEKLY_AI_LIMIT" }, 429);
+    }
+  } catch (e) {
+    console.error("budget precheck failed", e);
+    if (ctx.env.AI_SAFETY_FAIL_CLOSED === "true") return json({ error: "AI safety budget check unavailable", code: "AI_SAFETY_UNAVAILABLE" }, 503);
+  }
+  return null;
+}
+async function recordBudgetUsage(ctx, costUsd) {
+  if (!ctx.fsReady || ctx.env.AI_SAFETY_BUDGETS_ENABLED !== "true" || !(costUsd > 0)) return;
+  try { await addBudgetUsage(ctx.env, ctx.user.uid, costUsd, dayKeyUTC(), weekKeyUTC(), ctx.isOwner); }
+  catch (e) { console.error("budget usage write failed", e); }
+}
+async function handleAIStatus(env, user) {
+  const isOwner = !!env.OWNER_UID && user.uid === env.OWNER_UID;
+  const base = { owner: isOwner, unlimited: isOwner, billingEnabled: env.AI_BILLING_ENABLED === "true", emailVerified: !!user.emailVerified, starterCredits: starterCredits(env), features: Object.fromEntries(Object.entries(AI_FEATURES).map(([k, v]) => [k, { credits: v.credits }])) };
+  if (isOwner) return json({ ...base, availableCredits: null, reservedCredits: 0 });
+  if (!firestoreConfigured(env)) return json({ ...base, availableCredits: null, reservedCredits: 0, firestoreConfigured: false });
+  try {
+    const wallet = await getOrCreateWallet(env, user, starterCredits(env));
+    return json({ ...base, availableCredits: Number(wallet.availableCredits || 0), reservedCredits: Number(wallet.reservedCredits || 0), firestoreConfigured: true });
+  } catch (e) {
+    console.error("AI status wallet failed", e);
+    return json({ ...base, availableCredits: null, reservedCredits: 0, firestoreConfigured: true, walletError: true }, 503);
+  }
+}
+async function handleAIGrant(body, env, user) {
+  if (!env.OWNER_UID || user.uid !== env.OWNER_UID) return json({ error: "Owner only" }, 403);
+  if (!firestoreConfigured(env)) return json({ error: "Firestore service account not configured" }, 503);
+  const targetUid = typeof body.uid === "string" ? body.uid.trim() : "";
+  const credits = Number(body.credits);
+  if (!targetUid || !Number.isInteger(credits) || credits <= 0 || credits > 100000) return json({ error: "Invalid uid or credits" }, 400);
+  try {
+    const wallet = await grantCredits(env, targetUid, credits, user.uid, typeof body.reason === "string" ? body.reason.slice(0, 100) : "owner_grant");
+    return json({ success: true, uid: targetUid, availableCredits: wallet.availableCredits });
+  } catch (e) {
+    console.error("grant credits failed", e);
+    return json({ error: "Could not grant credits" }, 503);
+  }
 }
 
 function isAllowedOrigin(origin, env) {
@@ -187,11 +308,13 @@ async function verifyFirebaseToken(token) {
   if (typeof payload.auth_time !== "number" || payload.auth_time > now + skew) throw new Error("bad auth_time");
   return {
     uid: payload.sub,
-    email: payload.email || null
+    email: payload.email || null,
+    emailVerified: payload.email_verified === true,
+    claims: payload
   };
 }
 
-async function handleAIChat(body, apiKey, model, defaultMaxTokens, defaultTemperature) {
+async function handleAIChat(body, apiKey, model, defaultMaxTokens, defaultTemperature, ctx) {
   const {messages: messages} = body;
   if (!Array.isArray(messages) || !messages.length) {
     return json({
@@ -227,7 +350,7 @@ async function handleAIChat(body, apiKey, model, defaultMaxTokens, defaultTemper
       system: system
     } : {},
     messages: chatMessages
-  });
+  }, ctx);
   if (claudeRes.error) return json({
     error: "Upstream API error",
     detail: claudeRes.error
@@ -244,7 +367,7 @@ async function handleAIChat(body, apiKey, model, defaultMaxTokens, defaultTemper
 
 const DEFAULT_COMP_STORE_LIST = "Amazon (Generalista), Walmart (Generalista), Target (Generalista), Costco (Mayorista), eBay (Marketplace), Best Buy (Electrónica), B&H Photo (Foto / Video), Adorama (Foto / Video), Apple Store (Apple oficial), Newegg (PC / Gaming), Micro Center (PC / Hardware), Nike (Deportivo), Adidas (Deportivo), Nordstrom (Premium), Macy's (Grandes tiendas), Zappos (Calzado), TJ Maxx (Outlet/Descuento), Gap (Ropa casual), Sephora (Cosmética), Ulta Beauty (Cosmética), REI (Outdoor), Home Depot (Hogar / Herram.), IKEA (Muebles / Hogar), GameStop (Videojuegos)";
 
-async function handleCompareShopping(body, apiKey) {
+async function handleCompareShopping(body, apiKey, ctx) {
   const {product: product, storeList: storeList} = body;
   if (!product || typeof product !== "string" || !product.trim()) {
     return json({
@@ -269,7 +392,7 @@ async function handleCompareShopping(body, apiKey) {
       role: "user",
       content: userMsg
     } ]
-  });
+  }, ctx);
   if (claudeRes.error) return json({
     error: "Upstream API error",
     detail: claudeRes.error
@@ -288,7 +411,7 @@ async function handleCompareShopping(body, apiKey) {
   });
 }
 
-async function handleInvoice(body, apiKey) {
+async function handleInvoice(body, apiKey, ctx) {
   const {image_base64: image_base64, image_media_type: image_media_type} = body;
   if (!image_base64) return json({
     error: "Missing required field: image_base64"
@@ -318,7 +441,7 @@ async function handleInvoice(body, apiKey) {
         text: prompt
       } ]
     } ]
-  });
+  }, ctx);
   if (claudeRes.error) return json({
     error: "Upstream API error",
     detail: claudeRes.error
@@ -343,7 +466,7 @@ async function handleInvoice(body, apiKey) {
   });
 }
 
-async function handleInsurance(body, apiKey) {
+async function handleInsurance(body, apiKey, ctx) {
   const {fileBase64: fileBase64, mediaType: mediaType, docName: docName} = body;
   if (!fileBase64 || !mediaType || !docName) {
     return json({
@@ -389,7 +512,7 @@ async function handleInsurance(body, apiKey) {
       role: "user",
       content: content
     } ]
-  });
+  }, ctx);
   if (claudeRes.error) return json({
     error: "Upstream API error",
     detail: claudeRes.error
@@ -464,7 +587,7 @@ async function handleRecaptcha(body, env) {
   }
 }
 
-async function handleModerate(body, apiKey) {
+async function handleModerate(body, apiKey, ctx) {
   const {imageBase64: imageBase64, mediaType: mediaType = "image/jpeg"} = body;
   if (!imageBase64) return json({
     error: "Missing imageBase64"
@@ -496,7 +619,7 @@ async function handleModerate(body, apiKey) {
         text: prompt
       } ]
     } ]
-  });
+  }, ctx);
   if (claudeRes.error) return json({
     error: "Upstream API error",
     detail: claudeRes.error
@@ -508,27 +631,55 @@ async function handleModerate(body, apiKey) {
   return json(result);
 }
 
-async function callClaude(apiKey, payload) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01"
-    },
-    body: JSON.stringify(payload)
-  });
+async function callClaude(apiKey, payload, ctx) {
+  const started = Date.now();
+  let response;
+  try {
+    response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify(payload)
+    });
+  } catch (e) {
+    writeAIAnalytics(ctx, payload.model, null, 0, Date.now() - started, false, "network_error");
+    return { error: { message: "network_error" } };
+  }
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    return {
-      error: err
-    };
+    writeAIAnalytics(ctx, payload.model, null, 0, Date.now() - started, false, `http_${response.status}`);
+    return { error: err };
   }
   const data = await response.json();
   const text = (data.content || []).map(c => c.text || "").join("").trim();
-  return {
-    text: text
-  };
+  const usage = normalizeAnthropicUsage(data.usage || {});
+  const costUsd = estimateAnthropicCost(payload.model, usage);
+  if (ctx) {
+    ctx.costUsd = costUsd;
+    ctx.usage = usage;
+    await recordBudgetUsage(ctx, costUsd);
+  }
+  writeAIAnalytics(ctx, payload.model, usage, costUsd, Date.now() - started, true, "");
+  return { text, usage, costUsd };
+}
+
+function normalizeAnthropicUsage(u) {
+  return { input_tokens: Number(u.input_tokens || 0), output_tokens: Number(u.output_tokens || 0), cache_read_input_tokens: Number(u.cache_read_input_tokens || 0), cache_creation_input_tokens: Number(u.cache_creation_input_tokens || 0), web_search_requests: Number(u.server_tool_use?.web_search_requests || 0) };
+}
+function estimateAnthropicCost(model, usage) {
+  const p = MODEL_PRICING_USD_PER_M[model];
+  if (!p || !usage) return 0;
+  const tokenCost = (usage.input_tokens * p.input + usage.output_tokens * p.output + usage.cache_read_input_tokens * p.cacheRead + usage.cache_creation_input_tokens * p.cacheWrite) / 1_000_000;
+  return tokenCost + usage.web_search_requests * WEB_SEARCH_USD_PER_REQUEST;
+}
+function writeAIAnalytics(ctx, model, usage, costUsd, latencyMs, success, errorCode) {
+  if (!ctx?.env?.AI_ANALYTICS) return;
+  try {
+    ctx.env.AI_ANALYTICS.writeDataPoint({
+      blobs: [ctx.feature || "unknown", model || "unknown", success ? "success" : "error", errorCode || "", ctx.isOwner ? "owner" : "user"],
+      doubles: [Number(usage?.input_tokens || 0), Number(usage?.output_tokens || 0), Number(usage?.cache_read_input_tokens || 0), Number(usage?.cache_creation_input_tokens || 0), Number(usage?.web_search_requests || 0), Number(costUsd || 0), Number(latencyMs || 0)],
+      indexes: [ctx.user?.uid || "anonymous"]
+    });
+  } catch (e) { console.error("Analytics Engine write failed", e); }
 }
 
 function tryParseJson(text) {

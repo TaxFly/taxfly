@@ -15,6 +15,11 @@ window.TAXFLY_CONFIG = {
 };
 
 window.taxflyWorker = async function(body) {
+  body = body && typeof body === "object" ? { ...body } : body;
+  const aiTypes = new Set(["invoice_ocr", "insurance_analysis", "moderate_image", "optimize_route", "taxie_chat", "compare_shopping"]);
+  if (body && aiTypes.has(body.type) && !body.request_id) {
+    body.request_id = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : ("req_" + Date.now() + "_" + Math.random().toString(36).slice(2));
+  }
   const headers = {
     "Content-Type": "application/json"
   };
@@ -32,6 +37,13 @@ window.taxflyWorker = async function(body) {
     headers: headers,
     body: JSON.stringify(body)
   });
+};
+
+window.taxflyAIStatus = async function() {
+  const res = await window.taxflyWorker({ type: "ai_status" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "No se pudo leer el estado de IA");
+  return data;
 };
 
 (function() {

@@ -34,6 +34,7 @@
       last: "Último respaldo: {d}",
       never: "Todavía no hiciste ningún respaldo",
       account: "Cuenta",
+      ai_credits: "Créditos IA",
       switch_profile: "Cambiar perfil",
       email: "Cambiar correo",
       password: "Cambiar contraseña",
@@ -106,6 +107,7 @@
       last: "Last backup: {d}",
       never: "You haven't made a backup yet",
       account: "Account",
+      ai_credits: "AI credits",
       switch_profile: "Change profile",
       email: "Change email",
       password: "Change password",
@@ -178,6 +180,7 @@
       last: "Último backup: {d}",
       never: "Você ainda não fez nenhum backup",
       account: "Conta",
+      ai_credits: "Créditos de IA",
       switch_profile: "Trocar perfil",
       email: "Alterar e-mail",
       password: "Alterar senha",
@@ -295,7 +298,7 @@
   function row(act, icon, color, key, extra) {
     return '<button type="button" class="sx-row" data-act="' + act + '"><span class="sx-ico" style="--c:' + color + '">' + ic(icon) + '</span><span class="sx-lbl" data-t="' + key + '"></span>' + (extra || '<span class="sx-go">' + ic("chev", 16) + "</span>") + "</button>";
   }
-  drawer.innerHTML = '<div class="sx-head"><span class="sx-title" data-t="title"></span><button type="button" class="sx-x" data-act="close" data-tl="close" aria-label="Cerrar">' + ic("close", 16) + "</button></div>" + '<div class="sx-scroll">' + '<div class="sx-me">' + '<div class="sx-av" id="sxAvatar">' + ic("users", 22) + "</div>" + '<div class="sx-me-txt"><div class="sx-me-lbl" data-t="profile"></div><p id="userEmail" class="drawer-email"></p><div class="sx-mail" id="sxMail"></div></div>' + '<button type="button" class="sx-chip" data-act="profile" data-tl="switch_profile">' + ic("users", 18) + "</button>" + "</div>" + '<span class="sx-sec" data-t="prefs"></span>' + '<div class="sx-card">' + '<div class="sx-row sx-row-lang"><span class="sx-ico" style="--c:#0ea5e9">' + ic("globe") + '</span><span class="sx-lbl" data-t="language"></span>' + '<div class="sx-lang">' + '<button type="button" class="lang-opt" id="lang-es" data-lang="es">' + FLAG.es + " ES</button>" + '<button type="button" class="lang-opt" id="lang-en" data-lang="en">' + FLAG.en + " EN</button>" + '<button type="button" class="lang-opt" id="lang-pt" data-lang="pt">' + FLAG.pt + " PT</button>" + "</div></div>" + row("theme", "moon", "#7c3aed", "dark", '<span class="sx-sw" id="sxSwitch" role="switch" aria-checked="false"></span>') + "</div>" + '<span class="sx-sec" data-t="data"></span>' + '<div class="sx-bk">' + '<div class="sx-bk-h"><span class="sx-ico">' + ic("shield") + '</span><span data-t="bk_title"></span></div>' + '<p data-t="bk_desc"></p>' + '<div class="sx-bk-btns">' + '<button type="button" class="sx-btn pri" data-act="export">' + ic("download", 16) + '<span data-t="export"></span></button>' + '<button type="button" class="sx-btn" data-act="import">' + ic("upload", 16) + '<span data-t="import"></span></button>' + "</div>" + '<div class="sx-last" id="sxLast"></div>' + "</div>" + '<span class="sx-sec" data-t="account"></span>' + '<div class="sx-card">' + row("email", "mail", "#2563eb", "email") + row("password", "key", "#f59e0b", "password") + row("pin", "lock", "#14b8a6", "pin") + "</div>" + '<span class="sx-sec" data-t="app"></span>' + '<div class="sx-card">' + row("install", "phone", "#10b981", "install") + row("reload", "refresh", "#0ea5e9", "update") + "</div>" + '<div class="sx-foot">' + '<button type="button" class="sx-btn sx-out" data-act="logout">' + ic("logout", 16) + '<span data-t="logout"></span></button>' + '<div class="sx-danger"><span class="sx-danger-l" data-t="danger"></span>' + '<button type="button" class="sx-del" data-act="delete">' + ic("trash", 15) + '<span data-t="del"></span></button></div>' + "</div>" + "</div>" + '<input type="file" id="sxFile" accept="application/json,.json" style="display:none">';
+  drawer.innerHTML = '<div class="sx-head"><span class="sx-title" data-t="title"></span><button type="button" class="sx-x" data-act="close" data-tl="close" aria-label="Cerrar">' + ic("close", 16) + "</button></div>" + '<div class="sx-scroll">' + '<div class="sx-me">' + '<div class="sx-av" id="sxAvatar">' + ic("users", 22) + "</div>" + '<div class="sx-me-txt"><div class="sx-me-lbl" data-t="profile"></div><p id="userEmail" class="drawer-email"></p><div class="sx-mail" id="sxMail"></div></div>' + '<button type="button" class="sx-chip" data-act="profile" data-tl="switch_profile">' + ic("users", 18) + "</button>" + "</div>" + '<span class="sx-sec" data-t="prefs"></span>' + '<div class="sx-card">' + '<div class="sx-row sx-row-lang"><span class="sx-ico" style="--c:#0ea5e9">' + ic("globe") + '</span><span class="sx-lbl" data-t="language"></span>' + '<div class="sx-lang">' + '<button type="button" class="lang-opt" id="lang-es" data-lang="es">' + FLAG.es + " ES</button>" + '<button type="button" class="lang-opt" id="lang-en" data-lang="en">' + FLAG.en + " EN</button>" + '<button type="button" class="lang-opt" id="lang-pt" data-lang="pt">' + FLAG.pt + " PT</button>" + "</div></div>" + row("theme", "moon", "#7c3aed", "dark", '<span class="sx-sw" id="sxSwitch" role="switch" aria-checked="false"></span>') + "</div>" + '<span class="sx-sec" data-t="data"></span>' + '<div class="sx-bk">' + '<div class="sx-bk-h"><span class="sx-ico">' + ic("shield") + '</span><span data-t="bk_title"></span></div>' + '<p data-t="bk_desc"></p>' + '<div class="sx-bk-btns">' + '<button type="button" class="sx-btn pri" data-act="export">' + ic("download", 16) + '<span data-t="export"></span></button>' + '<button type="button" class="sx-btn" data-act="import">' + ic("upload", 16) + '<span data-t="import"></span></button>' + "</div>" + '<div class="sx-last" id="sxLast"></div>' + "</div>" + '<span class="sx-sec" data-t="account"></span>' + '<div class="sx-card">' + '<div class="sx-row" id="sxAIRow"><span class="sx-ico" style="--c:#7c3aed">' + ic("shield") + '</span><span class="sx-lbl" data-t="ai_credits"></span><strong id="sxAIValue" style="font-size:.78rem;color:var(--text-sub)">—</strong></div>' + row("email", "mail", "#2563eb", "email") + row("password", "key", "#f59e0b", "password") + row("pin", "lock", "#14b8a6", "pin") + "</div>" + '<span class="sx-sec" data-t="app"></span>' + '<div class="sx-card">' + row("install", "phone", "#10b981", "install") + row("reload", "refresh", "#0ea5e9", "update") + "</div>" + '<div class="sx-foot">' + '<button type="button" class="sx-btn sx-out" data-act="logout">' + ic("logout", 16) + '<span data-t="logout"></span></button>' + '<div class="sx-danger"><span class="sx-danger-l" data-t="danger"></span>' + '<button type="button" class="sx-del" data-act="delete">' + ic("trash", 15) + '<span data-t="del"></span></button></div>' + "</div>" + "</div>" + '<input type="file" id="sxFile" accept="application/json,.json" style="display:none">';
   function applyText() {
     drawer.querySelectorAll("[data-t]").forEach(function(el) {
       el.textContent = t(el.getAttribute("data-t"));
@@ -359,11 +362,26 @@
     var un = document.getElementById("userEmail");
     if (un && !un.textContent && nombre) un.textContent = nombre;
   }
+  var aiStatusAt = 0;
+  function refreshAIStatus(force) {
+    var el = document.getElementById("sxAIValue");
+    if (!el || typeof window.taxflyAIStatus !== "function") return;
+    if (!force && Date.now() - aiStatusAt < 30000) return;
+    aiStatusAt = Date.now();
+    el.textContent = "…";
+    window.taxflyAIStatus().then(function(st) {
+      if (st && st.unlimited) el.textContent = "∞ · Owner";
+      else if (st && typeof st.availableCredits === "number") el.textContent = String(st.availableCredits);
+      else if (st && st.billingEnabled === false) el.textContent = "Beta";
+      else el.textContent = "—";
+    }).catch(function() { el.textContent = "—"; });
+  }
   function refresh() {
     applyText();
     applyLast();
     applyTheme();
     applyProfile();
+    refreshAIStatus(false);
   }
   refresh();
   var tripsUiUrl = new URL("trips-ui.js", document.currentScript.src).href;

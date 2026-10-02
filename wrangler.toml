@@ -16,5 +16,24 @@ namespace_id = "1002"
   limit = 30
   period = 60
 
+[[analytics_engine_datasets]]
+binding = "AI_ANALYTICS"
+dataset = "taxfly_ai_usage"
+
 [vars]
 ALLOWED_ORIGINS = "https://taxfly.github.io"
+FIREBASE_PROJECT_ID = "viajes-db538"
+
+# Activar SOLO después de configurar los secrets de Firestore y probar /ai_status.
+AI_BILLING_ENABLED = "false"
+AI_STARTER_CREDITS = "10"
+
+# Los circuit breakers persistentes usan Firestore. Activar cuando los secrets estén configurados.
+AI_SAFETY_BUDGETS_ENABLED = "false"
+AI_SAFETY_FAIL_CLOSED = "false"
+OWNER_DAILY_USD_LIMIT = "5"
+OWNER_WEEKLY_USD_LIMIT = "20"
+GLOBAL_DAILY_USD_LIMIT = "25"
+
+# No guardar OWNER_UID en GitHub si preferís mantenerlo privado. Se puede cargar como secret.
+# OWNER_UID = "PEGAR_UID_FIREBASE_AQUI"
