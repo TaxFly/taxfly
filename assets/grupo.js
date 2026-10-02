@@ -8,13 +8,28 @@ const _RC_VERIFY_URL = window.TAXFLY_CONFIG.WORKER_URL;
 
 async function _rcToken(action) {
   return new Promise(resolve => {
-    if (typeof grecaptcha === "undefined") {
+    if (typeof grecaptcha === "undefined" || typeof grecaptcha.ready !== "function") {
       resolve(null);
       return;
     }
-    grecaptcha.ready(() => grecaptcha.execute(_RC_SITE_KEY, {
-      action: action
-    }).then(resolve).catch(() => resolve(null)));
+    const timer = setTimeout(() => resolve(null), 4000);
+    const done = v => {
+      clearTimeout(timer);
+      resolve(v);
+    };
+    try {
+      grecaptcha.ready(() => {
+        try {
+          grecaptcha.execute(_RC_SITE_KEY, {
+            action: action
+          }).then(done).catch(() => done(null));
+        } catch (e) {
+          done(null);
+        }
+      });
+    } catch (e) {
+      done(null);
+    }
   });
 }
 
