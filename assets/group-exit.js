@@ -18,18 +18,27 @@ function forgetLocally(uid, groupId) {
   } catch (e) {}
 }
 
-async function leaveOne(d, uid, mine) {
+async function leaveOne(d, uid, matches) {
   const data = d.data();
-  const rest = (data.miembros || []).filter(m => m && m.uid !== uid);
-  // Último miembro y creador: se elimina el grupo (las reglas solo lo permiten al creador).
+  const miembros = data.miembros || [];
+  // "Mío" = esta entrada específica (uid + perfil), no cualquier entrada que comparta el uid:
+  // dos perfiles del mismo mail (mismo uid) pueden ser miembros distintos del mismo grupo.
+  const esMio = m => m && m.uid === uid && matches(m);
+  const mine = miembros.filter(esMio);
+  if (!mine.length) return 0;
+  const rest = miembros.filter(m => !esMio(m));
+  // Último miembro de VERDAD (no solo "con este uid") y creador: se elimina el grupo.
   if (!rest.length && data.creadoPor === uid) {
-    try { await withTimeout(deleteDoc(d.ref)); return; } catch (e) { console.warn("[group-exit] no se pudo borrar el grupo vacío", d.id, e); }
+    try { await withTimeout(deleteDoc(d.ref)); return mine.length; } catch (e) { console.warn("[group-exit] no se pudo borrar el grupo vacío", d.id, e); return 0; }
   }
-  // Todo en un solo update y mientras todavía es miembro: las reglas dejan de permitir escribir apenas deja de serlo.
-  const patch = { miembroUids: arrayRemove(uid) };
-  if (mine.length) patch.miembros = arrayRemove(...mine);
-  if (data.creadoPor === uid && rest.length) patch.creadoPor = rest[0].uid;   // el grupo no queda sin creador
+  // Si queda otro perfil con el mismo uid en el grupo, la cuenta sigue siendo miembro:
+  // no la sacamos de miembroUids ni le reasignamos la creación a otra persona.
+  const quedaEseUid = rest.some(m => m && m.uid === uid);
+  const patch = { miembros: arrayRemove(...mine) };
+  if (!quedaEseUid) patch.miembroUids = arrayRemove(uid);
+  if (data.creadoPor === uid && !quedaEseUid && rest.length) patch.creadoPor = rest[0].uid;   // el grupo no queda sin creador
   await withTimeout(updateDoc(d.ref, patch));
+  return mine.length;
 }
 
 async function leave(db, uid, matches) {
@@ -38,11 +47,11 @@ async function leave(db, uid, matches) {
   const snap = await withTimeout(getDocs(query(collection(db, "grupos"), where("miembroUids", "array-contains", uid))));
   let left = 0;
   for (const d of snap.docs) {
-    const mine = (d.data().miembros || []).filter(m => m && m.uid === uid && matches(m));
-    if (!mine.length) continue;
-    await leaveOne(d, uid, mine);
-    forgetLocally(uid, d.id);
-    left++;
+    const removed = await leaveOne(d, uid, matches);
+    if (removed) {
+      forgetLocally(uid, d.id);
+      left++;
+    }
   }
   return left;
 }
