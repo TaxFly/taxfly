@@ -1,4 +1,4 @@
-import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits } from "./worker-firestore.js";
+import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits, getProfileLimits, setProfileLimit } from "./worker-firestore.js";
 
 const FIREBASE_PROJECT_ID = "viajes-db538";
 
@@ -77,7 +77,7 @@ async function handle(request, env) {
   let user = null;
   if (token) {
     try { user = await verifyFirebaseToken(token); } catch (e) {
-      if (AI_TYPES.includes(body.type) || body.type === "ai_status" || body.type === "ai_grant_credits") return json({ error: "Invalid or expired session" }, 401);
+      if (AI_TYPES.includes(body.type) || ["ai_status", "ai_grant_credits", "ai_profile_limits_get", "ai_profile_limit_set"].includes(body.type)) return json({ error: "Invalid or expired session" }, 401);
     }
   }
 
@@ -88,6 +88,15 @@ async function handle(request, env) {
   if (body.type === "ai_grant_credits") {
     if (!user) return json({ error: "Login required" }, 401);
     return handleAIGrant(body, env, user);
+  }
+
+  if (body.type === "ai_profile_limits_get") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleAIProfileLimitsGet(body, env, user);
+  }
+  if (body.type === "ai_profile_limit_set") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleAIProfileLimitSet(body, env, user);
   }
 
   const isCostRoute = AI_TYPES.includes(body.type);
@@ -106,22 +115,26 @@ async function handle(request, env) {
     const credits = Number(AI_FEATURES[feature]?.credits || 1);
     const billingEnabled = env.AI_BILLING_ENABLED === "true";
     const fsReady = firestoreConfigured(env);
-    const ctx = { env, user, feature, requestId, isOwner, credits, billingEnabled, fsReady, costUsd: 0, usage: null };
+    const profileId = normalizeProfileId(body.profile_id);
+    const ctx = { env, user, feature, requestId, isOwner, credits, billingEnabled, fsReady, profileId, costUsd: 0, usage: null };
 
     const safety = await checkSafetyBudgets(ctx);
     if (safety) return safety;
 
     let reserved = false;
-    if (billingEnabled && !isOwner) {
+    if (billingEnabled) {
       if (!fsReady) return json({ error: "AI billing is enabled but Firestore service credentials are missing" }, 503);
       try {
-        const result = await reserveCredits(env, user, feature, credits, requestId, starterCredits(env));
+        const result = await reserveCredits(env, user, feature, credits, requestId, starterCredits(env), profileId, { skipWallet: isOwner });
         if (result.reused && result.reservation?.state === "captured") return json({ error: "This AI request was already processed", code: "REQUEST_ALREADY_CAPTURED", request_id: requestId }, 409);
         if (result.reused && result.reservation?.state === "released") return json({ error: "This AI request id was already released; retry with a new request id", code: "REQUEST_ALREADY_RELEASED", request_id: requestId }, 409);
-        reserved = true;
+        reserved = !!result.reservation;
       } catch (e) {
         if (e.code === "EMAIL_VERIFICATION_REQUIRED") return json({ error: "Verify your email before using free AI credits", code: e.code }, 403);
         if (e.code === "AI_CREDITS_REQUIRED") return json({ error: "AI credits required", code: e.code, balance: e.balance, required: e.required }, 402);
+        if (e.code === "PROFILE_AI_BLOCKED") return json({ error: "AI is disabled for this profile", code: e.code, profile_id: e.profileId }, 403);
+        if (e.code === "PROFILE_AI_LIMIT_REACHED") return json({ error: "This profile reached its AI credit limit", code: e.code, profile_id: e.profileId, used: e.used, reserved: e.reserved, limit: e.limit, required: e.required }, 402);
+        if (e.code === "PROFILE_NOT_FOUND") return json({ error: "Unknown profile", code: e.code }, 400);
         if (e.code === "REQUEST_ID_CONFLICT") return json({ error: "request_id conflict", code: e.code }, 409);
         console.error("reserveCredits failed", e);
         return json({ error: "Could not reserve AI credits" }, 503);
@@ -165,6 +178,13 @@ function normalizeRequestId(value) {
   const v = value.trim();
   return /^[A-Za-z0-9_-]{12,180}$/.test(v) ? v : "";
 }
+function normalizeProfileId(value) {
+  if (typeof value !== "string") return null;
+  const s = value.trim();
+  if (!s || s.length > 180 || !/^[A-Za-z0-9_-]+$/.test(s)) return null;
+  return s;
+}
+
 function starterCredits(env) {
   const n = Number(env.AI_STARTER_CREDITS || 10);
   return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 10;
@@ -231,6 +251,36 @@ async function handleAIGrant(body, env, user) {
     return json({ error: "Could not grant credits" }, 503);
   }
 }
+
+async function handleAIProfileLimitsGet(body, env, user) {
+  if (!firestoreConfigured(env)) return json({ error: "Firestore service account not configured" }, 503);
+  const ids = Array.isArray(body.profile_ids) ? body.profile_ids.map(normalizeProfileId).filter(Boolean).slice(0, 50) : [];
+  try {
+    const limits = await getProfileLimits(env, user.uid, ids);
+    return json({ limits });
+  } catch (e) {
+    console.error("profile limits get failed", e);
+    return json({ error: "Could not read profile AI limits" }, 503);
+  }
+}
+
+async function handleAIProfileLimitSet(body, env, user) {
+  if (!firestoreConfigured(env)) return json({ error: "Firestore service account not configured" }, 503);
+  const profileId = normalizeProfileId(body.profile_id);
+  const mode = typeof body.mode === "string" ? body.mode.trim() : "";
+  const resetUsed = body.reset_used === true;
+  if (!profileId || !["unlimited", "limited", "blocked"].includes(mode)) return json({ error: "Invalid profile limit" }, 400);
+  try {
+    const limit = await setProfileLimit(env, user.uid, profileId, mode, body.limit_credits, resetUsed);
+    return json({ success: true, limit });
+  } catch (e) {
+    if (e.code === "PROFILE_NOT_FOUND") return json({ error: "Unknown profile", code: e.code }, 404);
+    if (e.code === "INVALID_PROFILE_LIMIT") return json({ error: "Invalid profile limit", code: e.code }, 400);
+    console.error("profile limit set failed", e);
+    return json({ error: "Could not save profile AI limit" }, 503);
+  }
+}
+
 
 function isAllowedOrigin(origin, env) {
   if (!origin) return false;

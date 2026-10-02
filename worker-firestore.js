@@ -169,6 +169,52 @@ async function txRetry(fn, attempts = 5) {
 }
 
 function safeId(s) { return String(s).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 180); }
+function profileLimitPath(uid, profileId) {
+  return `aiProfileLimits/${safeId(uid)}__${safeId(profileId)}`;
+}
+function profileLimitDefaults(uid, profileId) {
+  return {
+    uid, profileId, mode: "unlimited", limitCredits: 0, usedCredits: 0, reservedCredits: 0, updatedAt: new Date().toISOString()
+  };
+}
+async function profileExists(env, uid, profileId) {
+  if (!profileId) return false;
+  return !!(await getDocument(env, `usuarios/${safeId(uid)}/perfiles/${safeId(profileId)}`));
+}
+
+export async function getProfileLimits(env, uid, profileIds) {
+  const ids = [...new Set((Array.isArray(profileIds) ? profileIds : []).map(x => String(x || "").trim()).filter(Boolean))].slice(0, 50);
+  const rows = await Promise.all(ids.map(async profileId => {
+    if (!(await profileExists(env, uid, profileId))) return null;
+    const doc = await getDocument(env, profileLimitPath(uid, profileId));
+    const base = profileLimitDefaults(uid, profileId);
+    return { ...base, ...(doc || {}), uid, profileId };
+  }));
+  return rows.filter(Boolean);
+}
+
+export async function setProfileLimit(env, uid, profileId, mode, limitCredits, resetUsed = false) {
+  profileId = String(profileId || "").trim();
+  mode = String(mode || "").trim();
+  if (!profileId || !["unlimited", "limited", "blocked"].includes(mode)) throw Object.assign(new Error("Invalid profile limit"), { code: "INVALID_PROFILE_LIMIT" });
+  if (!(await profileExists(env, uid, profileId))) throw Object.assign(new Error("Profile not found"), { code: "PROFILE_NOT_FOUND" });
+  const limit = mode === "limited" ? Math.floor(Number(limitCredits)) : 0;
+  if (mode === "limited" && (!Number.isFinite(limit) || limit < 1 || limit > 1000000)) throw Object.assign(new Error("Invalid credit limit"), { code: "INVALID_PROFILE_LIMIT" });
+  const path = profileLimitPath(uid, profileId);
+  return txRetry(async () => {
+    const tx = await beginTransaction(env);
+    const [raw] = await batchGet(env, [path], tx);
+    const base = raw || profileLimitDefaults(uid, profileId);
+    const next = {
+      ...base, uid, profileId, mode, limitCredits: limit,
+      usedCredits: resetUsed ? 0 : Math.max(0, Number(base.usedCredits || 0)),
+      reservedCredits: Math.max(0, Number(base.reservedCredits || 0)),
+      updatedAt: new Date().toISOString()
+    };
+    await commit(env, tx, [writeUpdate(env, path, next, raw ? null : { exists: false })]);
+    return next;
+  });
+}
 function walletDefaults(user, starterCredits) {
   const grant = user.emailVerified ? Math.max(0, starterCredits) : 0;
   return {
@@ -215,34 +261,85 @@ export async function getOrCreateWallet(env, user, starterCredits = 10) {
   });
 }
 
-export async function reserveCredits(env, user, feature, credits, requestId, starterCredits = 10) {
+export async function reserveCredits(env, user, feature, credits, requestId, starterCredits = 10, profileId = null, options = {}) {
+  const skipWallet = options?.skipWallet === true;
+  profileId = profileId ? String(profileId).trim() : null;
+  if (profileId && !(await profileExists(env, user.uid, profileId))) throw Object.assign(new Error("Profile not found"), { code: "PROFILE_NOT_FOUND" });
+
   const walletPath = `aiWallets/${safeId(user.uid)}`;
   const reservationPath = `aiReservations/${safeId(requestId)}`;
+  const limitPath = profileId ? profileLimitPath(user.uid, profileId) : null;
+
   return txRetry(async () => {
     const tx = await beginTransaction(env);
-    const [walletRaw, reservation] = await batchGet(env, [walletPath, reservationPath], tx);
+    const paths = [reservationPath];
+    if (!skipWallet) paths.push(walletPath);
+    if (limitPath) paths.push(limitPath);
+    const docs = await batchGet(env, paths, tx);
+    let pos = 0;
+    const reservation = docs[pos++];
+    const walletRaw = skipWallet ? null : docs[pos++];
+    const limitRaw = limitPath ? docs[pos++] : null;
+
     if (reservation) {
       await commit(env, tx, []);
-      if (reservation.uid !== user.uid || reservation.feature !== feature) throw Object.assign(new Error("requestId already used"), { code: "REQUEST_ID_CONFLICT" });
-      return { reused: true, reservation, wallet: walletRaw };
+      if (reservation.uid !== user.uid || reservation.feature !== feature || String(reservation.profileId || "") !== String(profileId || "")) {
+        throw Object.assign(new Error("requestId already used"), { code: "REQUEST_ID_CONFLICT" });
+      }
+      return { reused: true, reservation, wallet: walletRaw, profileLimit: limitRaw };
     }
-    let wallet = walletRaw || walletDefaults(user, starterCredits);
-    if (!user.emailVerified && !walletRaw) throw Object.assign(new Error("Email verification required"), { code: "EMAIL_VERIFICATION_REQUIRED" });
+
+    const profileLimit = limitPath ? { ...profileLimitDefaults(user.uid, profileId), ...(limitRaw || {}) } : null;
+    if (profileLimit?.mode === "blocked") {
+      await commit(env, tx, []);
+      throw Object.assign(new Error("AI disabled for this profile"), { code: "PROFILE_AI_BLOCKED", profileId });
+    }
+    if (profileLimit?.mode === "limited") {
+      const used = Math.max(0, Number(profileLimit.usedCredits || 0));
+      const reservedProfile = Math.max(0, Number(profileLimit.reservedCredits || 0));
+      const cap = Math.max(0, Number(profileLimit.limitCredits || 0));
+      if (used + reservedProfile + credits > cap) {
+        await commit(env, tx, []);
+        throw Object.assign(new Error("Profile AI credit limit reached"), {
+          code: "PROFILE_AI_LIMIT_REACHED", profileId, used, reserved: reservedProfile, limit: cap, required: credits
+        });
+      }
+    }
+
+    let wallet = walletRaw;
+    let nextWallet = null;
     let starterGrantedNow = false;
-    if (walletRaw && user.emailVerified && !wallet.starterCreditsGranted && starterCredits > 0) {
-      wallet = { ...wallet, availableCredits: Number(wallet.availableCredits || 0) + starterCredits, starterCreditsGranted: true };
-      starterGrantedNow = true;
+    if (!skipWallet) {
+      wallet = walletRaw || walletDefaults(user, starterCredits);
+      if (!user.emailVerified && !walletRaw) throw Object.assign(new Error("Email verification required"), { code: "EMAIL_VERIFICATION_REQUIRED" });
+      if (walletRaw && user.emailVerified && !wallet.starterCreditsGranted && starterCredits > 0) {
+        wallet = { ...wallet, availableCredits: Number(wallet.availableCredits || 0) + starterCredits, starterCreditsGranted: true };
+        starterGrantedNow = true;
+      }
+      if (Number(wallet.availableCredits || 0) < credits) throw Object.assign(new Error("Insufficient AI credits"), { code: "AI_CREDITS_REQUIRED", balance: Number(wallet.availableCredits || 0), required: credits });
+      nextWallet = { ...wallet, email: user.email || wallet.email || "", availableCredits: Number(wallet.availableCredits || 0) - credits, reservedCredits: Number(wallet.reservedCredits || 0) + credits, updatedAt: new Date().toISOString() };
     }
-    if (Number(wallet.availableCredits || 0) < credits) throw Object.assign(new Error("Insufficient AI credits"), { code: "AI_CREDITS_REQUIRED", balance: Number(wallet.availableCredits || 0), required: credits });
-    const nextWallet = { ...wallet, email: user.email || wallet.email || "", availableCredits: Number(wallet.availableCredits || 0) - credits, reservedCredits: Number(wallet.reservedCredits || 0) + credits, updatedAt: new Date().toISOString() };
-    const reservationDoc = { requestId, uid: user.uid, feature, credits, state: "reserved", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-    const writes = [
-      writeUpdate(env, walletPath, nextWallet, walletRaw ? null : { exists: false }),
-      writeUpdate(env, reservationPath, reservationDoc, { exists: false })
-    ];
-    if ((!walletRaw && nextWallet.starterCreditsGranted) || starterGrantedNow) writes.push(writeUpdate(env, `aiLedger/starter_${safeId(user.uid)}`, { uid: user.uid, type: "starter_grant", credits: starterCredits, createdAt: new Date().toISOString() }, { exists: false }));
+
+    const limitedProfile = profileLimit?.mode === "limited";
+    const nextProfileLimit = limitedProfile ? {
+      ...profileLimit,
+      reservedCredits: Math.max(0, Number(profileLimit.reservedCredits || 0)) + credits,
+      updatedAt: new Date().toISOString()
+    } : null;
+
+    const reservationDoc = {
+      requestId, uid: user.uid, feature, credits, profileId: profileId || "", walletReserved: !skipWallet,
+      profileLimited: !!limitedProfile, profileLimitCredits: limitedProfile ? Number(profileLimit.limitCredits || 0) : 0,
+      state: "reserved", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    };
+    const writes = [writeUpdate(env, reservationPath, reservationDoc, { exists: false })];
+    if (nextWallet) writes.push(writeUpdate(env, walletPath, nextWallet, walletRaw ? null : { exists: false }));
+    if (nextProfileLimit) writes.push(writeUpdate(env, limitPath, nextProfileLimit, limitRaw ? null : { exists: false }));
+    if (!skipWallet && ((!walletRaw && nextWallet?.starterCreditsGranted) || starterGrantedNow)) {
+      writes.push(writeUpdate(env, `aiLedger/starter_${safeId(user.uid)}`, { uid: user.uid, type: "starter_grant", credits: starterCredits, createdAt: new Date().toISOString() }, { exists: false }));
+    }
     await commit(env, tx, writes);
-    return { reused: false, reservation: reservationDoc, wallet: nextWallet };
+    return { reused: false, reservation: reservationDoc, wallet: nextWallet, profileLimit: nextProfileLimit || profileLimit };
   });
 }
 
@@ -251,15 +348,49 @@ export async function finalizeReservation(env, user, requestId, success, actualC
   const reservationPath = `aiReservations/${safeId(requestId)}`;
   return txRetry(async () => {
     const tx = await beginTransaction(env);
-    const [wallet, reservation] = await batchGet(env, [walletPath, reservationPath], tx);
+    const [reservation] = await batchGet(env, [reservationPath], tx);
     if (!reservation) { await commit(env, tx, []); return null; }
     if (reservation.uid !== user.uid) throw new Error("Reservation owner mismatch");
     if (reservation.state !== "reserved") { await commit(env, tx, []); return reservation; }
+
+    const paths = [];
+    if (reservation.walletReserved) paths.push(walletPath);
+    const limitPath = reservation.profileLimited && reservation.profileId ? profileLimitPath(user.uid, reservation.profileId) : null;
+    if (limitPath) paths.push(limitPath);
+    const docs = paths.length ? await batchGet(env, paths, tx) : [];
+    let pos = 0;
+    const wallet = reservation.walletReserved ? docs[pos++] : null;
+    const profileLimit = limitPath ? docs[pos++] : null;
+
     const credits = Number(reservation.credits || 0);
     const nextReservation = { ...reservation, state: success ? "captured" : "released", actualCostUsd: Number(actualCostUsd || 0), usage: usage || null, updatedAt: new Date().toISOString() };
-    const nextWallet = { ...wallet, reservedCredits: Math.max(0, Number(wallet?.reservedCredits || 0) - credits), availableCredits: Number(wallet?.availableCredits || 0) + (success ? 0 : credits), updatedAt: new Date().toISOString() };
-    const writes = [writeUpdate(env, reservationPath, nextReservation), writeUpdate(env, walletPath, nextWallet)];
-    if (success) writes.push(writeUpdate(env, `aiLedger/${safeId(requestId)}_usage`, { uid: user.uid, type: "usage", feature: reservation.feature, credits: -credits, requestId, actualCostUsd: Number(actualCostUsd || 0), createdAt: new Date().toISOString() }, { exists: false }));
+    const writes = [writeUpdate(env, reservationPath, nextReservation)];
+
+    if (reservation.walletReserved) {
+      const nextWallet = {
+        ...wallet,
+        reservedCredits: Math.max(0, Number(wallet?.reservedCredits || 0) - credits),
+        availableCredits: Number(wallet?.availableCredits || 0) + (success ? 0 : credits),
+        updatedAt: new Date().toISOString()
+      };
+      writes.push(writeUpdate(env, walletPath, nextWallet));
+    }
+
+    if (limitPath) {
+      const base = profileLimit || { ...profileLimitDefaults(user.uid, reservation.profileId), mode: "limited", limitCredits: Number(reservation.profileLimitCredits || credits) };
+      const nextLimit = {
+        ...base,
+        reservedCredits: Math.max(0, Number(base.reservedCredits || 0) - credits),
+        usedCredits: Math.max(0, Number(base.usedCredits || 0)) + (success ? credits : 0),
+        updatedAt: new Date().toISOString()
+      };
+      writes.push(writeUpdate(env, limitPath, nextLimit, profileLimit ? null : { exists: false }));
+    }
+
+    if (success) writes.push(writeUpdate(env, `aiLedger/${safeId(requestId)}_usage`, {
+      uid: user.uid, profileId: reservation.profileId || "", type: "usage", feature: reservation.feature,
+      credits: -credits, requestId, actualCostUsd: Number(actualCostUsd || 0), createdAt: new Date().toISOString()
+    }, { exists: false }));
     await commit(env, tx, writes);
     return nextReservation;
   });

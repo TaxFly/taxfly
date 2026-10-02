@@ -35,6 +35,11 @@ window.taxflyWorker = async function(body) {
   if (body && aiTypes.has(body.type) && !body.request_id) {
     body.request_id = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : ("req_" + Date.now() + "_" + Math.random().toString(36).slice(2));
   }
+  // El perfil activo viaja como contexto de consumo. El backend valida que exista
+  // dentro de la cuenta antes de aplicar un límite por perfil.
+  if (body && (aiTypes.has(body.type) || body.type === "ai_status") && !body.profile_id) {
+    try { body.profile_id = localStorage.getItem("perfilActivoId") || null; } catch (e) {}
+  }
   const headers = {
     "Content-Type": "application/json"
   };

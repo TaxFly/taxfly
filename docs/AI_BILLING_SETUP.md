@@ -108,6 +108,7 @@ El Worker usa estas colecciones top-level:
 - `aiReservations/{requestId}`
 - `aiLedger/{entryId}`
 - `aiBudgets/{counterId}`
+- `aiProfileLimits/{uid}__{profileId}`
 
 El acceso del Worker se hace con la cuenta de servicio y no depende de las reglas cliente.
 
@@ -212,3 +213,18 @@ NO implementes un webhook que confíe en datos enviados por el navegador. La acr
 6. Probar owner y un usuario beta con email verificado.
 7. Activar billing para betas.
 8. Recién después conectar un medio de pago.
+
+
+## Límites de IA por perfil
+
+La wallet de créditos pertenece al UID de Firebase. Los perfiles no tienen wallets separadas: pueden tener un límite de consumo sobre la wallet de la cuenta.
+
+Modos disponibles:
+
+- `unlimited`: sin límite interno por perfil; sigue sujeto al saldo de la cuenta.
+- `limited`: máximo acumulado de créditos hasta que el titular restablezca el uso.
+- `blocked`: ese perfil no puede iniciar llamadas de IA.
+
+Los límites se guardan del lado servidor en `aiProfileLimits` y las reservas actualizan `reservedCredits` / `usedCredits` de forma transaccional. El `profile_id` enviado por el frontend se valida contra un perfil existente de `usuarios/{uid}/perfiles/{profileId}`.
+
+> Nota: los perfiles comparten la misma sesión de Firebase. Este control evita consumo accidental y aplica límites normales dentro de la app, pero no sustituye cuentas separadas como frontera de seguridad frente a una persona con acceso técnico a la sesión.

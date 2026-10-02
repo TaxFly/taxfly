@@ -1,6 +1,6 @@
 # Firestore: seguridad de las colecciones de IA
 
-Las colecciones `aiWallets`, `aiReservations`, `aiLedger` y `aiBudgets` están pensadas para ser server-only.
+Las colecciones `aiWallets`, `aiReservations`, `aiLedger`, `aiBudgets` y `aiProfileLimits` están pensadas para ser server-only.
 
 La cuenta de servicio usada por `claude-worker.js` accede por Firestore REST y no depende de las reglas de Security Rules del navegador.
 
