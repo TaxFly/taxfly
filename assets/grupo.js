@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, onSnapshot, serverTimestamp, query, collection, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, serverTimestamp, query, collection, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const _RC_SITE_KEY = "6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME";
 
@@ -438,6 +438,7 @@ function suscribirGrupo(code) {
     guardarGrupoEnCache(snap.id, snap.data());
     guardarGrupoEnLista(snap.id, snap.data().nombre);
     renderGrupo();
+    sincronizarMisPartes(snap.id, snap.data());
   });
   showSection("s-grupo");
   updateOfflineBanner(false);
@@ -531,13 +532,19 @@ async function flushPending() {
           gastos: arrayUnion(op.gasto)
         });
       } else if (op.type === "del_gasto") {
-        const ref = doc(db, "grupos", op.groupId);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          const nuevosGastos = snap.data().gastos.filter(g => g.id !== op.gastoId);
-          await updateDoc(ref, {
-            gastos: nuevosGastos
+        if (op.gasto) {
+          await updateDoc(doc(db, "grupos", op.groupId), {
+            gastos: arrayRemove(op.gasto)
           });
+        } else {
+          const ref = doc(db, "grupos", op.groupId);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            const nuevosGastos = snap.data().gastos.filter(g => g.id !== op.gastoId);
+            await updateDoc(ref, {
+              gastos: nuevosGastos
+            });
+          }
         }
       }
     } catch (e) {
@@ -702,17 +709,14 @@ window.eliminarGasto = gastoId => {
           savePending(wasLocal ? ops : [ ...ops, {
             type: "del_gasto",
             groupId: grp.id,
-            gastoId: gastoId
+            gastoId: gastoId,
+            gasto: item
           } ]);
           if (!unloading) showToast(tr("msg_expense_deleted_offline"));
           return;
         }
-        const ref = doc(db, "grupos", grp.id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) return;
-        const nuevosGastos = snap.data().gastos.filter(g => g.id !== gastoId);
-        await updateDoc(ref, {
-          gastos: nuevosGastos
+        await updateDoc(doc(db, "grupos", grp.id), {
+          gastos: arrayRemove(item)
         });
       } catch (e) {
         showToast(tr("err_prefix") + e.message);
@@ -845,7 +849,7 @@ function renderGrupo() {
   if (!gastos.length) {
     lista.innerHTML = `<div class="empty-state"><span class="es-icon">🧳</span>${(i18n[localStorage.getItem("appLang") || "es"] || i18n.es).empty_expenses}</div>`;
   } else {
-    lista.innerHTML = [ ...gastos ].reverse().map(g => `\n            <div class="gasto-item cat-${esc(g.cat || "otro")}" id="gasto-${esc(g.id)}">\n                <div class="gasto-emoji">${catEmoji(g.cat)}</div>\n                <div class="gasto-body">\n                    <div class="gasto-desc">${esc(g.desc)}</div>\n                    <div class="gasto-meta">${esc(g.pagadorNombre)} · ${esc(g.fecha)}</div>\n                </div>\n                <div class="gasto-monto">${fmt(g.monto)}</div>\n                ${!currentGroup._demo && g.entre?.includes(currentUser?.uid) ? `<button style="border:1px solid var(--border);border-radius:9px;padding:6px;background:var(--surface);color:var(--primary);font-size:.68rem;font-weight:800;cursor:pointer;white-space:nowrap;" data-id="${esc(g.id)}" onclick="registrarMiParte(this.dataset.id)" title="${tr('title_register_part')}">${tr('btn_my_share')}</button>` : ""}\n                <button class="gasto-del" data-id="${esc(g.id)}" onclick="eliminarGasto(this.dataset.id)" title="${tr('aria_delete_expense')}" aria-label="${tr('aria_delete_expense')}">🗑️</button>\n            </div>`).join("");
+    lista.innerHTML = [ ...gastos ].reverse().map(g => `\n            <div class="gasto-item cat-${esc(g.cat || "otro")}" id="gasto-${esc(g.id)}">\n                <div class="gasto-emoji">${catEmoji(g.cat)}</div>\n                <div class="gasto-body">\n                    <div class="gasto-desc">${esc(g.desc)}</div>\n                    <div class="gasto-meta">${esc(g.pagadorNombre)} · ${esc(g.fecha)}</div>\n                </div>\n                <div class="gasto-monto">${fmt(g.monto)}</div>\n                <button class="gasto-del" data-id="${esc(g.id)}" onclick="eliminarGasto(this.dataset.id)" title="${tr('aria_delete_expense')}" aria-label="${tr('aria_delete_expense')}">🗑️</button>\n            </div>`).join("");
   }
   $("members-list").innerHTML = miembros.map(m => {
     const puedeEliminar = esCreador && m.uid !== currentUser.uid && !currentGroup._demo;
@@ -853,6 +857,48 @@ function renderGrupo() {
   }).join("");
   renderBalances(miembros, gastos);
   renderResumen(miembros, gastos);
+}
+
+let _syncingPartes = false;
+
+async function sincronizarMisPartes(groupId, data) {
+  if (!currentUser || !navigator.onLine || _syncingPartes || currentGroup?._demo) return;
+  const profile = localStorage.getItem("perfilActivoId");
+  if (!profile) return;
+  _syncingPartes = true;
+  try {
+    const gastosCol = collection(db, "usuarios", currentUser.uid, "perfiles", profile, "gastos");
+    const misGastos = (data.gastos || []).filter(g => g.entre?.includes(currentUser.uid));
+    const activeIds = new Set();
+    const tripId = window.TripContext.assign(currentUser.uid, profile);
+    for (const g of misGastos) {
+      const amount = Math.round(g.monto / g.entre.length * 100) / 100;
+      const mirrorId = `grupo-${groupId}-${g.id}-${currentUser.uid}`;
+      activeIds.add(mirrorId);
+      try {
+        await setDoc(doc(gastosCol, mirrorId), {
+          nombre: g.desc,
+          valor: amount,
+          cat: g.cat || "otro",
+          fecha: Date.now(),
+          tripId: tripId,
+          source: "grupo",
+          groupId: groupId,
+          groupExpenseId: g.id
+        }, { merge: true });
+      } catch (e) {}
+    }
+    // Borra los espejos de gastos que ya no están en el grupo (se eliminaron o te sacaron de "entre")
+    try {
+      const q = query(gastosCol, where("groupId", "==", groupId));
+      const snap = await getDocs(q);
+      for (const d of snap.docs) {
+        if (!activeIds.has(d.id)) await deleteDoc(d.ref);
+      }
+    } catch (e) {}
+  } finally {
+    _syncingPartes = false;
+  }
 }
 
 window.registrarMiParte = async gastoId => {
