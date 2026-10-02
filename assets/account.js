@@ -26,6 +26,22 @@ window.confirmAndDeleteAccount = async function({db: db, doc: doc, deleteDoc: de
       return;
     }
   }
+  if (db && currentUser) {
+    try {
+      const ge = await import(new URL("assets/group-exit.js", document.baseURI).href);
+      try {
+        await ge.leaveAllGroups(db, currentUser.uid);
+      } catch (e) {
+        console.error("[delete_account] no se pudo salir de los grupos", e);
+        window.showAlert(ge.leaveGroupsError());
+        return;
+      }
+    } catch (e) {
+      console.error("[delete_account] group-exit no cargó", e);
+      window.showAlert(t.e);
+      return;
+    }
+  }
   try {
     if (db && doc && deleteDoc && currentUser) {
       await deleteDoc(doc(db, "usuarios", currentUser.uid)).catch(() => {});

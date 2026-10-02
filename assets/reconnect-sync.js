@@ -71,7 +71,15 @@ const __fsDb = async (fs, app) => { try { const { fsNet } = await import(new URL
     if (page !== 'grupo.html') await flush('taxusa_pending_ops::' + uid,
       op => op.uid === uid, async op => {
         const ref = fs.doc(db,'grupos',op.groupId);
-        if (op.type === 'add_gasto') return fs.updateDoc(ref,{gastos:fs.arrayUnion(op.gasto)});
+        if (op.type === 'add_gasto') {
+          try { return await fs.updateDoc(ref,{gastos:fs.arrayUnion(op.gasto)}); }
+          catch (e) {
+            // Grupo borrado o ya no es miembro: se descarta en vez de bloquear la cola.
+            const s = await fs.getDoc(ref).catch(() => null);
+            if (s && (!s.exists() || !(s.data().miembroUids || []).includes(uid))) return;
+            throw e;
+          }
+        }
         if (op.type === 'del_gasto') {
           const snap = await fs.getDoc(ref);
           if (snap.exists()) return fs.updateDoc(ref,{gastos:(snap.data().gastos || []).filter(g => g.id !== op.gastoId)});

@@ -1,4 +1,5 @@
 import { fsNet, fsNetReset } from "./fs-net.js";
+import { leaveAllGroups, leaveGroupsError } from "./group-exit.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, serverTimestamp, query, collection, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
@@ -287,6 +288,16 @@ window.doDeleteAccount = async () => {
     return;
   }
   try {
+    if (unsubscribe) unsubscribe();
+    unsubscribe = null;
+    try {
+      await leaveAllGroups(db, firebaseUser.uid);
+    } catch (e) {
+      console.error("[doDeleteAccount] no se pudo salir de los grupos", e);
+      if (currentGroup && !currentGroup._demo) suscribirGrupo(currentGroup.id);
+      showToast(leaveGroupsError());
+      return;
+    }
     await deleteDoc(doc(db, "usuarios", firebaseUser.uid));
     await deleteUser(firebaseUser);
     window.location.replace("login.html");
@@ -367,7 +378,8 @@ window.crearGrupo = async () => {
       createdAt: serverTimestamp(),
       miembros: [ {
         uid: currentUser.uid,
-        nombre: apodo
+        nombre: apodo,
+        perfilId: localStorage.getItem("perfilActivoId") || null
       } ],
       miembroUids: [ currentUser.uid ],
       gastos: []
@@ -415,7 +427,8 @@ window.unirseGrupo = async () => {
       await updateDoc(ref, {
         miembros: arrayUnion({
           uid: currentUser.uid,
-          nombre: apodo
+          nombre: apodo,
+          perfilId: localStorage.getItem("perfilActivoId") || null
         }),
         miembroUids: arrayUnion(currentUser.uid)
       });
@@ -522,55 +535,103 @@ function updateOfflineBanner(isOffline) {
   window.updateOfflineBanner(isOffline);
 }
 
+let flushing = false;
+
+const sameOp = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+function removePendingOp(op) {
+  // Quita solo esta operación de lo que hay guardado ahora: si el usuario cargó otro gasto mientras
+  // sincronizábamos, no se pisa.
+  const cur = getPending();
+  const i = cur.findIndex(x => sameOp(x, op));
+  if (i >= 0) {
+    cur.splice(i, 1);
+    savePending(cur);
+  }
+}
+
+async function applyPendingOp(op) {
+  const ref = doc(db, "grupos", op.groupId);
+  if (op.type === "add_gasto") {
+    await withTimeout(updateDoc(ref, { gastos: arrayUnion(op.gasto) }));
+  } else if (op.type === "del_gasto") {
+    if (op.gasto) {
+      await withTimeout(updateDoc(ref, { gastos: arrayRemove(op.gasto) }));
+    } else {
+      const snap = await withTimeout(getDoc(ref));
+      if (snap.exists()) {
+        await withTimeout(updateDoc(ref, { gastos: snap.data().gastos.filter(g => g.id !== op.gastoId) }));
+      }
+    }
+  }
+}
+
+// Una operación "muerta" nunca va a poder sincronizarse: el grupo ya no existe o el usuario ya no es miembro.
+// Se descarta para que no quede el aviso "sin sincronizar" para siempre. Cualquier otro error se reintenta.
+async function pendingOpIsDead(op, e) {
+  const code = e && e.code;
+  if (code !== "not-found" && code !== "permission-denied") return false;
+  try {
+    const snap = await withTimeout(getDoc(doc(db, "grupos", op.groupId)));
+    return !snap.exists() || !(snap.data().miembroUids || []).includes(currentUser.uid);
+  } catch (e2) {
+    return false;
+  }
+}
+
 async function flushPending() {
-  const ops = getPending();
-  if (!ops.empty && ops.length === 0) return;
+  if (flushing || !currentUser || getPending().length === 0) return;
+  flushing = true;
   const lang = localStorage.getItem("appLang") || "es";
   const t = i18n[lang] || i18n.es;
   const banner = document.getElementById("sync-banner");
   const syncText = document.getElementById("sync-text");
   if (banner) {
     banner.classList.add("visible");
+    banner.onclick = null;
     if (syncText) syncText.textContent = t.sync_syncing;
   }
-  const failed = [];
-  for (const op of ops) {
-    if (!currentUser || op.uid !== currentUser.uid) { failed.push(op); continue; }
-    try {
-      if (op.type === "add_gasto") {
-        await withTimeout(updateDoc(doc(db, "grupos", op.groupId), {
-          gastos: arrayUnion(op.gasto)
-        }));
-      } else if (op.type === "del_gasto") {
-        if (op.gasto) {
-          await withTimeout(updateDoc(doc(db, "grupos", op.groupId), {
-            gastos: arrayRemove(op.gasto)
-          }));
-        } else {
-          const ref = doc(db, "grupos", op.groupId);
-          const snap = await getDoc(ref);
-          if (snap.exists()) {
-            const nuevosGastos = snap.data().gastos.filter(g => g.id !== op.gastoId);
-            await updateDoc(ref, {
-              gastos: nuevosGastos
-            });
-          }
+  const tried = [];
+  let dropped = 0;
+  try {
+    for (const op of getPending()) {
+      if (op.uid !== currentUser.uid) continue;
+      tried.push(op);
+      try {
+        await applyPendingOp(op);
+        removePendingOp(op);
+      } catch (e) {
+        console.warn("[flushPending]", op.type, op.groupId, e && (e.code || e.message));
+        if (await pendingOpIsDead(op, e)) {
+          removePendingOp(op);
+          dropped++;
         }
       }
-    } catch (e) {
-      failed.push(op);
     }
-  }
-  savePending(failed);
-  if (banner) {
-    if (failed.length === 0) {
-      if (syncText) syncText.textContent = t.sync_ok;
-      setTimeout(() => banner.classList.remove("visible"), 2200);
-    } else {
-      if (syncText) syncText.textContent = "⚠️ " + failed.length + " " + (lang === "en" ? "expense" + (failed.length > 1 ? "s" : "") + " not synced" : lang === "pt" ? "despesa" + (failed.length > 1 ? "s" : "") + " não sincronizada" + (failed.length > 1 ? "s" : "") : "gasto" + (failed.length > 1 ? "s" : "") + " sin sincronizar");
+  } finally {
+    flushing = false;
+    const left = getPending().length;
+    if (banner) {
+      if (left === 0) {
+        if (syncText) syncText.textContent = t.sync_ok;
+        setTimeout(() => banner.classList.remove("visible"), 2200);
+      } else {
+        if (syncText) syncText.textContent = "⚠️ " + left + " " + (lang === "en" ? "expense" + (left > 1 ? "s" : "") + " not synced · tap to retry" : lang === "pt" ? "despesa" + (left > 1 ? "s" : "") + " não sincronizada" + (left > 1 ? "s" : "") + " · toque para tentar" : "gasto" + (left > 1 ? "s" : "") + " sin sincronizar · tocá para reintentar");
+        banner.onclick = () => flushPending();
+      }
     }
+    if (dropped) {
+      showToast(lang === "en" ? "A pending expense was discarded: you're no longer in that group." : lang === "pt" ? "Uma despesa pendente foi descartada: você não faz mais parte desse grupo." : "Se descartó un gasto pendiente: ya no sos parte de ese grupo.");
+    }
+    // Gastos cargados mientras sincronizábamos
+    if (getPending().some(op => op.uid === currentUser.uid && !tried.some(x => sameOp(x, op)))) setTimeout(flushPending, 1500);
   }
 }
+
+// Reintento automático mientras haya pendientes (por si el aviso quedó en "sin sincronizar").
+setInterval(() => {
+  if (navigator.onLine && currentUser && currentGroup && !currentGroup._demo && getPending().length) flushPending();
+}, 30000);
 
 window.agregarGasto = async () => {
   const desc = $("g-desc").value.trim();

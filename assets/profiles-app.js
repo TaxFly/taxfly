@@ -782,6 +782,20 @@ window.deleteProfile = async () => {
   })) {
     return;
   }
+  try {
+    const ge = await (import("./group-exit.js"));
+    try {
+      await ge.leaveGroupsOfProfile(db, uid, editingId, target && target.nombre);
+    } catch (e) {
+      console.error("[deleteProfile] no se pudo salir de los grupos", e);
+      await showAlert(ge.leaveGroupsError("profile"));
+      return;
+    }
+  } catch (e) {
+    console.error("[deleteProfile] group-exit no cargó", e);
+    await showAlert((DEL_TXT[lang] || DEL_TXT.es).fail);
+    return;
+  }
   profiles = profiles.filter(p => p.id !== editingId);
   await updateDoc(doc(db, "usuarios", uid), {
     perfiles: profiles

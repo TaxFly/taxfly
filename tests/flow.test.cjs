@@ -804,3 +804,27 @@ test('Taxie limpia saltos de línea del nombre del viaje y respeta el límite de
   assert.ok(!sys.includes('Ciudad7'), 'máximo 6 destinos');
   assert.ok(sys.length < 6000, 'entra en MAX_CHAT_SYSTEM del worker');
 });
+
+test('eliminar cuenta: primero sale de todos los grupos y recién después borra la cuenta', () => {
+  const exit = read('assets/group-exit.js');
+  assert.match(exit, /miembroUids[\s\S]*array-contains/);
+  assert.match(exit, /arrayRemove\(uid\)/);
+  const acc = read('assets/account.js');
+  assert.ok(acc.indexOf('leaveAllGroups') > -1 && acc.indexOf('leaveAllGroups') < acc.indexOf('await deleteUser(currentUser)'));
+  const grp = read('assets/grupo.js');
+  const del = between(grp, 'window.doDeleteAccount', 'window.cambiarApodo');
+  assert.ok(del.indexOf('leaveAllGroups') > -1 && del.indexOf('leaveAllGroups') < del.indexOf('await deleteUser(firebaseUser)'));
+  assert.ok(extractPrecachePaths(read('sw.js')).includes('./assets/group-exit.js'));
+});
+
+test('eliminar perfil: sale de los grupos de ese perfil antes de borrarlo; la cola de gastos descarta operaciones muertas', () => {
+  const prof = read('assets/profiles-app.js');
+  const del = between(prof, 'window.deleteProfile', '\n};\n');
+  assert.ok(del.indexOf('leaveGroupsOfProfile') > -1 && del.indexOf('leaveGroupsOfProfile') < del.indexOf('perfiles: profiles'));
+  const grp = read('assets/grupo.js');
+  assert.match(grp, /perfilId: localStorage\.getItem\("perfilActivoId"\)/);
+  assert.match(grp, /pendingOpIsDead/);
+  assert.match(grp, /if \(flushing/);
+  const exit = read('assets/group-exit.js');
+  assert.ok(exit.indexOf('patch.creadoPor') > -1 && exit.indexOf('patch.creadoPor') < exit.indexOf('updateDoc(d.ref, patch)'));
+});
