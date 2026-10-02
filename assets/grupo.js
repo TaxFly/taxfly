@@ -550,6 +550,7 @@ function updateOfflineBanner(isOffline) {
 }
 
 let flushing = false;
+let lastFlushError = null;
 
 const sameOp = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -615,7 +616,8 @@ async function flushPending() {
         await applyPendingOp(op);
         removePendingOp(op);
       } catch (e) {
-        console.warn("[flushPending]", op.type, op.groupId, e && (e.code || e.message));
+        lastFlushError = (e && (e.code || e.message)) || "error";
+        console.error("[flushPending]", op.type, op.groupId, lastFlushError, e);
         if (await pendingOpIsDead(op, e)) {
           removePendingOp(op);
           dropped++;
@@ -627,10 +629,12 @@ async function flushPending() {
     const left = getPending().length;
     if (banner) {
       if (left === 0) {
+        lastFlushError = null;
         if (syncText) syncText.textContent = t.sync_ok;
         setTimeout(() => banner.classList.remove("visible"), 2200);
       } else {
         if (syncText) syncText.textContent = "⚠️ " + left + " " + (lang === "en" ? "expense" + (left > 1 ? "s" : "") + " not synced · tap to retry" : lang === "pt" ? "despesa" + (left > 1 ? "s" : "") + " não sincronizada" + (left > 1 ? "s" : "") + " · toque para tentar" : "gasto" + (left > 1 ? "s" : "") + " sin sincronizar · tocá para reintentar");
+        if (syncText && lastFlushError) syncText.textContent += " [" + lastFlushError + "]";
         banner.onclick = () => flushPending();
       }
     }
@@ -641,6 +645,8 @@ async function flushPending() {
     if (getPending().some(op => op.uid === currentUser.uid && !tried.some(x => sameOp(x, op)))) setTimeout(flushPending, 1500);
   }
 }
+
+window.taxflyFlush = () => flushPending().then(() => lastFlushError);
 
 // Reintento automático mientras haya pendientes (por si el aviso quedó en "sin sincronizar").
 setInterval(() => {
