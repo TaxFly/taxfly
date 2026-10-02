@@ -294,6 +294,8 @@ onAuthStateChanged(auth, async user => {
       } ];
       await setDoc(doc(db, "usuarios", uid), {
         perfiles: profiles
+      }, {
+        merge: true
       });
     }
     localStorage.setItem("taxfly_cached_profiles", JSON.stringify(profiles));
@@ -457,14 +459,40 @@ window.saveProfile = async () => {
     nombre: name,
     foto: selectedPhoto
   } : p) : [ ...profiles, newProfile ];
+  const saveBtn = document.getElementById("btnSave");
+  const prevLabel = saveBtn ? saveBtn.innerText : "";
+  if (saveBtn) {
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+  }
   try {
-    await updateDoc(doc(db, "usuarios", uid), {
+    // setDoc + merge: funciona aunque el documento del usuario todavía no exista (cuentas nuevas con Google).
+    const write = setDoc(doc(db, "usuarios", uid), {
       perfiles: updatedProfiles
+    }, {
+      merge: true
     });
+    // Firestore confirma la escritura recién cuando responde el servidor. Si tarda (conexión lenta o
+    // bloqueada) la escritura ya quedó en la caché local y se sincroniza sola, así que no dejamos la
+    // pantalla colgada: esperamos hasta 6 s y seguimos.
+    const timedOut = Symbol("timeout");
+    const res = await Promise.race([ write, new Promise(r => setTimeout(() => r(timedOut), 6e3)) ]);
+    if (res === timedOut) {
+      console.warn("[saveProfile] el servidor tardó en confirmar; se sigue con la caché local");
+      write.catch(err => {
+        console.error("Error guardando perfil (tardío):", err);
+        showAlert(tr("err_save_profile", { msg: err.code || err.message || tr("err_unknown") }));
+      });
+    }
   } catch (err) {
     console.error("Error guardando perfil:", err);
-    showAlert(tr("err_save_profile", { msg: err.message || tr("err_unknown") }));
+    showAlert(tr("err_save_profile", { msg: err.code || err.message || tr("err_unknown") }));
     return;
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerText = prevLabel;
+    }
   }
   profiles = updatedProfiles;
   localStorage.setItem("taxfly_cached_profiles", JSON.stringify(profiles));
