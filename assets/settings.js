@@ -58,6 +58,11 @@
       open_cafecito: "Abrir Cafecito",
       switch_profile: "Cambiar perfil",
       email: "Cambiar correo",
+      email_prompt: "Ingresá tu nuevo correo:",
+      email_sent: "Te enviamos un correo de verificación al nuevo email. Abrilo para confirmar el cambio.",
+      email_no_session: "No hay una sesión activa.",
+      email_invalid: "Ingresá un correo válido.",
+      email_error: "No se pudo iniciar el cambio de correo: {m}",
       password: "Cambiar contraseña",
       pin: "PIN offline",
       app: "Aplicación",
@@ -152,6 +157,11 @@
       open_cafecito: "Open Cafecito",
       switch_profile: "Change profile",
       email: "Change email",
+      email_prompt: "Enter your new email:",
+      email_sent: "We sent a verification email to the new address. Open it to confirm the change.",
+      email_no_session: "There is no active session.",
+      email_invalid: "Enter a valid email address.",
+      email_error: "Could not start the email change: {m}",
       password: "Change password",
       pin: "Offline PIN",
       app: "App",
@@ -246,6 +256,11 @@
       open_cafecito: "Abrir Cafecito",
       switch_profile: "Trocar perfil",
       email: "Alterar e-mail",
+      email_prompt: "Digite seu novo e-mail:",
+      email_sent: "Enviamos um e-mail de verificação para o novo endereço. Abra-o para confirmar a alteração.",
+      email_no_session: "Não há uma sessão ativa.",
+      email_invalid: "Digite um e-mail válido.",
+      email_error: "Não foi possível iniciar a alteração do e-mail: {m}",
       password: "Alterar senha",
       pin: "PIN offline",
       app: "Aplicativo",
@@ -545,6 +560,40 @@
     if (typeof window[name] === "function") return window[name].apply(window, [].slice.call(arguments, 1));
     console.warn("[settings] falta window." + name);
   }
+  async function changeEmailFromSettings() {
+    try {
+      var authMod = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js");
+      var auth = authMod.getAuth();
+      var user = auth.currentUser;
+      if (!user) {
+        if (typeof window.showAlert === "function") await window.showAlert(t("email_no_session"));
+        else alert(t("email_no_session"));
+        return;
+      }
+
+      var email;
+      if (typeof window.showPrompt === "function") email = await window.showPrompt(t("email_prompt"));
+      else email = prompt(t("email_prompt"));
+      if (!email) return;
+      email = String(email).trim();
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (typeof window.showAlert === "function") await window.showAlert(t("email_invalid"));
+        else alert(t("email_invalid"));
+        return;
+      }
+
+      await authMod.verifyBeforeUpdateEmail(user, email);
+      if (typeof window.showAlert === "function") await window.showAlert(t("email_sent"));
+      else alert(t("email_sent"));
+    } catch (err) {
+      console.error("[settings] cambio de correo", err);
+      var msg = err && (err.message || err.code) ? (err.message || err.code) : String(err || "");
+      var copy = t("email_error", { m: msg });
+      if (typeof window.showAlert === "function") await window.showAlert(copy);
+      else alert(copy);
+    }
+  }
   var installPrompt = null;
   window.addEventListener("beforeinstallprompt", function(e) {
     e.preventDefault();
@@ -604,7 +653,7 @@
       break;
 
      case "email":
-      call("doChangeEmail");
+      changeEmailFromSettings();
       break;
 
      case "password":
