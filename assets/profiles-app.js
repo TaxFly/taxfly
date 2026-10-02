@@ -95,6 +95,13 @@ const i18n = {
     addLabel: "Nuevo",
     guest: "Invitado",
     active: "Activo",
+    primary: "Principal",
+    primary_pick_title: "Elegí el perfil principal",
+    primary_pick_desc: "Este perfil podrá administrar permisos, límites de IA y otros perfiles. Para confirmar, ingresá tu PIN de seguridad.",
+    pin_prompt: "PIN de seguridad (4 o 6 dígitos)",
+    pin_wrong: "PIN incorrecto.",
+    pin_required: "Configurá primero tu PIN de seguridad desde Ajustes.",
+    primary_delete: "El perfil principal no se puede eliminar. Transferí primero el control a otro perfil desde Ajustes.",
     confirm: "¿Eliminar este perfil?",
     logout: "🚪 CERRAR SESIÓN",
     namePlaceholder: "Tu nombre",
@@ -124,6 +131,13 @@ const i18n = {
     addLabel: "New",
     guest: "Guest",
     active: "Active",
+    primary: "Primary",
+    primary_pick_title: "Choose the primary profile",
+    primary_pick_desc: "This profile can manage permissions, AI limits, and other profiles. Enter your security PIN to confirm.",
+    pin_prompt: "Security PIN (4 or 6 digits)",
+    pin_wrong: "Incorrect PIN.",
+    pin_required: "Set up your security PIN in Settings first.",
+    primary_delete: "The primary profile cannot be deleted. Transfer control to another profile in Settings first.",
     confirm: "Delete this profile?",
     logout: "🚪 SIGN OUT",
     namePlaceholder: "Your name",
@@ -153,6 +167,13 @@ const i18n = {
     addLabel: "Novo",
     guest: "Convidado",
     active: "Ativo",
+    primary: "Principal",
+    primary_pick_title: "Escolha o perfil principal",
+    primary_pick_desc: "Este perfil poderá gerenciar permissões, limites de IA e outros perfis. Digite seu PIN de segurança para confirmar.",
+    pin_prompt: "PIN de segurança (4 ou 6 dígitos)",
+    pin_wrong: "PIN incorreto.",
+    pin_required: "Configure primeiro seu PIN de segurança em Ajustes.",
+    primary_delete: "O perfil principal não pode ser excluído. Transfira primeiro o controle para outro perfil em Ajustes.",
     confirm: "Excluir este perfil?",
     logout: "🚪 SAIR",
     namePlaceholder: "Seu nome",
@@ -182,7 +203,7 @@ function tr(key, vars) {
 
 const photos = [ "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1777776216395.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1777776225455.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776311828.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776315983.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1777776318834.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027664793.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027669500.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027673553.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027676790.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027680096.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027684221.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027686067.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/adventurerNeutral-1778027689046.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027716106.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027718459.png", "https://raw.githubusercontent.com/TaxFly/taxfly/main/assets/funEmoji-1778027720162.png" ];
 
-let uid, profiles = [], editingId = null, selectedPhoto = photos[0], isEditing = false;
+let uid, profiles = [], editingId = null, selectedPhoto = photos[0], isEditing = false, primaryProfileId = "";
 
 let lang = localStorage.getItem("appLang") || "es";
 
@@ -285,20 +306,20 @@ onAuthStateChanged(auth, async user => {
   uid = user.uid;
   try {
     const snap = await getDoc(doc(db, "usuarios", uid));
-    profiles = snap.exists() ? snap.data().perfiles || [] : [];
+    const account = snap.exists() ? (snap.data() || {}) : {};
+    profiles = account.perfiles || [];
+    primaryProfileId = String(account.primaryProfileId || "");
     if (profiles.length === 0) {
-      profiles = [ {
-        id: "p" + Date.now(),
-        nombre: t.guest,
-        foto: photos[0]
-      } ];
-      await setDoc(doc(db, "usuarios", uid), {
-        perfiles: profiles
-      }, {
-        merge: true
-      });
+      profiles = [ { id: "p" + Date.now(), nombre: t.guest, foto: photos[0] } ];
+      primaryProfileId = profiles[0].id;
+      await setDoc(doc(db, "usuarios", uid), { perfiles: profiles, primaryProfileId }, { merge: true });
+    } else if (!profiles.some(p => p.id === primaryProfileId) && profiles.length === 1) {
+      primaryProfileId = profiles[0].id;
+      await setDoc(doc(db, "usuarios", uid), { primaryProfileId }, { merge: true });
     }
     localStorage.setItem("taxfly_cached_profiles", JSON.stringify(profiles));
+    if (primaryProfileId) localStorage.setItem("taxfly_primary_profile_id", primaryProfileId);
+    if (!primaryProfileId && profiles.length > 1) setTimeout(showPrimaryChooser, 100);
   } catch (e) {
     const cached = loadOfflineProfiles();
     if (cached) profiles = cached;
@@ -317,6 +338,7 @@ function safeProfilePhoto(url) {
 
 function render() {
   const activeId = localStorage.getItem("perfilActivoId");
+  const primaryId = localStorage.getItem("taxfly_primary_profile_id") || (typeof primaryProfileId !== "undefined" ? primaryProfileId : "");
   const grid = document.getElementById("profilesGrid");
   grid.replaceChildren();
   profiles.forEach(p => {
@@ -339,6 +361,12 @@ function render() {
       badge.className = "active-badge";
       badge.textContent = t.active;
       wrapper.appendChild(badge);
+    }
+    if (p.id === primaryId) {
+      const crown = document.createElement("span");
+      crown.className = "primary-badge";
+      crown.textContent = "★ " + t.primary;
+      wrapper.appendChild(crown);
     }
     const overlay = document.createElement("span");
     overlay.className = "edit-overlay";
@@ -378,7 +406,35 @@ function render() {
   }
 }
 
-window.toggleEditMode = () => {
+async function requestLocalSecurityPin() {
+  const stored = localStorage.getItem("taxusa_pin_hash");
+  if (!stored) { await showAlert(t.pin_required); return null; }
+  const pin = window.prompt(t.pin_prompt);
+  if (pin == null) return null;
+  if (!/^\d{4,6}$/.test(pin) || !(await window.verifyPin(pin, stored))) { await showAlert(t.pin_wrong); return null; }
+  return pin;
+}
+async function showPrimaryChooser() {
+  if (primaryProfileId || profiles.length < 2) return;
+  const pin = await requestLocalSecurityPin();
+  if (!pin) return;
+  const names = profiles.map((p,i) => `${i+1}. ${p.nombre}`).join("\n");
+  const answer = window.prompt(t.primary_pick_title + "\n\n" + t.primary_pick_desc + "\n\n" + names, "1");
+  if (answer == null) return;
+  const idx = Number(answer) - 1;
+  if (!Number.isInteger(idx) || !profiles[idx]) return;
+  primaryProfileId = profiles[idx].id;
+  await setDoc(doc(db, "usuarios", uid), { primaryProfileId }, { merge:true });
+  localStorage.setItem("taxfly_primary_profile_id", primaryProfileId);
+  render();
+}
+window.toggleEditMode = async () => {
+  if (!isEditing) {
+    if (!primaryProfileId && profiles.length > 1) { await showPrimaryChooser(); if (!primaryProfileId) return; }
+    const active = localStorage.getItem("perfilActivoId") || "";
+    if (primaryProfileId && active !== primaryProfileId) { await showAlert(t.primary_pick_desc); return; }
+    if (!(await requestLocalSecurityPin())) return;
+  }
   isEditing = !isEditing;
   document.body.classList.toggle("editing-mode", isEditing);
   document.getElementById("pageTitle").innerText = isEditing ? t.editTitle : t.title;
@@ -468,7 +524,8 @@ window.saveProfile = async () => {
   try {
     // setDoc + merge: funciona aunque el documento del usuario todavía no exista (cuentas nuevas con Google).
     const write = setDoc(doc(db, "usuarios", uid), {
-      perfiles: updatedProfiles
+      perfiles: updatedProfiles,
+      ...( (!primaryProfileId && updatedProfiles.length === 1) ? { primaryProfileId: newProfile.id } : {} )
     }, {
       merge: true
     });
@@ -495,6 +552,10 @@ window.saveProfile = async () => {
     }
   }
   profiles = updatedProfiles;
+  if (!primaryProfileId && profiles.length === 1) {
+    primaryProfileId = profiles[0].id;
+    localStorage.setItem("taxfly_primary_profile_id", primaryProfileId);
+  }
   localStorage.setItem("taxfly_cached_profiles", JSON.stringify(profiles));
   if (isNew) {
     handleClick(newProfile.id, newProfile.nombre, newProfile.foto || "");
@@ -779,6 +840,7 @@ async function downloadProfileBackup(pid) {
 
 window.deleteProfile = async () => {
   if (profiles.length <= 1) return;
+  if (editingId === primaryProfileId) { await showAlert(t.primary_delete); return; }
   const target = profiles.find(p => p.id === editingId);
   const choice = await askDeleteChoice(target && target.nombre || "");
   if (!choice) return;

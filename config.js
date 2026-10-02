@@ -37,7 +37,7 @@ window.taxflyWorker = async function(body) {
   }
   // El perfil activo viaja como contexto de consumo. El backend valida que exista
   // dentro de la cuenta antes de aplicar un límite por perfil.
-  if (body && (aiTypes.has(body.type) || body.type === "ai_status") && !body.profile_id) {
+  if (body && (aiTypes.has(body.type) || body.type === "ai_status" || body.type === "profile_controls_get") && !body.profile_id) {
     try { body.profile_id = localStorage.getItem("perfilActivoId") || null; } catch (e) {}
   }
   const headers = {

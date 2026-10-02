@@ -76,8 +76,8 @@ const i18n = {
     pinWrong: "PIN incorrecto. Intentá de nuevo.",
     pinWrongCount: "PIN incorrecto. Quedan %d intentos.",
     pinLocked: "Demasiados intentos. Esperá 15 minutos o ingresá con internet.",
-    createPinTitle: "Creá tu PIN offline",
-    createPinSub: "Este PIN de 4 dígitos te permite entrar sin internet.",
+    createPinTitle: "Creá tu PIN de seguridad",
+    createPinSub: "Este PIN de 6 dígitos protege los controles de perfiles y también te permite entrar sin internet.",
     confirmPinTitle: "Confirmá tu PIN",
     confirmPinSub: "Ingresá el mismo PIN para confirmar.",
     pinMismatch: "Los PINs no coinciden. Volvé a intentarlo.",
@@ -143,8 +143,8 @@ const i18n = {
     pinWrong: "Wrong PIN. Try again.",
     pinWrongCount: "Wrong PIN. %d attempts left.",
     pinLocked: "Too many attempts. Wait 15 minutes or sign in online.",
-    createPinTitle: "Create your offline PIN",
-    createPinSub: "This 4-digit PIN lets you sign in without internet.",
+    createPinTitle: "Create your security PIN",
+    createPinSub: "This 6-digit PIN protects profile controls and also lets you sign in without internet.",
     confirmPinTitle: "Confirm your PIN",
     confirmPinSub: "Enter the same PIN again to confirm.",
     pinMismatch: "PINs don't match. Please try again.",
@@ -210,8 +210,8 @@ const i18n = {
     pinWrong: "PIN incorreto. Tente novamente.",
     pinWrongCount: "PIN incorreto. %d tentativas restantes.",
     pinLocked: "Muitas tentativas. Aguarde 15 minutos ou entre com internet.",
-    createPinTitle: "Crie seu PIN offline",
-    createPinSub: "Este PIN de 4 dígitos permite entrar sem internet.",
+    createPinTitle: "Crie seu PIN de segurança",
+    createPinSub: "Este PIN de 6 dígitos protege os controles de perfis e também permite entrar sem internet.",
     confirmPinTitle: "Confirme seu PIN",
     confirmPinSub: "Digite o mesmo PIN novamente para confirmar.",
     pinMismatch: "Os PINs não coincidem. Tente novamente.",
@@ -279,6 +279,12 @@ function recordPinFailure() {
 
 
 const MAX_PIN_ATTEMPTS = 5;
+const NEW_PIN_LENGTH = 6;
+function offlinePinLength() {
+  const n = Number(localStorage.getItem("taxusa_pin_length"));
+  return n === 6 ? 6 : 4; // PINs creados antes de esta versión siguen funcionando.
+}
+
 
 let changePinStep = "send";
 
@@ -624,6 +630,8 @@ if (firebaseOk) onAuthStateChanged(auth, async user => {
     const snap = await getDoc(doc(db, "usuarios", user.uid));
     const data = snap.exists() ? snap.data() : {};
     let pinHash = data.pinHash || null;
+    const serverPinLength = Number(data.pinLength);
+    localStorage.setItem("taxusa_pin_length", serverPinLength === 6 ? "6" : "4");
     const pendingHash = localStorage.getItem("taxusa_pin_pending_sync");
     if (pendingHash) {
       pinHash = pendingHash;
@@ -751,12 +759,12 @@ async function onOfflinePinKey(key) {
   if (key === "del") {
     pinBuffer = pinBuffer.slice(0, -1);
   } else {
-    if (pinBuffer.length >= 4) return;
+    if (pinBuffer.length >= offlinePinLength()) return;
     pinBuffer += key;
   }
   updateDots("pin-dots-offline", pinBuffer.length);
   document.getElementById("pin-error-offline").innerText = "";
-  if (pinBuffer.length === 4) {
+  if (pinBuffer.length === offlinePinLength()) {
     const entered = pinBuffer;
     pinBuffer = "";
     updateDots("pin-dots-offline", 0);
@@ -806,12 +814,12 @@ async function onCreatePinKey(key) {
   if (key === "del") {
     pinBuffer = pinBuffer.slice(0, -1);
   } else {
-    if (pinBuffer.length >= 4) return;
+    if (pinBuffer.length >= NEW_PIN_LENGTH) return;
     pinBuffer += key;
   }
   updateDots("pin-dots-create", pinBuffer.length);
   document.getElementById("pin-error-create").innerText = "";
-  if (pinBuffer.length === 4) {
+  if (pinBuffer.length === NEW_PIN_LENGTH) {
     const entered = pinBuffer;
     pinBuffer = "";
     if (pinStep === 1) {
@@ -846,7 +854,8 @@ async function savePinToFirestore(pin) {
   if (user) {
     try {
       await setDoc(doc(db, "usuarios", user.uid), {
-        pinHash: hash
+        pinHash: hash,
+        pinLength: NEW_PIN_LENGTH
       }, {
         merge: true
       });
@@ -855,6 +864,7 @@ async function savePinToFirestore(pin) {
     }
   }
   localStorage.setItem("taxusa_pin_hash", hash);
+  localStorage.setItem("taxusa_pin_length", String(NEW_PIN_LENGTH));
   clearPinFailures();
 }
 
@@ -913,12 +923,12 @@ async function onChangePinKey(key) {
   if (key === "del") {
     changePinBuffer = changePinBuffer.slice(0, -1);
   } else {
-    if (changePinBuffer.length >= 4) return;
+    if (changePinBuffer.length >= NEW_PIN_LENGTH) return;
     changePinBuffer += key;
   }
   updateDots("pin-dots-change", changePinBuffer.length);
   document.getElementById("pin-error-change").innerText = "";
-  if (changePinBuffer.length === 4) {
+  if (changePinBuffer.length === NEW_PIN_LENGTH) {
     const entered = changePinBuffer;
     changePinBuffer = "";
     if (changePinStep === "new_enter") {

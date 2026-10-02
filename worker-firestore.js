@@ -110,6 +110,17 @@ export async function getDocument(env, path) {
   return decodeDocument(await res.json());
 }
 
+export async function patchDocument(env, path, fields) {
+  const params = new URLSearchParams();
+  Object.keys(fields || {}).forEach(k => params.append("updateMask.fieldPaths", k));
+  const res = await api(env, `${dbBase(env)}/${path}?${params.toString()}`, {
+    method: "PATCH",
+    body: JSON.stringify({ fields: encodeFields(fields || {}) })
+  });
+  if (!res.ok) throw new Error(`Firestore patch failed (${res.status})`);
+  return decodeDocument(await res.json());
+}
+
 async function beginTransaction(env) {
   const res = await api(env, `${dbBase(env)}:beginTransaction`, { method: "POST", body: "{}" });
   if (!res.ok) throw new Error(`Firestore beginTransaction failed (${res.status})`);
@@ -177,9 +188,93 @@ function profileLimitDefaults(uid, profileId) {
     uid, profileId, mode: "unlimited", limitCredits: 0, usedCredits: 0, reservedCredits: 0, updatedAt: new Date().toISOString()
   };
 }
+async function accountData(env, uid) {
+  return await getDocument(env, `usuarios/${safeId(uid)}`);
+}
+function accountProfiles(account) {
+  return Array.isArray(account?.perfiles) ? account.perfiles.filter(p => p && p.id) : [];
+}
 async function profileExists(env, uid, profileId) {
   if (!profileId) return false;
+  const account = await accountData(env, uid);
+  if (accountProfiles(account).some(p => String(p.id) === String(profileId))) return true;
+  // Compatibilidad con perfiles que ya tengan subdocumento propio.
   return !!(await getDocument(env, `usuarios/${safeId(uid)}/perfiles/${safeId(profileId)}`));
+}
+function profileControlPath(uid, profileId) {
+  return `profileControls/${safeId(uid)}__${safeId(profileId)}`;
+}
+function profileControlDefaults(uid, profileId, isPrimary = false) {
+  return {
+    uid, profileId, accessLevel: "full", allowAI: true, isPrimary: !!isPrimary, updatedAt: new Date().toISOString()
+  };
+}
+export async function getProfileControls(env, uid, profileIds = []) {
+  const account = await accountData(env, uid);
+  const profiles = accountProfiles(account);
+  const valid = new Set(profiles.map(p => String(p.id)));
+  const requested = [...new Set((Array.isArray(profileIds) && profileIds.length ? profileIds : profiles.map(p => p.id)).map(String))].filter(id => valid.has(id)).slice(0, 50);
+  const primaryProfileId = valid.has(String(account?.primaryProfileId || "")) ? String(account.primaryProfileId) : (profiles.length === 1 ? String(profiles[0].id) : "");
+  const controls = await Promise.all(requested.map(async profileId => {
+    const raw = await getDocument(env, profileControlPath(uid, profileId));
+    const isPrimary = profileId === primaryProfileId;
+    const base = profileControlDefaults(uid, profileId, isPrimary);
+    const out = { ...base, ...(raw || {}), uid, profileId, isPrimary };
+    if (isPrimary) { out.accessLevel = "full"; out.allowAI = true; }
+    if (!["full", "standard", "readonly"].includes(out.accessLevel)) out.accessLevel = "full";
+    if (out.accessLevel === "readonly") out.allowAI = false;
+    return out;
+  }));
+  return { profiles: profiles.map(p => ({ id:String(p.id), nombre:String(p.nombre || p.name || p.id) })), primaryProfileId, controls };
+}
+
+function hexBytes(hex) {
+  if (!/^[a-f0-9]+$/i.test(hex) || hex.length % 2) return null;
+  return new Uint8Array(hex.match(/../g).map(x => parseInt(x, 16)));
+}
+async function verifyPbkdf2Pin(pin, stored) {
+  if (typeof stored !== "string" || !stored.startsWith("pbkdf2$")) return false;
+  const parts = stored.split("$");
+  if (parts.length !== 4 || !/^\d+$/.test(parts[1])) return false;
+  const iterations = Number(parts[1]);
+  const salt = hexBytes(parts[2]);
+  const expected = parts[3].toLowerCase();
+  if (!salt || !/^[a-f0-9]{64}$/i.test(expected) || iterations < 100000 || iterations > 1000000) return false;
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(pin || "")), "PBKDF2", false, ["deriveBits"]);
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name:"PBKDF2", hash:"SHA-256", salt, iterations }, key, 256));
+  const actual = Array.from(bits, b => b.toString(16).padStart(2,"0")).join("");
+  let diff = actual.length ^ expected.length;
+  for (let i=0; i<Math.min(actual.length, expected.length); i++) diff |= actual.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0;
+}
+export async function verifySecurityPin(env, uid, pin, actorProfileId = null, requirePrimary = true) {
+  const account = await accountData(env, uid);
+  if (!account) throw Object.assign(new Error("Account not found"), { code:"ACCOUNT_NOT_FOUND" });
+  if (!account.pinHash) throw Object.assign(new Error("Security PIN not configured"), { code:"PIN_NOT_CONFIGURED" });
+  if (!String(account.pinHash).startsWith("pbkdf2$")) throw Object.assign(new Error("Legacy PIN must be upgraded"), { code:"PIN_UPGRADE_REQUIRED" });
+  if (!(await verifyPbkdf2Pin(pin, account.pinHash))) throw Object.assign(new Error("Invalid security PIN"), { code:"INVALID_SECURITY_PIN" });
+  const profiles = accountProfiles(account);
+  const valid = new Set(profiles.map(p => String(p.id)));
+  const primary = valid.has(String(account.primaryProfileId || "")) ? String(account.primaryProfileId) : (profiles.length === 1 ? String(profiles[0].id) : "");
+  if (requirePrimary && (!primary || String(actorProfileId || "") !== primary)) throw Object.assign(new Error("Primary profile required"), { code:"PRIMARY_PROFILE_REQUIRED", primaryProfileId:primary });
+  return { account, primaryProfileId:primary, profiles };
+}
+export async function setProfileControl(env, uid, profileId, accessLevel, allowAI) {
+  profileId = String(profileId || "");
+  if (!["full","standard","readonly"].includes(accessLevel)) throw Object.assign(new Error("Invalid access level"), { code:"INVALID_PROFILE_CONTROL" });
+  const state = await getProfileControls(env, uid, [profileId]);
+  if (!state.profiles.some(p => p.id === profileId)) throw Object.assign(new Error("Profile not found"), { code:"PROFILE_NOT_FOUND" });
+  if (state.primaryProfileId === profileId) throw Object.assign(new Error("Primary profile cannot be restricted"), { code:"PRIMARY_PROFILE_LOCKED" });
+  const next = { uid, profileId, accessLevel, allowAI: accessLevel === "readonly" ? false : allowAI !== false, isPrimary:false, updatedAt:new Date().toISOString() };
+  await patchDocument(env, profileControlPath(uid, profileId), next);
+  return next;
+}
+export async function setPrimaryProfile(env, uid, targetProfileId) {
+  targetProfileId = String(targetProfileId || "");
+  const account = await accountData(env, uid);
+  if (!accountProfiles(account).some(p => String(p.id) === targetProfileId)) throw Object.assign(new Error("Profile not found"), { code:"PROFILE_NOT_FOUND" });
+  await patchDocument(env, `usuarios/${safeId(uid)}`, { primaryProfileId:targetProfileId });
+  return targetProfileId;
 }
 
 export async function getProfileLimits(env, uid, profileIds) {
@@ -265,6 +360,13 @@ export async function reserveCredits(env, user, feature, credits, requestId, sta
   const skipWallet = options?.skipWallet === true;
   profileId = profileId ? String(profileId).trim() : null;
   if (profileId && !(await profileExists(env, user.uid, profileId))) throw Object.assign(new Error("Profile not found"), { code: "PROFILE_NOT_FOUND" });
+  if (profileId) {
+    const general = await getProfileControls(env, user.uid, [profileId]);
+    const control = general.controls && general.controls[0];
+    if (control && (control.accessLevel === "readonly" || control.allowAI === false)) {
+      throw Object.assign(new Error("AI disabled for this profile"), { code:"PROFILE_AI_BLOCKED", profileId });
+    }
+  }
 
   const walletPath = `aiWallets/${safeId(user.uid)}`;
   const reservationPath = `aiReservations/${safeId(requestId)}`;

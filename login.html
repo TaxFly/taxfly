@@ -411,7 +411,7 @@ window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce
             </div>
             <div class="oi-step">
                 <div class="oi-step-num">2</div>
-                <div class="oi-step-text" id="oi-step2">Creá tu PIN de 4 dígitos cuando te lo pida.</div>
+                <div class="oi-step-text" id="oi-step2">Creá tu PIN de seguridad de 6 dígitos cuando te lo pida.</div>
             </div>
             <div class="oi-step">
                 <div class="oi-step-num">3</div>
@@ -441,6 +441,8 @@ window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce
             <div class="pin-dot"></div>
             <div class="pin-dot"></div>
             <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
             <div class="pin-dot"></div>
         </div>
         <div class="pin-error-msg" id="pin-error-offline"></div>
@@ -474,11 +476,13 @@ window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce
             <div class="pin-step-dot" id="step-dot-2"></div>
         </div>
         <div class="pin-create-title" id="create-pin-title">Creá tu PIN offline</div>
-        <div class="pin-create-sub" id="create-pin-sub">Este PIN de 4 dígitos te permite entrar a la app aunque no tengas conexión a internet.</div>
+        <div class="pin-create-sub" id="create-pin-sub">Este PIN de seguridad de 6 dígitos protege los controles de perfiles y también permite entrar sin conexión.</div>
         <div class="pin-dots" id="pin-dots-create">
             <div class="pin-dot"></div>
             <div class="pin-dot"></div>
             <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+                    <div class="pin-dot"></div>
             <div class="pin-dot"></div>
         </div>
         <div class="pin-error-msg" id="pin-error-create"></div>
@@ -519,13 +523,15 @@ window._splashMinEnd = Date.now() + (matchMedia("(prefers-reduced-motion: reduce
         
         <div id="new-pin-section" style="display:none;margin-top:8px;border-top:1.5px solid var(--border);padding-top:24px;">
             <div class="pin-create-title" id="new-pin-title" style="margin-bottom:8px;">Nuevo PIN</div>
-            <div class="pin-create-sub" id="new-pin-sub" style="margin-bottom:20px;">Ingresá tu nuevo PIN de 4 dígitos</div>
+            <div class="pin-create-sub" id="new-pin-sub" style="margin-bottom:20px;">Ingresá tu nuevo PIN de seguridad de 6 dígitos</div>
             <div class="pin-dots" id="pin-dots-change">
                 <div class="pin-dot"></div>
                 <div class="pin-dot"></div>
                 <div class="pin-dot"></div>
                 <div class="pin-dot"></div>
-            </div>
+                        <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
             <div class="pin-error-msg" id="pin-error-change"></div>
             <div class="pin-keypad" id="pin-keypad-change"></div>
         </div>

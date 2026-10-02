@@ -1,4 +1,4 @@
-import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits, getProfileLimits, setProfileLimit } from "./worker-firestore.js";
+import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits, getProfileLimits, setProfileLimit, getProfileControls, setProfileControl, verifySecurityPin, setPrimaryProfile } from "./worker-firestore.js";
 
 const FIREBASE_PROJECT_ID = "viajes-db538";
 
@@ -77,7 +77,7 @@ async function handle(request, env) {
   let user = null;
   if (token) {
     try { user = await verifyFirebaseToken(token); } catch (e) {
-      if (AI_TYPES.includes(body.type) || ["ai_status", "ai_grant_credits", "ai_profile_limits_get", "ai_profile_limit_set"].includes(body.type)) return json({ error: "Invalid or expired session" }, 401);
+      if (AI_TYPES.includes(body.type) || ["ai_status", "ai_grant_credits", "ai_profile_limits_get", "ai_profile_limit_set", "profile_controls_get", "profile_controls_set", "security_pin_verify", "primary_profile_set"].includes(body.type)) return json({ error: "Invalid or expired session" }, 401);
     }
   }
 
@@ -97,6 +97,22 @@ async function handle(request, env) {
   if (body.type === "ai_profile_limit_set") {
     if (!user) return json({ error: "Login required" }, 401);
     return handleAIProfileLimitSet(body, env, user);
+  }
+  if (body.type === "profile_controls_get") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleProfileControlsGet(body, env, user);
+  }
+  if (body.type === "security_pin_verify") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleSecurityPinVerify(body, env, user);
+  }
+  if (body.type === "profile_controls_set") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleProfileControlsSet(body, env, user);
+  }
+  if (body.type === "primary_profile_set") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handlePrimaryProfileSet(body, env, user);
   }
 
   const isCostRoute = AI_TYPES.includes(body.type);
@@ -265,20 +281,53 @@ async function handleAIProfileLimitsGet(body, env, user) {
 }
 
 async function handleAIProfileLimitSet(body, env, user) {
-  if (!firestoreConfigured(env)) return json({ error: "Firestore service account not configured" }, 503);
-  const profileId = normalizeProfileId(body.profile_id);
-  const mode = typeof body.mode === "string" ? body.mode.trim() : "";
+  const profileId = String(body.profile_id || "").trim();
+  const mode = String(body.mode || "").trim();
   const resetUsed = body.reset_used === true;
   if (!profileId || !["unlimited", "limited", "blocked"].includes(mode)) return json({ error: "Invalid profile limit" }, 400);
   try {
+    await verifySecurityPin(env, user.uid, body.pin, body.actor_profile_id, true);
     const limit = await setProfileLimit(env, user.uid, profileId, mode, body.limit_credits, resetUsed);
-    return json({ success: true, limit });
+    return json({ ok:true, limit });
   } catch (e) {
-    if (e.code === "PROFILE_NOT_FOUND") return json({ error: "Unknown profile", code: e.code }, 404);
-    if (e.code === "INVALID_PROFILE_LIMIT") return json({ error: "Invalid profile limit", code: e.code }, 400);
-    console.error("profile limit set failed", e);
-    return json({ error: "Could not save profile AI limit" }, 503);
+    return profileAdminError(e);
   }
+}
+
+function profileAdminError(e) {
+  const code = e?.code || "PROFILE_ADMIN_ERROR";
+  const status = code === "INVALID_SECURITY_PIN" ? 403 : code === "PRIMARY_PROFILE_REQUIRED" ? 403 : code === "PIN_NOT_CONFIGURED" || code === "PIN_UPGRADE_REQUIRED" ? 409 : code === "PROFILE_NOT_FOUND" ? 404 : code === "INVALID_PROFILE_LIMIT" || code === "INVALID_PROFILE_CONTROL" ? 400 : 503;
+  return json({ error:e?.message || "Profile administration failed", code, primaryProfileId:e?.primaryProfileId || "" }, status);
+}
+async function handleSecurityPinVerify(body, env, user) {
+  try {
+    const state = await verifySecurityPin(env, user.uid, body.pin, body.actor_profile_id, true);
+    return json({ ok:true, primaryProfileId:state.primaryProfileId });
+  } catch (e) { return profileAdminError(e); }
+}
+async function handleProfileControlsGet(body, env, user) {
+  try {
+    const state = await getProfileControls(env, user.uid, body.profile_ids || []);
+    const limits = await getProfileLimits(env, user.uid, state.profiles.map(p => p.id));
+    return json({ ...state, limits });
+  } catch (e) {
+    console.error("profile controls get failed", e);
+    return json({ error:"Could not read profile controls" }, 503);
+  }
+}
+async function handleProfileControlsSet(body, env, user) {
+  try {
+    await verifySecurityPin(env, user.uid, body.pin, body.actor_profile_id, true);
+    const control = await setProfileControl(env, user.uid, body.profile_id, String(body.access_level || "full"), body.allow_ai !== false);
+    return json({ ok:true, control });
+  } catch (e) { return profileAdminError(e); }
+}
+async function handlePrimaryProfileSet(body, env, user) {
+  try {
+    await verifySecurityPin(env, user.uid, body.pin, body.actor_profile_id, true);
+    const primaryProfileId = await setPrimaryProfile(env, user.uid, body.profile_id);
+    return json({ ok:true, primaryProfileId });
+  } catch (e) { return profileAdminError(e); }
 }
 
 
