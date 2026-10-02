@@ -55,7 +55,7 @@ test('days are inclusive, use destination today, and handle future/ended/missing
 test('overspending keeps a negative cash balance but never offers negative daily spending',()=>{
  const b=T.budget(100,120,[{id:'r',totalPrice:50}],[],trip,Date.parse('2026-10-05T16:00:00Z'));
  assert.equal(b.balance,-20);assert.equal(b.available,-70);assert.equal(b.daily,0);
- assert.match(T.budgetText(b),/USD -70.00/);
+ assert.match(T.budgetText(b),/Disponible diario: USD 0.00/);
 });
 test('unknown booking prices do not invent commitments and another trip payment is excluded',()=>{
  assert.equal(T.outstanding([{id:'r',totalPrice:500},{id:'unknown'}],[{tripId:'b',reservationId:'r',valor:500}],'a'),500);
