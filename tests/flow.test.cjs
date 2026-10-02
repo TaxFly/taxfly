@@ -868,3 +868,12 @@ test('firestore.rules: los grupos aplican roles (admin/lector), aprobación de i
   assert.ok(/request\.resource\.data\.creadoPor in request\.resource\.data\.miembroUids/.test(block), 'el creador no puede quedar fuera');
   assert.ok(/get\('requiereAprobacion', false\) != true/.test(block), 'entrar directo solo si no pide aprobación');
 });
+
+test('login: botón "Continuar con Google" (popup con redirección de respaldo) con textos en es/en/pt', () => {
+  const html = read('login.html'), js = read('assets/login-app.js');
+  assert.ok(html.includes('id="googleBtn"') && html.includes('onclick="handleGoogle()"'));
+  assert.match(js, /window\.handleGoogle = async/);
+  assert.match(js, /signInWithPopup\(auth, provider\)/);
+  assert.match(js, /signInWithRedirect\(auth, provider\)/);
+  assert.equal((js.match(/\n    googleBtn: /g) || []).length, 3);
+});

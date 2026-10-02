@@ -1,7 +1,7 @@
 import { fsNet } from "./fs-net.js";
 const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
-let initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, sendEmailVerification, signOut, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, updateDoc, initializeAppCheck, ReCaptchaV3Provider;
+let initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, sendEmailVerification, signOut, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, updateDoc, initializeAppCheck, ReCaptchaV3Provider;
 
 let app, auth, db;
 
@@ -9,7 +9,7 @@ let firebaseOk = true;
 
 try {
   ({initializeApp: initializeApp} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js")));
-  ({getAuth: getAuth, signInWithEmailAndPassword: signInWithEmailAndPassword, createUserWithEmailAndPassword: createUserWithEmailAndPassword, onAuthStateChanged: onAuthStateChanged, sendPasswordResetEmail: sendPasswordResetEmail, sendEmailVerification: sendEmailVerification, signOut: signOut} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js")));
+  ({getAuth: getAuth, signInWithEmailAndPassword: signInWithEmailAndPassword, createUserWithEmailAndPassword: createUserWithEmailAndPassword, onAuthStateChanged: onAuthStateChanged, sendPasswordResetEmail: sendPasswordResetEmail, sendEmailVerification: sendEmailVerification, signOut: signOut, GoogleAuthProvider: GoogleAuthProvider, signInWithPopup: signInWithPopup, signInWithRedirect: signInWithRedirect, getRedirectResult: getRedirectResult} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js")));
   ({getFirestore: getFirestore, initializeFirestore: initializeFirestore, persistentLocalCache: persistentLocalCache, persistentMultipleTabManager: persistentMultipleTabManager, doc: doc, getDoc: getDoc, setDoc: setDoc, updateDoc: updateDoc} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js")));
   ({initializeAppCheck: initializeAppCheck, ReCaptchaV3Provider: ReCaptchaV3Provider} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js")));
   app = initializeApp(FB);
@@ -64,6 +64,12 @@ const i18n = {
     errInvalidEmail: "El correo no es válido.",
     errNetworkFailed: "Sin conexión a internet.",
     errDefault: "Ocurrió un error. Volvé a intentarlo.",
+    googleBtn: "Continuar con Google",
+    orSep: "o",
+    errGoogleClosed: "Cerraste la ventana de Google antes de terminar.",
+    errGoogleFailed: "No se pudo ingresar con Google. Probá de nuevo o usá tu correo.",
+    errGoogleDomain: "Google no está habilitado para este sitio todavía (falta autorizar el dominio en Firebase).",
+    errGoogleDisabled: "El ingreso con Google no está activado en Firebase.",
     offlineBadge: "Sin conexión — ingresá con tu PIN",
     tryOnline: "🌐 Intentar con internet",
     noPinOffline: "No hay PIN configurado para esta cuenta. Necesitás conexión para ingresar.",
@@ -125,6 +131,12 @@ const i18n = {
     errInvalidEmail: "The email address is not valid.",
     errNetworkFailed: "No internet connection.",
     errDefault: "An error occurred. Please try again.",
+    googleBtn: "Continue with Google",
+    orSep: "or",
+    errGoogleClosed: "You closed the Google window before finishing.",
+    errGoogleFailed: "Couldn't sign in with Google. Try again or use your email.",
+    errGoogleDomain: "Google sign-in isn't enabled for this site yet (the domain must be authorized in Firebase).",
+    errGoogleDisabled: "Google sign-in isn't turned on in Firebase.",
     offlineBadge: "Offline — enter your PIN",
     tryOnline: "🌐 Try with internet",
     noPinOffline: "No PIN configured for this account. You need internet to log in.",
@@ -186,6 +198,12 @@ const i18n = {
     errInvalidEmail: "O endereço de e-mail não é válido.",
     errNetworkFailed: "Sem conexão com a internet.",
     errDefault: "Ocorreu um erro. Tente novamente.",
+    googleBtn: "Continuar com Google",
+    orSep: "ou",
+    errGoogleClosed: "Você fechou a janela do Google antes de terminar.",
+    errGoogleFailed: "Não foi possível entrar com o Google. Tente novamente ou use seu e-mail.",
+    errGoogleDomain: "O login com Google ainda não está habilitado para este site (falta autorizar o domínio no Firebase).",
+    errGoogleDisabled: "O login com Google não está ativado no Firebase.",
     offlineBadge: "Sem conexão — use seu PIN",
     tryOnline: "🌐 Tentar com internet",
     noPinOffline: "Nenhum PIN configurado. Você precisa de internet para entrar.",
@@ -347,6 +365,8 @@ function applyTexts() {
   setText("mainBtn", isLoginMode ? t("login") : t("register"));
   setText("toggleLink", isLoginMode ? t("noAccount") : t("haveAccount"));
   setText("forgotLink", t("forgot"));
+  setText("googleBtnTxt", t("googleBtn"));
+  setText("orSepTxt", t("orSep"));
   setText("verifNotice", t("verif"));
   setPlaceholder("email", t("email"));
   setPlaceholder("password", t("pass"));
@@ -485,6 +505,65 @@ window.handleAuth = async () => {
     showAlert(map[e.code] || t("errDefault"));
   }
 };
+
+// Ingreso / registro con Google. Una cuenta de Google ya viene con el correo verificado,
+// así que sigue el mismo camino que el login normal (onAuthStateChanged → PIN → app).
+let googleBusy = false;
+
+window.handleGoogle = async () => {
+  if (googleBusy) return;
+  if (!isOnline() || !firebaseOk) {
+    showAlert(t("errNetworkFailed"));
+    return;
+  }
+  googleBusy = true;
+  const btn = document.getElementById("googleBtn");
+  if (btn) btn.disabled = true;
+  try {
+    try {
+      const rcToken = await getRecaptchaToken("google_login");
+      const rcOk = await verifyRecaptchaToken(rcToken, "google_login");
+      if (!rcOk) {
+        showAlert(t("errTooManyRequests"));
+        return;
+      }
+    } catch {}
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e) {
+      // Navegadores / apps instaladas (PWA en iPhone) que bloquean ventanas emergentes: se usa redirección.
+      if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw e;
+    }
+  } catch (e) {
+    const map = {
+      "auth/popup-closed-by-user": t("errGoogleClosed"),
+      "auth/cancelled-popup-request": null,
+      "auth/unauthorized-domain": t("errGoogleDomain"),
+      "auth/operation-not-allowed": t("errGoogleDisabled"),
+      "auth/network-request-failed": t("errNetworkFailed"),
+      "auth/too-many-requests": t("errTooManyRequests"),
+      "auth/account-exists-with-different-credential": t("errGoogleFailed")
+    };
+    const msg = e.code in map ? map[e.code] : t("errGoogleFailed");
+    if (msg) showAlert(msg);
+    console.warn("[handleGoogle]", e.code || e);
+  } finally {
+    googleBusy = false;
+    if (btn) btn.disabled = false;
+  }
+};
+
+// Si volvió de una redirección de Google, onAuthStateChanged ya se encarga del resto;
+// esto solo muestra el error si la redirección falló.
+if (firebaseOk) getRedirectResult(auth).catch(e => {
+  if (e && e.code && e.code !== "auth/no-auth-event") console.warn("[getRedirectResult]", e.code);
+});
 
 window.resetPassword = async () => {
   const email = document.getElementById("email").value.trim();
