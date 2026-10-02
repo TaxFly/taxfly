@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script src="assets/app-routes.js"></script>
     <link rel="stylesheet" href="assets/style.css">
     <script src="assets/dialogs.js"></script>
     <script src="assets/security.js"></script>
@@ -991,17 +992,7 @@ window.openSwitchApp = function() {
   document.getElementById("switchAppModal").style.display = "flex";
 };
 
-window.doSwitchApp = function(destino) {
-  if (destino === "europe") { window.location.href = "selector.html"; return; }
-  localStorage.setItem("taxfly_destino", destino);
-  document.getElementById("switchAppModal").style.display = "none";
-  if (destino === "usa") {
-    window.location.href = "index.html";
-  } else {
-    window.location.href = "selector.html";
-  }
-};
-</script>
+window.doSwitchApp = function(destino) { window.TaxflyRoutes.enter(destino); };</script>
     
 
 <script src="assets/map-links.js" defer></script>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
+<script src="assets/app-routes.js"></script>
     <script src="config.js"></script>
     <link rel="stylesheet" href="assets/style.css">
     <meta charset="UTF-8">
@@ -262,7 +263,7 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         </a>
 
         
-        <div class="region-card card-europe soon" onclick="showSoon()">
+        <a class="region-card card-europe" href="TaxEurope/index.html" onclick="localStorage.setItem('taxfly_destino','europe');localStorage.removeItem('taxusa_pending_redirect')">
             <div class="card-inner">
                 <div class="logo-box logo-box-eu">
                     <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -293,11 +294,11 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
                         <span class="tax">Tax</span><span class="region-eu">Europe</span>
                     </div>
                     <div class="card-tagline" id="txt-eu-tag">Asistente de viaje · Europa</div>
-                    <div class="soon-badge">🚀 <span id="txt-soon">Próximamente</span></div>
+                    <div class="soon-badge">🚀 <span id="txt-soon">Base inicial</span></div>
                 </div>
                 <div class="card-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
             </div>
-        </div>
+        </a>
 
     </div>
 
@@ -315,7 +316,7 @@ const i18n = {
     sub: "Elegí tu destino y accedé a tu asistente de viaje",
     usa_tag: "Asistente de viaje · Estados Unidos",
     eu_tag: "Asistente de viaje · Europa",
-    soon: "Próximamente",
+    soon: "Base inicial",
     footer: "Creado por Juan Cruz Bria",
     soon_msg: "🚀 TaxEurope estará disponible próximamente. ¡Gracias por la paciencia!",
     feat_tax: "💵 Tax & propinas",
@@ -330,7 +331,7 @@ const i18n = {
     sub: "Choose your destination and access your travel assistant",
     usa_tag: "Travel Assistant · United States",
     eu_tag: "Travel Assistant · Europe",
-    soon: "Coming soon",
+    soon: "Initial release",
     footer: "Created by Juan Cruz Bria",
     soon_msg: "🚀 TaxEurope will be available soon. Thanks for your patience!",
     feat_tax: "💵 Tax & tips",
@@ -345,7 +346,7 @@ const i18n = {
     sub: "Escolha seu destino e acesse seu assistente de viagem",
     usa_tag: "Assistente de viagem · Estados Unidos",
     eu_tag: "Assistente de viagem · Europa",
-    soon: "Em breve",
+    soon: "Base inicial",
     footer: "Criado por Juan Cruz Bria",
     soon_msg: "🚀 TaxEurope estará disponível em breve. Obrigado pela paciência!",
     feat_tax: "💵 Impostos & gorjetas",

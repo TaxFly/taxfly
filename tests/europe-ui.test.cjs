@@ -1,0 +1,31 @@
+// DOM contract harness: executes the actual screen renderer and form handlers.
+// It verifies runtime wiring and persistence; it does not emulate browser layout.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const root=path.resolve(__dirname,'../TaxEurope');
+function mount(page){
+ const nodes=new Map(),forms=[],timers=[],listeners={},map=new Map();let context;
+ class Node{constructor(id,tag='div'){this.id=id;this.tag=tag;this.dataset={};this.style={};this.value='';this.type='';this.checked=false;this.children=[];this.label={hidden:false};this.classList={toggle:()=>true,add:()=>{},contains:()=>false};this.elements={namedItem:name=>this.fields?.[name]||null};nodes.set(id,this)}
+ set innerHTML(html){this.html=html;this.children=html?[{}]:[];if(this.tag==='select'){const options=[...html.matchAll(/<option value="([^"]*)"([^>]*)>/g)];this.value=(options.find(x=>x[2].includes('selected'))||options[0])?.[1]||'';return}
+ for(const m of html.matchAll(/<([\w-]+)[^>]*\bid="([^"]+)"[^>]*>/g)){const n=new Node(m[2],m[1]);if(n.tag==='form'){n.fields={};forms.push(n)}}
+ for(const fm of html.matchAll(/<form id="([^"]+)"[\s\S]*?<\/form>/g)){const f=nodes.get(fm[1]);for(const m of fm[0].matchAll(/<(input|select|textarea)\b([^>]*\bname="([^"]+)"[^>]*)>/g)){const n=new Node(f.id+'-'+m[3],m[1]);n.name=m[3];n.type=/type="([^"]+)"/.exec(m[2])?.[1]||'';n.value=/value="([^"]*)"/.exec(m[2])?.[1]||'';f.fields[m[3]]=n;if(m[1]==='select'){const start=fm[0].indexOf(m[0])+m[0].length,end=fm[0].indexOf('</select>',start);n.innerHTML=fm[0].slice(start,end)}}}
+ }
+ get innerHTML(){return this.html||''}closest(){return this.label}querySelectorAll(){return[]}reset(){for(const n of Object.values(this.fields||{})){n.value='';n.checked=false}}dispatchEvent(e){e.target=this;this.oninput?.(e)}scrollIntoView(){}setAttribute(){}
+ }
+ for(const id of ['eu-view','eu-notice','eu-sync','eu-trip-name','eu-location','eu-account','eu-app-switch','eu-menu'])new Node(id);
+ const doc={body:{dataset:{page},classList:{toggle:()=>{}}},documentElement:new Node('html'),getElementById:id=>nodes.get(id)||null,querySelectorAll:q=>q==='#eu-view form'?forms:[],querySelector:()=>new Node('sidebar'),addEventListener:()=>{}};
+ const localStorage={getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)};
+ const window={addEventListener:(name,fn)=>{(listeners[name]||=[]).push(fn)},dispatchEvent:e=>(listeners[e.type]||[]).forEach(fn=>fn(e)),TaxflyRoutes:{showSwitcher:()=>{}},TripContext:{readTrips:()=>[{id:'trip',region:'europe',name:'Europa',destinations:[{countryCode:'ES',countryName:'España',city:'Madrid'}]}],active:()=> 'trip'}};
+ context={window,document:doc,localStorage,URL,URLSearchParams,Intl,Date,Number,String,Math,Set,Map,JSON,Event:class{constructor(type){this.type=type}},setTimeout:fn=>timers.push(fn),confirm:()=>true,console};
+ for(const file of ['europe-data.js','europe-rules.js','europe-core.js','europe-store.js'])vm.runInNewContext(fs.readFileSync(path.join(root,'assets',file),'utf8'),context);
+ let sequence=0;const store=window.TaxEuropeStore.createStore({storage:localStorage,scope:{uid:'u',profile:'p',trip:'trip'},uuid:()=>String(++sequence),changed:()=>window.dispatchEvent({type:'eu:context'})});
+ window.TaxEuropeSession={store,identity:{uid:'u',profile:'p'}};
+ vm.runInNewContext(fs.readFileSync(path.join(root,'assets/europe-native.js'),'utf8'),context);for(const fn of timers)fn();
+ return{nodes,forms,store,window,submit:async(id,fields)=>{const f=nodes.get(id);for(const [k,val]of Object.entries(fields))f.elements.namedItem(k).value=String(val);await f.onsubmit({type:'submit',target:f,preventDefault(){}})}};
+}
+for(const page of ['dashboard','finance','vat','refund','stay','places','plan','routes','group','packing','tools'])test(`pantalla europea ${page} se monta sin referencias DOM inexistentes`,()=>{const x=mount(page);assert.ok(x.nodes.get('eu-view').innerHTML.length>100);assert.equal(x.nodes.get('eu-trip-name').textContent,'Europa')});
+test('formulario de compras guarda importe y destino y no destruye otro borrador al sincronizar',async()=>{const x=mount('finance');x.nodes.get('eu-budget').fields.amount.value='500';await x.submit('eu-expense',{name:'Museo',date:'2026-10-02',amount:30,currency:'EUR'});assert.equal(x.store.list('expense')[0].amount,30);assert.equal(x.store.list('expense')[0].city,'Madrid');assert.equal(x.nodes.get('eu-budget').fields.amount.value,'500')});
+test('formulario de grupo agrega integrante y muestra un saldo',async()=>{const x=mount('group');await x.submit('eu-member',{name:'Juan'});assert.equal(x.store.list('member')[0].name,'Juan');assert.match(x.nodes.get('eu-balances').innerHTML,/Juan/)});
+test('calculadora pública calcula IVA incluido',async()=>{const x=mount('vat');await x.submit('eu-vat',{amount:121,rate:21,mode:'Precio con IVA'});assert.match(x.nodes.get('eu-vat-result').innerHTML,/21,00/);assert.match(x.nodes.get('eu-vat-result').innerHTML,/100,00/)});
+test('alojamiento guarda tasa por huésped, noches y categoría del destino',async()=>{const x=mount('stay');await x.submit('eu-stay',{name:'Hotel Barcelona',city:'Barcelona',startDate:'2026-10-10',endDate:'2026-10-20',type:'4 estrellas',ages:'35, 17, 12',roomPrice:1000,taxMode:'auto',source:'Reserva confirmada'});assert.equal(x.store.list('stay')[0].taxTotal,117.6);assert.equal(x.store.list('stay')[0].roomPrice,1000)});
+test('rutas guarda enlace de Maps y paradas en el orden ingresado',async()=>{const x=mount('routes');await x.submit('eu-route',{name:'España Francia',mode:'transit',stops:'Madrid, España\nBarcelona, España\nParís, Francia'});assert.equal(x.store.list('route').length,1);assert.match(x.store.list('route')[0].url,/waypoints=Barcelona/)});
+test('Tax Free guarda seguimiento sin tratar el cálculo teórico como cobro',async()=>{const x=mount('refund');const f=x.nodes.get('eu-refund');f.fields.exportGoods.checked=true;f.fields.retailer.checked=true;await x.submit('eu-refund',{name:'Compra Madrid',amount:121,rate:21,fee:2,residency:'out',purchaseDate:'2026-10-02',exitDate:'2026-12-01',status:'submitted',currency:'EUR'});assert.equal(x.store.list('refund')[0].evaluation.vat,21);assert.equal(x.store.list('refund')[0].receivedAmount,0)});

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script src="../assets/app-routes.js"></script>
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/dialogs.js"></script>
+    <script src="config.js"></script>
+<script src="assets/europe-data.js"></script>
+<script src="assets/europe-region.js"></script>
+    <script>
+if (navigator.onLine) {
+  var s = document.createElement("script");
+  s.src = "https://www.google.com/recaptcha/api.js?render=6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME";
+  s.async = true;
+  s.defer = true;
+  document.head.appendChild(s);
+}
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaxFly — Profiles</title>
+    <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
+    <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet"></noscript>
+    <script>
+(function() {
+  var t = null;
+  try {
+    t = localStorage.getItem("theme");
+  } catch (e) {}
+  if (!t && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) t = "dark";
+  document.documentElement.setAttribute("data-theme", t || "light");
+})();
+</script>
+    <style>
+        :root {
+            --primary: #2563eb; --primary-glow: rgba(37,99,235,0.12);
+            --accent: #7c3aed; --danger: #ef4444;
+            --bg: #0f172a; --surface: #1e293b; --surface-2: #273549;
+            --border: #334155; --input-bg: #273549;
+            --text: #f1f5f9; --text-sub: #94a3b8; --text-dim: #64748b;
+            --radius: 20px; --radius-sm: 12px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+            --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+            color-scheme: dark;
+        }
+        
+        body.tema-usa {
+            --primary: #2563eb;
+            --accent: #ef4444;
+            --primary-glow: rgba(37,99,235,0.12);
+            --bg: #0f172a; --surface: #1e293b; --surface-2: #273549; --border: #334155;
+        }
+        
+        body.tema-europe {
+            --primary: #003399;
+            --accent: #ffcc00;
+            --primary-glow: rgba(0,51,153,0.12);
+            --bg: #05081a; --surface: #0d1233; --surface-2: #131b40; --border: #1e2d6b;
+        }
+
+        
+        [data-theme="light"] body.tema-usa {
+            --bg: #f1f5fb; --surface: #ffffff; --surface-2: #e6edf8; --border: #d6e0f0; --input-bg: #f4f7fc;
+            --text: #0f172a; --text-sub: #475569; --text-dim: #94a3b8;
+            --shadow: 0 4px 20px rgba(30,58,138,0.10); color-scheme: light;
+        }
+        [data-theme="light"] body.tema-europe {
+            --bg: #eef2fb; --surface: #ffffff; --surface-2: #e2e9f8; --border: #cbd6f0; --input-bg: #f3f6fd;
+            --text: #0a1130; --text-sub: #43507a; --text-dim: #8a96bd;
+            --shadow: 0 4px 20px rgba(0,51,153,0.10); color-scheme: light;
+        }
+        .logout-btn { white-space: nowrap; }
+        [data-theme="light"] .avatar { border-color: rgba(15,23,42,.06); }
+        [data-theme="light"] body:not(.editing-mode) .profile-item:hover .avatar { border-color: var(--primary); }
+        body {
+            font-family: 'DM Sans', -apple-system, system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 32px 20px; -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 70% 50% at 50% 0%, var(--primary-glow), transparent);
+            pointer-events: none;
+        }
+
+        .page-title {
+            font-size: 2rem; font-weight: 900; text-align: center;
+            margin-bottom: 48px; letter-spacing: -0.5px;
+            position: relative; z-index: 1;
+            transition: var(--transition);
+        }
+
+        .profiles-grid {
+            display: grid; grid-template-columns: repeat(2, 140px);
+            gap: 28px; justify-content: center;
+            margin-bottom: 48px; position: relative; z-index: 1;
+        }
+
+        .profile-item {
+            display: flex; flex-direction: column;
+            align-items: center; cursor: pointer;
+            border: 0; background: transparent; padding: 0;
+            color: inherit; font: inherit; text-align: center;
+            transition: var(--transition);
+        }
+        .profile-item:focus-visible { outline: 3px solid var(--primary); outline-offset: 7px; border-radius: 18px; }
+
+        .avatar-wrapper {
+            position: relative; width: 120px; height: 120px; margin-bottom: 12px;
+        }
+
+        .avatar {
+            width: 120px; height: 120px;
+            border-radius: 18px;
+            background: var(--surface-2) no-repeat center/cover;
+            object-fit: cover; display: block;
+            border: 2.5px solid transparent;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        body:not(.editing-mode) .profile-item:hover .avatar {
+            transform: scale(1.06); border-color: white;
+            box-shadow: 0 8px 30px rgba(var(--primary-rgb, 37,99,235),0.3);
+        }
+
+        .edit-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.55);
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: var(--transition); z-index: 5;
+        }
+        .editing-mode .edit-overlay { opacity: 1; pointer-events: auto; }
+        .edit-overlay svg { width: 32px; fill: white; }
+
+        .profile-name {
+            color: var(--text-sub); font-size: 0.95rem; font-weight: 700;
+            transition: var(--transition);
+        }
+        body:not(.editing-mode) .profile-item:hover .profile-name { color: var(--text); }
+
+        .add-avatar {
+            width: 120px; height: 120px;
+            border: 2px dashed var(--border);
+            border-radius: 18px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px;
+            font-size: 2rem; color: var(--text-dim);
+            transition: var(--transition);
+            background: var(--surface-2);
+        }
+        .add-avatar .add-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); }
+        .profile-item:hover .add-avatar { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
+        .profile-item:hover .add-avatar .add-label { color: var(--primary); }
+
+        
+        .avatar.is-active {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.35), var(--shadow);
+        }
+        .active-badge {
+            position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white;
+            font-size: .55rem; font-weight: 900; letter-spacing: .5px;
+            padding: 2px 8px; border-radius: 20px; text-transform: uppercase;
+            white-space: nowrap; z-index: 10; pointer-events: none;
+        }
+        
+        .bottom-actions {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            margin-top: 4px;
+        }
+        .manage-btn {
+            background: var(--surface); color: var(--text-sub);
+            border: 1.5px solid var(--border);
+            padding: 13px 28px; border-radius: var(--radius-sm);
+            font-size: 0.8rem; font-weight: 800; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            font-family: inherit; transition: var(--transition);
+            width: 200px;
+        }
+        .manage-btn:hover { background: var(--surface-2); color: var(--text); }
+        .editing-mode .manage-btn { background: white; color: black; border-color: white; }
+
+        .modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none; align-items: flex-start; justify-content: center;
+            z-index: 1000; padding: 24px;
+            backdrop-filter: blur(16px);
+            overflow-y: auto;
+        }
+        .modal.show { display: flex; animation: modalIn 0.25s ease; }
+        @keyframes modalIn { from { opacity:0; transform: scale(0.92); } to { opacity:1; transform: scale(1); } }
+
+        .modal-content {
+            background: var(--surface); border-radius: 28px;
+            padding: 28px 24px; width: 100%; max-width: 380px;
+            border: 1.5px solid var(--border); text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
+
+        .preview-avatar {
+            width: 120px; height: 120px; border-radius: 18px;
+            margin: 0 auto 20px; border: 3px solid var(--primary);
+            background-size: cover; background-position: center;
+            background-color: var(--surface-2);
+            box-shadow: 0 0 24px rgba(37,99,235,0.25);
+        }
+
+        .name-input {
+            width: 100%; padding: 14px 16px;
+            background: var(--input-bg); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text);
+            font-family: inherit; font-size: 0.95rem; font-weight: 600;
+            margin-bottom: 16px; outline: none; -webkit-appearance: none;
+        }
+        .name-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px;
+            margin: 20px 0;
+            max-height: 220px; 
+            overflow-y: auto; 
+            padding: 8px;
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+}
+        .photo-option {
+            width: 100%;
+            aspect-ratio: 1 / 1; 
+            object-fit: cover;   
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+}
+        .photo-option:hover { transform: scale(1.05); border-color: var(--primary); }
+        .photo-option.selected { border-color: var(--primary); box-shadow: 0 0 12px var(--primary-dim); }
+
+        
+        .upload-section {
+            margin: 0 0 16px 0;
+        }
+        .upload-divider {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 14px; color: var(--text-dim);
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .upload-divider::before, .upload-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+        .upload-drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--surface-2);
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-drop-zone:hover, .upload-drop-zone.dragover {
+            border-color: var(--primary);
+            background: var(--primary-glow);
+        }
+        .upload-drop-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .upload-icon { font-size: 1.6rem; margin-bottom: 4px; }
+        .upload-text { font-size: 0.78rem; font-weight: 700; color: var(--text-sub); line-height: 1.4; }
+        .upload-specs {
+            display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .upload-spec-tag {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 20px; padding: 3px 9px;
+            font-size: 0.62rem; font-weight: 800; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        
+        .crop-modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000; padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+        .crop-modal.show { display: flex; animation: modalIn 0.2s ease; }
+        .crop-content {
+            background: var(--surface); border-radius: 28px;
+            padding: 24px; width: 100%; max-width: 360px;
+            border: 1.5px solid var(--border); text-align: center;
+        }
+        .crop-title { font-size: 1rem; font-weight: 900; color: var(--text); margin-bottom: 16px; }
+        .crop-canvas-wrapper {
+            position: relative; width: 240px; height: 240px;
+            margin: 0 auto 16px; border-radius: 18px; overflow: hidden;
+            border: 2px solid var(--primary); cursor: grab; touch-action: none;
+            background: #000;
+        }
+        .crop-canvas-wrapper:active { cursor: grabbing; }
+        #cropCanvas {
+            position: absolute; top: 0; left: 0;
+            width: 240px; height: 240px;
+        }
+        .crop-overlay {
+            position: absolute; inset: 0; pointer-events: none;
+            border-radius: 18px;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
+        }
+        .crop-hint {
+            font-size: 0.72rem; color: var(--text-dim); font-weight: 600;
+            margin-bottom: 14px; display: flex; align-items: center; gap: 6px; justify-content: center;
+        }
+        .crop-zoom {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 0 8px;
+        }
+        .crop-zoom-icon { font-size: 0.75rem; color: var(--text-dim); }
+        .crop-zoom input[type="range"] {
+            flex: 1; accent-color: var(--primary); height: 4px;
+        }
+        .crop-actions { display: flex; gap: 10px; }
+        .crop-actions .btn { flex: 1; padding: 12px; }
+
+        
+        .mod-status {
+            display: none; align-items: center; gap: 8px; justify-content: center;
+            padding: 10px 14px; border-radius: var(--radius-sm);
+            font-size: 0.78rem; font-weight: 700; margin-bottom: 10px;
+        }
+        .mod-status.checking {
+            display: flex; background: rgba(37,99,235,0.1); color: var(--primary);
+            border: 1px solid rgba(37,99,235,0.2);
+        }
+        .mod-status.approved {
+            display: flex; background: rgba(34,197,94,0.1); color: #22c55e;
+            border: 1px solid rgba(34,197,94,0.2);
+        }
+        .mod-status.rejected {
+            display: flex; background: rgba(239,68,68,0.1); color: var(--danger);
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+        .mod-spinner {
+            width: 14px; height: 14px; border: 2px solid currentColor;
+            border-top-color: transparent; border-radius: 50%;
+            animation: spin 0.7s linear infinite; flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        
+        .terms-row {
+            display: flex; align-items: flex-start; gap: 10px;
+            text-align: left; margin-bottom: 14px; padding: 12px;
+            background: var(--surface-2); border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        .terms-row input[type="checkbox"] {
+            width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--primary);
+            margin-top: 1px; cursor: pointer;
+        }
+        .terms-row label { font-size: 0.72rem; color: var(--text-sub); line-height: 1.4; cursor: pointer; }
+
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm);
+            font-family: inherit; font-size: 0.85rem; font-weight: 800;
+            cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.4px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 14px rgba(37,99,235,.3); }
+
+        
+        .logout-btn {
+            position: relative; z-index: 1;
+            background: transparent;
+            color: var(--danger);
+            border: 1.5px solid rgba(239,68,68,0.35);
+            padding: 13px 28px; border-radius: var(--radius-sm);
+            font-size: 0.8rem; font-weight: 800; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            font-family: inherit; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            min-width: 200px; white-space: nowrap;
+        }
+        .logout-btn:hover { background: rgba(239,68,68,0.1); border-color: var(--danger); }
+        .btn-ghost { background: transparent; color: var(--text-sub); border: 1.5px solid var(--border); }
+        .btn-danger { background: transparent; color: var(--danger); margin-top: 6px; font-size: 0.8rem; }
+    </style>
+    <script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("../sw.js").catch(() => {});
+  });
+}
+
+(function() {
+  const destino = window.TaxflyRoutes.region();
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.add("tema-" + destino);
+    if (destino === "europe") {
+      document.title = document.title.replace("TaxUSA", "TaxEurope");
+    }
+  });
+})();
+</script>
+<script defer src="assets/autofill.js"></script>
+    <link rel="stylesheet" href="assets/ux.css">
+    <script src="assets/ux.js" defer></script>
+</head>
+<body>
+
+<h1 class="page-title" id="pageTitle">¿Quién está planificando hoy?</h1>
+
+<div class="profiles-grid" id="profilesGrid"></div>
+
+<div class="bottom-actions">
+    <button class="manage-btn" id="manageBtn" onclick="toggleEditMode()">EDITAR PERFILES</button>
+    <button class="logout-btn" id="logoutBtn" onclick="doLogout()">🚪 CERRAR SESIÓN</button>
+</div>
+
+
+
+<div class="crop-modal" id="cropModal">
+    <div class="crop-content">
+        <div class="crop-title">✂️ Ajustá tu foto</div>
+        <div class="crop-canvas-wrapper" id="cropWrapper">
+            <canvas id="cropCanvas" width="240" height="240"></canvas>
+            <div class="crop-overlay"></div>
+        </div>
+        <div class="crop-hint">
+            <span>👆</span> Arrastrá para encuadrar · Usá el zoom
+        </div>
+        <div class="crop-zoom">
+            <span class="crop-zoom-icon">🔍</span>
+            <input type="range" id="zoomRange" min="1" max="3" step="0.01" value="1">
+            <span class="crop-zoom-icon">🔎</span>
+        </div>
+        <div class="crop-actions">
+            <button class="btn btn-ghost" onclick="cancelCrop()" id="btnCancelCrop">CANCELAR</button>
+            <button class="btn btn-primary" onclick="confirmCrop()" id="btnConfirmCrop">USAR FOTO</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <h2 class="modal-title" id="modalTitle">Nuevo Perfil</h2>
+        <div id="previewAvatar" class="preview-avatar"></div>
+        <input type="text" class="name-input" id="nameInput" placeholder="Tu nombre">
+
+        
+        <div class="upload-section">
+            <div class="upload-divider">📷 Subir mi foto</div>
+            <div class="upload-drop-zone" id="dropZone">
+                <input type="file" id="photoUpload" accept="image/jpeg,image/png,image/webp">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Tocá para elegir una foto tuya</div>
+                <div class="upload-specs">
+                    <span class="upload-spec-tag">JPG · PNG · WebP</span>
+                    <span class="upload-spec-tag">Máx 2 MB</span>
+                    <span class="upload-spec-tag">Mín 100×100 px</span>
+                </div>
+            </div>
+            <div class="mod-status checking" id="modStatus">
+                <div class="mod-spinner"></div>
+                <span id="modStatusText">Verificando imagen...</span>
+            </div>
+            <div class="terms-row" id="termsRow" style="display:none;">
+                <input type="checkbox" id="termsCheck">
+                <label for="termsCheck">Confirmo que esta foto me pertenece o tengo los derechos para usarla, y no contiene contenido inapropiado.</label>
+            </div>
+        </div>
+
+        <div class="upload-divider" style="margin:0 0 14px; font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); display:flex; align-items:center; gap:10px;">
+            <span style="flex:1;height:1px;background:var(--border);display:block;"></span>
+            O elegí un avatar
+            <span style="flex:1;height:1px;background:var(--border);display:block;"></span>
+        </div>
+
+        <div class="photo-grid" id="photoGrid"></div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="saveProfile()" id="btnSave">GUARDAR</button>
+            <button class="btn btn-ghost" onclick="closeModal()" id="btnCancel">CANCELAR</button>
+            <button class="btn btn-danger" id="btnDelete" onclick="deleteProfile()">Eliminar Perfil</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="assets/profiles-app.js"></script>
+
+<script src="assets/ui.js"></script>
+</body>
+</html>

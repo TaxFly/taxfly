@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script src="assets/app-routes.js"></script>
     <link rel="stylesheet" href="assets/style.css">
     <script src="assets/dialogs.js"></script>
     <script src="config.js"></script>
@@ -408,7 +409,7 @@ if ("serviceWorker" in navigator) {
 }
 
 (function() {
-  const destino = "usa";
+  const destino = window.TaxflyRoutes.region();
   document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("tema-" + destino);
     if (destino === "europe") {

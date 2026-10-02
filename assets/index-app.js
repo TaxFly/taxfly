@@ -1158,16 +1158,7 @@ window.openSwitchApp = () => {
   document.getElementById("switchAppModal").style.display = "flex";
 };
 
-window.doSwitchApp = function(d) {
-  if (d === "europe") {
-    document.getElementById("switchAppModal").style.display = "none";
-    return;
-  }
-  localStorage.setItem("taxfly_destino", d);
-  document.getElementById("switchAppModal").style.display = "none";
-  window.location.href = d === "usa" ? "tax.html" : "selector.html";
-};
-
+window.doSwitchApp = function(d) { window.TaxflyRoutes.enter(d); };
 async function probeConnectivity() {
   const cached = sessionStorage.getItem("taxfly_connectivity");
   if (cached !== null) return cached === "1";

@@ -1,42 +1,44 @@
 (function () {
+  const region=()=>window.TaxflyRoutes?.region?.()||(safeGet('taxfly_destino')==='europe'?'europe':'usa');
   const legacy = {id:'orlando', name:'Mi viaje a Orlando', destinations:[{city:'Orlando',state:'Florida'}]};
   let sdk = null;
   function keys(uid, profile) {
-    return {active:`trip-planning-active::${uid}::${profile}`,
+    return {active:`trip-planning-active::${uid}::${profile}${region()==='europe'?'::europe':''}`,
       list:`trip-planning-trips::${uid}::${profile}`,
-      view:`trip-planning-view::${uid}::${profile}`,
+      view:`trip-planning-view::${uid}::${profile}${region()==='europe'?'::europe':''}`,
       pending:`trip-planning-pending::${uid}::${profile}`};
   }
   const orphanKey=(uid,profile)=>`trip-planning-orphan-count::${uid}::${profile}`;
   function safeGet(k) { try { return localStorage.getItem(k); } catch(e) { return null; } }
   function safeSet(k,v) { try { localStorage.setItem(k,v); } catch(e) {} }
-  function readTrips(uid, profile) {
+  function readAllTrips(uid, profile) {
     let saved=[];
     try { saved=JSON.parse(safeGet(keys(uid,profile).list)||'[]'); } catch(e) {}
     if (!Array.isArray(saved)) saved=[];
     return saved.filter(t=>t?.id && t.status!=='deleted');
   }
+  function readTrips(uid,profile) { return readAllTrips(uid,profile).filter(t=>(t.region||'usa')===region()); }
   function active(uid,profile) {
     const trips=readTrips(uid,profile), id=safeGet(keys(uid,profile).active);
     return trips.some(t=>t.id===id) ? id : trips[0]?.id || 'unassigned';
   }
   function view(uid,profile) {
     const v=safeGet(keys(uid,profile).view);
-    return v==='unassigned' ? v : active(uid,profile);
+    return v==='unassigned' && region()==='usa' ? v : active(uid,profile);
   }
   function matches(record,selection) {
     const id=record && Object.prototype.hasOwnProperty.call(record,'tripId')
       ? (record.tripId||'unassigned') : 'unassigned';
     return id===selection;
   }
-  function filter(items,uid,profile) { return (items||[]).filter(x=>matches(x,view(uid,profile))); }
+  function filter(items,uid,profile) { const selected=view(uid,profile); if(region()==='europe'&&selected==='unassigned')return []; return (items||[]).filter(x=>matches(x,selected)); }
   function assign(uid,profile) { return view(uid,profile); }
   function emit(uid,profile) {
     window.dispatchEvent?.(new CustomEvent('taxfly:tripchange',{detail:{uid,profile,id:active(uid,profile)}}));
   }
   function select(uid,profile,id) {
     const k=keys(uid,profile);
-    if (id==='unassigned') safeSet(k.view,id);
+    if (id==='unassigned') {if(region()==='europe')return false;safeSet(k.view,id);}
     else if (readTrips(uid,profile).some(t=>t.id===id)) {
       safeSet(k.active,id); safeSet(k.view,id);
     } else return false;
@@ -92,7 +94,7 @@
     if (navigator.onLine) {
       try {
         const snap=await within(getDocs(collection(db,'usuarios',uid,'perfiles',profile,'tripPlanning')),5000);
-        const byId=new Map(readTrips(uid,profile).map(t=>[t.id,t]));
+        const byId=new Map(readAllTrips(uid,profile).map(t=>[t.id,t]));
         snap.forEach(d=>byId.set(d.id,{...d.data(),id:d.id}));
         if (!byId.has('orlando')) {
           const legacyData=await within(getDocs(collection(db,'usuarios',uid,'perfiles',profile,'orlando')),5000);
@@ -129,7 +131,7 @@
   }
   async function save(uid,profile,trip) {
     if (!trip?.id || !trip.name?.trim()) return false;
-    const list=readTrips(uid,profile);
+    const list=readAllTrips(uid,profile);
     const i=list.findIndex(t=>t.id===trip.id);
     if (i<0) list.push(trip); else list[i]=trip;
     cache(uid,profile,list); queue(uid,profile,trip);
@@ -137,7 +139,7 @@
   }
   async function create(uid,profile,fields) {
     const id='trip-'+(crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2));
-    const trip={id,name:fields.name.trim(),destinations:fields.destinations||[],startDate:fields.startDate||'',endDate:fields.endDate||''};
+    const trip={id,region:region(),name:fields.name.trim(),destinations:fields.destinations||[],startDate:fields.startDate||'',endDate:fields.endDate||''};
     const saved=await save(uid,profile,trip);
     select(uid,profile,id);
     return {trip,synced:saved};
@@ -171,7 +173,7 @@
       }
       if (id==='orlando') await sdk.setDoc(sdk.doc(sdk.db,'usuarios',uid,'perfiles',profile),{presupuesto:0},{merge:true});
       await sdk.setDoc(tripRef(uid,profile,id),{id,status:'deleted',deletedAt:new Date().toISOString()});
-      cache(uid,profile,readTrips(uid,profile).filter(t=>t.id!==id));
+      cache(uid,profile,readAllTrips(uid,profile).filter(t=>t.id!==id));
       const p=pending(uid,profile); delete p[id]; safeSet(keys(uid,profile).pending,JSON.stringify(p));
       await clearLocal(uid,profile,id);
       if (safeGet(keys(uid,profile).active)===id) {
@@ -239,6 +241,7 @@
     });
   }
   async function orphanCount(uid,profile) {
+    if(region()==='europe')return 0;
     if (!sdk||!navigator.onLine) return null;
     let count=0;
     for(const group of ['gastos','actividades','notas']) {
@@ -252,6 +255,7 @@
     return count;
   }
   async function removeOrphans(uid,profile) {
+    if(region()==='europe')return false;
     if(!sdk||!navigator.onLine) return false;
     try {await purgeTagged(uid,profile,'unassigned');await clearLocal(uid,profile,'unassigned');
       safeSet(orphanKey(uid,profile),'0');
@@ -264,6 +268,6 @@
     const uid=window._taxflyTripUid, profile=window._taxflyTripProfile;
     if (uid&&profile) flush(uid,profile);
   });
-  window.TripContext={keys,readTrips,active,view,matches,filter,assign,render,select,
+  window.TripContext={region,keys,readTrips,active,view,matches,filter,assign,render,select,
     hydrate,configure,flush,save,create,archive,remove,removeOrphans,orphanCount,pending,legacy};
 })();

@@ -1,9 +1,11 @@
 {
   "name": "taxfly",
   "private": true,
-  "description": "TaxFly: app web de planificación de viajes",
-  "engines": { "node": ">=20" },
+  "description": "TaxFly: app web de planificaci\u00f3n de viajes",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "test": "node --test tests/flow.test.cjs"
+    "test": "node --test tests/*.test.cjs"
   }
 }
