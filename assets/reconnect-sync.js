@@ -1,4 +1,5 @@
 /* Replay account-scoped offline queues even when another screen is open. */
+const __fsDb = async (fs, app) => { try { const { fsNet } = await import(new URL('assets/fs-net.js', document.baseURI).href); return fs.initializeFirestore(app, { ...(await fsNet()), localCache: fs.persistentLocalCache({ tabManager: fs.persistentMultipleTabManager(), cacheSizeBytes: 200 * 1024 * 1024 }) }); } catch (e) { return fs.getFirestore(app); } };
 (async function syncAll() {
   window.taxflyRetryPending = syncAll;
   if (!navigator.onLine || !window.TAXFLY_CONFIG?.FIREBASE_CONFIG) return;
@@ -25,7 +26,7 @@
       }, () => { clearTimeout(timer); resolve(null); });
     });
     if (!user || !navigator.onLine) return;
-    const uid = user.uid, db = fs.getFirestore(app), page = location.pathname.split('/').pop();
+    const uid = user.uid, db = await __fsDb(fs, app), page = location.pathname.split('/').pop();
     activeUid = uid;
     const queuedId = op => {
       const raw = JSON.stringify(op);

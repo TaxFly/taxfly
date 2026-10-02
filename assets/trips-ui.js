@@ -1,9 +1,10 @@
 import {getApps, getApp, initializeApp} from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js';
-import {getFirestore, doc, collection, getDocs, setDoc, updateDoc, deleteDoc} from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js';
+import {fsNet} from './fs-net.js';
+import {getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDocs, setDoc, updateDoc, deleteDoc} from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js';
 import {getAuth, onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js';
 
 const app=getApps().length ? getApp() : initializeApp(window.TAXFLY_CONFIG.FIREBASE_CONFIG);
-const db=getFirestore(app), tc=window.TripContext;
+const db=await (async()=>{try{return initializeFirestore(app,{...(await fsNet()),localCache:persistentLocalCache({tabManager:persistentMultipleTabManager(),cacheSizeBytes:200*1024*1024})});}catch(e){return getFirestore(app);}})(), tc=window.TripContext;
 if (!tc) throw new Error('Falta TripContext');
 tc.configure({db,doc,collection,getDocs,setDoc,updateDoc,deleteDoc});
 let uid=null,profile=null, editing=null, orphanTotal=null;

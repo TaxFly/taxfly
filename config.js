@@ -1,5 +1,8 @@
 window.TAXFLY_CONFIG = {
   WORKER_URL: "https://taxfly-claude.juanbria18.workers.dev",
+  // Proxy propio de Firestore (sync-worker/). Se usa solo si un bloqueador corta firestore.googleapis.com.
+  // Dejalo vacío ("") para desactivarlo.
+  FIRESTORE_PROXY_HOST: "taxfly-sync.juanbria18.workers.dev",
   FIREBASE_SDK: "https://www.gstatic.com/firebasejs/12.12.1",
   FIREBASE_CONFIG: {
     apiKey: "AIzaSyA-eeKl8guVDmTa_NpYvkB0O7-RMbPrkP0",

@@ -1,6 +1,7 @@
+import { fsNet, fsNetReset } from "./fs-net.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, onSnapshot, serverTimestamp, query, collection, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, serverTimestamp, query, collection, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const _RC_SITE_KEY = "6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME";
 
@@ -64,9 +65,11 @@ const firebaseConfig = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
 const app = initializeApp(firebaseConfig);
 
+const FS_NET = await fsNet();
 const db = (() => {
   try {
     return initializeFirestore(app, {
+      ...FS_NET,
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
         cacheSizeBytes: 200 * 1024 * 1024
@@ -78,6 +81,9 @@ const db = (() => {
 })();
 
 const auth = getAuth(app);
+
+// Si el servidor no confirma a tiempo (p. ej. un bloqueador corta el canal), no esperamos para siempre.
+const withTimeout = (p, ms = 8000) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 
 if (navigator.onLine) {
   try {
@@ -438,6 +444,11 @@ function suscribirGrupo(code) {
     guardarGrupoEnCache(snap.id, snap.data());
     guardarGrupoEnLista(snap.id, snap.data().nombre);
     renderGrupo();
+    sincronizarMisPartes(snap.id, snap.data());
+  }, err => {
+    console.warn("Listen error", err);
+    fsNetReset();
+    updateOfflineBanner(true);
   });
   showSection("s-grupo");
   updateOfflineBanner(false);
@@ -527,17 +538,23 @@ async function flushPending() {
     if (!currentUser || op.uid !== currentUser.uid) { failed.push(op); continue; }
     try {
       if (op.type === "add_gasto") {
-        await updateDoc(doc(db, "grupos", op.groupId), {
+        await withTimeout(updateDoc(doc(db, "grupos", op.groupId), {
           gastos: arrayUnion(op.gasto)
-        });
+        }));
       } else if (op.type === "del_gasto") {
-        const ref = doc(db, "grupos", op.groupId);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          const nuevosGastos = snap.data().gastos.filter(g => g.id !== op.gastoId);
-          await updateDoc(ref, {
-            gastos: nuevosGastos
-          });
+        if (op.gasto) {
+          await withTimeout(updateDoc(doc(db, "grupos", op.groupId), {
+            gastos: arrayRemove(op.gasto)
+          }));
+        } else {
+          const ref = doc(db, "grupos", op.groupId);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            const nuevosGastos = snap.data().gastos.filter(g => g.id !== op.gastoId);
+            await updateDoc(ref, {
+              gastos: nuevosGastos
+            });
+          }
         }
       }
     } catch (e) {
@@ -587,10 +604,23 @@ window.agregarGasto = async () => {
     });
     showToast(tr("msg_expense_saved_offline"));
   } else {
-    await updateDoc(doc(db, "grupos", currentGroup.id), {
-      gastos: arrayUnion(gasto)
-    });
-    showToast(tr("msg_expense_saved"));
+    try {
+      await withTimeout(updateDoc(doc(db, "grupos", currentGroup.id), {
+        gastos: arrayUnion(gasto)
+      }));
+      showToast(tr("msg_expense_saved"));
+    } catch (e) {
+      // Sin confirmación del servidor: queda en la cola local y se reintenta (arrayUnion es idempotente).
+      fsNetReset();
+      if (!currentGroup.data.gastos.some(g => g.id === gasto.id)) currentGroup.data.gastos.push(gasto);
+      renderGrupo();
+      queueOp({
+        type: "add_gasto",
+        groupId: currentGroup.id,
+        gasto: gasto
+      });
+      showToast(tr("msg_expense_saved_offline"));
+    }
   }
   $("g-desc").value = "";
   $("g-monto").value = "";
@@ -702,18 +732,22 @@ window.eliminarGasto = gastoId => {
           savePending(wasLocal ? ops : [ ...ops, {
             type: "del_gasto",
             groupId: grp.id,
-            gastoId: gastoId
+            gastoId: gastoId,
+            gasto: item
           } ]);
           if (!unloading) showToast(tr("msg_expense_deleted_offline"));
           return;
         }
-        const ref = doc(db, "grupos", grp.id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) return;
-        const nuevosGastos = snap.data().gastos.filter(g => g.id !== gastoId);
-        await updateDoc(ref, {
-          gastos: nuevosGastos
-        });
+        try {
+          await withTimeout(updateDoc(doc(db, "grupos", grp.id), {
+            gastos: arrayRemove(item)
+          }));
+        } catch (e) {
+          fsNetReset();
+          grp.data.gastos = grp.data.gastos.filter(g => g.id !== gastoId);
+          savePending([ ...getPending(), { type: "del_gasto", groupId: grp.id, gastoId: gastoId, gasto: item, uid: currentUser.uid } ]);
+          showToast(tr("msg_expense_deleted_offline"));
+        }
       } catch (e) {
         showToast(tr("err_prefix") + e.message);
       } finally {
@@ -845,7 +879,7 @@ function renderGrupo() {
   if (!gastos.length) {
     lista.innerHTML = `<div class="empty-state"><span class="es-icon">🧳</span>${(i18n[localStorage.getItem("appLang") || "es"] || i18n.es).empty_expenses}</div>`;
   } else {
-    lista.innerHTML = [ ...gastos ].reverse().map(g => `\n            <div class="gasto-item cat-${esc(g.cat || "otro")}" id="gasto-${esc(g.id)}">\n                <div class="gasto-emoji">${catEmoji(g.cat)}</div>\n                <div class="gasto-body">\n                    <div class="gasto-desc">${esc(g.desc)}</div>\n                    <div class="gasto-meta">${esc(g.pagadorNombre)} · ${esc(g.fecha)}</div>\n                </div>\n                <div class="gasto-monto">${fmt(g.monto)}</div>\n                ${!currentGroup._demo && g.entre?.includes(currentUser?.uid) ? `<button style="border:1px solid var(--border);border-radius:9px;padding:6px;background:var(--surface);color:var(--primary);font-size:.68rem;font-weight:800;cursor:pointer;white-space:nowrap;" data-id="${esc(g.id)}" onclick="registrarMiParte(this.dataset.id)" title="${tr('title_register_part')}">${tr('btn_my_share')}</button>` : ""}\n                <button class="gasto-del" data-id="${esc(g.id)}" onclick="eliminarGasto(this.dataset.id)" title="${tr('aria_delete_expense')}" aria-label="${tr('aria_delete_expense')}">🗑️</button>\n            </div>`).join("");
+    lista.innerHTML = [ ...gastos ].reverse().map(g => `\n            <div class="gasto-item cat-${esc(g.cat || "otro")}" id="gasto-${esc(g.id)}">\n                <div class="gasto-emoji">${catEmoji(g.cat)}</div>\n                <div class="gasto-body">\n                    <div class="gasto-desc">${esc(g.desc)}</div>\n                    <div class="gasto-meta">${esc(g.pagadorNombre)} · ${esc(g.fecha)}</div>\n                </div>\n                <div class="gasto-monto">${fmt(g.monto)}</div>\n                <button class="gasto-del" data-id="${esc(g.id)}" onclick="eliminarGasto(this.dataset.id)" title="${tr('aria_delete_expense')}" aria-label="${tr('aria_delete_expense')}">🗑️</button>\n            </div>`).join("");
   }
   $("members-list").innerHTML = miembros.map(m => {
     const puedeEliminar = esCreador && m.uid !== currentUser.uid && !currentGroup._demo;
@@ -853,6 +887,48 @@ function renderGrupo() {
   }).join("");
   renderBalances(miembros, gastos);
   renderResumen(miembros, gastos);
+}
+
+let _syncingPartes = false;
+
+async function sincronizarMisPartes(groupId, data) {
+  if (!currentUser || !navigator.onLine || _syncingPartes || currentGroup?._demo) return;
+  const profile = localStorage.getItem("perfilActivoId");
+  if (!profile) return;
+  _syncingPartes = true;
+  try {
+    const gastosCol = collection(db, "usuarios", currentUser.uid, "perfiles", profile, "gastos");
+    const misGastos = (data.gastos || []).filter(g => g.entre?.includes(currentUser.uid));
+    const activeIds = new Set();
+    const tripId = window.TripContext.assign(currentUser.uid, profile);
+    for (const g of misGastos) {
+      const amount = Math.round(g.monto / g.entre.length * 100) / 100;
+      const mirrorId = `grupo-${groupId}-${g.id}-${currentUser.uid}`;
+      activeIds.add(mirrorId);
+      try {
+        await setDoc(doc(gastosCol, mirrorId), {
+          nombre: g.desc,
+          valor: amount,
+          cat: g.cat || "otro",
+          fecha: Date.now(),
+          tripId: tripId,
+          source: "grupo",
+          groupId: groupId,
+          groupExpenseId: g.id
+        }, { merge: true });
+      } catch (e) {}
+    }
+    // Borra los espejos de gastos que ya no están en el grupo (se eliminaron o te sacaron de "entre")
+    try {
+      const q = query(gastosCol, where("groupId", "==", groupId));
+      const snap = await getDocs(q);
+      for (const d of snap.docs) {
+        if (!activeIds.has(d.id)) await deleteDoc(d.ref);
+      }
+    } catch (e) {}
+  } finally {
+    _syncingPartes = false;
+  }
 }
 
 window.registrarMiParte = async gastoId => {

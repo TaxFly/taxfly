@@ -1,3 +1,4 @@
+import { fsNet } from "./fs-net.js";
 const onReady = f => document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", f) : setTimeout(f, 0);
 const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
@@ -14,8 +15,10 @@ try {
   ({getFirestore: getFirestore, initializeFirestore: initializeFirestore, persistentLocalCache: persistentLocalCache, persistentMultipleTabManager: persistentMultipleTabManager, collection: collection, doc: doc, setDoc: setDoc, deleteDoc: deleteDoc, getDoc: getDoc, getDocs: getDocs, query: query, orderBy: orderBy, writeBatch: writeBatch} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js")));
   app = initializeApp(FB);
   auth = getAuth(app);
+  const FS_NET = await fsNet();
   try {
     db = initializeFirestore(app, {
+      ...FS_NET,
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
         cacheSizeBytes: 200 * 1024 * 1024

@@ -1,3 +1,4 @@
+import { fsNet } from "./fs-net.js";
 const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
 let initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, sendEmailVerification, signOut, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, updateDoc, initializeAppCheck, ReCaptchaV3Provider;
@@ -13,8 +14,10 @@ try {
   ({initializeAppCheck: initializeAppCheck, ReCaptchaV3Provider: ReCaptchaV3Provider} = await (import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-check.js")));
   app = initializeApp(FB);
   auth = getAuth(app);
+  const FS_NET = await fsNet();
   try {
     db = initializeFirestore(app, {
+      ...FS_NET,
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
         cacheSizeBytes: 200 * 1024 * 1024

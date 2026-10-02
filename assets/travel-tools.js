@@ -115,7 +115,7 @@
     const app=a.getApps().length?a.getApp():a.initializeApp(window.TAXFLY_CONFIG.FIREBASE_CONFIG);
     const user=await new Promise((resolve,reject)=>{let unsub=()=>{};const timer=setTimeout(()=>{unsub();reject(Error(L('La sesión tardó demasiado')))},10000);unsub=auth.onAuthStateChanged(auth.getAuth(app),u=>{if(u){clearTimeout(timer);unsub();resolve(u)}},reject)});
     if(user.uid!==uid())throw Error(L('El perfil cambió. Volvé a abrir la preparación.'));
-    return {fs,db:fs.getFirestore(app),user};
+    return {fs,db:await (async()=>{try{const {fsNet}=await import(new URL('assets/fs-net.js',document.baseURI).href);return fs.initializeFirestore(app,{...(await fsNet()),localCache:fs.persistentLocalCache({tabManager:fs.persistentMultipleTabManager(),cacheSizeBytes:200*1024*1024})});}catch(e){return fs.getFirestore(app);}})(),user};
   }
   async function shellReady() {
     if(!navigator.serviceWorker)return false;

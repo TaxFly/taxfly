@@ -1,3 +1,4 @@
+import { fsNet } from "./fs-net.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
@@ -51,9 +52,11 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
+const FS_NET = await fsNet();
 const db = (() => {
   try {
     return initializeFirestore(app, {
+      ...FS_NET,
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
         cacheSizeBytes: 200 * 1024 * 1024

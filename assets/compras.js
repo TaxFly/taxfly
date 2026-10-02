@@ -1,3 +1,4 @@
+import { fsNet } from "./fs-net.js";
 const onReady = f => document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", f) : setTimeout(f, 0);
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
@@ -13,9 +14,11 @@ const app = initializeApp(FB);
 
 const auth = getAuth(app);
 
+const FS_NET = await fsNet();
 const db = (() => {
   try {
     return initializeFirestore(app, {
+      ...FS_NET,
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
         cacheSizeBytes: 200 * 1024 * 1024
@@ -1818,10 +1821,44 @@ function amountLabel(v) {
   return (parseFloat(v) || 0) > 0 ? "-" + fmt(v) : zeroLabel();
 }
 
+// Detección automática de ícono SVG por palabra clave en el texto de la categoría
+// (sirve tanto para categorías propias en español/inglés como para las que llegan
+// de otras fuentes, ej. "grupo", que no usan emoji). Usa la misma librería de íconos
+// de línea que la barra de navegación (window.UI_ICONS, definida en ui.js).
+// Sin match: ícono genérico "tag".
+const CAT_KEYWORD_ICONS = [
+  [/comid|food|resta|cena|almuerz|desayun|cocin|cafe|coffee|bebid|beer|cerve/i, "utensils"],
+  [/entreten|divers|activ|parque|\bpark\b|juego|\bgame\b|ferris/i, "ferris"],
+  [/ticket|entrada|cine|show|pelicula|movie/i, "ticket"],
+  [/\bbus\b|tren|train/i, "bus"],
+  [/transport|\bauto\b|taxi|uber|combustible|nafta|\bfuel\b|\bgas\b|estacionamient|parking/i, "car"],
+  [/alojamient|hotel|hosped|lodging|airbnb/i, "bed"],
+  [/vuelo|flight|avion|aerol/i, "plane"],
+  [/ropa|clothing|shirt/i, "shirt"],
+  [/regalo|\bgift\b/i, "gift"],
+  [/compra|\bshop/i, "cart"],
+  [/farmacia|salud|medic|pharma|doctor|pastill|pill/i, "medical"],
+  [/segur[oa]|insurance/i, "shield"],
+  [/telefon|celular|\besim\b|\bsim\b|datos|\bphone\b/i, "phone"],
+  [/document|pasaporte|passport|\bvisa\b|\bid\b/i, "idcard"],
+  [/mochila|backpack|equipaje|maleta/i, "briefcase"],
+  [/efectivo|\bcash\b|dinero/i, "cash"]
+];
+function autoCatIcon(catText) {
+  const t = String(catText || "").replace(/^[\p{Extended_Pictographic}\u200d\ufe0f\s]+/u, "").trim();
+  for (const [re, icon] of CAT_KEYWORD_ICONS) if (re.test(t)) return icon;
+  return "tag";
+}
+function uiIconSvg(name) {
+  const icons = window.UI_ICONS || {};
+  const d = icons[name] || icons.tag || "";
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+}
+
 function gastoItemHtml(g) {
   const cat = g.cat || "📦 Otros";
   const customCat = customCats.find(c => c.name === cat);
-  const catIconHtml = customCat ? catIconSvg(customCat.icon) : (cat.match(/^(\S+)/)?.[1] || "📦");
+  const catIconHtml = customCat ? catIconSvg(customCat.icon) : uiIconSvg(autoCatIcon(cat));
   const catDisplayLabel = customCat ? customCat.name : catLabel(cat).replace(/^\S+\s*/, "");
   const thumbHtml = g.thumb ? `<img class="h-thumb" src="${g.thumb}" alt="recibo" onclick="openReceiptViewer('${g.thumb}','${g.id}')">` : `<div class="h-thumb-placeholder">${catIconHtml}</div>`;
   const editLbl = esc(bt("aria_edit") + ": " + (g.nombre || ""));
