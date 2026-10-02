@@ -164,6 +164,28 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .member-chip{background:var(--surface-2);border:1.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.72rem;font-weight:700;color:var(--text-sub);display:inline-flex;align-items:center;gap:6px;}
         .member-del{background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:.75rem;font-weight:900;padding:0 2px;line-height:1;transition:var(--tr);}
         .member-del:hover{color:var(--danger);}
+        .rol-badge{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:2px 7px;border-radius:10px;background:rgba(37,99,235,.1);color:var(--primary);}
+        .rol-badge.r-lector{background:rgba(100,116,139,.15);color:var(--text-dim);}
+        .rol-badge.r-editor{background:rgba(16,185,129,.12);color:var(--success);}
+        .rol-sel{font-family:inherit;font-size:.68rem;font-weight:700;padding:2px 4px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text-sub);width:auto;}
+        .rol-me{font-size:.72rem;font-weight:800;color:var(--text-sub);white-space:nowrap;}
+        .req-rol{width:auto;}
+        .adm-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+        .adm-row input[type=text]{flex:1;min-width:0;}
+        .adm-row .btn{width:auto;padding:12px 14px;font-size:.72rem;white-space:nowrap;}
+        .adm-switch{display:flex;align-items:center;gap:10px;font-size:.8rem;font-weight:700;color:var(--text-sub);cursor:pointer;}
+        .adm-switch input{width:18px;height:18px;flex-shrink:0;}
+        .adm-hint{font-size:.7rem;color:var(--text-dim);font-weight:600;margin:6px 0 14px 28px;line-height:1.4;}
+        .req-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--danger);color:#fff;font-size:.62rem;font-weight:800;}
+        .req-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:8px;}
+        .req-name{font-weight:800;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .req-actions{display:flex;gap:6px;flex-shrink:0;}
+        .req-btn{border:none;border-radius:20px;padding:6px 12px;font-family:inherit;font-size:.7rem;font-weight:800;cursor:pointer;}
+        .req-ok{background:var(--success);color:#fff;}
+        .req-no{background:rgba(239,68,68,.1);color:var(--danger);border:1.5px solid rgba(239,68,68,.25);}
+        #admin-body.open{max-height:1600px;}
+        .grupo-item.pending{cursor:default;opacity:.95;}
+        .grupo-item-wait{font-size:.65rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;}
 
         
         .grupos-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
@@ -333,6 +355,11 @@ if ("serviceWorker" in navigator) {
             <div id="mis-grupos-list" class="grupos-list"></div>
         </div>
 
+        <div id="mis-solicitudes-wrap" class="hidden">
+            <span class="slabel" data-i18n="lbl_my_requests">⏳ Solicitudes enviadas</span>
+            <div id="mis-solicitudes-list" class="grupos-list"></div>
+        </div>
+
         <div class="lobby-grid">
             <div class="card" style="margin-bottom:0;">
                 <span class="slabel" data-i18n="lbl_new_group">✈️ Nuevo grupo</span>
@@ -370,11 +397,34 @@ if ("serviceWorker" in navigator) {
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
             <div class="code-badge" onclick="copiarCodigo()" style="flex:1;justify-content:center;">🔑 <span id="g-codigo">—</span> · Copiar</div>
+            <span id="g-mi-rol" class="rol-me"></span>
             <button class="btn-danger-txt" id="btn-salir-grupo" onclick="abandonarGrupo()" style="font-size:.72rem;background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.2);border-radius:20px;padding:5px 12px;white-space:nowrap;"><span data-i18n="btn_salir_grupo">🚪 Salir</span></button>
             <button class="btn-danger-txt" id="btn-eliminar-grupo" onclick="eliminarGrupo()" style="display:none;font-size:.72rem;background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.2);border-radius:20px;padding:5px 12px;white-space:nowrap;"><span data-i18n="btn_eliminar_grupo">🗑️ Eliminar</span></button>
         </div>
 
         
+        <div id="admin-card" class="card hidden">
+            <div class="collapsible-header" onclick="toggleCollapsible('admin-body','toggle-admin')">
+                <span class="slabel"><span data-i18n="lbl_admin">⚙️ Administrar grupo</span><span id="req-count" class="req-count hidden">0</span></span>
+                <span class="collapsible-toggle" id="toggle-admin">▼</span>
+            </div>
+            <div class="collapsible-body" id="admin-body" style="padding-top:14px;">
+                <span class="slabel" data-i18n="lbl_group_name">Nombre del grupo</span>
+                <div class="adm-row">
+                    <input id="adm-nombre" type="text" maxlength="40" autocomplete="off">
+                    <button class="btn btn-primary" onclick="renombrarGrupo()" data-i18n="btn_rename">Guardar nombre</button>
+                </div>
+                <label class="adm-switch">
+                    <input type="checkbox" id="adm-aprobacion" onchange="setAprobacion(this.checked)">
+                    <span data-i18n="lbl_require_approval">Aprobar a quienes quieran entrar</span>
+                </label>
+                <div class="adm-hint" data-i18n="hint_require_approval">Si está activado, quien use el código queda en espera hasta que lo aceptes.</div>
+                <div class="adm-hint" style="margin-left:0;" data-i18n="hint_roles">Administrador: puede todo · Editor: carga y borra gastos · Lector: solo mira.</div>
+                <span class="slabel" data-i18n="lbl_requests">Solicitudes de ingreso</span>
+                <div id="adm-solicitudes"></div>
+            </div>
+        </div>
+
         <div id="sync-banner">
             <div class="sync-spinner"></div>
             <span id="sync-text" style="flex:1;">Sincronizando gastos pendientes…</span>
@@ -409,7 +459,7 @@ if ("serviceWorker" in navigator) {
 
         
         <div id="tab-gastos" class="tab-panel active">
-            <div class="card">
+            <div class="card" id="card-nuevo-gasto">
                 <div class="collapsible-header" onclick="toggleCollapsible('form-gasto','toggle-form-gasto')">
                     <span class="slabel" data-i18n="lbl_new_expense" style="margin-bottom:0;">➕ Nuevo gasto</span>
                     <span class="collapsible-toggle open" id="toggle-form-gasto">▼</span>

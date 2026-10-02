@@ -144,6 +144,40 @@ function currentMemberId() {
   return memberId({ uid: currentUser.uid, perfilId: currentUser.perfilId, nombre: currentUser.name });
 }
 
+// --- Roles -----------------------------------------------------------------
+// admin: puede todo · editor: carga y borra gastos · lector: solo mira.
+// El rol es POR CUENTA (uid) y vive en `adminUids` / `lectorUids` del grupo: son las listas que
+// leen las reglas de Firestore, así que también se cumple en el servidor. Quien no está en
+// ninguna es editor. El creador (creadoPor) es siempre administrador y no se le puede sacar.
+const ROLES = [ "admin", "editor", "lector" ];
+
+function rolDe(m, data) {
+  if (!m || !data) return "lector";
+  if (m.uid === data.creadoPor) return "admin";
+  if ((data.adminUids || []).includes(m.uid)) return "admin";
+  if ((data.lectorUids || []).includes(m.uid)) return "lector";
+  return "editor";
+}
+
+function miRol() {
+  if (!currentGroup || !currentUser) return "lector";
+  if (currentGroup._demo) return "admin";
+  const data = currentGroup.data;
+  if (!(data.miembroUids || []).includes(currentUser.uid)) return "lector";
+  return rolDe({ uid: currentUser.uid }, data);
+}
+
+// Patch de Firestore que deja a una cuenta con el rol indicado.
+function patchRol(uid, rol) {
+  return {
+    adminUids: rol === "admin" ? arrayUnion(uid) : arrayRemove(uid),
+    lectorUids: rol === "lector" ? arrayUnion(uid) : arrayRemove(uid)
+  };
+}
+
+const esAdmin = () => miRol() === "admin";
+const puedeEditar = () => miRol() !== "lector";
+
 const fmt = n => new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD"
@@ -356,9 +390,11 @@ window.cambiarApodo = async () => {
           ...g,
           pagadorNombre: nuevoNombre
         } : g);
-        await updateDoc(ref, {
+        await updateDoc(ref, puedeEditar() ? {
           miembros: miembros,
           gastos: gastos
+        } : {
+          miembros: miembros
         });
       }
     }
@@ -410,7 +446,11 @@ window.crearGrupo = async () => {
         perfilId: localStorage.getItem("perfilActivoId") || null
       } ],
       miembroUids: [ currentUser.uid ],
-      gastos: []
+      gastos: [],
+      requiereAprobacion: true,
+      solicitudes: [],
+      adminUids: [ currentUser.uid ],
+      lectorUids: []
     });
     currentUser.name = apodo;
     localStorage.setItem("perfilActivoNombre", apodo);
@@ -451,7 +491,29 @@ window.unirseGrupo = async () => {
       return;
     }
     const data = snap.data();
-    if (!data.miembros.some(m => esMismoMiembro(m, currentUser.uid, currentUser.perfilId, apodo))) {
+    const yaMiembro = data.miembros.some(m => esMismoMiembro(m, currentUser.uid, currentUser.perfilId, apodo));
+    if (!yaMiembro && data.requiereAprobacion === true) {
+      // Grupo con aprobación: se anota una solicitud y el creador decide.
+      const yaPidio = (data.solicitudes || []).some(x => esMismoMiembro(x, currentUser.uid, currentUser.perfilId, apodo));
+      if (yaPidio) {
+        showToast(tr("msg_request_already"));
+      } else {
+        await updateDoc(ref, {
+          solicitudes: arrayUnion({
+            uid: currentUser.uid,
+            nombre: apodo,
+            perfilId: currentUser.perfilId || null,
+            fecha: Date.now()
+          })
+        });
+        showToast(tr("msg_request_sent"));
+      }
+      guardarSolicitudLocal({ id: code, nombre: data.nombre, apodo: apodo, perfilId: currentUser.perfilId || null });
+      $("inp-codigo").value = "";
+      renderMisSolicitudes();
+      return;
+    }
+    if (!yaMiembro) {
       await updateDoc(ref, {
         miembros: arrayUnion({
           uid: currentUser.uid,
@@ -491,14 +553,23 @@ function suscribirGrupo(code) {
       gotServer = true;
       clearTimeout(listenWatchdog);
     }
-    if (!snap.exists()) return;
+    if (!snap.exists()) {
+      if (!snap.metadata.fromCache && !snap.metadata.hasPendingWrites) salirDeVistaGrupo(snap.id, "msg_group_gone");
+      return;
+    }
+    const _d = snap.data();
+    if (!snap.metadata.fromCache && !snap.metadata.hasPendingWrites && currentUser && Array.isArray(_d.miembroUids) && !_d.miembroUids.includes(currentUser.uid)) {
+      salirDeVistaGrupo(snap.id, "msg_removed_from_group");
+      return;
+    }
     currentGroup = {
       id: snap.id,
-      data: snap.data()
+      data: _d
     };
     guardarGrupoEnCache(snap.id, snap.data());
     guardarGrupoEnLista(snap.id, snap.data().nombre);
     renderGrupo();
+    migrarRoles(snap.id, _d, snap.metadata.fromCache);
     sincronizarMisPartes(snap.id, snap.data());
   }, err => {
     console.warn("Listen error", err);
@@ -616,7 +687,9 @@ async function pendingOpIsDead(op, e) {
   if (code !== "not-found" && code !== "permission-denied") return false;
   try {
     const snap = await withTimeout(getDoc(doc(db, "grupos", op.groupId)));
-    return !snap.exists() || !(snap.data().miembroUids || []).includes(currentUser.uid);
+    if (!snap.exists()) return true;
+    const d = snap.data();
+    return !(d.miembroUids || []).includes(currentUser.uid) || (d.lectorUids || []).includes(currentUser.uid) && d.creadoPor !== currentUser.uid;
   } catch (e2) {
     return false;
   }
@@ -696,6 +769,10 @@ setInterval(() => {
 }, 30000);
 
 window.agregarGasto = async () => {
+  if (!puedeEditar()) {
+    showToast("🔒 " + tr("err_read_only"));
+    return;
+  }
   const desc = $("g-desc").value.trim();
   const monto = parseFloat($("g-monto").value);
   const pkey = $("g-pagador").value;
@@ -776,6 +853,9 @@ window.abandonarGrupo = async () => {
   const lang = localStorage.getItem("appLang") || "es";
   const confirmMsg = (i18n[lang] || i18n.es).confirm_salir.replace("{nombre}", nombre).replace("{nome}", nombre);
   if (!await showConfirm(confirmMsg)) return;
+  const salidaId = currentGroup.id;
+  if (unsubscribe) unsubscribe();
+  unsubscribe = null;
   try {
     const ref = doc(db, "grupos", currentGroup.id);
     const snap = await getDoc(ref);
@@ -785,10 +865,26 @@ window.abandonarGrupo = async () => {
     const nuevosMiembros = data.miembros.filter(m => memberId(m) !== miMid);
     const quedaEseUid = nuevosMiembros.some(m => m.uid === currentUser.uid);
     const nuevosUids = quedaEseUid ? (data.miembroUids || []) : (data.miembroUids || []).filter(uid => uid !== currentUser.uid);
-    await updateDoc(ref, {
-      miembros: nuevosMiembros,
-      miembroUids: nuevosUids
-    });
+    const esDueno = data.creadoPor === currentUser.uid;
+    if (esDueno && !nuevosMiembros.length) {
+      // Era el último integrante: el grupo no tiene sentido sin nadie.
+      await deleteDoc(ref);
+    } else {
+      const patch = {
+        miembros: nuevosMiembros,
+        miembroUids: nuevosUids
+      };
+      if (!quedaEseUid) {
+        patch.adminUids = arrayRemove(currentUser.uid);
+        patch.lectorUids = arrayRemove(currentUser.uid);
+        // El grupo no puede quedar sin creador: pasa a un administrador (o, si no hay, al primero que queda).
+        if (esDueno) {
+          const heredero = nuevosMiembros.find(m => (data.adminUids || []).includes(m.uid)) || nuevosMiembros[0];
+          patch.creadoPor = heredero.uid;
+        }
+      }
+      await updateDoc(ref, patch);
+    }
     const grupos = JSON.parse(localStorage.getItem("misGrupos") || "[]").filter(g => g.id !== currentGroup.id);
     localStorage.setItem("misGrupos", JSON.stringify(grupos));
     if (unsubscribe) unsubscribe();
@@ -798,6 +894,7 @@ window.abandonarGrupo = async () => {
     cargarMisGrupos();
     showToast(tr("msg_left_group"));
   } catch (e) {
+    if (currentGroup && currentGroup.id === salidaId) suscribirGrupo(salidaId);
     showToast(tr("err_prefix") + e.message);
   }
 };
@@ -840,6 +937,10 @@ window.eliminarGrupo = async () => {
 
 window.eliminarGasto = gastoId => {
   if (!currentGroup) return;
+  if (!puedeEditar()) {
+    showToast("🔒 " + tr("err_read_only"));
+    return;
+  }
   const grp = currentGroup;
   const item = grp.data.gastos.find(g => g.id === gastoId);
   if (!item) return;
@@ -891,14 +992,16 @@ window.eliminarMiembro = async mid => {
     showToast(tr("err_demo_unavailable"));
     return;
   }
-  if (currentGroup.data.creadoPor !== currentUser.uid) {
-    const lang = localStorage.getItem("appLang") || "es";
-    const t = i18n[lang] || i18n.es;
-    showToast("❌ " + (t.only_creator_members || "Solo el creador puede eliminar miembros"));
+  if (!esAdmin()) {
+    showToast("❌ " + tr("only_creator_members"));
     return;
   }
   const miembro = currentGroup.data.miembros.find(m => memberId(m) === mid);
   if (!miembro) return;
+  if (miembro.uid === currentGroup.data.creadoPor) {
+    showToast("❌ " + tr("err_creator_role"));
+    return;
+  }
   const lang = localStorage.getItem("appLang") || "es";
   const t = i18n[lang] || i18n.es;
   const confirmMsg = (t.confirm_eliminar_miembro || '¿Eliminar a "{nombre}" del grupo?\n\nSus gastos registrados se mantendrán.').replace("{nombre}", miembro.nombre).replace("{nome}", miembro.nombre);
@@ -910,10 +1013,12 @@ window.eliminarMiembro = async mid => {
     const nuevosMiembros = snap.data().miembros.filter(m => memberId(m) !== mid);
     const quedaEseUid = nuevosMiembros.some(m => m.uid === miembro.uid);
     const nuevosUids = quedaEseUid ? (snap.data().miembroUids || []) : (snap.data().miembroUids || []).filter(u => u !== miembro.uid);
-    await updateDoc(ref, {
+    const patch = {
       miembros: nuevosMiembros,
       miembroUids: nuevosUids
-    });
+    };
+    if (!quedaEseUid) Object.assign(patch, { adminUids: arrayRemove(miembro.uid), lectorUids: arrayRemove(miembro.uid) });
+    await updateDoc(ref, patch);
     showToast(tr("msg_member_removed", { nombre: miembro.nombre }));
   } catch (e) {
     showToast(tr("err_prefix") + e.message);
@@ -922,16 +1027,23 @@ window.eliminarMiembro = async mid => {
 
 function guardarGrupoEnLista(id, nombre) {
   const grupos = JSON.parse(localStorage.getItem("misGrupos") || "[]");
-  if (!grupos.find(g => g.id === id)) {
+  const existente = grupos.find(g => g.id === id);
+  if (!existente) {
     grupos.unshift({
       id: id,
       nombre: nombre
     });
     localStorage.setItem("misGrupos", JSON.stringify(grupos.slice(0, 10)));
+  } else if (nombre && existente.nombre !== nombre) {
+    // El creador pudo renombrar el grupo: se actualiza el nombre guardado.
+    existente.nombre = nombre;
+    localStorage.setItem("misGrupos", JSON.stringify(grupos));
   }
 }
 
 function cargarMisGrupos() {
+  renderMisSolicitudes();
+  refrescarSolicitudes();
   const grupos = JSON.parse(localStorage.getItem("misGrupos") || "[]");
   const wrap = $("mis-grupos-wrap");
   const lista = $("mis-grupos-list");
@@ -1005,19 +1117,314 @@ function renderGrupo() {
   const miMid = currentUser ? currentMemberId() : "";
   sel.innerHTML = miembros.map(m => `<option value="${esc(memberId(m))}"${memberId(m) === miMid ? " selected" : ""}>${esc(m.nombre)}</option>`).join("");
   const lista = $("lista-gastos");
-  const esCreador = currentUser && creadoPor === currentUser.uid;
+  const miR = miRol();
+  const puedeEd = miR !== "lector";
+  renderAdmin(miR === "admin" && !currentGroup._demo, nombre);
+  const rolEl = $("g-mi-rol");
+  if (rolEl) rolEl.textContent = currentGroup._demo ? "" : tr("lbl_your_role") + ": " + tr("rol_" + miR);
+  const cardNuevo = $("card-nuevo-gasto");
+  if (cardNuevo) cardNuevo.classList.toggle("hidden", !puedeEd);
   if (!gastos.length) {
     lista.innerHTML = `<div class="empty-state"><span class="es-icon">🧳</span>${(i18n[localStorage.getItem("appLang") || "es"] || i18n.es).empty_expenses}</div>`;
   } else {
-    lista.innerHTML = [ ...gastos ].reverse().map(g => `\n            <div class="gasto-item cat-${esc(g.cat || "otro")}" id="gasto-${esc(g.id)}">\n                <div class="gasto-emoji">${catEmoji(g.cat)}</div>\n                <div class="gasto-body">\n                    <div class="gasto-desc">${esc(g.desc)}</div>\n                    <div class="gasto-meta">${esc(g.pagadorNombre)} · ${esc(g.fecha)}</div>\n                </div>\n                <div class="gasto-monto">${fmt(g.monto)}</div>\n                <button class="gasto-del" data-id="${esc(g.id)}" onclick="eliminarGasto(this.dataset.id)" title="${tr('aria_delete_expense')}" aria-label="${tr('aria_delete_expense')}">🗑️</button>\n            </div>`).join("");
+    lista.innerHTML = [ ...gastos ].reverse().map(g => `\n            <div class="gasto-item cat-${esc(g.cat || "otro")}" id="gasto-${esc(g.id)}">\n                <div class="gasto-emoji">${catEmoji(g.cat)}</div>\n                <div class="gasto-body">\n                    <div class="gasto-desc">${esc(g.desc)}</div>\n                    <div class="gasto-meta">${esc(g.pagadorNombre)} · ${esc(g.fecha)}</div>\n                </div>\n                <div class="gasto-monto">${fmt(g.monto)}</div>\n                ${puedeEd ? `<button class="gasto-del" data-id="${esc(g.id)}" onclick="eliminarGasto(this.dataset.id)" title="${tr('aria_delete_expense')}" aria-label="${tr('aria_delete_expense')}">🗑️</button>` : ""}\n            </div>`).join("");
   }
   $("members-list").innerHTML = miembros.map(m => {
     const mid = memberId(m);
-    const puedeEliminar = esCreador && mid !== miMid && !currentGroup._demo;
-    return `<span class="member-chip">👤 ${esc(m.nombre)}${puedeEliminar ? `<button class="member-del" data-uid="${esc(mid)}" onclick="eliminarMiembro(this.dataset.uid)" title="${tr('aria_delete_member')}" aria-label="${tr('aria_delete_member')}">✕</button>` : ""}</span>`;
+    const esDueno = m.uid === creadoPor;
+    const rol = rolDe(m, currentGroup.data);
+    const puedeGestionar = miR === "admin" && !currentGroup._demo && mid !== miMid && !esDueno;
+    const badge = `<span class="rol-badge r-${rol}">${esDueno ? "👑 " : ""}${tr("rol_" + rol)}</span>`;
+    const selector = puedeGestionar ? `<select class="rol-sel" data-mid="${esc(mid)}" onchange="cambiarRol(this.dataset.mid, this.value)" title="${tr("aria_change_role")}" aria-label="${tr("aria_change_role")}">${rolOptions(rol)}</select>` : "";
+    const del = puedeGestionar ? `<button class="member-del" data-uid="${esc(mid)}" onclick="eliminarMiembro(this.dataset.uid)" title="${tr('aria_delete_member')}" aria-label="${tr('aria_delete_member')}">✕</button>` : "";
+    return `<span class="member-chip">👤 ${esc(m.nombre)} ${puedeGestionar ? selector : badge}${del}</span>`;
   }).join("");
   renderBalances(miembros, gastos);
   renderResumen(miembros, gastos);
+}
+
+// --- Administración del grupo (solo el creador) -----------------------------
+function renderAdmin(esAdmin, nombre) {
+  const card = $("admin-card");
+  if (!card) return;
+  card.classList.toggle("hidden", !esAdmin);
+  if (!esAdmin) return;
+  const inp = $("adm-nombre");
+  if (inp && document.activeElement !== inp) inp.value = nombre || "";
+  const chk = $("adm-aprobacion");
+  if (chk) chk.checked = currentGroup.data.requiereAprobacion === true;
+  const sols = currentGroup.data.solicitudes || [];
+  const badge = $("req-count");
+  if (badge) {
+    badge.textContent = sols.length;
+    badge.classList.toggle("hidden", !sols.length);
+  }
+  $("adm-solicitudes").innerHTML = sols.length ? sols.map(r => {
+    const mid = esc(memberId(r));
+    return `<div class="req-row">
+            <span class="req-name">👤 ${esc(r.nombre)}</span>
+            <span class="req-actions">
+                <select class="rol-sel req-rol" aria-label="${tr("lbl_role_on_accept")}" title="${tr("lbl_role_on_accept")}">${rolOptions("editor")}</select>
+                <button class="req-btn req-ok" data-mid="${mid}" onclick="aceptarSolicitud(this.dataset.mid, this.closest('.req-row').querySelector('select').value)" aria-label="${tr("aria_accept_request")}">✓ ${tr("btn_accept")}</button>
+                <button class="req-btn req-no" data-mid="${mid}" onclick="rechazarSolicitud(this.dataset.mid)" aria-label="${tr("aria_reject_request")}">✕ ${tr("btn_reject")}</button>
+            </span>
+        </div>`;
+  }).join("") : `<div class="empty-state">${tr("empty_requests")}</div>`;
+}
+
+function adminGuard() {
+  if (!currentGroup || currentGroup._demo) {
+    showToast(tr("err_demo_unavailable"));
+    return false;
+  }
+  if (!esAdmin()) {
+    showToast("❌ " + tr("only_creator_admin"));
+    return false;
+  }
+  if (!navigator.onLine) {
+    showToast(tr("err_need_online_admin"));
+    return false;
+  }
+  return true;
+}
+
+window.renombrarGrupo = async () => {
+  if (!adminGuard()) return;
+  const nuevo = $("adm-nombre").value.trim().slice(0, 40);
+  if (!nuevo) {
+    showToast("⚠️ " + tr("err_group_name_empty"));
+    return;
+  }
+  if (nuevo === currentGroup.data.nombre) return;
+  try {
+    await withTimeout(updateDoc(doc(db, "grupos", currentGroup.id), { nombre: nuevo }));
+    showToast(tr("msg_group_renamed"));
+  } catch (e) {
+    showToast(tr("err_prefix") + e.message);
+  }
+};
+
+window.setAprobacion = async on => {
+  if (!adminGuard()) {
+    renderGrupo();
+    return;
+  }
+  try {
+    await withTimeout(updateDoc(doc(db, "grupos", currentGroup.id), { requiereAprobacion: !!on }));
+    showToast(tr(on ? "msg_approval_on" : "msg_approval_off"));
+  } catch (e) {
+    showToast(tr("err_prefix") + e.message);
+    renderGrupo();
+  }
+};
+
+window.aceptarSolicitud = async (mid, rol) => {
+  if (!adminGuard()) return;
+  // Se usa el objeto tal cual está guardado para poder quitarlo con arrayRemove sin pisar otras solicitudes.
+  const sol = (currentGroup.data.solicitudes || []).find(r => memberId(r) === mid);
+  if (!sol) return;
+  try {
+    const patch = { solicitudes: arrayRemove(sol), ...patchRol(sol.uid, ROLES.includes(rol) ? rol : "editor") };
+    if (!(currentGroup.data.miembros || []).some(m => memberId(m) === mid)) {
+      patch.miembros = arrayUnion({ uid: sol.uid, nombre: sol.nombre, perfilId: sol.perfilId || null });
+      patch.miembroUids = arrayUnion(sol.uid);
+    }
+    await withTimeout(updateDoc(doc(db, "grupos", currentGroup.id), patch));
+    showToast(tr("msg_request_accepted", { nombre: sol.nombre }));
+  } catch (e) {
+    showToast(tr("err_prefix") + e.message);
+  }
+};
+
+window.rechazarSolicitud = async mid => {
+  if (!adminGuard()) return;
+  const sol = (currentGroup.data.solicitudes || []).find(r => memberId(r) === mid);
+  if (!sol) return;
+  try {
+    await withTimeout(updateDoc(doc(db, "grupos", currentGroup.id), { solicitudes: arrayRemove(sol) }));
+    showToast(tr("msg_request_rejected", { nombre: sol.nombre }));
+  } catch (e) {
+    showToast(tr("err_prefix") + e.message);
+  }
+};
+
+function rolOptions(sel) {
+  return ROLES.map(r => `<option value="${r}"${r === sel ? " selected" : ""}>${tr("rol_" + r)}</option>`).join("");
+}
+
+window.cambiarRol = async (mid, rol) => {
+  if (!adminGuard()) {
+    renderGrupo();
+    return;
+  }
+  if (!ROLES.includes(rol)) return;
+  const miembro = currentGroup.data.miembros.find(m => memberId(m) === mid);
+  if (!miembro) return;
+  if (miembro.uid === currentGroup.data.creadoPor) {
+    showToast("❌ " + tr("err_creator_role"));
+    renderGrupo();
+    return;
+  }
+  try {
+    // El rol es de la cuenta: si el mismo mail tiene dos perfiles en el grupo, ambos pasan a este rol.
+    await withTimeout(updateDoc(doc(db, "grupos", currentGroup.id), patchRol(miembro.uid, rol)));
+    showToast(tr("msg_role_changed", { nombre: miembro.nombre, rol: tr("rol_" + rol) }));
+  } catch (e) {
+    showToast(tr("err_prefix") + e.message);
+    renderGrupo();
+  }
+};
+
+// Salir de la pantalla de un grupo del que ya no somos parte (nos sacaron o lo eliminaron).
+function salirDeVistaGrupo(id, msgKey) {
+  if (unsubscribe) unsubscribe();
+  unsubscribe = null;
+  clearTimeout(listenWatchdog);
+  try {
+    localStorage.removeItem(CACHE_PREFIX + id);
+    if (localStorage.getItem("grupoActivo") === id) localStorage.removeItem("grupoActivo");
+    const lista = JSON.parse(localStorage.getItem("misGrupos") || "[]").filter(g => g.id !== id);
+    localStorage.setItem("misGrupos", JSON.stringify(lista));
+  } catch (e) {}
+  currentGroup = null;
+  showSection("s-lobby");
+  cargarMisGrupos();
+  showToast(tr(msgKey));
+}
+
+// --- Solicitudes que yo envié (lado del que quiere entrar) -------------------
+const solKey = () => "taxusa_solicitudes::" + (currentUser?.uid || "sin-usuario");
+
+function getSolicitudesLocal() {
+  try {
+    return JSON.parse(localStorage.getItem(solKey()) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+function setSolicitudesLocal(lista) {
+  try {
+    localStorage.setItem(solKey(), JSON.stringify(lista));
+  } catch (e) {}
+}
+
+function guardarSolicitudLocal(item) {
+  const lista = getSolicitudesLocal().filter(x => x.id !== item.id);
+  lista.unshift(item);
+  setSolicitudesLocal(lista.slice(0, 10));
+}
+
+function quitarSolicitudLocal(id) {
+  setSolicitudesLocal(getSolicitudesLocal().filter(x => x.id !== id));
+}
+
+function renderMisSolicitudes() {
+  const wrap = $("mis-solicitudes-wrap");
+  const lista = $("mis-solicitudes-list");
+  if (!wrap || !lista) return;
+  const items = currentUser ? getSolicitudesLocal() : [];
+  if (!items.length) {
+    wrap.classList.add("hidden");
+    return;
+  }
+  wrap.classList.remove("hidden");
+  lista.innerHTML = items.map(g => `
+        <div class="grupo-item pending">
+            <div>
+                <div class="grupo-item-name">✈️ ${esc(g.nombre)}</div>
+                <div class="grupo-item-code">${esc(g.id)} · <span class="grupo-item-wait">${tr("lbl_waiting")}</span></div>
+            </div>
+            <button class="grupo-item-btn" data-id="${esc(g.id)}" onclick="verSolicitud(this.dataset.id)">${tr("btn_check_status")}</button>
+        </div>`).join("");
+}
+
+async function estadoSolicitud(item) {
+  const snap = await withTimeout(getDoc(doc(db, "grupos", item.id)));
+  if (!snap.exists()) return { estado: "gone" };
+  const d = snap.data();
+  if ((d.miembros || []).some(m => esMismoMiembro(m, currentUser.uid, item.perfilId, item.apodo))) return { estado: "approved", data: d };
+  if ((d.solicitudes || []).some(x => esMismoMiembro(x, currentUser.uid, item.perfilId, item.apodo))) return { estado: "pending" };
+  return { estado: "denied" };
+}
+
+window.verSolicitud = async id => {
+  const item = getSolicitudesLocal().find(x => x.id === id);
+  if (!item || !currentUser) return;
+  if (!navigator.onLine) {
+    showToast(tr("offline_title"));
+    return;
+  }
+  try {
+    const r = await estadoSolicitud(item);
+    if (r.estado === "pending") {
+      showToast(tr("msg_request_still_pending"));
+      return;
+    }
+    quitarSolicitudLocal(id);
+    if (r.estado === "approved") {
+      currentUser.name = item.apodo;
+      localStorage.setItem("perfilActivoNombre", item.apodo);
+      guardarGrupoEnLista(id, r.data.nombre);
+      showToast(tr("msg_request_approved", { nombre: r.data.nombre }));
+      suscribirGrupo(id);
+      return;
+    }
+    showToast(tr(r.estado === "gone" ? "msg_group_gone" : "msg_request_denied"));
+    renderMisSolicitudes();
+  } catch (e) {
+    showToast(tr("err_open_group"));
+  }
+};
+
+let _refrescandoSol = false;
+
+// Al volver al lobby: si te aceptaron (o rechazaron) se actualiza solo, sin tener que tocar "Ver estado".
+async function refrescarSolicitudes() {
+  if (_refrescandoSol || !currentUser || !navigator.onLine) return;
+  const items = getSolicitudesLocal();
+  if (!items.length) return;
+  _refrescandoSol = true;
+  let cambio = false;
+  try {
+    for (const item of items) {
+      try {
+        const r = await estadoSolicitud(item);
+        if (r.estado === "pending") continue;
+        quitarSolicitudLocal(item.id);
+        cambio = true;
+        if (r.estado === "approved") {
+          guardarGrupoEnLista(item.id, r.data.nombre);
+          showToast(tr("msg_request_approved", { nombre: r.data.nombre }));
+        } else {
+          showToast(tr(r.estado === "gone" ? "msg_group_gone" : "msg_request_denied"));
+        }
+      } catch (e) {}
+    }
+  } finally {
+    _refrescandoSol = false;
+  }
+  if (cambio) cargarMisGrupos();
+}
+
+// Grupos que guardaban el rol solo en miembros[].rol: el creador copia esos roles a adminUids/lectorUids una vez.
+let _migrandoRoles = false;
+
+async function migrarRoles(id, data, fromCache) {
+  if (_migrandoRoles || fromCache || !navigator.onLine || !currentUser || data.creadoPor !== currentUser.uid) return;
+  if (Array.isArray(data.adminUids) && Array.isArray(data.lectorUids)) return;
+  _migrandoRoles = true;
+  try {
+    const porUid = {};
+    (data.miembros || []).forEach(m => { (porUid[m.uid] = porUid[m.uid] || []).push(m.rol); });
+    const admins = Object.keys(porUid).filter(u => u === data.creadoPor || porUid[u].includes("admin"));
+    const lectores = Object.keys(porUid).filter(u => !admins.includes(u) && porUid[u].every(r => r === "lector"));
+    await withTimeout(updateDoc(doc(db, "grupos", id), { adminUids: admins, lectorUids: lectores }));
+  } catch (e) {
+    console.warn("[migrarRoles]", e);
+  } finally {
+    _migrandoRoles = false;
+  }
 }
 
 let _syncingPartes = false;

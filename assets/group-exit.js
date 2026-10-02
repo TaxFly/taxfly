@@ -35,7 +35,11 @@ async function leaveOne(d, uid, matches) {
   // no la sacamos de miembroUids ni le reasignamos la creación a otra persona.
   const quedaEseUid = rest.some(m => m && m.uid === uid);
   const patch = { miembros: arrayRemove(...mine) };
-  if (!quedaEseUid) patch.miembroUids = arrayRemove(uid);
+  if (!quedaEseUid) {
+    patch.miembroUids = arrayRemove(uid);
+    patch.adminUids = arrayRemove(uid);
+    patch.lectorUids = arrayRemove(uid);
+  }
   if (data.creadoPor === uid && !quedaEseUid && rest.length) patch.creadoPor = rest[0].uid;   // el grupo no queda sin creador
   await withTimeout(updateDoc(d.ref, patch));
   return mine.length;

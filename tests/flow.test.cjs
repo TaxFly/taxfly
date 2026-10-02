@@ -836,3 +836,35 @@ test('proxy de Firestore: el Worker expone /__ping y la app verifica el contenid
   assert.match(net, /export async function fsNetFailover/);
   assert.match(read('assets/grupo.js'), /includeMetadataChanges: true/);
 });
+
+test('grupo: panel del creador (renombrar, aprobar ingresos) con textos en es/en/pt', () => {
+  const html = read('grupo.html'), js = read('assets/grupo.js'), ui = read('assets/grupo-ui.js');
+  for (const id of ['admin-card', 'adm-nombre', 'adm-aprobacion', 'adm-solicitudes', 'mis-solicitudes-list']) assert.ok(html.includes(`id="${id}"`), id + ' falta en grupo.html');
+  for (const fn of ['renombrarGrupo', 'setAprobacion', 'aceptarSolicitud', 'rechazarSolicitud', 'verSolicitud']) assert.ok(new RegExp(`window\\.${fn} = `).test(js), fn + ' falta en grupo.js');
+  for (const k of ['lbl_admin', 'btn_rename', 'lbl_requests', 'btn_accept', 'btn_reject', 'msg_request_sent', 'msg_request_approved', 'msg_removed_from_group', 'msg_group_gone']) {
+    assert.equal((ui.match(new RegExp(`\\n    ${k}: `, 'g')) || []).length, 3, k + ' tiene que estar en es, en y pt');
+  }
+  assert.match(js, /requiereAprobacion: true/);
+});
+
+test('grupo: roles Administrador / Editor / Lector con textos en es/en/pt', () => {
+  const html = read('grupo.html'), js = read('assets/grupo.js'), ui = read('assets/grupo-ui.js');
+  assert.ok(html.includes('id="card-nuevo-gasto"') && html.includes('id="g-mi-rol"'));
+  assert.match(js, /const ROLES = \[ "admin", "editor", "lector" \]/);
+  // el lector no puede cargar ni borrar gastos (ni offline: se corta antes de encolar)
+  assert.match(js, /window\.agregarGasto = async \(\) => \{\s*if \(!puedeEditar\(\)\)/);
+  assert.match(js, /window\.eliminarGasto = gastoId => \{\s*if \(!currentGroup\) return;\s*if \(!puedeEditar\(\)\)/);
+  assert.match(js, /window\.cambiarRol = /);
+  for (const k of ['rol_admin', 'rol_editor', 'rol_lector', 'lbl_your_role', 'msg_role_changed', 'err_read_only']) {
+    assert.equal((ui.match(new RegExp(`\\n    ${k}: `, 'g')) || []).length, 3, k + ' tiene que estar en es, en y pt');
+  }
+});
+
+test('firestore.rules: los grupos aplican roles (admin/lector), aprobación de ingresos y protegen al creador', {skip: !fs.existsSync(path.join(root, 'firestore.rules'))}, () => {
+  const rules = read('firestore.rules');
+  const block = between(rules, 'match /grupos/{codigo}', 'match /{document=**}');
+  for (const k of ['adminUids', 'lectorUids', 'requiereAprobacion', 'solicitudes']) assert.ok(block.includes(k), k + ' falta en las reglas de grupos');
+  assert.ok(/!esLector\(\)/.test(block), 'el lector no puede escribir gastos');
+  assert.ok(/request\.resource\.data\.creadoPor in request\.resource\.data\.miembroUids/.test(block), 'el creador no puede quedar fuera');
+  assert.ok(/get\('requiereAprobacion', false\) != true/.test(block), 'entrar directo solo si no pide aprobación');
+});
