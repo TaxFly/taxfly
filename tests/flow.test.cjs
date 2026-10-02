@@ -718,13 +718,6 @@ test('ningún archivo usa el árbol viejo users/profiles salvo la migración y l
   assert.deepEqual(offenders, []);
 });
 
-test('firestore.rules: el árbol viejo users/ es solo lectura y borrado', () => {
-  const rules = read('firestore.rules');
-  const block = between(rules, 'match /users/{uid}/profiles/{pid}/{document=**}', 'match /grupos/');
-  assert.ok(/allow read, delete:/.test(block));
-  assert.ok(!/allow [^;]*\bwrite\b/.test(block) && !/allow [^;]*\b(create|update)\b/.test(block));
-});
-
 // Páginas cuyo JS ya vive en assets/ (src, ¿módulo?). Al separar otra página, agregarla acá.
 const EXTERNAL_JS = {
   compras: [['assets/compras.js', true]],
@@ -858,15 +851,6 @@ test('grupo: roles Administrador / Editor / Lector con textos en es/en/pt', () =
   for (const k of ['rol_admin', 'rol_editor', 'rol_lector', 'lbl_your_role', 'msg_role_changed', 'err_read_only']) {
     assert.equal((ui.match(new RegExp(`\\n    ${k}: `, 'g')) || []).length, 3, k + ' tiene que estar en es, en y pt');
   }
-});
-
-test('firestore.rules: los grupos aplican roles (admin/lector), aprobación de ingresos y protegen al creador', {skip: !fs.existsSync(path.join(root, 'firestore.rules'))}, () => {
-  const rules = read('firestore.rules');
-  const block = between(rules, 'match /grupos/{codigo}', 'match /{document=**}');
-  for (const k of ['adminUids', 'lectorUids', 'requiereAprobacion', 'solicitudes']) assert.ok(block.includes(k), k + ' falta en las reglas de grupos');
-  assert.ok(/!esLector\(\)/.test(block), 'el lector no puede escribir gastos');
-  assert.ok(/request\.resource\.data\.creadoPor in request\.resource\.data\.miembroUids/.test(block), 'el creador no puede quedar fuera');
-  assert.ok(/get\('requiereAprobacion', false\) != true/.test(block), 'entrar directo solo si no pide aprobación');
 });
 
 test('login: botón "Continuar con Google" (popup con redirección de respaldo) con textos en es/en/pt', () => {

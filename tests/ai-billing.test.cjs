@@ -43,3 +43,15 @@ test('client adds request_id and exposes AI status helper', () => {
   assert.match(code, /request_id/);
   assert.match(code, /taxflyAIStatus/);
 });
+
+
+test('settings exposes an aesthetic AI credits center with purchase, history and Cafecito support', () => {
+  const settings = read('assets/settings.js');
+  const config = read('config.js');
+  assert.match(settings, /buy-credits/);
+  assert.match(settings, /ai-history/);
+  assert.match(settings, /cafecito/);
+  assert.match(settings, /sx-ai/);
+  assert.match(config, /SUPPORT_CAFECITO_URL/);
+  assert.match(config, /AI_CREDIT_PACKAGES/);
+});

@@ -1,5 +1,15 @@
 window.TAXFLY_CONFIG = {
   WORKER_URL: "https://taxfly-claude.juanbria18.workers.dev",
+  // Pegá acá tu URL pública de Cafecito, por ejemplo: "https://cafecito.app/tuusuario".
+  SUPPORT_CAFECITO_URL: "https://cafecito.app/taxflyapp",
+  // Los enlaces de pago quedan vacíos hasta conectar el proveedor (Stripe/Mercado Pago/etc.).
+  // Cuando exista un checkout por paquete, pegá su URL en el campo url correspondiente.
+  AI_CREDIT_PACKAGES: [
+    { credits: 50, label: "Paquete inicial", url: "" },
+    { credits: 100, label: "Paquete estándar", url: "" },
+    { credits: 250, label: "Paquete viajero", url: "" },
+    { credits: 500, label: "Paquete intensivo", url: "" }
+  ],
   // Proxy propio de Firestore (sync-worker/). Se usa solo si un bloqueador corta firestore.googleapis.com.
   // Dejalo vacío ("") para desactivarlo.
   FIRESTORE_PROXY_HOST: "taxfly-sync.juanbria18.workers.dev",
