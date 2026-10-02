@@ -15,12 +15,12 @@
     const tokens=words(text);
     return (reservations||[]).map(r=>{
       let score=0; const reasons=[];
-      if(type===r.type && type!=='other'){score+=4;reasons.push(type==='stay'?'Documento de alojamiento':'Documento de vuelo');}
+      if(type===r.type && type!=='other'){score+=4;reasons.push(type==='stay'?(root.tfL3||function(a){return a})('Documento de alojamiento','Accommodation document','Documento de hospedagem'):(root.tfL3||function(a){return a})('Documento de vuelo','Flight document','Documento de voo'));}
       const ref=normalize(r.reference);
-      if(ref && ref.length>=4 && text.includes(ref)){score+=8;reasons.unshift('Coincide el código de reserva');}
+      if(ref && ref.length>=4 && text.includes(ref)){score+=8;reasons.unshift((root.tfL3||function(a){return a})('Coincide el código de reserva','Booking code matches','O código da reserva coincide'));}
       const overlap=[...words(r.name)].filter(w=>tokens.has(w));
-      if(overlap.length){score+=Math.min(6,overlap.length*2);reasons.push('Coincide el nombre');}
-      if(r.startDate && text.includes(normalize(r.startDate))){score+=3;reasons.push('Coincide la fecha');}
+      if(overlap.length){score+=Math.min(6,overlap.length*2);reasons.push((root.tfL3||function(a){return a})('Coincide el nombre','Name matches','O nome coincide'));}
+      if(r.startDate && text.includes(normalize(r.startDate))){score+=3;reasons.push((root.tfL3||function(a){return a})('Coincide la fecha','Date matches','A data coincide'));}
       return {reservation:r,score,reason:reasons.join(' · ')};
     }).filter(x=>x.score>=4).sort((a,b)=>b.score-a.score || String(a.reservation.name).localeCompare(String(b.reservation.name)));
   }

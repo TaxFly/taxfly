@@ -89,7 +89,8 @@
       const put = value => new Promise((resolve,reject) => { const tx=idb.transaction('kv','readwrite'); tx.objectStore('kv').put(value,key); tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error); });
       for (const op of await get()) {
         if (!navigator.onLine || op.uid !== uid || op.perfilId !== profile) break;
-        const docs = fs.collection(db,'users',uid,'profiles',profile,'docs');
+        if (!await window.TaxflyDocsTree?.ensure(uid,profile)) break;
+        const docs = fs.collection(db,...window.TaxflyDocsTree.base(uid,profile));
         try {
           if (op.type === 'save_doc') {
             const value=op.docObj;

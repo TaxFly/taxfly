@@ -3,15 +3,18 @@ window.confirmAndDeleteAccount = async function({db: db, doc: doc, deleteDoc: de
   const M = {
     es: {
       c: "¿Eliminar cuenta permanentemente?",
-      e: "Reautenticación requerida. Cerrá sesión y volvé a entrar para eliminar tu cuenta."
+      e: "Reautenticación requerida. Cerrá sesión y volvé a entrar para eliminar tu cuenta.",
+      sec: "Verificación de seguridad fallida. Intentá de nuevo."
     },
     en: {
       c: "Permanently delete account?",
-      e: "Re-authentication required. Please log out and back in to delete your account."
+      e: "Re-authentication required. Please log out and back in to delete your account.",
+      sec: "Security check failed. Please try again."
     },
     pt: {
       c: "Excluir conta permanentemente?",
-      e: "Reautenticação necessária. Saia e entre novamente para excluir sua conta."
+      e: "Reautenticação necessária. Saia e entre novamente para excluir sua conta.",
+      sec: "Falha na verificação de segurança. Tente novamente."
     }
   };
   const t = M[lang] || M.es;
@@ -19,7 +22,7 @@ window.confirmAndDeleteAccount = async function({db: db, doc: doc, deleteDoc: de
   if (typeof rcCheck === "function") {
     const ok = await rcCheck("delete_account");
     if (!ok) {
-      window.showAlert("Verificación de seguridad fallida. Intentá de nuevo.");
+      window.showAlert(t.sec);
       return;
     }
   }
@@ -35,29 +38,32 @@ window.confirmAndDeleteAccount = async function({db: db, doc: doc, deleteDoc: de
 };
 
 window.confirmAndChangeEmail = async function({currentUser: currentUser, verifyBeforeUpdateEmail: verifyBeforeUpdateEmail}) {
-  if (!currentUser) {
-    window.showAlert("No hay sesión activa.");
-    return;
-  }
   const lang = localStorage.getItem("appLang") || "es";
   const M = {
     es: {
       p: "Ingresá tu nuevo correo:",
       s: "Verificación enviada.",
-      e: "Error: "
+      e: "Error: ",
+      noSession: "⚠️ No hay sesión activa"
     },
     en: {
       p: "Enter your new email:",
       s: "Verification sent.",
-      e: "Error: "
+      e: "Error: ",
+      noSession: "⚠️ No active session"
     },
     pt: {
       p: "Digite seu novo e-mail:",
       s: "Verificação enviada.",
-      e: "Erro: "
+      e: "Erro: ",
+      noSession: "⚠️ Nenhuma sessão ativa"
     }
   };
   const t = M[lang] || M.es;
+  if (!currentUser) {
+    window.showAlert(t.noSession);
+    return;
+  }
   const email = await window.showPrompt(t.p);
   if (!email) return;
   try {

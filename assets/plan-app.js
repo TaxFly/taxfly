@@ -1116,7 +1116,6 @@ function budgetDefaults() {
   return {
     total: 0,
     gastos: [],
-    countMarket: false
   };
 }
 
@@ -1147,7 +1146,6 @@ function budgetLoad() {
 }
 
 function budgetSave() {
-  budgetData.walmartSpent = wmTotalChecked();
   syncedSave(BUDGET_KEY, budgetData, "budget", budgetData);
 }
 
@@ -1227,16 +1225,8 @@ function budgetManualTotal() {
   return budgetData.gastos.reduce((s, g) => s + (g.monto || 0), 0);
 }
 
-function budgetMarketEstimate() {
-  return wmTotalChecked();
-}
-
-function budgetMarketCounted() {
-  return budgetData.countMarket ? budgetMarketEstimate() : 0;
-}
-
 function budgetSpentTotal() {
-  return (tfx.gastos || 0) + budgetManualTotal() + budgetMarketCounted();
+  return (tfx.gastos || 0) + budgetManualTotal();
 }
 
 function budgetRemaining() {
@@ -1262,12 +1252,6 @@ function budgetSetTotal() {
   } catch (e) {}
   window._fb && window._fb.fbSetPresupuesto && window._fb.fbSetPresupuesto(v);
   budgetEditingTotal = false;
-  budgetRenderAll();
-}
-
-function budgetToggleMarket() {
-  budgetData.countMarket = !budgetData.countMarket;
-  budgetSave();
   budgetRenderAll();
 }
 
@@ -1311,22 +1295,20 @@ function renderBudgetBox() {
   const base = tfx.presupuesto || 0;
   const hasTotal = base > 0 && !budgetEditingTotal;
   if (!hasTotal) {
-    box.innerHTML = `\n      <div class="budget-set-row">\n        <input type="number" min="0" step="1" id="budget-total-input" class="wm-edit-input" placeholder="Presupuesto total (USD)" value="${base || ""}" oninput="this.classList.remove('error')">\n        <button class="mbtn msave" onclick="budgetSetTotal()">Guardar</button>\n      </div>\n      <div class="budget-note">Es el mismo presupuesto que en Taxfly: si lo cargás acá, ya queda cargado allá.</div>`;
+    box.innerHTML = `\n      <div class="budget-set-row">\n        <input type="text" id="budget-total-input" class="wm-edit-input" placeholder="Presupuesto total (USD)" value="${base || ""}" oninput="this.classList.remove('error')" inputmode="decimal" data-num>\n        <button class="mbtn msave" onclick="budgetSetTotal()">Guardar</button>\n      </div>\n      <div class="budget-note">Es el mismo presupuesto que en Taxfly: si lo cargás acá, ya queda cargado allá.</div>`;
     return;
   }
   const spent = budgetSpentTotal();
   const remaining = base - spent;
   const pct = Math.min(100, Math.max(0, Math.round(spent / base * 100)));
   const manual = budgetManualTotal();
-  const wmEst = budgetMarketEstimate();
-  const counted = !!budgetData.countMarket;
   let gastosHtml = "";
   budgetData.gastos.forEach(g => {
     const meta = budgetCatMeta[g.cat] || budgetCatMeta.otros;
     gastosHtml += `\n      <div class="budget-gasto-row">\n        <span class="budget-gasto-cat">${ic(meta.icon, 13)} ${meta.label}${g.nota ? " · " + escapeHtml(g.nota) : ""}</span>\n        <span class="budget-gasto-monto">${budgetUsd(g.monto)}\n          <button class="wm-icon-btn wm-icon-del" onclick="budgetDeleteGasto('${g.id}')" title="Eliminar" aria-label="Eliminar gasto">${ic("x", 14)}</button>\n        </span>\n      </div>`;
   });
   const addForm = `<a class="budget-add-cat-btn" href="compras.html">${ic("wallet", 15)} <span>Registrar gasto en TaxFly</span></a>`;
-  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      ${counted ? `<div class="budget-summary-row budget-summary-sub">\n        <span>Supermercado (estimado)</span>\n        <span class="budget-summary-val">${budgetUsd(wmEst)}</span>\n      </div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <label class="budget-market-toggle">\n      <input type="checkbox" ${counted ? "checked" : ""} onchange="budgetToggleMarket()">\n      <span>\n        <b>Descontar estimado del supermercado</b> (${budgetUsd(wmEst)})\n        <small>${counted ? "Activado: usalo solo si el súper NO lo cargás en Taxfly, si no se cuenta dos veces." : "Apagado: se asume que el súper se carga en Taxfly (ticket). Así no se cuenta dos veces."}</small>\n      </span>\n    </label>\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. El estimado de supermercado se suma solo si lo activás. Todo en USD.</div>`;
+  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. Todo en USD.</div>`;
 }
 
 window.renderBudgetBox = renderBudgetBox;
@@ -1338,18 +1320,8 @@ function budgetRenderAll() {
 
 window.budgetRefresh = budgetRenderAll;
 
-let _wmSpentSyncTimer = null;
-
 function syncWalmartSpentForTaxfly() {
   budgetRenderAll();
-  clearTimeout(_wmSpentSyncTimer);
-  _wmSpentSyncTimer = setTimeout(() => {
-    const spent = wmTotalChecked();
-    budgetData.walmartSpent = spent;
-    window._fb && window._fb.fbSet("budget", {
-      walmartSpent: spent
-    });
-  }, 800);
 }
 
 window.addEventListener("DOMContentLoaded", function() {
@@ -1439,7 +1411,7 @@ let wmData = [];
 
 let wmChecked = new Set;
 
-let wmOpenSections = new Set(Object.keys(wmCatMeta));
+let wmOpenSections = new Set(); // arranca todo colapsado
 
 let wmEditingItem = null;
 
@@ -1460,11 +1432,8 @@ function wmLoad() {
   if (d) wmData = d;
   const c = syncedLoad(WM_CHECKED_KEY, window._wmCheckedFromFb);
   if (c) c.forEach(k => wmChecked.add(k));
-  const o = localLoad(WM_OPEN_KEY);
-  if (o) {
-    wmOpenSections.clear();
-    o.forEach(k => wmOpenSections.add(k));
-  }
+  // Las categorias siempre arrancan colapsadas; se abre solo la que toques en esta sesion.
+  wmOpenSections.clear();
 }
 
 function wmGetCat(catId) {
@@ -1617,6 +1586,50 @@ async function wmReset() {
   renderWalmart();
 }
 
+let _wmRegistering = false;
+
+function wmToast(msg) {
+  let el = document.getElementById("wmToast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "wmToast";
+    el.className = "wm-toast";
+    el.setAttribute("role", "status");
+    el.setAttribute("aria-live", "polite");
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+async function wmRegisterExpense() {
+  if (_wmRegistering) return;
+  const total = Math.round(wmTotalChecked() * 100) / 100;
+  if (!wmChecked.size || !(total > 0)) {
+    showAlert("Tildá al menos un producto con precio para registrar el gasto.", "Nada para registrar");
+    return;
+  }
+  const ok = await showConfirm("Se guarda el total tildado en Gastos (Comida) y los productos vuelven a pendientes para la próxima compra.", "¿Registrar como gasto?", "Registrar", true);
+  if (!ok) return;
+  _wmRegistering = true;
+  try {
+    const saved = await (window._fb?.addTaxflyGasto?.({ nombre: "Walmart", valor: total, cat: "🍔 Comida", source: "walmart" }) ?? false);
+    if (!saved) {
+      showAlert("No se pudo guardar el gasto. Probá de nuevo.", "Error");
+      return;
+    }
+    wmChecked.clear();
+    wmSave();
+    renderWalmart();
+    wmToast("Gasto registrado");
+  } finally {
+    _wmRegistering = false;
+  }
+}
+window.wmRegisterExpense = wmRegisterExpense;
+
 function renderWalmart() {
   const panel = document.getElementById("panel-walmart");
   const total = wmCountAll();
@@ -1625,7 +1638,7 @@ function renderWalmart() {
   const totalAll = wmTotalAll().toFixed(2);
   const totalChk = wmTotalChecked().toFixed(2);
   let html = '<div class="wm-panel">';
-  html += `\n    <div class="wm-summary-bar">\n      <div class="wm-stat"><div class="wm-stat-val">${checked}</div><div class="wm-stat-lbl">en carrito</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${total - checked}</div><div class="wm-stat-lbl">pendientes</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${pct}%</div><div class="wm-stat-lbl">listo</div></div>\n    </div>\n    <div class="wm-total-bar">\n      <span class="wm-total-label">Total del carrito</span>\n      <span class="wm-total-val">$${totalChk} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${totalAll}</span></span>\n    </div>\n    ${currentArsRate ? `\n    <div class="wm-total-bar wm-total-bar-ars" onclick="wmRefreshFx(event)" title="Tocar para actualizar cotización">\n      <span class="wm-total-label">≈ pesos <span class="wm-fx-badge">$${fmtArs(currentArsRate)} ${currentArsLabel === "oficial" ? "oficial" : currentArsLabel}</span></span>\n      <span class="wm-total-val wm-total-val-ars">$${fmtArs(wmTotalChecked() * currentArsRate)} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${fmtArs(wmTotalAll() * currentArsRate)}</span></span>\n    </div>` : `<div class="wm-fx-loading">Cotización USD→ARS: buscando…</div>`}\n    <div class="wm-progress-bar-bg">\n      <div class="wm-progress-bar-fill" style="width:${pct}%"></div>\n    </div>`;
+  html += `\n    <div class="wm-summary-bar">\n      <div class="wm-stat"><div class="wm-stat-val">${checked}</div><div class="wm-stat-lbl">en carrito</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${total - checked}</div><div class="wm-stat-lbl">pendientes</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${pct}%</div><div class="wm-stat-lbl">listo</div></div>\n    </div>\n    <div class="wm-total-bar">\n      <span class="wm-total-label">Total del carrito</span>\n      <span class="wm-total-val">$${totalChk} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${totalAll}</span></span>\n    </div>\n    ${currentArsRate ? `\n    <div class="wm-total-bar wm-total-bar-ars" onclick="wmRefreshFx(event)" title="Tocar para actualizar cotización">\n      <span class="wm-total-label">≈ pesos <span class="wm-fx-badge">$${fmtArs(currentArsRate)} ${currentArsLabel === "oficial" ? "oficial" : currentArsLabel}</span></span>\n      <span class="wm-total-val wm-total-val-ars">$${fmtArs(wmTotalChecked() * currentArsRate)} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${fmtArs(wmTotalAll() * currentArsRate)}</span></span>\n    </div>` : `<div class="wm-fx-loading">Cotización USD→ARS: buscando…</div>`}\n    <button type="button" class="wm-register-btn" onclick="wmRegisterExpense()" ${checked ? "" : "disabled"}>${ic("wallet", 16)} <span>Registrar como gasto</span></button>\n    <div class="wm-progress-bar-bg">\n      <div class="wm-progress-bar-fill" style="width:${pct}%"></div>\n    </div>`;
   wmData.forEach(cat => {
     const meta = wmCatMeta[cat.id] || {
       icon: "📦",
@@ -1640,7 +1653,7 @@ function renderWalmart() {
       const isEditingThis = wmEditingItem?.catId === cat.id && wmEditingItem?.itemId === item.id;
       const lineTotal = wmItemPrice(item).toFixed(2);
       if (isEditingThis) {
-        html += `\n          <div class="wm-item wm-item-editing" onclick="event.stopPropagation()">\n            <div class="wm-edit-form">\n              <input class="wm-edit-input wm-edit-name" id="wm-edit-name" placeholder="Nombre del producto" value="${escapeHtml(item.name)}">\n              <div class="wm-edit-row">\n                <input class="wm-edit-input wm-edit-small" id="wm-edit-qty" type="number" min="0.1" step="0.1" placeholder="Cant." value="${item.qty}">\n                <input class="wm-edit-input wm-edit-unit" id="wm-edit-unit" placeholder="Unidad (oz, lb, caja…)" value="${escapeHtml(item.unit)}">\n                <input class="wm-edit-input wm-edit-small" id="wm-edit-price" type="number" min="0" step="0.01" placeholder="$ c/u" value="${item.price}">\n              </div>\n              <div class="wm-edit-hint">Precio unitario. Total = cantidad × precio.</div>\n              <div class="wm-edit-actions">\n                <button class="mbtn" onclick="wmCancelEdit()">Cancelar</button>\n                <button class="mbtn msave" onclick="wmSaveEdit()">Guardar</button>\n              </div>\n            </div>\n          </div>`;
+        html += `\n          <div class="wm-item wm-item-editing" onclick="event.stopPropagation()">\n            <div class="wm-edit-form">\n              <input class="wm-edit-input wm-edit-name" id="wm-edit-name" placeholder="Nombre del producto" value="${escapeHtml(item.name)}">\n              <div class="wm-edit-row">\n                <input class="wm-edit-input wm-edit-small" id="wm-edit-qty" type="text" placeholder="Cant." value="${item.qty}" inputmode="decimal" data-num>\n                <input class="wm-edit-input wm-edit-unit" id="wm-edit-unit" placeholder="Unidad (oz, lb, caja…)" value="${escapeHtml(item.unit)}">\n                <input class="wm-edit-input wm-edit-small" id="wm-edit-price" type="text" placeholder="$ c/u" value="${item.price}" inputmode="decimal" data-num>\n              </div>\n              <div class="wm-edit-hint">Precio unitario. Total = cantidad × precio.</div>\n              <div class="wm-edit-actions">\n                <button class="mbtn" onclick="wmCancelEdit()">Cancelar</button>\n                <button class="mbtn msave" onclick="wmSaveEdit()">Guardar</button>\n              </div>\n            </div>\n          </div>`;
       } else {
         html += `\n          <div class="wm-item ${isChecked ? "checked" : ""}" onclick="wmToggle('${item.id}', event)">\n            <div class="wm-check">${isChecked ? "✓" : ""}</div>\n            <div class="wm-item-body">\n              <div class="wm-item-name">${escapeHtml(item.name)}</div>\n              <div class="wm-item-detail">${item.qty} ${escapeHtml(item.unit)}</div>\n            </div>\n            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">\n              <div class="wm-item-price">$${lineTotal}</div>\n              <button class="wm-icon-btn" onclick="wmStartEdit('${cat.id}','${item.id}',event)" title="Editar" aria-label="Editar ${escapeHtml(item.name)}">${ic("pencil", 13)}</button>\n              <button class="wm-icon-btn wm-icon-del" onclick="wmDeleteItem('${cat.id}','${item.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(item.name)}">${ic("x", 14)}</button>\n            </div>\n          </div>`;
       }
@@ -1943,7 +1956,7 @@ function renderDayContent(d) {
     if (isEditingThis) {
       const badgeVal = s.badge || "";
       const badgeText = escapeHtml(s.badgeText || "");
-      html += `\n        <div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n          <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--accent);display:flex;align-items:center;gap:6px">${ic("pencil", 13)} Editar parada</div>\n          <div class="wm-edit-form" style="width:100%">\n            <input class="wm-edit-input" id="stop-edit-name" placeholder="Nombre del lugar" value="${escapeHtml(s.name)}" style="margin-bottom:6px;width:100%">\n            <textarea class="wm-edit-input" id="stop-edit-desc" placeholder="Descripción (horarios, tips…)" style="margin-bottom:6px;width:100%;min-height:56px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${s.desc}</textarea>\n            <input class="wm-edit-input" id="stop-edit-url" placeholder="URL de Google Maps" value="${escapeHtml(s.url || "")}" style="margin-bottom:6px;width:100%">\n            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n              <input class="wm-edit-input" id="stop-edit-lat" type="number" step="any" placeholder="Latitud (opcional)" aria-label="Latitud" value="${s.lat ?? ""}">\n              <input class="wm-edit-input" id="stop-edit-lng" type="number" step="any" placeholder="Longitud (opcional)" aria-label="Longitud" value="${s.lng ?? ""}">\n            </div>\n            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n              <select class="wm-edit-input" id="stop-edit-badge">\n                <option value=""${badgeVal === "" ? " selected" : ""}>Sin badge</option>\n                <option value="star"${badgeVal === "star" ? " selected" : ""}>⭐ Imperdible</option>\n                <option value="rec"${badgeVal === "rec" ? " selected" : ""}>✅ Recomendado</option>\n              </select>\n              <input class="wm-edit-input" id="stop-edit-badgetext" placeholder="Texto badge (ej: N°1)" value="${badgeText}">\n            </div>\n            <div class="wm-edit-actions">\n              <button class="mbtn" onclick="stopCancelEdit()">Cancelar</button>\n              <button class="mbtn msave" onclick="stopSaveEdit(${d},${i})">Guardar</button>\n            </div>\n          </div>\n        </div>`;
+      html += `\n        <div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n          <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--accent);display:flex;align-items:center;gap:6px">${ic("pencil", 13)} Editar parada</div>\n          <div class="wm-edit-form" style="width:100%">\n            <input class="wm-edit-input" id="stop-edit-name" placeholder="Nombre del lugar" value="${escapeHtml(s.name)}" style="margin-bottom:6px;width:100%">\n            <textarea class="wm-edit-input" id="stop-edit-desc" placeholder="Descripción (horarios, tips…)" style="margin-bottom:6px;width:100%;min-height:56px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${s.desc}</textarea>\n            <input class="wm-edit-input" id="stop-edit-url" placeholder="URL de Google Maps" value="${escapeHtml(s.url || "")}" style="margin-bottom:6px;width:100%">\n            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n              <input class="wm-edit-input" id="stop-edit-lat" type="text" placeholder="Latitud (opcional)" aria-label="Latitud" value="${s.lat ?? ""}" inputmode="text" data-num="signed">\n              <input class="wm-edit-input" id="stop-edit-lng" type="text" placeholder="Longitud (opcional)" aria-label="Longitud" value="${s.lng ?? ""}" inputmode="text" data-num="signed">\n            </div>\n            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n              <select class="wm-edit-input" id="stop-edit-badge">\n                <option value=""${badgeVal === "" ? " selected" : ""}>Sin badge</option>\n                <option value="star"${badgeVal === "star" ? " selected" : ""}>⭐ Imperdible</option>\n                <option value="rec"${badgeVal === "rec" ? " selected" : ""}>✅ Recomendado</option>\n              </select>\n              <input class="wm-edit-input" id="stop-edit-badgetext" placeholder="Texto badge (ej: N°1)" value="${badgeText}">\n            </div>\n            <div class="wm-edit-actions">\n              <button class="mbtn" onclick="stopCancelEdit()">Cancelar</button>\n              <button class="mbtn msave" onclick="stopSaveEdit(${d},${i})">Guardar</button>\n            </div>\n          </div>\n        </div>`;
     } else {
       let badge = "";
       if (s.badge === "star") badge = `<span class="badge badge-star">${escapeHtml(s.badgeText)}</span>`;
@@ -4284,7 +4297,7 @@ function itinEditForm(b, idx) {
     obs: ""
   };
   const nuevo = !b;
-  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n    ${nuevo ? `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--green)">+ Nuevo bloque</div>` : ""}\n    <div class="wm-edit-form" style="width:100%">\n      <div style="display:grid;grid-template-columns:96px 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-hora" type="time" value="${escapeHtml(v.hora)}">\n        <input class="wm-edit-input" id="itin-f-titulo" value="${escapeHtml(v.titulo)}" placeholder="Qué hacés (ej: Test Track)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <select class="wm-edit-input" id="itin-f-tipo">\n          ${Object.entries(ITIN_TIPOS).map(([k, t]) => `<option value="${k}"${v.tipo === k ? " selected" : ""}>${t.label}</option>`).join("")}\n        </select>\n        <input class="wm-edit-input" id="itin-f-zona" value="${escapeHtml(v.zona)}" placeholder="Zona (ej: World Nature)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-espera" type="number" min="0" step="5" value="${v.espera || ""}" placeholder="Fila estimada (min)">\n        <input class="wm-edit-input" id="itin-f-dur" type="number" min="0" step="5" value="${v.dur || ""}" placeholder="Duración (min)">\n      </div>\n      <textarea class="wm-edit-input" id="itin-f-obs" placeholder="Notas (Lightning Lane, single rider, de agua…)" style="margin-bottom:6px;width:100%;min-height:52px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(v.obs)}</textarea>\n      <div class="wm-edit-actions">\n        <button class="mbtn" onclick="${nuevo ? "itinCancelAdd()" : "itinCancelEdit()"}">Cancelar</button>\n        <button class="mbtn msave" onclick="${nuevo ? "itinAddConfirm()" : `itinSaveEdit('${b.id}')`}">${nuevo ? "Agregar" : "Guardar"}</button>\n      </div>\n    </div>\n  </div>`;
+  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n    ${nuevo ? `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--green)">+ Nuevo bloque</div>` : ""}\n    <div class="wm-edit-form" style="width:100%">\n      <div style="display:grid;grid-template-columns:96px 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-hora" type="time" value="${escapeHtml(v.hora)}">\n        <input class="wm-edit-input" id="itin-f-titulo" value="${escapeHtml(v.titulo)}" placeholder="Qué hacés (ej: Test Track)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <select class="wm-edit-input" id="itin-f-tipo">\n          ${Object.entries(ITIN_TIPOS).map(([k, t]) => `<option value="${k}"${v.tipo === k ? " selected" : ""}>${t.label}</option>`).join("")}\n        </select>\n        <input class="wm-edit-input" id="itin-f-zona" value="${escapeHtml(v.zona)}" placeholder="Zona (ej: World Nature)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-espera" type="text" value="${v.espera || ""}" placeholder="Fila estimada (min)" inputmode="numeric" data-num="int">\n        <input class="wm-edit-input" id="itin-f-dur" type="text" value="${v.dur || ""}" placeholder="Duración (min)" inputmode="numeric" data-num="int">\n      </div>\n      <textarea class="wm-edit-input" id="itin-f-obs" placeholder="Notas (Lightning Lane, single rider, de agua…)" style="margin-bottom:6px;width:100%;min-height:52px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(v.obs)}</textarea>\n      <div class="wm-edit-actions">\n        <button class="mbtn" onclick="${nuevo ? "itinCancelAdd()" : "itinCancelEdit()"}">Cancelar</button>\n        <button class="mbtn msave" onclick="${nuevo ? "itinAddConfirm()" : `itinSaveEdit('${b.id}')`}">${nuevo ? "Agregar" : "Guardar"}</button>\n      </div>\n    </div>\n  </div>`;
 }
 
 function itinLeerForm() {

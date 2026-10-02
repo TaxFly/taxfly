@@ -109,7 +109,8 @@
             }
           }
           if (!byId.has('orlando')) {
-            const docs=await within(getDocs(collection(db,'users',uid,'profiles',profile,'docs')),5000);
+            await within(window.TaxflyDocsTree.ensure(uid,profile),20000).catch(()=>false);
+            const docs=await within(getDocs(collection(db,...window.TaxflyDocsTree.base(uid,profile))),5000);
             if (docs.docs.some(d=>d.data().tripId==='orlando')) byId.set('orlando',legacy);
           }
           if (!byId.has('orlando')) {
@@ -186,9 +187,10 @@
       const snap=await sdk.getDocs(sdk.collection(sdk.db,...owner,group));
       for (const item of snap.docs) if ((item.data().tripId||'unassigned')===id) await sdk.deleteDoc(item.ref);
     }
-    const docs=await sdk.getDocs(sdk.collection(sdk.db,'users',uid,'profiles',profile,'docs'));
+    await window.TaxflyDocsTree.ensure(uid,profile);
+    const docs=await sdk.getDocs(sdk.collection(sdk.db,...window.TaxflyDocsTree.base(uid,profile)));
     for (const item of docs.docs) if ((item.data().tripId||'unassigned')===id) {
-      const chunks=await sdk.getDocs(sdk.collection(sdk.db,'users',uid,'profiles',profile,'docs',item.id,'chunks'));
+      const chunks=await sdk.getDocs(sdk.collection(sdk.db,...window.TaxflyDocsTree.base(uid,profile),item.id,'chunks'));
       for (const chunk of chunks.docs) await sdk.deleteDoc(chunk.ref);
       await sdk.deleteDoc(item.ref);
     }
@@ -243,7 +245,8 @@
       const snap=await sdk.getDocs(sdk.collection(sdk.db,'usuarios',uid,'perfiles',profile,group));
       count+=snap.docs.filter(d=>!d.data().tripId||d.data().tripId==='unassigned').length;
     }
-    const docs=await sdk.getDocs(sdk.collection(sdk.db,'users',uid,'profiles',profile,'docs'));
+    await window.TaxflyDocsTree.ensure(uid,profile);
+    const docs=await sdk.getDocs(sdk.collection(sdk.db,...window.TaxflyDocsTree.base(uid,profile)));
     count+=docs.docs.filter(d=>!d.data().tripId||d.data().tripId==='unassigned').length;
     safeSet(orphanKey(uid,profile),String(count));
     return count;
