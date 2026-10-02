@@ -1,0 +1,34 @@
+/* Estilos compartidos del menú: nav inferior, desplegable, panel lateral y selector de idioma.
+   Antes estaban copiados en cada página. */
+.btn-nav{flex:1;display:flex;flex-direction:column;align-items:center;text-decoration:none;color:var(--text-sub);font-size:8px;font-weight:700;gap:2px;padding:6px 2px;border-radius:10px;background:none;border:none;cursor:pointer;transition:var(--tr);text-transform:uppercase;letter-spacing:.3px;}
+.btn-nav .ni{font-size:17px;line-height:1;}
+.btn-nav:hover,.btn-nav.active{color:var(--primary);background:var(--primary-dim);}
+.btn-nav-set{width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;overflow:hidden;transition:var(--tr);background-size:cover;background-position:center;}
+.btn-nav-set:hover{border-color:var(--primary);}
+.btn-nav-more{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 2px;border-radius:10px;background:none;border:none;cursor:pointer;transition:var(--tr);position:relative;}
+.btn-nav-more:hover,.btn-nav-more.open{background:var(--primary-dim);}
+.more-dots{display:flex;gap:3px;align-items:center;height:17px;}
+.more-dot{width:3.5px;height:3.5px;border-radius:50%;background:var(--text-dim);transition:var(--tr);}
+.btn-nav-more:hover .more-dot,.btn-nav-more.open .more-dot{background:var(--primary);}
+.more-lbl{font-size:8px;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.3px;transition:var(--tr);}
+.btn-nav-more:hover .more-lbl,.btn-nav-more.open .more-lbl{color:var(--primary);}
+.nav-dropdown{position:absolute;top:calc(100% + 10px);right:-6px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:5px;width:210px;z-index:500;box-shadow:var(--shadow-lg);display:none;animation:ddIn .15s ease;}
+.nav-dropdown.show{display:block;}
+.dd-arrow{position:absolute;top:-6px;right:22px;width:10px;height:10px;background:var(--surface);border-left:1.5px solid var(--border);border-top:1.5px solid var(--border);transform:rotate(45deg);}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;text-decoration:none;color:inherit;transition:var(--tr);}
+.dd-item:hover{background:var(--primary-dim);}
+.dd-item:hover .dd-name{color:var(--primary);}
+.dd-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+.dd-name{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.3px;}
+.dd-desc{font-size:9px;color:var(--text-sub);margin-top:1px;font-weight:500;}
+.menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:1000;backdrop-filter:blur(4px);}
+.settings-drawer{position:fixed;top:0;right:-300px;width:290px;height:100%;background:var(--surface);z-index:1001;transition:.3s ease;padding:28px 20px;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.15);border-left:1px solid var(--border);overflow-y:auto;}
+.settings-drawer.open{right:0;}
+.drawer-header{font-size:1.1rem;font-weight:900;color:var(--primary);margin-bottom:4px;}
+.drawer-email{font-size:.75rem;color:var(--text-dim);font-weight:600;margin-bottom:20px;}
+.drawer-section-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:8px;display:block;}
+.drawer-btn{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;font-weight:700;margin-bottom:8px;font-size:.85rem;text-align:left;font-family:inherit;transition:var(--tr);display:flex;align-items:center;gap:10px;}
+.drawer-btn:hover{background:var(--surface-2);border-color:var(--primary);}
+.lang-selector{display:flex;background:var(--input-bg);border-radius:var(--radius-sm);padding:4px;gap:4px;margin-bottom:14px;border:1.5px solid var(--border);}
+.lang-opt{flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;cursor:pointer;font-size:.75rem;font-weight:800;color:var(--text-sub);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr);}
+.lang-opt.active{background:var(--primary);color:white;}
