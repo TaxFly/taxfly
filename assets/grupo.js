@@ -118,6 +118,32 @@ const perfilFoto = localStorage.getItem("perfilActivoFoto");
 
 const $ = id => document.getElementById(id);
 
+// --- Identidad de miembro (uid + perfil) -----------------------------------
+// Dos cuentas "Juan Cruz" y "Jorge" creadas desde el mismo mail comparten el
+// mismo uid de Firebase Auth. Antes de esto, todo el módulo identificaba a un
+// miembro solo por `uid`, así que el segundo perfil nunca se agregaba al grupo
+// (quedaba "ya sos miembro" aunque fuera otra persona) y, si se forzaba, pisaba
+// los datos del primero. Estos helpers distinguen por uid+perfilId (con
+// fallback por apodo para membresías viejas sin perfilId guardado), igual
+// criterio que ya usa group-exit.js al salir de un grupo.
+const normName = s => String(s || "").trim().toLowerCase();
+
+function esMismoMiembro(m, uid, perfilId, nombre) {
+  if (!m || m.uid !== uid) return false;
+  if (m.perfilId || perfilId) return m.perfilId === perfilId;
+  return normName(m.nombre) === normName(nombre);
+}
+
+function memberId(m) {
+  if (!m) return "";
+  return m.uid + "::" + (m.perfilId ? m.perfilId : "n:" + normName(m.nombre));
+}
+
+function currentMemberId() {
+  if (!currentUser) return "";
+  return memberId({ uid: currentUser.uid, perfilId: currentUser.perfilId, nombre: currentUser.name });
+}
+
 const fmt = n => new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD"
@@ -148,7 +174,8 @@ onAuthStateChanged(auth, async user => {
     if (!navigator.onLine && !window.taxflyOfflineUnlocked()) { window.location.replace("login.html"); return; }
     currentUser = {
       uid: user.uid,
-      name: user.displayName || user.email.split("@")[0]
+      name: user.displayName || user.email.split("@")[0],
+      perfilId: localStorage.getItem("perfilActivoId") || null
     };
     const perfilNombre = localStorage.getItem("perfilActivoNombre");
     document.getElementById("userEmail").innerText = perfilNombre || user.email;
@@ -320,11 +347,12 @@ window.cambiarApodo = async () => {
       const snap = await getDoc(ref);
       if (snap.exists()) {
         const data = snap.data();
-        const miembros = data.miembros.map(m => m.uid === currentUser.uid ? {
+        const miembros = data.miembros.map(m => esMismoMiembro(m, currentUser.uid, currentUser.perfilId, currentUser.name) ? {
           ...m,
           nombre: nuevoNombre
         } : m);
-        const gastos = data.gastos.map(g => g.pagadorUid === currentUser.uid ? {
+        const miKey = currentMemberId();
+        const gastos = data.gastos.map(g => (g.pagadorKey ? g.pagadorKey === miKey : g.pagadorUid === currentUser.uid) ? {
           ...g,
           pagadorNombre: nuevoNombre
         } : g);
@@ -423,12 +451,12 @@ window.unirseGrupo = async () => {
       return;
     }
     const data = snap.data();
-    if (!data.miembros.some(m => m.uid === currentUser.uid)) {
+    if (!data.miembros.some(m => esMismoMiembro(m, currentUser.uid, currentUser.perfilId, apodo))) {
       await updateDoc(ref, {
         miembros: arrayUnion({
           uid: currentUser.uid,
           nombre: apodo,
-          perfilId: localStorage.getItem("perfilActivoId") || null
+          perfilId: currentUser.perfilId
         }),
         miembroUids: arrayUnion(currentUser.uid)
       });
@@ -670,21 +698,23 @@ setInterval(() => {
 window.agregarGasto = async () => {
   const desc = $("g-desc").value.trim();
   const monto = parseFloat($("g-monto").value);
-  const puid = $("g-pagador").value;
+  const pkey = $("g-pagador").value;
   if (!desc || isNaN(monto) || monto <= 0) {
     shake("btn-agregar");
     return;
   }
-  const pagador = currentGroup.data.miembros.find(m => m.uid === puid);
+  const pagador = currentGroup.data.miembros.find(m => memberId(m) === pkey);
   const gasto = {
     id: Date.now().toString(),
     desc: desc,
     monto: monto,
     cat: categoriaActiva,
     pagadorUid: pagador.uid,
+    pagadorKey: memberId(pagador),
     pagadorNombre: pagador.nombre,
     fecha: (new Date).toLocaleDateString("es-AR"),
-    entre: currentGroup.data.miembros.map(m => m.uid)
+    entre: currentGroup.data.miembros.map(m => m.uid),
+    entreKeys: currentGroup.data.miembros.map(m => memberId(m))
   };
   if (currentGroup._demo) {
     currentGroup.data.gastos.push(gasto);
@@ -751,8 +781,10 @@ window.abandonarGrupo = async () => {
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
     const data = snap.data();
-    const nuevosMiembros = data.miembros.filter(m => m.uid !== currentUser.uid);
-    const nuevosUids = (data.miembroUids || []).filter(uid => uid !== currentUser.uid);
+    const miMid = currentMemberId();
+    const nuevosMiembros = data.miembros.filter(m => memberId(m) !== miMid);
+    const quedaEseUid = nuevosMiembros.some(m => m.uid === currentUser.uid);
+    const nuevosUids = quedaEseUid ? (data.miembroUids || []) : (data.miembroUids || []).filter(uid => uid !== currentUser.uid);
     await updateDoc(ref, {
       miembros: nuevosMiembros,
       miembroUids: nuevosUids
@@ -854,7 +886,7 @@ window.eliminarGasto = gastoId => {
   });
 };
 
-window.eliminarMiembro = async uid => {
+window.eliminarMiembro = async mid => {
   if (!currentGroup || currentGroup._demo) {
     showToast(tr("err_demo_unavailable"));
     return;
@@ -865,7 +897,7 @@ window.eliminarMiembro = async uid => {
     showToast("❌ " + (t.only_creator_members || "Solo el creador puede eliminar miembros"));
     return;
   }
-  const miembro = currentGroup.data.miembros.find(m => m.uid === uid);
+  const miembro = currentGroup.data.miembros.find(m => memberId(m) === mid);
   if (!miembro) return;
   const lang = localStorage.getItem("appLang") || "es";
   const t = i18n[lang] || i18n.es;
@@ -875,8 +907,9 @@ window.eliminarMiembro = async uid => {
     const ref = doc(db, "grupos", currentGroup.id);
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
-    const nuevosMiembros = snap.data().miembros.filter(m => m.uid !== uid);
-    const nuevosUids = (snap.data().miembroUids || []).filter(u => u !== uid);
+    const nuevosMiembros = snap.data().miembros.filter(m => memberId(m) !== mid);
+    const quedaEseUid = nuevosMiembros.some(m => m.uid === miembro.uid);
+    const nuevosUids = quedaEseUid ? (snap.data().miembroUids || []) : (snap.data().miembroUids || []).filter(u => u !== miembro.uid);
     await updateDoc(ref, {
       miembros: nuevosMiembros,
       miembroUids: nuevosUids
@@ -969,7 +1002,8 @@ function renderGrupo() {
     btnEliminar.style.display = currentUser && creadoPor === currentUser.uid && !currentGroup._demo ? "block" : "none";
   }
   const sel = $("g-pagador");
-  sel.innerHTML = miembros.map(m => `<option value="${esc(m.uid)}"${currentUser && m.uid === currentUser.uid ? " selected" : ""}>${esc(m.nombre)}</option>`).join("");
+  const miMid = currentUser ? currentMemberId() : "";
+  sel.innerHTML = miembros.map(m => `<option value="${esc(memberId(m))}"${memberId(m) === miMid ? " selected" : ""}>${esc(m.nombre)}</option>`).join("");
   const lista = $("lista-gastos");
   const esCreador = currentUser && creadoPor === currentUser.uid;
   if (!gastos.length) {
@@ -978,8 +1012,9 @@ function renderGrupo() {
     lista.innerHTML = [ ...gastos ].reverse().map(g => `\n            <div class="gasto-item cat-${esc(g.cat || "otro")}" id="gasto-${esc(g.id)}">\n                <div class="gasto-emoji">${catEmoji(g.cat)}</div>\n                <div class="gasto-body">\n                    <div class="gasto-desc">${esc(g.desc)}</div>\n                    <div class="gasto-meta">${esc(g.pagadorNombre)} · ${esc(g.fecha)}</div>\n                </div>\n                <div class="gasto-monto">${fmt(g.monto)}</div>\n                <button class="gasto-del" data-id="${esc(g.id)}" onclick="eliminarGasto(this.dataset.id)" title="${tr('aria_delete_expense')}" aria-label="${tr('aria_delete_expense')}">🗑️</button>\n            </div>`).join("");
   }
   $("members-list").innerHTML = miembros.map(m => {
-    const puedeEliminar = esCreador && m.uid !== currentUser.uid && !currentGroup._demo;
-    return `<span class="member-chip">👤 ${esc(m.nombre)}${puedeEliminar ? `<button class="member-del" data-uid="${esc(m.uid)}" onclick="eliminarMiembro(this.dataset.uid)" title="${tr('aria_delete_member')}" aria-label="${tr('aria_delete_member')}">✕</button>` : ""}</span>`;
+    const mid = memberId(m);
+    const puedeEliminar = esCreador && mid !== miMid && !currentGroup._demo;
+    return `<span class="member-chip">👤 ${esc(m.nombre)}${puedeEliminar ? `<button class="member-del" data-uid="${esc(mid)}" onclick="eliminarMiembro(this.dataset.uid)" title="${tr('aria_delete_member')}" aria-label="${tr('aria_delete_member')}">✕</button>` : ""}</span>`;
   }).join("");
   renderBalances(miembros, gastos);
   renderResumen(miembros, gastos);
@@ -1045,17 +1080,25 @@ window.registrarMiParte = async gastoId => {
 
 function calcularDeudas(miembros, gastos) {
   const bal = {};
-  miembros.forEach(m => bal[m.uid] = 0);
+  // uid real -> memberId del primer miembro con ese uid, para leer gastos viejos
+  // (de antes de este fix) que todavía guardan solo el uid, no el perfil exacto.
+  const uidFallback = {};
+  miembros.forEach(m => {
+    bal[memberId(m)] = 0;
+    if (!(m.uid in uidFallback)) uidFallback[m.uid] = memberId(m);
+  });
   gastos.forEach(g => {
-    const share = g.monto / g.entre.length;
-    g.entre.forEach(uid => {
-      if (uid in bal) bal[uid] -= share;
+    const entreKeys = g.entreKeys || (g.entre || []).map(uid => uidFallback[uid] || uid);
+    const share = g.monto / entreKeys.length;
+    entreKeys.forEach(k => {
+      if (k in bal) bal[k] -= share;
     });
-    if (g.pagadorUid in bal) bal[g.pagadorUid] += g.monto;
+    const pk = g.pagadorKey || uidFallback[g.pagadorUid] || g.pagadorUid;
+    if (pk in bal) bal[pk] += g.monto;
   });
   const creditors = [], debtors = [];
   Object.entries(bal).forEach(([uid, b]) => {
-    const nombre = miembros.find(m => m.uid === uid)?.nombre || uid;
+    const nombre = miembros.find(m => memberId(m) === uid)?.nombre || uid;
     if (b > .01) creditors.push({
       nombre: nombre,
       bal: b
@@ -1097,17 +1140,23 @@ function renderResumen(miembros, gastos) {
   const lang = localStorage.getItem("appLang") || "es";
   const t = i18n[lang] || i18n.es;
   const totales = {};
-  miembros.forEach(m => totales[m.uid] = {
-    nombre: m.nombre,
-    pagado: 0,
-    parte: 0
+  const uidFallback = {};
+  miembros.forEach(m => {
+    totales[memberId(m)] = {
+      nombre: m.nombre,
+      pagado: 0,
+      parte: 0
+    };
+    if (!(m.uid in uidFallback)) uidFallback[m.uid] = memberId(m);
   });
   gastos.forEach(g => {
-    const share = g.monto / g.entre.length;
-    g.entre.forEach(uid => {
-      if (uid in totales) totales[uid].parte += share;
+    const entreKeys = g.entreKeys || (g.entre || []).map(uid => uidFallback[uid] || uid);
+    const share = g.monto / entreKeys.length;
+    entreKeys.forEach(k => {
+      if (k in totales) totales[k].parte += share;
     });
-    if (g.pagadorUid in totales) totales[g.pagadorUid].pagado += g.monto;
+    const pk = g.pagadorKey || uidFallback[g.pagadorUid] || g.pagadorUid;
+    if (pk in totales) totales[pk].pagado += g.monto;
   });
   const totalGlobal = gastos.reduce((s, g) => s + g.monto, 0);
   $("total-global").textContent = fmt(totalGlobal);
