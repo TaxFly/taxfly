@@ -828,3 +828,11 @@ test('eliminar perfil: sale de los grupos de ese perfil antes de borrarlo; la co
   const exit = read('assets/group-exit.js');
   assert.ok(exit.indexOf('patch.creadoPor') > -1 && exit.indexOf('patch.creadoPor') < exit.indexOf('updateDoc(d.ref, patch)'));
 });
+
+test('proxy de Firestore: el Worker expone /__ping y la app verifica el contenido antes de usarlo', () => {
+  assert.match(read('sync-worker/worker.js'), /__ping/);
+  const net = read('assets/fs-net.js');
+  assert.match(net, /service === "taxfly-sync"/);
+  assert.match(net, /export async function fsNetFailover/);
+  assert.match(read('assets/grupo.js'), /includeMetadataChanges: true/);
+});

@@ -1,4 +1,4 @@
-import { fsNet, fsNetReset } from "./fs-net.js";
+import { fsNet, fsNetFailover } from "./fs-net.js";
 import { leaveAllGroups, leaveGroupsError } from "./group-exit.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
@@ -445,10 +445,24 @@ window.unirseGrupo = async () => {
   }
 };
 
+let listenWatchdog = null;
+
 function suscribirGrupo(code) {
   if (unsubscribe) unsubscribe();
+  clearTimeout(listenWatchdog);
   localStorage.setItem("grupoActivo", code);
-  unsubscribe = onSnapshot(doc(db, "grupos", code), snap => {
+  let gotServer = false;
+  listenWatchdog = setTimeout(() => {
+    if (!gotServer && navigator.onLine) {
+      console.warn("[grupo] sin datos del servidor tras 12 s: ¿canal en tiempo real bloqueado?");
+      fsNetFailover();
+    }
+  }, 12000);
+  unsubscribe = onSnapshot(doc(db, "grupos", code), { includeMetadataChanges: true }, snap => {
+    if (!snap.metadata.fromCache) {
+      gotServer = true;
+      clearTimeout(listenWatchdog);
+    }
     if (!snap.exists()) return;
     currentGroup = {
       id: snap.id,
@@ -460,7 +474,7 @@ function suscribirGrupo(code) {
     sincronizarMisPartes(snap.id, snap.data());
   }, err => {
     console.warn("Listen error", err);
-    fsNetReset();
+    fsNetFailover();
     updateOfflineBanner(true);
   });
   showSection("s-grupo");
@@ -672,7 +686,7 @@ window.agregarGasto = async () => {
       showToast(tr("msg_expense_saved"));
     } catch (e) {
       // Sin confirmación del servidor: queda en la cola local y se reintenta (arrayUnion es idempotente).
-      fsNetReset();
+      fsNetFailover();
       if (!currentGroup.data.gastos.some(g => g.id === gasto.id)) currentGroup.data.gastos.push(gasto);
       renderGrupo();
       queueOp({
@@ -695,6 +709,7 @@ window.setCategoria = (cat, el) => {
 
 window.volverLobby = () => {
   if (unsubscribe) unsubscribe();
+  clearTimeout(listenWatchdog);
   localStorage.removeItem("grupoActivo");
   currentGroup = null;
   showSection("s-lobby");
@@ -804,7 +819,7 @@ window.eliminarGasto = gastoId => {
             gastos: arrayRemove(item)
           }));
         } catch (e) {
-          fsNetReset();
+          fsNetFailover();
           grp.data.gastos = grp.data.gastos.filter(g => g.id !== gastoId);
           savePending([ ...getPending(), { type: "del_gasto", groupId: grp.id, gastoId: gastoId, gasto: item, uid: currentUser.uid } ]);
           showToast(tr("msg_expense_deleted_offline"));
