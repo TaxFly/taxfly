@@ -23,15 +23,14 @@
 //     .../actividades/{id}, .../notas/{id}            → Itinerario (itinerario.html)
 //     .../orlando/{docId}                              → Maps/Orlando Planning
 //     .../misCosas/root/{lista}/{docId}                → Mis cosas de viaje
-//   users/{uid}/profiles/{pid}/docs/{docId}           → Pólizas/seguro (tickets.html)
-//     .../chunks/{chunkId}                             → PDFs partidos en trozos <1MB
+//     .../docs/{docId}                                 → Pólizas/seguro (tickets.html)
+//     .../docs/{docId}/chunks/{chunkId}                → PDFs partidos en trozos <1MB
 //   grupos/{codigo}                                    → viaje compartido entre cuentas
 //
-// Nota: tickets.html usa 'users'/'profiles' (inglés) mientras el resto usa
-// 'usuarios'/'perfiles' (español) — son DOS árboles distintos en Firestore,
-// no un alias del mismo. Lo dejo así en las reglas porque así está en el
-// código; si en algún momento se migra tickets.html al árbol en español, hay
-// que borrar el bloque de 'users' de acá.
+// Migración de documentos: antes tickets.html usaba users/{uid}/profiles/{pid}/docs
+// (árbol en inglés). assets/docs-tree.js copia ese contenido al árbol español la
+// primera vez que se abre cada perfil. El match de 'users' queda como solo lectura
+// y borrado hasta terminar la migración; después hay que eliminarlo.
 
 rules_version = '2';
 service cloud.firestore {
@@ -51,9 +50,14 @@ service cloud.firestore {
       }
     }
 
-    // ── Pólizas de seguro (tickets.html) — árbol aparte, ver nota arriba ──
+    // ── Árbol viejo de documentos (tickets.html) — SOLO LECTURA Y BORRADO ──
+    // Los documentos ahora viven en usuarios/{uid}/perfiles/{pid}/docs. Este bloque
+    // queda únicamente para que assets/docs-tree.js pueda copiar lo que quede
+    // en el árbol viejo, y para limpiarlo después. Sin `create/update`, un cliente
+    // viejo que intente escribir acá falla a la vista en vez de dejar datos huérfanos.
+    // Cuando todas las cuentas estén migradas y el árbol viejo borrado: eliminar este bloque.
     match /users/{uid}/profiles/{pid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
     }
 
     // ── Grupos (viaje compartido entre varias cuentas) ──

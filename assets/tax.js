@@ -1,800 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <link rel="stylesheet" href="assets/style.css">
-    <script src="assets/dialogs.js"></script>
-    <script src="assets/security.js"></script>
-    <script src="assets/recaptcha.js"></script>
-    <script src="assets/account.js"></script>
-    <script src="config.js"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TaxFly — Taxes</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
-    <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
-    
-    <script>
-if (navigator.onLine) {
-  var s = document.createElement("script");
-  s.src = "https://www.google.com/recaptcha/api.js?render=6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME";
-  s.async = true;
-  s.defer = true;
-  document.head.appendChild(s);
-}
-</script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet"></noscript>
-    <script>
-const _t = localStorage.getItem("theme");
-
-if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.setAttribute("data-theme", "dark");
-</script>
-    <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const foto = localStorage.getItem("perfilActivoFoto");
-  if (foto) {
-    const btn = document.getElementById("btnSettings");
-    if (btn) {
-      btn.style.backgroundImage = `url('${foto}')`;
-      btn.innerText = "";
-    }
-  }
-});
-</script>
-    <style>
-        :root {
-            --primary:#2563eb; --primary-dim:rgba(37,99,235,0.1);
-            --accent:#7c3aed; --accent-dim:rgba(124,58,237,0.1);
-            --danger:#ef4444; --success:#10b981; --warn:#f59e0b;
-            --bg:#f1f5f9; --surface:#ffffff; --surface-2:#f8fafc;
-            --border:#e2e8f0; --input-bg:#f8fafc;
-            --text:#0f172a; --text-sub:#64748b; --text-dim:#94a3b8;
-            --header-color:#1e3a8a;
-            --radius:20px; --radius-sm:12px;
-            --shadow:0 4px 20px rgba(0,0,0,0.06); --shadow-lg:0 12px 40px rgba(0,0,0,0.1);
-            --tr:all 0.25s cubic-bezier(0.4,0,0.2,1);
-        }
-        [data-theme="dark"] {
-            --bg:#0f172a; --surface:#1e293b; --surface-2:#273549;
-            --border:#334155; --input-bg:#273549;
-            --text:#f1f5f9; --text-sub:#94a3b8; --text-dim:#64748b;
-            --header-color:#2563eb;
-            --shadow:0 4px 20px rgba(0,0,0,0.3); --shadow-lg:0 12px 40px rgba(0,0,0,0.4);
-            color-scheme: dark;
-        }
-        html{scroll-behavior:smooth;}
-        body{padding:28px 16px 40px;}
-
-        .wrap{width:100%;max-width:460px;}
-
-        .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
-        .logo{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:900;color:var(--header-color);letter-spacing:-0.5px;}
-        .logo svg{width:28px;height:28px;flex-shrink:0;}
-
-        .nav-bar{display:flex;align-items:center;background:var(--surface);border-radius:16px;padding:6px;margin-bottom:22px;border:1px solid var(--border);box-shadow:var(--shadow);gap:2px;}
-        .btn-nav{flex:1;display:flex;flex-direction:column;align-items:center;text-decoration:none;color:var(--text-sub);font-size:8px;font-weight:700;gap:2px;padding:6px 2px;border-radius:10px;background:none;border:none;cursor:pointer;transition:var(--tr);text-transform:uppercase;letter-spacing:.3px;}
-        .btn-nav .ni{font-size:17px;line-height:1;}
-        .btn-nav:hover,.btn-nav.active{color:var(--primary);background:var(--primary-dim);}
-        .btn-nav-set{width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;overflow:hidden;transition:var(--tr);background-size:cover;background-position:center;}
-        .btn-nav-set:hover{border-color:var(--primary);}
-        .btn-nav-more{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 2px;border-radius:10px;background:none;border:none;cursor:pointer;transition:var(--tr);position:relative;}
-        .btn-nav-more:hover,.btn-nav-more.open{background:var(--primary-dim);}
-        .more-dots{display:flex;gap:3px;align-items:center;height:17px;}
-        .more-dot{width:3.5px;height:3.5px;border-radius:50%;background:var(--text-dim);transition:var(--tr);}
-        .btn-nav-more:hover .more-dot,.btn-nav-more.open .more-dot{background:var(--primary);}
-        .more-lbl{font-size:8px;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.3px;transition:var(--tr);}
-        .btn-nav-more:hover .more-lbl,.btn-nav-more.open .more-lbl{color:var(--primary);}
-        .nav-dropdown{position:absolute;top:calc(100% + 10px);right:-6px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:5px;width:210px;z-index:500;box-shadow:var(--shadow-lg);display:none;animation:ddIn .15s ease;}
-        .nav-dropdown.show{display:block;}
-        @keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-        .dd-arrow{position:absolute;top:-6px;right:22px;width:10px;height:10px;background:var(--surface);border-left:1.5px solid var(--border);border-top:1.5px solid var(--border);transform:rotate(45deg);}
-        .dd-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;text-decoration:none;color:inherit;transition:var(--tr);}
-        .dd-item:hover{background:var(--primary-dim);}
-        .dd-item:hover .dd-name{color:var(--primary);}
-        .dd-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
-        .dd-name{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.3px;}
-        .dd-desc{font-size:9px;color:var(--text-sub);margin-top:1px;font-weight:500;}
-
-        .card{background:var(--surface);border-radius:var(--radius);padding:20px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px;position:relative;}
-
-        
-        .calc-tabs{display:flex;gap:8px;margin-bottom:14px;}
-        .calc-tab{flex:1;padding:13px 8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--input-bg);font-size:.72rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;text-transform:uppercase;letter-spacing:.3px;}
-        .calc-tab.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
-        .calc-panel{display:none;}
-        .calc-panel.active{display:block;}
-
-        .countdown-box{background:var(--surface-2);padding:14px 16px;border-radius:var(--radius-sm);margin-bottom:16px;cursor:pointer;border:1.5px solid var(--border);transition:var(--tr);position:relative;}
-        .countdown-box:hover{border-color:var(--primary);}
-        .countdown-label{font-size:0.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
-        #timer{font-size:1.15rem;font-weight:900;color:var(--primary);letter-spacing:.5px;}
-        .edit-hint{position:absolute;top:8px;right:10px;font-size:.75rem;opacity:.4;}
-
-        .slabel{font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:block;}
-
-        input,select{width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:.9rem;font-weight:600;outline:none;transition:var(--tr);-webkit-appearance:none;}
-        input:focus,select:focus{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px var(--primary-dim);}
-        input::placeholder{color:var(--text-dim);font-weight:500;}
-        .input-group{margin-bottom:12px;}
-
-        .cat-grid{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
-        .cat-btn{flex:1;min-width:0;padding:9px 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.62rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
-        .cat-btn .cat-icon{font-size:1.05rem;}
-        .cat-btn.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
-
-        
-        .subcat-grid{display:none;gap:6px;margin:-6px 0 14px;}
-        .subcat-grid.show{display:grid;grid-template-columns:1fr 1fr;}
-        .subcat-btn{padding:9px 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.6rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);font-family:inherit;text-transform:uppercase;letter-spacing:.2px;}
-        .subcat-btn.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
-
-        .result-box{background:var(--primary-dim);padding:16px;border-radius:var(--radius-sm);border:1.5px solid var(--primary);margin-bottom:14px;text-align:center;}
-        .result-value{font-size:1.8rem;font-weight:900;color:var(--primary);margin:2px 0;}
-        .result-detail{font-size:.8rem;font-weight:700;color:var(--primary);opacity:.8;}
-
-        
-        .tip-collapse-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;margin-bottom:0;}
-        .tip-collapse-title{font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:6px;}
-        .tip-preview{font-size:.7rem;font-weight:800;color:var(--accent);background:var(--accent-dim);padding:3px 8px;border-radius:6px;}
-        .tip-toggle-lbl{font-size:.65rem;color:var(--text-dim);font-weight:700;}
-        .tip-body{display:none;margin-top:12px;}
-        .tip-body.open{display:block;}
-        .tip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
-        .tip-btn{padding:10px 4px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.75rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;}
-        .tip-btn small{font-size:.55rem;font-weight:600;opacity:.8;}
-        .tip-btn.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
-        .custom-tip{display:flex;flex-direction:column;align-items:center;background:var(--surface-2);border-radius:10px;padding:8px 12px;border:1.5px solid var(--border);transition:var(--tr);}
-        .custom-tip:focus-within{border-color:var(--accent);}
-        .custom-tip-row{display:flex;align-items:center;gap:4px;font-weight:800;color:var(--text-sub);font-size:.7rem;}
-        #custom-tip-input{background:transparent;border:none;padding:0;width:36px;text-align:center;font-size:.8rem;color:var(--accent);font-weight:800;outline:none;font-family:inherit;}
-        #val-tip-custom{font-size:.55rem;font-weight:600;color:var(--accent);opacity:.8;margin-top:2px;}
-
-        .final-box{background:var(--primary);padding:18px;border-radius:var(--radius-sm);color:white;margin-bottom:14px;box-shadow:0 4px 16px rgba(37,99,235,.25);}
-        .final-label{font-size:.65rem;font-weight:800;opacity:.85;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
-        .final-value{font-size:2.1rem;font-weight:900;}
-
-        .smart-tip{background:rgba(16,185,129,.08);border:1.5px solid var(--success);border-radius:var(--radius-sm);padding:13px 14px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;transition:var(--tr);}
-        .smart-tip:hover{opacity:.85;}
-        .st-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
-        .st-label{font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--success);margin-bottom:3px;}
-        #tip-content{font-size:.8rem;font-weight:600;color:var(--text);line-height:1.4;transition:opacity .3s;}
-
-        
-        .split-card{background:var(--surface);border-radius:var(--radius);padding:20px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px;}
-
-        
-        .med-card{background:var(--surface);border-radius:var(--radius);padding:20px;width:100%;box-shadow:var(--shadow);border:1.5px solid rgba(239,68,68,.3);margin-bottom:14px;}
-        .med-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
-        .med-title{font-size:.85rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:8px;}
-        .med-toggle{font-size:.7rem;color:var(--text-dim);font-weight:700;display:flex;align-items:center;gap:4px;transition:var(--tr);}
-        .med-body{display:none;margin-top:16px;}
-        .med-body.open{display:block;}
-        .med-disclaimer{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:10px 12px;font-size:.68rem;font-weight:600;color:#ef4444;line-height:1.4;margin-bottom:14px;}
-        .med-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
-        .med-cat{flex:1;min-width:calc(50% - 3px);padding:9px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.68rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);font-family:inherit;text-align:center;line-height:1.3;}
-        .med-cat.active{border-color:#ef4444;background:rgba(239,68,68,.08);color:#ef4444;}
-        .med-items{display:flex;flex-direction:column;gap:8px;}
-        .med-item{background:var(--input-bg);border-radius:10px;padding:13px 14px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;}
-        .med-item-info{}
-        .med-item-name{font-size:.78rem;font-weight:800;color:var(--text);line-height:1.2;}
-        .med-item-detail{font-size:.62rem;font-weight:600;color:var(--text-dim);margin-top:2px;line-height:1.3;}
-        .med-item-price{text-align:right;flex-shrink:0;}
-        .med-item-range{font-size:.88rem;font-weight:900;color:#ef4444;line-height:1;}
-        .med-item-unit{font-size:.55rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
-        .med-tip-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:11px 13px;font-size:.68rem;font-weight:600;color:#d97706;line-height:1.45;margin-top:12px;}
-        .med-tip-box strong{font-weight:900;}
-        
-        .med-insurance-banner{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(37,99,235,.08));border:1.5px solid rgba(16,185,129,.35);border-radius:12px;padding:13px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;}
-        .med-ins-header{display:flex;align-items:center;gap:8px;}
-        .med-ins-icon{font-size:1.3rem;flex-shrink:0;}
-        .med-ins-info{flex:1;min-width:0;}
-        .med-ins-label{font-size:.55rem;font-weight:800;color:var(--success);text-transform:uppercase;letter-spacing:.8px;}
-        .med-ins-name{font-size:.88rem;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .med-ins-doc{font-size:.62rem;font-weight:600;color:var(--text-dim);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .med-ins-actions{display:flex;gap:7px;}
-        .med-ins-btn{flex:1;padding:9px 6px;border:none;border-radius:9px;font-size:.68rem;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity .2s;}
-        .med-ins-btn-call{background:var(--success);color:white;}
-        .med-ins-btn-view{background:var(--primary-dim);color:var(--primary);border:1.5px solid var(--primary);}
-        .med-ins-btn:hover{opacity:.85;}
-        .med-ins-loading{display:flex;align-items:center;gap:8px;font-size:.72rem;font-weight:700;color:var(--text-sub);}
-        .med-ins-spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--success);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
-        .med-ins-none{font-size:.68rem;font-weight:600;color:var(--text-dim);display:flex;align-items:center;gap:6px;}
-        @keyframes spin{to{transform:rotate(360deg);}}
-        .split-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;cursor:pointer;user-select:none;}
-        .split-title{font-size:.85rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:8px;}
-        .split-toggle{font-size:.7rem;color:var(--text-dim);font-weight:700;display:flex;align-items:center;gap:4px;transition:var(--tr);}
-        .split-body{display:none;}
-        .split-body.open{display:block;}
-        .people-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-        .people-btn{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);font-size:1.1rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:var(--tr);flex-shrink:0;}
-        .people-btn:hover{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
-        .people-count{font-size:1.4rem;font-weight:900;color:var(--primary);min-width:28px;text-align:center;}
-        .people-label{font-size:.7rem;color:var(--text-sub);font-weight:700;}
-        .split-result{background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:var(--radius-sm);padding:16px;color:white;margin-top:14px;}
-        .split-result-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;margin-top:10px;align-items:center;}
-        .split-stat{text-align:center;}
-        .split-stat-val{font-size:1.3rem;font-weight:900;line-height:1;}
-        .split-stat-lbl{font-size:.58rem;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.6px;margin-top:3px;}
-        .split-divider{width:1px;height:44px;background:rgba(255,255,255,.25);border-radius:1px;}
-        .split-tip-row{display:flex;gap:6px;margin-bottom:14px;}
-        .split-tip-btn{flex:1;padding:9px 4px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.75rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);font-family:inherit;text-align:center;}
-        .split-tip-btn.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
-
-        
-        .cart-card{background:var(--surface);border-radius:var(--radius);padding:20px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px;}
-        .cart-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
-        .cart-title{font-size:.85rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:8px;}
-        .cart-toggle{font-size:.7rem;color:var(--text-dim);font-weight:700;display:flex;align-items:center;gap:4px;transition:var(--tr);}
-        .cart-body{display:none;}
-        .cart-body.open{display:block;margin-top:16px;}
-        .cart-add-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;}
-        .cart-add-row input{flex:1;}
-        .cart-exempt-toggle{display:flex;align-items:center;gap:5px;font-size:.58rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;flex-shrink:0;}
-        .cart-exempt-toggle input{width:16px;height:16px;padding:0;flex-shrink:0;accent-color:var(--primary);}
-        .cart-add-btn{flex-shrink:0;width:48px;height:48px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:#fff;font-size:1.4rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr);}
-        .cart-add-btn:hover{opacity:.88;}
-        .cart-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;max-height:260px;overflow-y:auto;}
-        .cart-empty{text-align:center;font-size:.72rem;font-weight:600;color:var(--text-dim);padding:14px 0;}
-        .cart-item{display:flex;align-items:center;justify-content:space-between;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
-        .cart-item-info{display:flex;align-items:center;gap:8px;}
-        .cart-item-price{font-size:.85rem;font-weight:800;color:var(--text);}
-        .cart-item-tag{font-size:.55rem;font-weight:800;color:var(--success);background:rgba(16,185,129,.1);padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.4px;}
-        .cart-item-del{background:none;border:none;color:var(--text-dim);font-size:.9rem;cursor:pointer;padding:4px 6px;line-height:1;}
-        .cart-item-del:hover{color:#ef4444;}
-        .cart-summary{background:var(--surface-2);border-radius:var(--radius-sm);padding:14px 16px;margin-top:10px;border:1px solid var(--border);}
-        .cart-summary-row{display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:var(--text-sub);margin-bottom:6px;}
-        .cart-total{display:flex;justify-content:space-between;font-size:1.05rem;font-weight:900;color:var(--primary);padding-top:8px;border-top:1px solid var(--border);margin-top:4px;}
-        .cart-actions{display:flex;gap:10px;margin-top:14px;}
-        .cart-btn{flex:1;padding:13px 10px;border-radius:var(--radius-sm);font-size:.75rem;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr);border:1.5px solid var(--border);}
-        .cart-btn-clear{background:var(--input-bg);color:var(--text-sub);}
-        .cart-btn-clear:hover{border-color:#ef4444;color:#ef4444;}
-        .cart-btn-save{background:var(--primary);color:#fff;border-color:var(--primary);}
-        .cart-btn-save:hover{opacity:.9;}
-
-        .app-footer{margin-top:8px;padding:12px 0;text-align:center;font-size:.7rem;color:var(--text-dim);font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;}
-        .app-footer img{width:16px;border-radius:2px;}
-        .api-note{font-size:.55rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;opacity:.6;text-align:center;margin-top:4px;}
-
-        
-        .weather-card{background:var(--surface);border-radius:var(--radius);padding:16px 20px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px;position:relative;overflow:hidden;}
-        .weather-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(37,99,235,0.06),rgba(14,165,233,0.06));pointer-events:none;}
-        .wc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-        .wc-label{font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;}
-        .wc-refresh{background:none;border:none;cursor:pointer;color:var(--text-dim);padding:6px;border-radius:8px;transition:var(--tr);display:flex;align-items:center;justify-content:center;} .wc-refresh svg{transition:transform 0.3s ease;} .wc-refresh:hover{color:var(--primary);background:var(--primary-dim);} .wc-refresh:hover svg{transform:rotate(45deg);} .wc-refresh.spinning svg{animation:spin 0.7s linear infinite;} @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-        .wc-refresh:hover{color:var(--primary);background:var(--primary-dim);}
-        .wc-main{display:flex;align-items:center;gap:14px;}
-        .wc-icon{font-size:2.8rem;line-height:1;flex-shrink:0;}
-        .wc-info{flex:1;}
-        .wc-temp{font-size:2rem;font-weight:900;color:var(--text);line-height:1;}
-        .wc-temp span{font-size:1rem;font-weight:600;color:var(--text-sub);}
-        .wc-city{font-size:.8rem;font-weight:700;color:var(--text-sub);margin-top:2px;}
-        .wc-desc{font-size:.72rem;font-weight:600;color:var(--primary);margin-top:3px;text-transform:capitalize;}
-        .wc-extras{display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
-        .wc-extra{display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;color:var(--text-sub);}
-        .wc-extra span:first-child{font-size:.95rem;}
-        .wc-loading{text-align:center;padding:14px 0;font-size:.8rem;color:var(--text-dim);font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;}
-        .wc-spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--primary);animation:wc-spin .75s linear infinite;flex-shrink:0;}
-        @keyframes wc-spin{to{transform:rotate(360deg);}}
-        .wc-error{font-size:.75rem;color:var(--text-dim);font-weight:600;text-align:center;padding:8px 0;}
-
-        .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:2000;padding:20px;backdrop-filter:blur(10px);}
-        .modal.show{display:flex;animation:mIn .25s ease;}
-        @keyframes mIn{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-        .modal-content{background:var(--surface);border-radius:28px;padding:28px 22px;width:100%;max-width:360px;box-shadow:var(--shadow-lg);border:1px solid var(--border);text-align:center;}
-        .modal-title{font-size:1.2rem;font-weight:900;color:var(--primary);margin-bottom:20px;}
-        .modal-actions{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
-        .btn{width:100%;padding:15px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
-        .btn:active{transform:scale(.97);}
-        .btn-primary{background:var(--primary);color:white;box-shadow:0 4px 14px rgba(37,99,235,.3);}
-        .btn-ghost{background:transparent;color:var(--text-sub);border:1.5px solid var(--border);}
-
-        .menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:1000;backdrop-filter:blur(4px);}
-        .settings-drawer{position:fixed;top:0;right:-300px;width:290px;height:100%;background:var(--surface);z-index:1001;transition:.3s ease;padding:28px 20px;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.15);border-left:1px solid var(--border);overflow-y:auto;}
-        .settings-drawer.open{right:0;}
-        .drawer-header{font-size:1.1rem;font-weight:900;color:var(--primary);margin-bottom:4px;}
-        .drawer-email{font-size:.75rem;color:var(--text-dim);font-weight:600;margin-bottom:20px;}
-        .drawer-section-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:8px;display:block;}
-        .lang-selector{display:flex;background:var(--input-bg);border-radius:var(--radius-sm);padding:4px;gap:4px;margin-bottom:14px;border:1.5px solid var(--border);}
-        .lang-opt{flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;cursor:pointer;font-size:.75rem;font-weight:800;color:var(--text-sub);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr);}
-        .lang-opt img{width:18px;border-radius:2px;}
-        .lang-opt.active{background:var(--primary);color:white;}
-        .drawer-btn{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;font-weight:700;margin-bottom:8px;font-size:.85rem;text-align:left;font-family:inherit;transition:var(--tr);display:flex;align-items:center;gap:10px;}
-        .drawer-btn:hover{background:var(--surface-2);border-color:var(--primary);}
-        .btn-danger{color:var(--danger)!important;border-color:rgba(239,68,68,.3)!important;}
-    
-        
-        #pinOfflineOverlay{
-            display:none;position:fixed;inset:0;z-index:99999;
-            background:var(--bg);
-            flex-direction:column;align-items:center;justify-content:center;
-            padding:24px;font-family:'DM Sans',-apple-system,system-ui,sans-serif;
-        }
-        #pinOfflineOverlay.show{display:flex;}
-        .poo-card{
-            background:var(--surface);border-radius:28px;padding:32px 24px;
-            width:100%;max-width:360px;box-shadow:var(--shadow-lg);
-            border:1.5px solid var(--border);text-align:center;
-            animation:pooIn .35s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        @keyframes pooIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
-        .poo-badge{
-            display:inline-flex;align-items:center;gap:6px;
-            background:rgba(245,158,11,.12);border:1.5px solid rgba(245,158,11,.3);
-            color:#d97706;border-radius:10px;padding:6px 12px;
-            font-size:.72rem;font-weight:800;margin-bottom:20px;letter-spacing:.3px;
-        }
-        .poo-avatar{
-            width:68px;height:68px;border-radius:16px;margin:0 auto 10px;
-            background:var(--input-bg) no-repeat center/cover;
-            border:2.5px solid var(--border);
-        }
-        .poo-name{font-size:1rem;font-weight:900;color:var(--text);margin-bottom:2px;}
-        .poo-email{font-size:.72rem;font-weight:600;color:var(--text-dim);margin-bottom:24px;}
-        .poo-dots{display:flex;gap:14px;justify-content:center;margin-bottom:28px;}
-        .poo-dot{
-            width:16px;height:16px;border-radius:50%;
-            border:2.5px solid var(--border);background:transparent;transition:all .2s;
-        }
-        .poo-dot.filled{background:var(--primary);border-color:var(--primary);}
-        .poo-dot.error{background:var(--danger);border-color:var(--danger);animation:pooShake .4s ease;}
-        @keyframes pooShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-        .poo-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
-        .poo-key{
-            padding:0;border:1.5px solid var(--border);border-radius:14px;
-            background:var(--surface);font-family:inherit;font-size:1.3rem;font-weight:700;
-            color:var(--text);cursor:pointer;transition:var(--tr);aspect-ratio:1;
-            display:flex;align-items:center;justify-content:center;
-        }
-        .poo-key:hover{background:var(--input-bg);border-color:var(--primary);}
-        .poo-key:active{transform:scale(.92);background:var(--primary);color:white;border-color:var(--primary);}
-        .poo-key.empty{border:none;background:transparent;pointer-events:none;}
-        .poo-error{font-size:.78rem;font-weight:700;color:var(--danger);min-height:18px;margin-bottom:4px;}
-
-        
-        #offline-toast{
-            position:fixed;
-            bottom:calc(24px + env(safe-area-inset-bottom));
-            left:50%;
-            transform:translateX(-50%) translateY(0);
-            z-index:9998;
-            display:flex;
-            align-items:center;
-            gap:10px;
-            padding:11px 16px;
-            background:var(--surface);
-            border:0.5px solid #EF9F27;
-            border-left:3px solid #BA7517;
-            border-radius:14px;
-            box-shadow:0 8px 28px rgba(0,0,0,.18);
-            font-size:.8rem;
-            font-weight:700;
-            color:var(--text);
-            white-space:normal;
-            width:max-content;
-            min-width:0;
-            box-sizing:border-box;
-            overflow-wrap:anywhere;
-            pointer-events:none;
-            opacity:0;
-            transition:opacity .35s ease, transform .35s ease;
-            max-width:min(420px, calc(100vw - 32px));
-        }
-        #offline-label{min-width:0;}
-        #offline-toast.show{opacity:1;pointer-events:auto;}
-        #offline-toast.hide{opacity:0;transform:translateX(-50%) translateY(12px);}
-        #offline-dot{width:8px;height:8px;border-radius:50%;background:#BA7517;flex-shrink:0;}
-        #offline-label{display:flex;flex-direction:column;gap:1px;}
-        #offline-label strong{font-size:.82rem;color:var(--text);}
-        #offline-label span{font-size:.7rem;font-weight:600;color:var(--text-sub);}
-        .tax-rule-note{font-size:.68rem;line-height:1.45;color:var(--text-sub);margin:8px 0 13px;overflow-wrap:anywhere}.tax-rule-note a{color:var(--primary);font-weight:700}
-
-    </style>
-    <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-    sessionStorage.setItem("taxfly_last_page", "./tax.html");
-  });
-}
-</script>
-    <link rel="stylesheet" href="assets/ui.css">
-<script defer src="assets/autofill.js"></script>
-<link rel="stylesheet" href="assets/cohesion.css">
-<script defer src="assets/localize.js"></script>
-    <link rel="stylesheet" href="assets/ux.css">
-    <script src="assets/ux.js" defer></script>
-</head>
-<body>
-
-
-<div id="offline-toast" role="status" aria-live="polite">
-    <div id="offline-dot"></div>
-    <div id="offline-label">
-        <strong data-i18n="offline_title">Sin conexión</strong>
-        <span data-i18n="offline_sub">La calculadora, propina y dividir cuenta siguen funcionando normalmente</span>
-    </div>
-</div>
-
-<div class="wrap">
-    
-   <div class="app-header">
-    <div class="logo">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tg16" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#2563eb"/></linearGradient><clipPath id="tc16"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="url(#tg16)"/><g clip-path="url(#tc16)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
-      <span class="wm">Tax<span class="wm-usa">USA</span></span>
-    </div>
-    </div>
-    <nav class="nav-bar">
-        <a href="index.html"      class="btn-nav"><span class="ni">🏠</span><span data-i18n="nav_home">INICIO</span></a>
-        <a href="compras.html"    class="btn-nav"><span class="ni">🛍️</span><span data-i18n="nav_expenses">GASTOS</span></a>
-        <a href="planificacion.html" class="btn-nav"><span class="ni">📍</span><span data-i18n="nav_itinerary">PLANIFICACIÓN</span></a>
-        <a href="rutas.html"      class="btn-nav"><span class="ni">🗺️</span><span data-i18n="nav_routes">RUTAS</span></a>
-        <button class="btn-nav-more" id="btnMore" onclick="toggleMoreMenu(event)">
-            <div class="more-dots"><div class="more-dot"></div><div class="more-dot"></div><div class="more-dot"></div></div>
-            <span class="more-lbl" data-i18n="nav_more">MÁS</span>
-            <div class="nav-dropdown" id="navDropdown">
-                <div class="dd-arrow"></div>
-                <a href="unidades.html" class="dd-item"><span class="dd-icon">💡</span><div><div class="dd-name" data-i18n="nav_units">AYUDA Y REFERENCIAS</div><div class="dd-desc" data-i18n="nav_units_desc">Conversor de unidades y ayudas varias</div></div></a>
-                <a href="tickets.html"  class="dd-item"><span class="dd-icon">📄</span><div><div class="dd-name" data-i18n="nav_tickets">DOCUMENTOS</div><div class="dd-desc" data-i18n="nav_tickets_desc">ESTA, seguros, check-in</div></div></a>
-                <a href="grupo.html"    class="dd-item"><span class="dd-icon">👥</span><div><div class="dd-name" data-i18n="nav_group">GRUPO</div><div class="dd-desc" data-i18n="nav_group_desc">Gastos compartidos</div></div></a>
-            </div>
-        </button>
-        <button class="btn-nav-set" id="btnSettings" onclick="toggleSettings()"></button>
-    </nav>
-    <script src="assets/ui.js"></script>
-
-    <div class="countdown-box" onclick="openTripModal()">
-        <span class="edit-hint">✏️</span>
-        <div class="countdown-label" id="tripLabel">Cargando viaje...</div>
-        <div id="timer">0d 0h 0m 0s</div>
-    </div>
-
-    
-    <div class="weather-card" id="weatherCard">
-        <div class="wc-top">
-            <span class="wc-label" id="wc-label">Clima en destino</span>
-            <button class="wc-refresh" onclick="fetchWeather()" title="Actualizar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg></button>
-        </div>
-        <div id="wc-body"><div class="wc-loading"><div class="wc-spinner"></div><span>Obteniendo clima...</span></div></div>
-    </div>
-
-    
-    <div class="calc-tabs">
-        <button class="calc-tab active" id="tab-individual" onclick="switchCalcTab('individual')">🏷️ <span data-i18n="tab_individual">Precio Individual</span></button>
-        <button class="calc-tab" id="tab-cart" onclick="switchCalcTab('cart')">🛒 <span data-i18n="tab_cart">Carrito</span></button>
-    </div>
-
-    <div class="calc-panel active" id="panel-individual">
-    <div class="card">
-        <div class="input-group">
-            <span class="slabel" data-i18n="label_price">Precio en Etiqueta (USD)</span>
-            <input type="number" id="price" placeholder="0.00" oninput="calculate()" step="0.01" inputmode="decimal">
-        </div>
-
-        <span class="slabel" data-i18n="label_category">Categoría</span>
-        <div class="cat-grid">
-            <button class="cat-btn active" id="btn-general" onclick="setCategory('general')"><span class="cat-icon">🛍️</span><span data-i18n="cat_general">GENERAL</span></button>
-            <button class="cat-btn" id="btn-tech"    onclick="setCategory('tech')"><span class="cat-icon">💻</span><span data-i18n="cat_tech">TECH</span></button>
-            <button class="cat-btn" id="btn-food"    onclick="setCategory('food')"><span class="cat-icon">🍎</span><span data-i18n="cat_food">COMIDA</span></button>
-            <button class="cat-btn" id="btn-med"     onclick="setCategory('med')"><span class="cat-icon">💊</span><span data-i18n="cat_med">MEDICINA</span></button>
-            <button class="cat-btn" id="btn-clothing" onclick="setCategory('clothing')"><span class="cat-icon">👕</span><span data-i18n="cat_clothing">ROPA</span></button>
-        </div>
-
-        <div class="subcat-grid" id="food-mode-grid">
-            <button class="subcat-btn" id="foodmode-prepared" onclick="setFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
-            <button class="subcat-btn active" id="foodmode-grocery" onclick="setFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
-        </div>
-        <div class="subcat-grid" id="food-candy-grid">
-            <button class="subcat-btn active" id="foodcandy-no" onclick="setFoodCandy(false)">🥦 <span data-i18n="food_staple">Alimento básico</span></button>
-            <button class="subcat-btn" id="foodcandy-yes" onclick="setFoodCandy(true)">🍬 <span data-i18n="food_candy">Golosina / gaseosa</span></button>
-        </div>
-        <div class="subcat-grid" id="med-mode-grid">
-            <button class="subcat-btn active" id="medmode-otc" onclick="setMedMode('otc')">💊 <span data-i18n="med_otc">Venta libre (OTC)</span></button>
-            <button class="subcat-btn" id="medmode-rx" onclick="setMedMode('prescription')">📋 <span data-i18n="med_rx">Con receta</span></button>
-            <button class="subcat-btn" id="medmode-eligible" onclick="setMedMode('eligible_otc')">✓ <span data-i18n="med_listed">Remedio de lista exenta (FL)</span></button>
-        </div>
-
-        <div class="input-group">
-            <span class="slabel" data-i18n="label_state">Estado</span>
-            <select id="state-select" onchange="loadCities(); saveManualCityChoice();"></select>
-        </div>
-        <div class="input-group">
-            <span class="slabel" data-i18n="label_city">Ciudad / Condado</span>
-            <select id="city-select" onchange="calculate(); saveManualCityChoice();"></select>
-        </div>
-        
-        <div class="input-group">
-            <span class="slabel" data-i18n="label_zip">ZIP preciso (opcional)</span>
-            <div style="display:flex;gap:8px;">
-                <input type="text" id="zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;min-width:0;" oninput="this.value=this.value.replace(/\D/g,'')">
-                <button class="btn btn-ghost" style="width:auto;flex:0 0 auto;padding:14px 14px;" onclick="lookupZipTax()" data-i18n="btn_zip_search">Buscar</button>
-            </div>
-            <div id="zip-status" style="font-size:.68rem;font-weight:700;margin-top:6px;color:var(--text-sub);"></div>
-        </div>
-        
-        <div class="input-group" id="manual-tax-group" style="display:none;">
-            <span class="slabel">TAX MANUAL (%)</span>
-            <input type="number" id="manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="applyManualTax()" style="border-color:var(--warn);">
-            <div style="font-size:.65rem;font-weight:600;color:var(--text-dim);margin-top:4px;">Ingresá el % de tax si no encontrás tu ciudad.</div>
-        </div>
-        <button id="toggle-manual-tax" onclick="toggleManualTax()" style="background:none;border:none;color:var(--text-dim);font-size:.65rem;font-weight:700;cursor:pointer;padding:2px 0 10px;text-decoration:none;display:block;">✏️ <span data-i18n="btn_manual_tax">Ingresar tax manualmente</span></button>
-
-        <div class="result-box">
-            <div class="result-value" id="total-with-tax">USD 0.00</div>
-            <div class="result-detail" id="tax-detail">Tax Aplicado: 0%</div>
-        </div>
-        <div class="tax-rule-note" id="tax-rule-note" role="note"></div>
-
-        <div class="tip-collapse-header" onclick="toggleTip()">
-            <div class="tip-collapse-title" data-i18n="label_tip">Propina (Tip)</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <span class="tip-preview" id="tip-preview-badge">10%</span>
-                <span class="tip-toggle-lbl" id="tip-toggle-lbl">▼ VER</span>
-            </div>
-        </div>
-        <div class="tip-body" id="tip-body">
-            <div class="tip-grid">
-                <button class="tip-btn" id="tip-0"  onclick="setTip(0)">0%<small id="val-tip-0">$0.00</small></button>
-                <button class="tip-btn active" id="tip-10" onclick="setTip(10)">10%<small id="val-tip-10">$0.00</small></button>
-                <button class="tip-btn" id="tip-15" onclick="setTip(15)">15%<small id="val-tip-15">$0.00</small></button>
-                <button class="tip-btn" id="tip-20" onclick="setTip(20)">20%<small id="val-tip-20">$0.00</small></button>
-            </div>
-            <div class="custom-tip">
-                <div class="custom-tip-row">
-                    <span data-i18n="label_other">OTRO</span>
-                    <input type="number" id="custom-tip-input" placeholder="0" oninput="setCustomTip()" inputmode="numeric">
-                    <span>%</span>
-                </div>
-                <span id="val-tip-custom">$0.00</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="final-box">
-        <div class="final-label" data-i18n="label_total">TOTAL FINAL (INC. TIP)</div>
-        <div class="final-value" id="final-total">USD 0.00</div>
-    </div>
-    </div>
-
-    
-    <div class="calc-panel" id="panel-cart">
-    <div class="cart-card">
-        <div class="tax-rule-note" id="cart-tax-rule-note" role="note"></div>
-        <div style="font-size:.68rem;font-weight:600;color:var(--text-dim);margin-bottom:14px;line-height:1.4;" data-i18n="cart_hint">Sumá cada producto del súper y mirá el total con tax al final, sin salir de la app.</div>
-
-        <div class="input-group">
-            <span class="slabel" data-i18n="label_category">Categoría</span>
-            <div class="cat-grid">
-                <button class="cat-btn active" id="cart-btn-general" onclick="setCartCategory('general')"><span class="cat-icon">🛍️</span><span data-i18n="cat_general">GENERAL</span></button>
-                <button class="cat-btn" id="cart-btn-tech"    onclick="setCartCategory('tech')"><span class="cat-icon">💻</span><span data-i18n="cat_tech">TECH</span></button>
-                <button class="cat-btn" id="cart-btn-food"    onclick="setCartCategory('food')"><span class="cat-icon">🍎</span><span data-i18n="cat_food">COMIDA</span></button>
-                <button class="cat-btn" id="cart-btn-med"     onclick="setCartCategory('med')"><span class="cat-icon">💊</span><span data-i18n="cat_med">MEDICINA</span></button>
-                <button class="cat-btn" id="cart-btn-clothing" onclick="setCartCategory('clothing')"><span class="cat-icon">👕</span><span data-i18n="cat_clothing">ROPA</span></button>
-            </div>
-            <div class="subcat-grid" id="cart-food-mode-grid">
-                <button class="subcat-btn" id="cart-foodmode-prepared" onclick="setCartFoodMode('prepared')">🍽️ <span data-i18n="food_prepared">Preparada / Restaurante</span></button>
-                <button class="subcat-btn active" id="cart-foodmode-grocery" onclick="setCartFoodMode('grocery')">🛒 <span data-i18n="food_grocery">Súper (sin preparar)</span></button>
-            </div>
-            <div class="subcat-grid" id="cart-food-candy-grid">
-                <button class="subcat-btn active" id="cart-foodcandy-no" onclick="setCartFoodCandy(false)">🥦 <span data-i18n="food_staple">Alimento básico</span></button>
-                <button class="subcat-btn" id="cart-foodcandy-yes" onclick="setCartFoodCandy(true)">🍬 <span data-i18n="food_candy">Golosina / gaseosa</span></button>
-            </div>
-            <div class="subcat-grid" id="cart-med-mode-grid">
-                <button class="subcat-btn active" id="cart-medmode-otc" onclick="setCartMedMode('otc')">💊 <span data-i18n="med_otc">Venta libre (OTC)</span></button>
-                <button class="subcat-btn" id="cart-medmode-rx" onclick="setCartMedMode('prescription')">📋 <span data-i18n="med_rx">Con receta</span></button>
-                <button class="subcat-btn" id="cart-medmode-eligible" onclick="setCartMedMode('eligible_otc')">✓ <span data-i18n="med_listed">Remedio de lista exenta (FL)</span></button>
-            </div>
-        </div>
-
-        <div class="input-group">
-            <span class="slabel" data-i18n="label_state">Estado</span>
-            <select id="cart-state-select" onchange="loadCartCities(); saveManualCityChoice('cart-state-select','cart-city-select');"></select>
-        </div>
-        <div class="input-group">
-            <span class="slabel" data-i18n="label_city">Ciudad / Condado</span>
-            <select id="cart-city-select" onchange="renderCart(); saveManualCityChoice('cart-state-select','cart-city-select');"></select>
-        </div>
-        
-        <div class="input-group">
-            <span class="slabel" data-i18n="label_zip">ZIP preciso (opcional)</span>
-            <div style="display:flex;gap:8px;">
-                <input type="text" id="cart-zip-input" placeholder="Ej: 32819" inputmode="numeric" maxlength="5" style="flex:1;min-width:0;" oninput="this.value=this.value.replace(/\D/g,'')">
-                <button class="btn btn-ghost" style="width:auto;flex:0 0 auto;padding:14px 14px;" onclick="lookupCartZipTax()" data-i18n="btn_zip_search">Buscar</button>
-            </div>
-            <div id="cart-zip-status" style="font-size:.68rem;font-weight:700;margin-top:6px;color:var(--text-sub);"></div>
-        </div>
-        
-        <div class="input-group" id="cart-manual-tax-group" style="display:none;">
-            <span class="slabel">TAX MANUAL (%)</span>
-            <input type="number" id="cart-manual-tax-input" placeholder="Ej: 8.25" step="0.01" inputmode="decimal" min="0" max="20" oninput="renderCart()" style="border-color:var(--warn);">
-        </div>
-        <button id="cart-toggle-manual-tax" onclick="toggleCartManualTax()" style="background:none;border:none;color:var(--text-dim);font-size:.65rem;font-weight:700;cursor:pointer;padding:2px 0 14px;text-decoration:none;display:block;">✏️ <span data-i18n="btn_manual_tax">Ingresar tax manualmente</span></button>
-
-        <div class="cart-add-row">
-            <input type="number" id="cart-price-input" placeholder="0.00" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}">
-            <button class="cart-add-btn" onclick="addCartItem()" aria-label="Agregar">+</button>
-        </div>
-
-        <div class="cart-list" id="cart-list">
-            <div class="cart-empty" id="cart-empty" data-i18n="cart_empty">Todavía no agregaste productos.</div>
-        </div>
-
-        <div class="cart-summary" id="cart-summary" style="display:none;">
-            <div class="cart-summary-row"><span data-i18n="cart_subtotal">Subtotal</span><span id="cart-subtotal">$0.00</span></div>
-            <div class="cart-summary-row"><span id="cart-tax-lbl" data-i18n="cart_tax">Tax</span><span id="cart-tax-amt">$0.00</span></div>
-            <div class="cart-total"><span data-i18n="cart_total">TOTAL</span><span id="cart-total">$0.00</span></div>
-        </div>
-
-        <div class="cart-actions" id="cart-actions" style="display:none;">
-            <button class="cart-btn cart-btn-clear" onclick="clearCart()">🗑️ <span data-i18n="cart_clear">Vaciar</span></button>
-            <button class="cart-btn cart-btn-save" onclick="saveCartAsExpense()">💾 <span data-i18n="cart_save">Guardar en Gastos</span></button>
-        </div>
-    </div>
-    </div>
-
-    
-    <div class="split-card">
-        <div class="split-header" onclick="toggleSplit()">
-            <div class="split-title">🍽️ <span data-i18n="split_title">Dividir la Cuenta</span></div>
-            <div class="split-toggle" id="split-toggle-lbl">▼ <span data-i18n="split_open">VER</span></div>
-        </div>
-        <div class="split-body" id="split-body">
-
-            <span class="slabel" data-i18n="split_people">Personas</span>
-            <div class="people-row">
-                <button class="people-btn" onclick="changePeople(-1)">−</button>
-                <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
-                    <div class="people-count" id="people-count">2</div>
-                    <div class="people-label" data-i18n="split_people_lbl">personas</div>
-                </div>
-                <button class="people-btn" onclick="changePeople(1)">+</button>
-            </div>
-
-            <span class="slabel" data-i18n="split_tip_pct">Propina</span>
-            <div class="split-tip-row">
-                <button class="split-tip-btn active" id="stip-0"  onclick="setSplitTip(0)">0%</button>
-                <button class="split-tip-btn" id="stip-10" onclick="setSplitTip(10)">10%</button>
-                <button class="split-tip-btn" id="stip-15" onclick="setSplitTip(15)">15%</button>
-                <button class="split-tip-btn" id="stip-18" onclick="setSplitTip(18)">18%</button>
-                <button class="split-tip-btn" id="stip-20" onclick="setSplitTip(20)">20%</button>
-            </div>
-
-            <span class="slabel" data-i18n="split_base">Base (precio en etiqueta)</span>
-            <div class="input-group">
-                <input type="number" id="split-price" placeholder="0.00" oninput="calcSplit()" step="0.01" inputmode="decimal">
-            </div>
-
-            <div class="split-result" id="split-result" style="display:none;">
-                <div style="font-size:.6rem;font-weight:800;opacity:.85;text-transform:uppercase;letter-spacing:.8px;" data-i18n="split_result_title">Resultado</div>
-                <div class="split-result-grid">
-                    <div class="split-stat">
-                        <div class="split-stat-val" id="split-per-person">$0.00</div>
-                        <div class="split-stat-lbl" data-i18n="split_per_person">por persona</div>
-                    </div>
-                    <div class="split-divider"></div>
-                    <div class="split-stat">
-                        <div class="split-stat-val" id="split-total-full">$0.00</div>
-                        <div class="split-stat-lbl" data-i18n="split_total">total cuenta</div>
-                    </div>
-                </div>
-                <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;">
-                    <div>
-                        <div style="font-size:.9rem;font-weight:900;" id="split-subtotal-disp">$0.00</div>
-                        <div style="font-size:.55rem;font-weight:700;opacity:.75;text-transform:uppercase;letter-spacing:.5px;" data-i18n="split_subtotal">subtotal</div>
-                    </div>
-                    <div>
-                        <div style="font-size:.9rem;font-weight:900;" id="split-tax-disp">$0.00</div>
-                        <div style="font-size:.55rem;font-weight:700;opacity:.75;text-transform:uppercase;letter-spacing:.5px;" data-i18n="split_tax">tax</div>
-                    </div>
-                    <div>
-                        <div style="font-size:.9rem;font-weight:900;" id="split-tip-disp">$0.00</div>
-                        <div style="font-size:.55rem;font-weight:700;opacity:.75;text-transform:uppercase;letter-spacing:.5px;" data-i18n="split_tip_amt">propina</div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    
-    <div class="med-card">
-        <div class="med-header" onclick="toggleMed()">
-            <div class="med-title">🏥 <span id="med-title-lbl">Emergencias Médicas en EE.UU.</span></div>
-            <div class="med-toggle" id="med-toggle-lbl">▼ <span id="med-toggle-txt">VER</span></div>
-        </div>
-        <div class="med-body" id="med-body">
-            <div id="med-insurance-slot"></div>
-            <div class="med-disclaimer" id="med-disclaimer">
-                ⚠️ Precios estimativos basados en datos de FAIR Health Consumer, Healthcare Bluebook y CMS 2024. Los costos reales varían según estado, hospital y cobertura de seguro. Siempre llamá a tu seguro antes de ir.
-            </div>
-            <div class="med-cats" id="med-cats">
-                <button class="med-cat active" onclick="setMedCat('er',this)" id="medcat-er">🚨 Urgencias</button>
-                <button class="med-cat" onclick="setMedCat('urgent',this)" id="medcat-urgent">⚕️ Urgent Care</button>
-                <button class="med-cat" onclick="setMedCat('pharma',this)" id="medcat-pharma">💊 Farmacia</button>
-                <button class="med-cat" onclick="setMedCat('dental',this)" id="medcat-dental">🦷 Dental</button>
-            </div>
-            <div class="med-items" id="med-items"></div>
-            <div class="med-tip-box" id="med-tip-box"></div>
-        </div>
-    </div>
-
-    <div class="smart-tip" onclick="clicConsejo()">
-        <span class="st-icon">💡</span>
-        <div>
-            <div class="st-label" data-i18n="tip_label">CONSEJO ECONÓMICO</div>
-            <div id="tip-content">Cargando consejos...</div>
-        </div>
-    </div>
-
-    <div class="app-footer">
-        <span data-i18n="footer_by">Creado por Juan Cruz Bria</span>
-        <img src="https://flagcdn.com/w40/ar.png" alt="Argentina" onerror="this.outerHTML='🇦🇷';">
-    </div>
-    <div class="api-note">Firebase · FlagCDN · reCAPTCHA v3 · SalesTaxZip</div>
-
-</div>
-
-<div id="tripModal" class="modal">
-    <div class="modal-content">
-        <h3 class="modal-title" data-i18n="modal_trip_title">Mi Viaje</h3>
-        <div class="input-group">
-            <span class="slabel" data-i18n="modal_city_label">¿A qué ciudad vas?</span>
-            <input type="text" id="input-destination" placeholder="Orlando">
-        </div>
-        <div class="input-group">
-            <span class="slabel" data-i18n="modal_date_label">Fecha del viaje</span>
-            <input type="date" id="input-date">
-        </div>
-        <div class="modal-actions">
-            <button class="btn btn-primary" onclick="saveTripSettings()">💾 <span data-i18n="btn_save">GUARDAR</span></button>
-            <button class="btn btn-ghost" onclick="closeTripModal()">❌ <span data-i18n="btn_close">CERRAR</span></button>
-        </div>
-    </div>
-</div>
-
-<script src="assets/trip-context.js"></script>
-<script src="assets/settings.js"></script>
-
-
-
-<div id="pinModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;">
-  <div id="pinModalBox" style="background:var(--surface);border-radius:var(--radius);padding:28px 24px;width:calc(100% - 40px);max-width:360px;box-shadow:var(--shadow-lg);border:1px solid var(--border);position:relative;">
-    <button onclick="closePinModal()" aria-label="Cerrar" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
-    <div style="font-size:1.4rem;margin-bottom:6px;">🔢</div>
-    <div style="font-size:1rem;font-weight:900;color:var(--text);margin-bottom:4px;" id="pinModalTitle">Cambiar PIN Offline</div>
-    <div style="font-size:.75rem;font-weight:600;color:var(--text-sub);margin-bottom:20px;" id="pinModalSub">Este PIN se usa para acceder sin conexión</div>
-    <div id="pinStep1">
-      <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel1">PIN Nuevo (4–6 dígitos)</label>
-      <input id="pinInput1" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*"
-        style="width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:12px;transition:all .2s;"
-        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-        onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
-        onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
-        placeholder="••••">
-      <label style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;" id="pinLabel2">Confirmar PIN</label>
-      <input id="pinInput2" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]*"
-        style="width:100%;padding:14px 16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:1.5rem;font-weight:900;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;transition:all .2s;"
-        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-        onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-dim)'"
-        onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
-        placeholder="••••">
-      <div id="pinError" style="display:none;background:rgba(239,68,68,.1);border:1.5px solid var(--danger);border-radius:10px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--danger);margin-bottom:12px;text-align:center;"></div>
-      <button onclick="confirmarPIN()" style="width:100%;padding:15px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:white;font-family:inherit;font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.3);transition:.2s;" id="pinConfirmBtn">Guardar PIN</button>
-    </div>
-    <div id="pinStep2" style="display:none;text-align:center;padding:8px 0;">
-      <div style="font-size:2.8rem;margin-bottom:10px;">✅</div>
-      <div style="font-size:1rem;font-weight:900;color:var(--success);margin-bottom:6px;" id="pinSuccessMsg">¡PIN actualizado!</div>
-      <div style="font-size:.8rem;font-weight:600;color:var(--text-sub);" id="pinSuccessSub">Podés usarlo para entrar sin conexión</div>
-    </div>
-  </div>
-</div>
-
-<script type="module">
 const FB = window.TAXFLY_CONFIG.FIREBASE_CONFIG;
 
 let initializeApp, getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, deleteDoc, addDoc, collection, initializeAppCheck, ReCaptchaV3Provider;
@@ -840,7 +43,7 @@ let tripData = {
   date: "2027-01-01"
 };
 
-let currentTip = 10;
+let currentTip = 0;
 
 let tipIndex = 0;
 
@@ -1166,12 +369,12 @@ const i18n = {
     food_candy: "Golosina / gaseosa",
     med_otc: "Venta libre (OTC)",
     med_rx: "Con receta",
-    med_listed: "Remedio exento (FL)"
+    med_listed: "Remedio de lista exenta (FL)"
   },
   en: {
     nav_expenses: "EXPENSES",
     nav_home: "HOME",
-    nav_itinerary: "ITINERARY",
+    nav_itinerary: "PLANNING",
     nav_compare: "COMPARE",
     nav_units: "Help & References",
     nav_tickets: "DOCUMENTS",
@@ -1260,7 +463,7 @@ const i18n = {
   pt: {
     nav_expenses: "GASTOS",
     nav_home: "INÍCIO",
-    nav_itinerary: "PLANIFICACIÓN",
+    nav_itinerary: "PLANEJAMENTO",
     nav_compare: "COMPARAR",
     nav_units: "Ajuda e Referências",
     nav_tickets: "DOCUMENTOS",
@@ -1373,6 +576,7 @@ window.clicConsejo = () => {
 };
 
 window.changeLanguage = lang => {
+  { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
   localStorage.setItem("appLang", lang);
   document.documentElement.setAttribute("lang", lang);
   document.querySelectorAll(".lang-opt").forEach(o => o.classList.remove("active"));
@@ -1514,16 +718,92 @@ function selectedTaxCity(id) {
   const sel = document.getElementById(id);
   return sel?.selectedOptions?.[0]?.textContent?.split(" (")[0] || "";
 }
+// State-specific clauses shown alongside the generic estimate note.
+// Kept in sync with getFoodTaxRate / getMedTaxRate / getClothingTaxRate above.
+const STATE_TAX_NOTES = {
+  Florida: {
+    es: "En Florida, alimentos sin preparar suelen estar exentos (las golosinas tributan) y los medicamentos de venta libre solo están exentos si figuran en la lista oficial.",
+    en: "In Florida, unprepared groceries are generally exempt (candy is taxed), and OTC medicine is exempt only if it's on the official list.",
+    pt: "Na Flórida, alimentos não preparados geralmente são isentos (doces são tributados), e remédios de venda livre só são isentos se constarem na lista oficial."
+  },
+  Minnesota: {
+    es: "En Minnesota, la ropa está exenta y los medicamentos de venta libre con etiqueta Drug Facts suelen estar exentos.",
+    en: "In Minnesota, clothing is exempt, and OTC drugs with a Drug Facts label are generally exempt.",
+    pt: "Em Minnesota, roupas são isentas e remédios de venda livre com rótulo Drug Facts geralmente são isentos."
+  },
+  "New Jersey": {
+    es: "En New Jersey, la ropa cotidiana suele estar exenta.",
+    en: "In New Jersey, everyday clothing is generally exempt.",
+    pt: "Em New Jersey, roupas do dia a dia geralmente são isentas."
+  },
+  Pennsylvania: {
+    es: "En Pennsylvania, la ropa cotidiana suele estar exenta.",
+    en: "In Pennsylvania, everyday clothing is generally exempt.",
+    pt: "Na Pensilvânia, roupas do dia a dia geralmente são isentas."
+  },
+  Vermont: {
+    es: "En Vermont, la ropa cotidiana suele estar exenta.",
+    en: "In Vermont, everyday clothing is generally exempt.",
+    pt: "Em Vermont, roupas do dia a dia geralmente são isentas."
+  },
+  "New York": {
+    es: "En Nueva York, la ropa de menos de $110 suele estar exenta (varía según la ciudad).",
+    en: "In New York, clothing under $110 is generally exempt (varies by city).",
+    pt: "Em Nova York, roupas com menos de US$ 110 geralmente são isentas (varia por cidade)."
+  },
+  Massachusetts: {
+    es: "En Massachusetts, la ropa tributa solo en el monto que supera los $175 por prenda.",
+    en: "In Massachusetts, clothing is taxed only on the amount above $175 per item.",
+    pt: "Em Massachusetts, roupas são tributadas apenas no valor acima de US$ 175 por peça."
+  },
+  "Rhode Island": {
+    es: "En Rhode Island, la ropa tributa solo en el monto que supera los $250 por prenda.",
+    en: "In Rhode Island, clothing is taxed only on the amount above $250 per item.",
+    pt: "Em Rhode Island, roupas são tributadas apenas no valor acima de US$ 250 por peça."
+  }
+};
+// States where groceries get a reduced rate vs. the general rate.
+const STATE_FOOD_REDUCED = new Set(["Alabama", "Mississippi", "Missouri", "Tennessee", "Utah", "Virginia", "Louisiana"]);
+// States where groceries are taxed at the full general rate (no exemption).
+const STATE_FOOD_NO_EXEMPTION = new Set(["Hawaii", "Idaho", "South Dakota"]);
+function getStateTaxNote(state, lang) {
+  if (!state) return "";
+  if (STATE_TAX_NOTES[state]) return STATE_TAX_NOTES[state][lang] || STATE_TAX_NOTES[state].es;
+  if (STATE_FOOD_REDUCED.has(state)) {
+    const t = {
+      es: `En ${state}, los alimentos sin preparar pueden tener una tasa reducida respecto a la general.`,
+      en: `In ${state}, unprepared groceries may have a reduced rate compared to the general rate.`,
+      pt: `Em ${state}, alimentos não preparados podem ter uma alíquota reduzida em relação à geral.`
+    };
+    return t[lang] || t.es;
+  }
+  if (STATE_FOOD_NO_EXEMPTION.has(state)) {
+    const t = {
+      es: `En ${state}, los alimentos sin preparar no están exentos: tributan a la tasa general.`,
+      en: `In ${state}, unprepared groceries aren't exempt: they're taxed at the general rate.`,
+      pt: `Em ${state}, alimentos não preparados não são isentos: são tributados na alíquota geral.`
+    };
+    return t[lang] || t.es;
+  }
+  return "";
+}
 function updateTaxRuleNote() {
   const lang = localStorage.getItem("appLang") || "es";
-  const copy = {
-    es: "Estimación: las tasas y exenciones dependen de la dirección, el producto y su uso.",
-    en: "Estimate: rates and exemptions depend on address, product and use.",
-    pt: "Estimativa: alíquotas e isenções dependem do endereço, produto e uso."
+  const base = {
+    es: "Estimación: las tasas y exenciones dependen de la dirección, el producto y su uso. Confirmá el recibo antes de pagar.",
+    en: "Estimate: rates and exemptions depend on address, product and use. Check the receipt before paying.",
+    pt: "Estimativa: alíquotas e isenções dependem do endereço, produto e uso. Confira o recibo."
   };
-  for (const id of ["tax-rule-note", "cart-tax-rule-note"]) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = copy[lang] || copy.es;
+  const targets = [
+    { id: "tax-rule-note", stateId: "state-select" },
+    { id: "cart-tax-rule-note", stateId: "cart-state-select" }
+  ];
+  for (const t of targets) {
+    const el = document.getElementById(t.id);
+    if (!el) continue;
+    const state = document.getElementById(t.stateId)?.value || "";
+    const extra = getStateTaxNote(state, lang);
+    el.textContent = (base[lang] || base.es) + (extra ? " " + extra : "");
   }
 }
 function validateZipTax(data, selectedState) {
@@ -1548,16 +828,16 @@ window.lookupZipTax = async () => {
   const statusEl = document.getElementById("zip-status");
   const zip = (zipInput?.value || "").trim();
   if (!/^\d{5}$/.test(zip)) {
-    statusEl.textContent = "⚠ Ingresá un ZIP de 5 dígitos";
+    statusEl.textContent = "⚠ " + tfL3("Ingresá un ZIP de 5 dígitos", "Enter a 5-digit ZIP code", "Digite um ZIP de 5 dígitos");
     statusEl.style.color = "var(--warn)";
     return;
   }
   if (!navigator.onLine) {
-    statusEl.textContent = "⚠ Sin conexión — usando tasa de ciudad";
+    statusEl.textContent = "⚠ " + tfL3("Sin conexión — usando tasa de ciudad", "Offline — using city rate", "Sem conexão — usando a taxa da cidade");
     statusEl.style.color = "var(--warn)";
     return;
   }
-  statusEl.textContent = "Buscando…";
+  statusEl.textContent = tfL3("Buscando…", "Searching…", "Buscando…");
   statusEl.style.color = "var(--text-sub)";
   try {
     const res = await fetch(`https://salestaxzip.com/api/v1/rate/${zip}`);
@@ -1565,11 +845,11 @@ window.lookupZipTax = async () => {
     const json = await res.json();
     if (!json.success || !json.data) throw new Error("bad response");
     zipTaxOverride = validateZipTax(json.data, document.getElementById("state-select")?.value);
-    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${zipTaxOverride.toFixed(3)}% estimado por ZIP`;
+    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${zipTaxOverride.toFixed(3)}% ${tfL3("estimado por ZIP", "estimated by ZIP", "estimado por ZIP")}`;
     statusEl.style.color = "var(--success)";
   } catch (e) {
     zipTaxOverride = null;
-    statusEl.textContent = "⚠ ZIP no encontrado — usando tasa de ciudad";
+    statusEl.textContent = "⚠ " + tfL3("ZIP no encontrado — usando tasa de ciudad", "ZIP not found — using city rate", "ZIP não encontrado — usando a taxa da cidade");
     statusEl.style.color = "var(--warn)";
   }
   calculate();
@@ -1595,16 +875,16 @@ window.lookupCartZipTax = async () => {
   const statusEl = document.getElementById("cart-zip-status");
   const zip = (zipInput?.value || "").trim();
   if (!/^\d{5}$/.test(zip)) {
-    statusEl.textContent = "⚠ Ingresá un ZIP de 5 dígitos";
+    statusEl.textContent = "⚠ " + tfL3("Ingresá un ZIP de 5 dígitos", "Enter a 5-digit ZIP code", "Digite um ZIP de 5 dígitos");
     statusEl.style.color = "var(--warn)";
     return;
   }
   if (!navigator.onLine) {
-    statusEl.textContent = "⚠ Sin conexión — usando tasa de ciudad";
+    statusEl.textContent = "⚠ " + tfL3("Sin conexión — usando tasa de ciudad", "Offline — using city rate", "Sem conexão — usando a taxa da cidade");
     statusEl.style.color = "var(--warn)";
     return;
   }
-  statusEl.textContent = "Buscando…";
+  statusEl.textContent = tfL3("Buscando…", "Searching…", "Buscando…");
   statusEl.style.color = "var(--text-sub)";
   try {
     const res = await fetch(`https://salestaxzip.com/api/v1/rate/${zip}`);
@@ -1612,11 +892,11 @@ window.lookupCartZipTax = async () => {
     const json = await res.json();
     if (!json.success || !json.data) throw new Error("bad response");
     cartZipTaxOverride = validateZipTax(json.data, document.getElementById("cart-state-select")?.value);
-    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${cartZipTaxOverride.toFixed(3)}% estimado por ZIP`;
+    statusEl.textContent = `✓ ${json.data.city}, ${json.data.state} — ${cartZipTaxOverride.toFixed(3)}% ${tfL3("estimado por ZIP", "estimated by ZIP", "estimado por ZIP")}`;
     statusEl.style.color = "var(--success)";
   } catch (e) {
     cartZipTaxOverride = null;
-    statusEl.textContent = "⚠ ZIP no encontrado — usando tasa de ciudad";
+    statusEl.textContent = "⚠ " + tfL3("ZIP no encontrado — usando tasa de ciudad", "ZIP not found — using city rate", "ZIP não encontrado — usando a taxa da cidade");
     statusEl.style.color = "var(--warn)";
   }
   if (typeof renderCart === "function") renderCart();
@@ -1662,6 +942,7 @@ window.calculate = () => {
   document.getElementById("total-with-tax").innerText = `USD ${fmt(subtotal)}`;
   const lang = localStorage.getItem("appLang") || "es";
   document.getElementById("tax-detail").innerText = `${i18n[lang].tax_applied}: ${tax}%`;
+  window._indivFinal = subtotal * (1 + currentTip / 100);
   document.getElementById("final-total").innerText = `USD ${fmt(subtotal * (1 + currentTip / 100))}`;
 };
 
@@ -1900,7 +1181,7 @@ window.doChangePassword = async () => {
   if (!currentUser) return;
   try {
     await sendPasswordResetEmail(auth, currentUser.email);
-    showAlert("Correo de recuperación enviado.");
+    showAlert(tfL3("Correo de recuperación enviado.", "Recovery email sent.", "E-mail de recuperação enviado."));
   } catch (er) {
     showAlert(er.message);
   }
@@ -2260,7 +1541,7 @@ window.calcSplit = () => {
   res.style.display = "block";
 };
 
-let tipOpen = false;
+let tipOpen = true;
 
 window.toggleTip = () => {
   tipOpen = !tipOpen;
@@ -2928,22 +2209,30 @@ window.addCartItem = () => {
 };
 
 window.removeCartItem = id => {
-  cartItems = cartItems.filter(it => it.id !== id);
-  renderCart();
+  const idx = cartItems.findIndex(it => it.id === id);
+  if (idx < 0) return;
+  const item = cartItems[idx];
+  const lang = localStorage.getItem("appLang") || "es";
+  const msgs = { es: "Ítem eliminado", en: "Item removed", pt: "Item removido" };
+  tfDeleteWithUndo({
+    message: msgs[lang] || msgs.es,
+    remove: () => { cartItems = cartItems.filter(it => it.id !== id); renderCart(); },
+    restore: () => { if (!cartItems.some(it => it.id === id)) cartItems.splice(Math.min(idx, cartItems.length), 0, item); renderCart(); },
+    commit: () => {}
+  });
 };
 
-window.clearCart = async () => {
+window.clearCart = () => {
   if (!cartItems.length) return;
+  const prev = cartItems;
   const lang = localStorage.getItem("appLang") || "es";
-  const msgs = {
-    es: "¿Vaciar el carrito?",
-    en: "Clear the cart?",
-    pt: "Esvaziar o carrinho?"
-  };
-  const ok = window.showConfirm ? await window.showConfirm(msgs[lang] || msgs.es) : confirm(msgs[lang] || msgs.es);
-  if (!ok) return;
-  cartItems = [];
-  renderCart();
+  const msgs = { es: "Carrito vaciado", en: "Cart cleared", pt: "Carrinho esvaziado" };
+  tfDeleteWithUndo({
+    message: msgs[lang] || msgs.es,
+    remove: () => { cartItems = []; renderCart(); },
+    restore: () => { cartItems = prev; renderCart(); },
+    commit: () => {}
+  });
 };
 
 function renderCart() {
@@ -2984,6 +2273,69 @@ function renderCart() {
   if (summary) summary.style.display = "block";
   if (actions) actions.style.display = "flex";
 }
+
+window.clearIndividual = () => {
+  const priceEl = document.getElementById("price");
+  if (priceEl) priceEl.value = "";
+  const tipEl = document.getElementById("custom-tip-input");
+  if (tipEl) tipEl.value = "";
+  calculate();
+};
+
+window.saveIndividualAsExpense = async () => {
+  const lang = localStorage.getItem("appLang") || "es";
+  const total = Math.round((window._indivFinal || 0) * 100) / 100;
+  const L = (es, en, pt) => ({ es, en, pt })[lang] || es;
+  if (!(total > 0)) {
+    const m = L("Ingresá un precio para guardar el gasto.", "Enter a price to save the expense.", "Informe um preço para salvar o gasto.");
+    if (window.showAlert) window.showAlert(m); else if (window.tfToast) window.tfToast(m);
+    return;
+  }
+  const promptMsg = L("¿Qué compraste? (nombre del gasto)", "What did you buy? (expense name)", "O que você comprou? (nome do gasto)");
+  const nombre = window.showPrompt ? await window.showPrompt(promptMsg, "") : prompt(promptMsg, "");
+  if (!nombre || !nombre.trim()) return;
+  const activeId = document.querySelector("#panel-individual .cat-btn.active")?.id;
+  const catMap = {
+    "btn-general": "🛍️ Compras",
+    "btn-tech": "🛍️ Compras",
+    "btn-food": "🍔 Comida",
+    "btn-med": "💊 Farmacia",
+    "btn-clothing": "👟 Ropa"
+  };
+  const gastoData = {
+    nombre: nombre.trim(),
+    valor: total,
+    cat: catMap[activeId] || "🛍️ Compras",
+    fecha: Date.now(),
+    thumb: "",
+    tripId: currentUser && perfilId ? window.TripContext.assign(currentUser.uid, perfilId) : "orlando"
+  };
+  try {
+    if (firebaseOk && currentUser && perfilId && navigator.onLine) {
+      await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), gastoData);
+    } else {
+      const pid = perfilId || "default";
+      const key = "taxusa_gastos_pending_" + pid;
+      let pending = [];
+      try {
+        pending = JSON.parse(localStorage.getItem(key) || "[]");
+      } catch (e) {
+        pending = [];
+      }
+      pending.push({ type: "add", data: gastoData, ts: Date.now() });
+      localStorage.setItem(key, JSON.stringify(pending));
+    }
+    const fmt2 = n => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const ok = L(`Guardado en Gastos: ${fmt2(total)} (${gastoData.nombre}).`, `Saved to Expenses: ${fmt2(total)} (${gastoData.nombre}).`, `Salvo em Gastos: ${fmt2(total)} (${gastoData.nombre}).`);
+    if (window.showAlert) window.showAlert(ok); else if (window.tfToast) window.tfToast(ok);
+    const priceEl = document.getElementById("price");
+    if (priceEl) priceEl.value = "";
+    calculate();
+  } catch (e) {
+    const err = L("No se pudo guardar el gasto.", "Could not save the expense.", "Não foi possível salvar o gasto.");
+    if (window.showAlert) window.showAlert(err); else if (window.tfToast) window.tfToast(err);
+  }
+};
 
 window.saveCartAsExpense = async () => {
   if (!cartItems.length) return;
@@ -3036,7 +2388,7 @@ window.saveCartAsExpense = async () => {
       en: `Saved to Expenses: ${fmt(total)} at ${store}.`,
       pt: `Salvo em Gastos: ${fmt(total)} em ${store}.`
     };
-    if (window.showAlert) window.showAlert(okMsgs[lang] || okMsgs.es); else alert(okMsgs[lang] || okMsgs.es);
+    if (window.showAlert) window.showAlert(okMsgs[lang] || okMsgs.es); else if (window.tfToast) window.tfToast(okMsgs[lang] || okMsgs.es);
     cartItems = [];
     renderCart();
   } catch (e) {
@@ -3045,7 +2397,7 @@ window.saveCartAsExpense = async () => {
       en: "Could not save the expense.",
       pt: "Não foi possível salvar o gasto."
     };
-    if (window.showAlert) window.showAlert(errMsgs[lang] || errMsgs.es); else alert(errMsgs[lang] || errMsgs.es);
+    if (window.showAlert) window.showAlert(errMsgs[lang] || errMsgs.es); else if (window.tfToast) window.tfToast(errMsgs[lang] || errMsgs.es);
   }
 };
 
@@ -3693,577 +3045,3 @@ window.changeLanguage = function(lang) {
     if (_insCache) renderInsuranceBanner(_insCache);
   }
 };
-</script>
-
-
-<link rel="stylesheet" href="assets/taxie-widget.css">
-
-<link rel="stylesheet" href="assets/taxie-corner.css">
-<button id="ai-bubble" aria-label="Taxie — Asistente de viaje">
-    <span id="ai-badge"></span>
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="tc17"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="#fff" fill-opacity=".15"/><g clip-path="url(#tc17)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#fb7185" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#fb7185" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
-</button>
-
-<div id="ai-chat">
-    <div id="ai-header">
-        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="tc18"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="#fff" fill-opacity=".15"/><g clip-path="url(#tc18)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#fb7185" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#fb7185" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
-        <div class="ai-header-text">
-            <div class="ai-header-title">Taxie ✈️</div>
-            <div class="ai-header-sub" id="ai-header-sub">Tu guia de viaje a USA</div>
-        </div>
-        <button id="ai-close">x</button>
-    </div>
-    <div id="ai-messages"></div>
-    <div id="ai-suggestions"></div>
-    <div id="ai-input-area">
-        <textarea id="ai-input" rows="1"></textarea>
-        <button id="ai-send">
-            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-        </button>
-    </div>
-</div>
-
-<script>
-(function() {
-  var GROQ_URL = "https://taxusa.juanbria18.workers.dev";
-  var MODEL = "openai/gpt-oss-120b";
-  var lang = localStorage.getItem("appLang") || "es";
-  var perfilId = localStorage.getItem("perfilActivoId") || "default";
-  var HISTORY_KEY = "taxie_history_" + perfilId;
-  var chatHistory = [];
-  try {
-    var saved = localStorage.getItem(HISTORY_KEY);
-    if (saved) chatHistory = JSON.parse(saved);
-  } catch (e) {
-    chatHistory = [];
-  }
-  var isOpen = false;
-  var isLoading = false;
-  var hasShownWelcome = false;
-  var WELCOME_ES = "¡Hola! Soy **Taxie** 🗽✈️\n\nTu asistente personal para viajes a USA. Puedo ayudarte con:\n\n• 🏰 Destinos y parques tematicos\n• 🛍️ Outlets y compras sin tax\n• 💵 Propinas, impuestos y presupuesto\n• 🏨 Hoteles y transporte\n• 🌤️ Clima y documentacion\n\n¿En que puedo ayudarte hoy?";
-  var WELCOME_EN = "Hi! I am **Taxie** 🗽✈️\n\nYour personal USA travel guide. I can help you with:\n\n• 🏰 Destinations & theme parks\n• 🛍️ Outlets & tax-free shopping\n• 💵 Tips, taxes & budgeting\n• 🏨 Hotels & transportation\n• 🌤️ Weather & travel documents\n\nWhat can I help you with today?";
-  var WELCOME_PT = "Olá! Sou o **Taxie** 🗽✈️\n\nSeu assistente pessoal para viagens aos EUA. Posso te ajudar com:\n\n• 🏰 Destinos e parques temáticos\n• 🛍️ Outlets e compras sem tax\n• 💵 Gorjetas, impostos e orçamento\n• 🏨 Hotéis e transporte\n• 🌤️ Clima e documentação\n\nComo posso te ajudar hoje?";
-  var CHIPS_ES = [ "🏰 Disney Orlando", "🛍️ Mejores outlets", "💰 Propinas en USA", "🌡️ Clima en Florida", "✈️ Aeropuertos", "🚗 Alquilar auto" ];
-  var CHIPS_EN = [ "🏰 Disney Orlando", "🛍️ Best outlets", "💰 Tipping in USA", "🌡️ Florida weather", "✈️ Airports", "🚗 Rent a car" ];
-  var CHIPS_PT = [ "🏰 Disney Orlando", "🛍️ Melhores outlets", "💰 Gorjetas nos EUA", "🌡️ Clima na Flórida", "✈️ Aeroportos", "🚗 Alugar carro" ];
-  var SUB_ES = "Tu guia de viaje a USA 🗺️";
-  var SUB_EN = "Your USA Travel Guide 🗺️";
-  var SUB_PT = "Seu guia de viagem aos EUA 🗺️";
-  var PH_ES = "Preguntale a Taxie sobre tu viaje...";
-  var PH_EN = "Ask Taxie about your trip...";
-  var PH_PT = "Pergunte ao Taxie sobre sua viagem...";
-  var ERR_ES = "Ups, algo fallo. Verifica tu conexion e intenta de nuevo.";
-  var ERR_EN = "Oops, something went wrong. Check your connection and try again.";
-  var ERR_PT = "Ops, algo deu errado. Verifique sua conexão e tente novamente.";
-  var isPt = lang === "pt";
-  var isEs = lang !== "en" && lang !== "pt";
-  var chips = isPt ? CHIPS_PT : isEs ? CHIPS_ES : CHIPS_EN;
-  var sub = isPt ? SUB_PT : isEs ? SUB_ES : SUB_EN;
-  var ph = isPt ? PH_PT : isEs ? PH_ES : PH_EN;
-  var errMsg = isPt ? ERR_PT : isEs ? ERR_ES : ERR_EN;
-  var SYSTEM = isPt ? 'Você é o Taxie, assistente de viagens para os EUA. Seu tom é claro, direto e amigável. Quando alguém pergunta sobre informações em tempo real (filas nos parques, cotações, clima atual, horários ou preços atualizados), você busca as informações antes de responder. Use marcadores e **negritos** só quando realmente ajudam a organizar a informação; para respostas simples, uma ou duas frases diretas são suficientes. Nunca comece com "Claro!", "Com certeza!" ou frases de preenchimento. Responda apenas sobre viagens aos EUA; se perguntarem outra coisa, redirecione brevemente. Data atual: ' + (new Date).toLocaleDateString("pt-BR") + "." : isEs ? 'Eres Taxie, asistente de viajes a USA. Tu tono es claro, directo y amable — ni frío ni demasiado informal. Cuando alguien pregunta por info en tiempo real (filas en parques, cotizaciones, clima actual, horarios o precios actualizados), buscás la información actualizada antes de responder. Usás viñetas y **negritas** solo cuando realmente ayudan a organizar la info; si la respuesta es simple, una o dos oraciones directas son suficientes. Nunca empezás con "¡Claro!", "¡Por supuesto!" ni frases de relleno. Solo respondés sobre viajes a USA; si preguntan otra cosa, lo aclarás brevemente y redirigís. Fecha actual: ' + (new Date).toLocaleDateString("es-AR") + "." : 'You are Taxie, a USA travel assistant. Your tone is clear, direct and warm — not overly casual, not robotic. When someone asks for real-time info (park wait times, exchange rates, current weather, updated prices), search for current data before answering. Use bullet points and **bold** only when they genuinely help organize information; for simple questions, one or two direct sentences are better. Never open with "Of course!", "Great question!" or filler phrases. Only answer about USA travel; redirect anything off-topic without making it awkward. Today\'s date: ' + (new Date).toLocaleDateString("en-US") + ".";
-  function saveHistory() {
-    try {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory.slice(-40)));
-    } catch (e) {}
-  }
-  function formatBotText(text) {
-    var html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-    var lines = html.split("\n");
-    var result = [];
-    var inList = false;
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i].trim();
-      var isBullet = /^[\u2022\-\*]\s/.test(line);
-      if (isBullet) {
-        if (!inList) {
-          result.push("<ul>");
-          inList = true;
-        }
-        result.push("<li>" + line.replace(/^[\u2022\-\*]\s+/, "") + "</li>");
-      } else {
-        if (inList) {
-          result.push("</ul>");
-          inList = false;
-        }
-        if (line !== "") result.push("<p>" + line + "</p>");
-      }
-    }
-    if (inList) result.push("</ul>");
-    return result.join("");
-  }
-  function init() {
-    var bubble = document.getElementById("ai-bubble");
-    var chatEl = document.getElementById("ai-chat");
-    var messagesEl = document.getElementById("ai-messages");
-    var inputEl = document.getElementById("ai-input");
-    var sendBtn = document.getElementById("ai-send");
-    var suggestEl = document.getElementById("ai-suggestions");
-    var headerSub = document.getElementById("ai-header-sub");
-    var closeBtn = document.getElementById("ai-close");
-    if (!bubble || !chatEl) return;
-    if (headerSub) headerSub.textContent = sub;
-    if (inputEl) inputEl.placeholder = ph;
-    if (suggestEl) {
-      suggestEl.innerHTML = chips.map(function(c) {
-        return '<button class="ai-chip">' + c + "</button>";
-      }).join("");
-      suggestEl.querySelectorAll(".ai-chip").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          if (inputEl) inputEl.value = btn.textContent;
-          sendMessage();
-          suggestEl.style.display = "none";
-        });
-      });
-    }
-    function toggleChat() {
-      isOpen = !isOpen;
-      if (isOpen) {
-        chatEl.style.display = "flex";
-        chatEl.offsetHeight;
-        chatEl.classList.add("open");
-        if (!hasShownWelcome) {
-          hasShownWelcome = true;
-          if (chatHistory.length > 0) {
-            chatHistory.forEach(function(m) {
-              addMessage(m.role === "user" ? "user" : "bot", m.content, true);
-            });
-            if (suggestEl) suggestEl.style.display = "none";
-          } else {
-            var welcome = isPt ? WELCOME_PT : isEs ? WELCOME_ES : WELCOME_EN;
-            setTimeout(function() {
-              addMessage("bot", welcome);
-            }, 200);
-          }
-        }
-        setTimeout(function() {
-          if (inputEl) inputEl.focus();
-        }, 300);
-      } else {
-        chatEl.classList.remove("open");
-        setTimeout(function() {
-          chatEl.style.display = "none";
-        }, 250);
-      }
-    }
-    bubble.addEventListener("click", function(e) {
-      e.stopPropagation();
-      toggleChat();
-    });
-    if (closeBtn) closeBtn.addEventListener("click", function(e) {
-      e.stopPropagation();
-      toggleChat();
-    });
-    document.addEventListener("click", function(e) {
-      if (isOpen && !chatEl.contains(e.target) && !bubble.contains(e.target)) {
-        isOpen = false;
-        chatEl.classList.remove("open");
-        setTimeout(function() {
-          chatEl.style.display = "none";
-        }, 250);
-      }
-    });
-    function addMessage(role, text, silent) {
-      if (!messagesEl) return;
-      var div = document.createElement("div");
-      div.className = "ai-msg " + (role === "user" ? "user" : "bot");
-      if (role === "user") {
-        div.textContent = text;
-      } else {
-        div.innerHTML = formatBotText(text);
-      }
-      if (silent) div.style.animation = "none";
-      messagesEl.appendChild(div);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-    function showTyping() {
-      if (!messagesEl) return;
-      var div = document.createElement("div");
-      div.className = "ai-msg bot typing";
-      div.id = "ai-typing";
-      div.innerHTML = '<div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>';
-      messagesEl.appendChild(div);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-    function hideTyping() {
-      var el = document.getElementById("ai-typing");
-      if (el) el.remove();
-    }
-    function sendMessage() {
-      window._taxieSend = sendMessage;
-      if (!inputEl) return;
-      var text = inputEl.value.trim();
-      if (!text || isLoading) return;
-      inputEl.value = "";
-      inputEl.style.height = "auto";
-      addMessage("user", text);
-      if (suggestEl) suggestEl.style.display = "none";
-      isLoading = true;
-      if (sendBtn) sendBtn.disabled = true;
-      showTyping();
-      chatHistory.push({
-        role: "user",
-        content: text
-      });
-      fetch(GROQ_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          model: MODEL,
-          messages: [ {
-            role: "system",
-            content: SYSTEM
-          } ].concat(chatHistory.slice(-14)),
-          max_tokens: 800,
-          temperature: .7,
-          stream: false,
-          tools: [ {
-            type: "function",
-            function: {
-              name: "web_search",
-              description: "Search the web for real-time information like park wait times, exchange rates, current weather, store hours or updated prices.",
-              parameters: {
-                type: "object",
-                properties: {
-                  query: {
-                    type: "string",
-                    description: "Search query"
-                  }
-                },
-                required: [ "query" ]
-              }
-            }
-          } ],
-          tool_choice: "auto"
-        })
-      }).then(function(res) {
-        return res.json().then(function(d) {
-          return {
-            ok: res.ok,
-            data: d
-          };
-        });
-      }).then(function(r) {
-        if (!r.ok) throw new Error(r.data.error && r.data.error.message || "API error");
-        var msg = r.data.choices && r.data.choices[0] && r.data.choices[0].message;
-        if (msg && msg.tool_calls && msg.tool_calls.length > 0) {
-          var tc = msg.tool_calls[0];
-          var query = "";
-          try {
-            query = JSON.parse(tc.function.arguments).query;
-          } catch (e) {}
-          var searchUrl = "https://taxusa.juanbria18.workers.dev";
-          var msgsWithTool = [ {
-            role: "system",
-            content: SYSTEM
-          } ].concat(chatHistory.slice(-14)).concat([ {
-            role: "assistant",
-            content: null,
-            tool_calls: msg.tool_calls
-          }, {
-            role: "tool",
-            tool_call_id: tc.id,
-            content: "No se pudo obtener resultado en tiempo real para: " + query + ". Respondé con lo que sabés e indicá que los datos pueden no ser del momento exacto."
-          } ]);
-          return fetch(searchUrl, {
-            method: "POST",
-            body: JSON.stringify({
-              model: MODEL,
-              messages: msgsWithTool,
-              max_tokens: 800,
-              temperature: .7,
-              stream: false
-            })
-          }).then(function(res2) {
-            return res2.json().then(function(d2) {
-              return {
-                ok: res2.ok,
-                data: d2
-              };
-            });
-          }).then(function(r2) {
-            if (!r2.ok) throw new Error(r2.data.error && r2.data.error.message || "API error");
-            var reply2 = r2.data.choices && r2.data.choices[0] && r2.data.choices[0].message && r2.data.choices[0].message.content || errMsg;
-            chatHistory.push({
-              role: "assistant",
-              content: reply2
-            });
-            saveHistory();
-            hideTyping();
-            addMessage("bot", reply2);
-          });
-        }
-        var reply = msg && msg.content || errMsg;
-        chatHistory.push({
-          role: "assistant",
-          content: reply
-        });
-        saveHistory();
-        hideTyping();
-        addMessage("bot", reply);
-      }).catch(function(e) {
-        hideTyping();
-        addMessage("bot", errMsg);
-        console.error("[Taxie]", e);
-      }).finally(function() {
-        isLoading = false;
-        if (sendBtn) sendBtn.disabled = false;
-        if (inputEl) inputEl.focus();
-      });
-    }
-    if (sendBtn) sendBtn.addEventListener("click", sendMessage);
-    if (inputEl) {
-      inputEl.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
-      inputEl.addEventListener("input", function() {
-        this.style.height = "auto";
-        this.style.height = Math.min(this.scrollHeight, 80) + "px";
-      });
-    }
-  }
-  window.taxieUpdateLang = function(newLang) {
-    isEs = newLang !== "en" && newLang !== "pt";
-    isPt = newLang === "pt";
-    SYSTEM = isPt ? 'Você é o Taxie, assistente de viagens para os EUA. Seu tom é claro, direto e amigável. Quando alguém pergunta sobre informações em tempo real (filas nos parques, cotações, clima atual, horários ou preços atualizados), você busca as informações antes de responder. Use marcadores e **negritos** só quando realmente ajudam a organizar a informação; para respostas simples, uma ou duas frases diretas são suficientes. Nunca comece com "Claro!", "Com certeza!" ou frases de preenchimento. Responda apenas sobre viagens aos EUA; se perguntarem outra coisa, redirecione brevemente. Data atual: ' + (new Date).toLocaleDateString("pt-BR") + "." : isEs ? 'Eres Taxie, asistente de viajes a USA. Tu tono es claro, directo y amable — ni frío ni demasiado informal. Cuando alguien pregunta por info en tiempo real (filas en parques, cotizaciones, clima actual, horarios o precios actualizados), buscás la información actualizada antes de responder. Usás viñetas y **negritas** solo cuando realmente ayudan a organizar la info; si la respuesta es simple, una o dos oraciones directas son suficientes. Nunca empezás con "¡Claro!", "¡Por supuesto!" ni frases de relleno. Solo respondés sobre viajes a USA; si preguntan otra cosa, lo aclarás brevemente y redirigís. Fecha actual: ' + (new Date).toLocaleDateString("es-AR") + "." : 'You are Taxie, a USA travel assistant. Your tone is clear, direct and warm — not overly casual, not robotic. When someone asks for real-time info (park wait times, exchange rates, current weather, updated prices), search for current data before answering. Use bullet points and **bold** only when they genuinely help organize information; for simple questions, one or two direct sentences are better. Never open with "Of course!", "Great question!" or filler phrases. Only answer about USA travel; redirect anything off-topic without making it awkward. Today\'s date: ' + (new Date).toLocaleDateString("en-US") + ".";
-    errMsg = isPt ? ERR_PT : isEs ? ERR_ES : ERR_EN;
-    var inputEl = document.getElementById("ai-input");
-    var headerSub = document.getElementById("ai-header-sub");
-    var suggestEl = document.getElementById("ai-suggestions");
-    if (inputEl) inputEl.placeholder = isPt ? PH_PT : isEs ? PH_ES : PH_EN;
-    if (headerSub) headerSub.textContent = isPt ? SUB_PT : isEs ? SUB_ES : SUB_EN;
-    if (suggestEl) {
-      var newChips = isPt ? CHIPS_PT : isEs ? CHIPS_ES : CHIPS_EN;
-      suggestEl.innerHTML = newChips.map(function(c) {
-        return '<button class="ai-chip">' + c + "</button>";
-      }).join("");
-      suggestEl.querySelectorAll(".ai-chip").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          var inp = document.getElementById("ai-input");
-          if (inp) inp.value = btn.textContent;
-          if (window._taxieSend) window._taxieSend();
-          suggestEl.style.display = "none";
-        });
-      });
-    }
-  };
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-
-
-<div id="pinOfflineOverlay">
-  <div class="poo-card">
-    <div class="poo-badge">📵 Sin conexión</div>
-    <div class="poo-avatar" id="pooAvatar"></div>
-    <div class="poo-name" id="pooName">Usuario</div>
-    <div class="poo-email" id="pooEmail"></div>
-    <div class="poo-dots" id="pooDots">
-      <div class="poo-dot"></div>
-      <div class="poo-dot"></div>
-      <div class="poo-dot"></div>
-      <div class="poo-dot"></div>
-    </div>
-    <div class="poo-error" id="pooError"></div>
-    <div class="poo-keypad" id="pooKeypad"></div>
-  </div>
-</div>
-
-<script>
-(function() {
-  const MAX_ATTEMPTS = 5;
-  let buf = "", attempts = 0;
-  async function sha256(str) {
-    return window.hashPin(str);
-  }
-  async function checkOffline() {
-    try {
-      await fetch("https://www.gstatic.com/generate_204", {
-        method: "HEAD",
-        cache: "no-store",
-        mode: "no-cors",
-        signal: AbortSignal.timeout(1500)
-      });
-      return false;
-    } catch (e) {
-      return true;
-    }
-  }
-  function updateDots(n) {
-    document.querySelectorAll("#pooDots .poo-dot").forEach((d, i) => {
-      d.classList.toggle("filled", i < n);
-      d.classList.remove("error");
-    });
-  }
-  function shakeError(msg) {
-    document.getElementById("pooError").innerText = msg;
-    document.querySelectorAll("#pooDots .poo-dot").forEach(d => d.classList.add("error"));
-    setTimeout(() => document.querySelectorAll("#pooDots .poo-dot").forEach(d => d.classList.remove("error")), 500);
-  }
-  function renderKeypad() {
-    const keys = [ "1", "2", "3", "4", "5", "6", "7", "8", "9", "empty", "0", "del" ];
-    const kp = document.getElementById("pooKeypad");
-    kp.innerHTML = "";
-    keys.forEach(k => {
-      const btn = document.createElement("button");
-      btn.className = "poo-key" + (k === "empty" ? " empty" : "");
-      btn.innerText = k === "del" ? "⌫" : k === "empty" ? "" : k;
-      if (k !== "empty") btn.addEventListener("click", () => onKey(k === "del" ? "del" : k));
-      kp.appendChild(btn);
-    });
-  }
-  async function onKey(key) {
-    if (attempts >= MAX_ATTEMPTS) return;
-    if (key === "del") {
-      buf = buf.slice(0, -1);
-    } else {
-      if (buf.length >= 4) return;
-      buf += key;
-    }
-    updateDots(buf.length);
-    document.getElementById("pooError").innerText = "";
-    if (buf.length === 4) {
-      const entered = buf;
-      buf = "";
-      updateDots(0);
-      const stored = localStorage.getItem("taxusa_pin_hash");
-      if (await window.verifyPin(entered, stored)) {
-        window.taxflyTouchActivity();
-        document.getElementById("pinOfflineOverlay").classList.remove("show");
-      } else {
-        attempts++;
-        const left = MAX_ATTEMPTS - attempts;
-        const lang = localStorage.getItem("appLang") || "es";
-        const msgs = {
-          es: left > 0 ? `PIN incorrecto. Quedan ${left} intentos.` : "Demasiados intentos fallidos.",
-          en: left > 0 ? `Wrong PIN. ${left} attempts left.` : "Too many failed attempts.",
-          pt: left > 0 ? `PIN incorreto. ${left} tentativas restantes.` : "Muitas tentativas."
-        };
-        shakeError(msgs[lang] || msgs.es);
-      }
-    }
-  }
-  async function init() {
-    const offline = await checkOffline();
-    if (!offline) return;
-    if (window.taxflyOfflineUnlocked()) return;
-    window.location.replace("login.html");
-    return;
-    const hash = localStorage.getItem("taxusa_pin_hash");
-    if (!hash) return;
-    const overlay = document.getElementById("pinOfflineOverlay");
-    overlay.classList.add("show");
-    const name = localStorage.getItem("perfilActivoNombre") || localStorage.getItem("taxusa_offline_email") || "";
-    const email = localStorage.getItem("taxusa_offline_email") || "";
-    const foto = localStorage.getItem("perfilActivoFoto") || "";
-    document.getElementById("pooName").innerText = name.split("@")[0];
-    document.getElementById("pooEmail").innerText = email;
-    if (foto) document.getElementById("pooAvatar").style.backgroundImage = `url('${foto}')`;
-    renderKeypad();
-  }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-
-<script>
-(function() {
-  var toast = document.getElementById("offline-toast");
-  function updateStatus() {
-    if (!navigator.onLine) {
-      toast.classList.remove("hide");
-      toast.classList.add("show");
-    } else {
-      toast.classList.remove("show");
-      toast.classList.add("hide");
-    }
-  }
-  window.addEventListener("online", updateStatus);
-  window.addEventListener("offline", updateStatus);
-  updateStatus();
-})();
-</script>
-
-
-<div id="switchAppModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--surface);border-radius:28px;padding:28px 24px;width:100%;max-width:340px;box-shadow:var(--shadow-lg);border:1px solid var(--border);text-align:center;">
-    <div id="switchAppTitle" style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:6px;">Cambiar Aplicación</div>
-    <div id="switchAppSub" style="font-size:.8rem;font-weight:600;color:var(--text-sub);margin-bottom:22px;">¿A qué destino querés ir?</div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button onclick="doSwitchApp('usa')" style="width:100%;padding:14px;border-radius:14px;border:2px solid rgba(239,68,68,.4);background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(239,68,68,.08));cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;color:var(--text);display:flex;align-items:center;gap:12px;transition:all .2s;">
-        <img src="https://flagcdn.com/w40/us.png" style="width:32px;border-radius:4px;flex-shrink:0;" alt="US" onerror="this.outerHTML='🇺🇸';">
-        <div style="text-align:left;">
-          <div style="color:#ef4444;font-weight:900;">TaxUSA</div>
-          <div style="font-size:.72rem;font-weight:600;color:var(--text-sub);">Estados Unidos</div>
-        </div>
-      </button>
-      <button onclick="doSwitchApp('europe')" style="width:100%;padding:14px;border-radius:14px;border:2px solid rgba(0,51,153,.4);background:linear-gradient(135deg,rgba(0,51,153,.1),rgba(255,204,0,.06));cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;color:var(--text);display:flex;align-items:center;gap:12px;transition:all .2s;">
-        <img src="https://flagcdn.com/w40/eu.png" style="width:32px;border-radius:4px;flex-shrink:0;" alt="EU" onerror="this.outerHTML='🇪🇺';">
-        <div style="text-align:left;">
-          <div style="color:#003399;font-weight:900;">TaxEurope</div>
-          <div style="font-size:.72rem;font-weight:600;color:var(--text-sub);">Europa</div>
-        </div>
-      </button>
-      <button onclick="document.getElementById('switchAppModal').style.display='none'" id="switchAppCancel" style="width:100%;padding:11px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface-2);cursor:pointer;font-family:inherit;font-weight:700;font-size:.85rem;color:var(--text-sub);margin-top:4px;">Cancelar</button>
-    </div>
-  </div>
-</div>
-<script>
-window.openSwitchApp = function() {
-  const lang = localStorage.getItem("taxfly_lang") || "es";
-  const texts = {
-    es: {
-      title: "Cambiar Aplicación",
-      sub: "¿A qué destino querés ir?",
-      cancel: "Cancelar"
-    },
-    en: {
-      title: "Switch App",
-      sub: "Which destination do you want?",
-      cancel: "Cancel"
-    },
-    pt: {
-      title: "Trocar Aplicativo",
-      sub: "Para qual destino você quer ir?",
-      cancel: "Cancelar"
-    }
-  };
-  const t = texts[lang] || texts.es;
-  document.getElementById("switchAppTitle").textContent = t.title;
-  document.getElementById("switchAppSub").textContent = t.sub;
-  document.getElementById("switchAppCancel").textContent = t.cancel;
-  document.getElementById("switchAppModal").style.display = "flex";
-};
-
-window.doSwitchApp = function(destino) {
-  if (destino === "europe") { window.location.href = "selector.html"; return; }
-  localStorage.setItem("taxfly_destino", destino);
-  document.getElementById("switchAppModal").style.display = "none";
-  if (destino === "usa") {
-    window.location.href = "index.html";
-  } else {
-    window.location.href = "selector.html";
-  }
-};
-</script>
-    
-
-<script src="assets/map-links.js" defer></script>
-<script src="assets/reconnect.js" defer></script>
-<script src="assets/reconnect-sync.js" defer></script>
-<link rel="stylesheet" href="assets/travel-tools.css">
-<script src="assets/travel-tools.js" defer></script>
-</body>
-</html>

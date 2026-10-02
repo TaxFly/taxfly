@@ -67,6 +67,17 @@ export function dec(v, db) {
   return o;
 }
 
+// docs-tree.js es un script clásico (lo usan también las pantallas); si esta página no lo cargó, se inyecta.
+async function docsTree() {
+  if (!window.TaxflyDocsTree) await new Promise((ok, fail) => {
+    const s = document.createElement("script");
+    s.src = new URL("docs-tree.js", import.meta.url).href;
+    s.onload = ok; s.onerror = fail;
+    document.head.append(s);
+  });
+  return window.TaxflyDocsTree;
+}
+
 function ctx() {
   let app;
   try {
@@ -229,7 +240,9 @@ export async function exportBackup({includeTickets: includeTickets = false, onPr
       chunks: {}
     };
     try {
-      const tbase = [ "users", uid, "profiles", pid, "docs" ];
+      const tree = await docsTree();
+      if (!await tree.ensure(uid, pid)) throw new Error("migración de documentos pendiente");
+      const tbase = tree.base(uid, pid);
       const snap = await getDocs(collection(db, ...tbase));
       const ids = [];
       snap.forEach(d => {
@@ -391,7 +404,9 @@ export async function importBackup(d, {targetPid: targetPid, includeTickets: inc
     }
   }
   if (includeTickets && d.tickets && isObj(d.tickets.docs)) {
-    const tbase = [ "users", uid, "profiles", target, "docs" ];
+    const tree = await docsTree();
+    if (!await tree.ensure(uid, target)) throw new Error("La migración de documentos todavía no terminó. Reintentá con conexión.");
+    const tbase = tree.base(uid, target);
     for (const id of Object.keys(d.tickets.docs)) {
       if (!okId(id) || !isObj(d.tickets.docs[id])) continue;
       writes.push({

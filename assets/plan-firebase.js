@@ -68,11 +68,16 @@ async function loadTrips() {
   publishTrip();
 }
 function listenTripDocuments() {
-  return onSnapshot(collection(db, "users", currentUid, "profiles", currentPerfilId, "docs"), snap => {
-    window._tripDocuments = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(d => (d.tripId || "unassigned") === activeTripId);
-    window.renderReservations?.();
-  }, () => {});
+  let unsubscribe = () => {}, cancelled = false;
+  Promise.resolve(window.TaxflyDocsTree?.ensure(currentUid, currentPerfilId)).catch(() => false).then(() => {
+    if (cancelled) return;
+    unsubscribe = onSnapshot(collection(db, ...window.TaxflyDocsTree.base(currentUid, currentPerfilId)), snap => {
+      window._tripDocuments = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter(d => (d.tripId || "unassigned") === activeTripId);
+      window.renderReservations?.();
+    }, () => {});
+  });
+  return () => { cancelled = true; unsubscribe(); };
 }
 window.tripPlanningCreate = async function(name,destinations,startDate,endDate) {
   await window.TripContext.create(currentUid,currentPerfilId,{name,destinations,startDate,endDate});

@@ -1,385 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <link rel="stylesheet" href="assets/style.css">
-    <script src="config.js"></script>
-    <script src="assets/dialogs.js"></script>
-    <script src="assets/account.js"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TaxFly — Inicio</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" href="https://taxfly.github.io/taxfly/assets/icon-192.png?v=5" type="image/png">
-    <link rel="apple-touch-icon" href="https://taxfly.github.io/taxfly/assets/icon-512.png?v=5">
-    <script>
-if (navigator.onLine) {
-  var s = document.createElement("script");
-  s.src = "https://www.google.com/recaptcha/api.js?render=6LeOivYsAAAAAPYMmhytNumUem-rxSrtpPbU7sME";
-  s.async = true;
-  s.defer = true;
-  document.head.appendChild(s);
-}
-</script>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800;900&display=swap" rel="stylesheet"></noscript>
-    <script>
-const _t = localStorage.getItem("theme");
-
-if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.setAttribute("data-theme", "dark");
-</script>
-    <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const foto = localStorage.getItem("perfilActivoFoto");
-  if (foto) {
-    [ "btnSettings", "btnSettings2" ].forEach(id => {
-      const b = document.getElementById(id);
-      if (b) {
-        b.style.backgroundImage = `url('${foto}')`;
-        b.innerText = "";
-      }
-    });
-  }
-});
-</script>
-    <style>
-        :root {
-            --primary:#2563eb; --primary-dim:rgba(37,99,235,0.1);
-            --accent:#7c3aed;  --accent-dim:rgba(124,58,237,0.1);
-            --danger:#ef4444;  --success:#10b981; --warn:#f59e0b; --cyan:#0ea5e9;
-            --bg:#f1f5f9; --surface:#ffffff; --surface-2:#f8fafc;
-            --border:#e2e8f0; --input-bg:#f8fafc;
-            --text:#0f172a; --text-sub:#64748b; --text-dim:#94a3b8;
-            --header-color:#1e3a8a;
-            --radius:20px; --radius-sm:12px;
-            --shadow:0 4px 20px rgba(0,0,0,0.06); --shadow-lg:0 12px 40px rgba(0,0,0,0.1);
-            --tr:all 0.25s cubic-bezier(0.4,0,0.2,1);
-            color-scheme: light;
-        }
-        [data-theme="dark"] {
-            --bg:#0f172a; --surface:#1e293b; --surface-2:#273549;
-            --border:#334155; --input-bg:#273549;
-            --text:#f1f5f9; --text-sub:#94a3b8; --text-dim:#64748b;
-            --header-color:#2563eb;
-            --shadow:0 4px 20px rgba(0,0,0,0.3); --shadow-lg:0 12px 40px rgba(0,0,0,0.4);
-            color-scheme: dark;
-        }
-        html{scroll-behavior:smooth;}
-        body{padding:16px 16px 40px;}
-        .wrap{width:100%;max-width:460px;}
-
-        .app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-        .logo{display:flex;align-items:center;gap:10px;font-size:1.4rem;font-weight:900;color:var(--header-color);letter-spacing:-.5px;}
-        .logo svg{width:28px;height:28px;flex-shrink:0;}
-
-        .nav-bar{display:flex;align-items:center;background:var(--surface);border-radius:16px;padding:6px;margin-bottom:16px;border:1px solid var(--border);box-shadow:var(--shadow);gap:2px;}
-        .btn-nav{flex:1;display:flex;flex-direction:column;align-items:center;text-decoration:none;color:var(--text-sub);font-size:10px;font-weight:700;gap:2px;padding:6px 2px;border-radius:10px;background:none;border:none;cursor:pointer;transition:var(--tr);text-transform:uppercase;letter-spacing:.3px;}
-        .btn-nav .ni{font-size:17px;line-height:1;}
-        .btn-nav:hover,.btn-nav.active{color:var(--primary);background:var(--primary-dim);}
-        .btn-nav-set{width:42px;height:42px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;overflow:hidden;transition:var(--tr);background-size:cover;background-position:center;}
-        .btn-nav-set:hover{border-color:var(--primary);}
-
-        
-        .greeting-banner{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#7c3aed 100%);color:white;border-radius:var(--radius);padding:18px 20px 16px;margin-bottom:14px;box-shadow:0 8px 28px rgba(37,99,235,.28);position:relative;overflow:hidden;}
-        .greeting-banner::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none;}
-        .greeting-banner::after{content:'✈️';position:absolute;right:14px;bottom:-8px;font-size:4.2rem;opacity:.18;transform:rotate(-15deg);pointer-events:none;}
-        .greeting-sub{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;opacity:.75;margin-bottom:3px;}
-        .greeting-name{font-size:1.3rem;font-weight:900;letter-spacing:-.3px;line-height:1.2;}
-        .greeting-date{font-size:.72rem;font-weight:600;opacity:.7;margin-top:4px;}
-
-        
-        .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px;}
-        .quick-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:inherit;cursor:pointer;transition:var(--tr);}
-        .quick-item:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 6px 20px rgba(37,99,235,.13);}
-        .quick-item:active{transform:scale(.95);}
-        .qi-emoji{font-size:1.55rem;line-height:1;}
-        .qi-label{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--text-sub);text-align:center;line-height:1.2;}
-
-        
-        .widget-budget{background:linear-gradient(135deg,var(--primary),var(--accent));color:white;border-radius:var(--radius-sm);padding:16px 18px;box-shadow:0 6px 20px rgba(37,99,235,.25);margin-bottom:14px;cursor:pointer;transition:var(--tr);}
-        .widget-budget:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(37,99,235,.3);}
-        .widget-budget:active{transform:scale(.98);}
-        .wb-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.8;margin-bottom:4px;}
-        .wb-row{display:flex;align-items:baseline;justify-content:space-between;}
-        .wb-value{font-size:1.9rem;font-weight:900;letter-spacing:-.5px;}
-        .wb-pct{font-size:.8rem;font-weight:800;opacity:.8;background:rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;align-self:center;}
-        .wb-bar-track{height:5px;background:rgba(255,255,255,.25);border-radius:4px;margin-top:10px;overflow:hidden;}
-        .wb-bar-fill{height:100%;background:white;border-radius:4px;transition:width .6s ease;}
-        .wb-hint{font-size:.65rem;font-weight:600;opacity:.75;margin-top:8px;}
-
-        
-        .widgets-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-        .widget{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
-        .widget.clickable{cursor:pointer;transition:var(--tr);}
-        .widget.clickable:hover{border-color:var(--primary);transform:translateY(-1px);box-shadow:0 6px 24px rgba(37,99,235,.12);}
-        .widget.clickable:active{transform:scale(.98);}
-        .w-label{font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:6px;display:flex;align-items:center;gap:5px;}
-        .w-icon{font-size:.9rem;}
-        .w-value{font-size:1.2rem;font-weight:900;color:var(--text);line-height:1.1;}
-        .w-sub{font-size:.68rem;font-weight:600;color:var(--text-sub);margin-top:3px;}
-        .w-badge{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:2px 7px;font-size:.58rem;font-weight:800;margin-top:5px;}
-        .w-badge.warn{background:rgba(245,158,11,.1);color:var(--warn);}
-        .w-divider{height:1px;background:var(--border);margin:10px 0;}
-        
-        .fx-flags{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;}
-        .fx-flag-btn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;border-radius:8px;border:1.5px solid transparent;background:var(--surface-2);cursor:pointer;transition:var(--tr);font-size:.5rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px;}
-        .fx-flag-btn img{width:20px;height:14px;border-radius:2px;display:block;}
-        .fx-flag-btn:hover{border-color:var(--primary);background:var(--primary-dim);}
-        .fx-flag-btn.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
-        .fx-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border);}
-        .fx-row:last-child{border-bottom:none;padding-bottom:0;}
-        .fx-row:first-child{padding-top:0;}
-        .fx-name{font-size:.6rem;font-weight:700;color:var(--text-sub);display:flex;align-items:center;gap:4px;}
-        .fx-val{font-size:.82rem;font-weight:900;color:var(--text);}
-
-        
-        .weather-widget{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:14px;position:relative;overflow:hidden;}
-        .weather-widget::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(37,99,235,0.06),rgba(14,165,233,0.06));pointer-events:none;}
-        .ww-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-        .ww-label{font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;}
-        .ww-refresh{background:none;border:none;cursor:pointer;color:var(--text-dim);padding:6px;border-radius:8px;transition:var(--tr);display:flex;align-items:center;justify-content:center;}
-        .ww-refresh svg{transition:transform 0.3s ease;}
-        .ww-refresh:hover{color:var(--primary);background:var(--primary-dim);}
-        .ww-refresh:hover svg{transform:rotate(45deg);}
-        .ww-refresh.spinning svg{animation:ww-spin 0.7s linear infinite;}
-        @keyframes ww-spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-        .ww-main{display:flex;align-items:center;gap:14px;}
-        .ww-icon{font-size:2.8rem;line-height:1;flex-shrink:0;}
-        .ww-info{flex:1;}
-        .ww-temp{font-size:2rem;font-weight:900;color:var(--text);line-height:1;}
-        .ww-temp span{font-size:1rem;font-weight:600;color:var(--text-sub);}
-        .ww-city{font-size:.8rem;font-weight:700;color:var(--text-sub);margin-top:2px;}
-        .ww-desc{font-size:.72rem;font-weight:600;color:var(--primary);margin-top:3px;text-transform:capitalize;}
-        .ww-extras{display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
-        .ww-extra{display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;color:var(--text-sub);}
-        .ww-extra span:first-child{font-size:.95rem;}
-        .ww-loading{text-align:center;padding:14px 0;font-size:.8rem;color:var(--text-dim);font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;}
-        .ww-spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--primary);animation:ww-spin .75s linear infinite;flex-shrink:0;}
-        .ww-error{font-size:.75rem;color:var(--text-dim);font-weight:600;text-align:center;padding:8px 0;}
-
-        
-        .next-event-card{text-decoration:none;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px;cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:14px;}
-        .next-event-card:hover{border-color:var(--accent);transform:translateY(-1px);}
-        .ne-dot{width:42px;height:42px;border-radius:12px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
-        .ne-info{flex:1;min-width:0;}
-        .ne-label{font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:3px;}
-        .ne-title{font-size:.9rem;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .ne-time{font-size:.7rem;font-weight:600;color:var(--text-sub);margin-top:2px;}
-        .ne-arrow{color:var(--text-dim);font-size:.9rem;flex-shrink:0;}
-
-        
-        .tip-card{background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(37,99,235,.06));border:1.5px solid var(--accent-dim);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:var(--tr);display:flex;align-items:flex-start;gap:12px;}
-        .tip-card:hover{border-color:var(--accent);opacity:.9;}
-        .tip-icon{font-size:1.4rem;flex-shrink:0;margin-top:1px;}
-        .tip-label{font-size:.52rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:4px;}
-        .tip-text{font-size:.78rem;font-weight:600;color:var(--text);line-height:1.45;transition:opacity .18s ease;}
-        .tip-hint{font-size:.6rem;font-weight:700;color:var(--text-dim);margin-top:6px;}
-
-        
-        
-        .section-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
-        .home-primary-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
-        .home-primary-grid .section-card{min-height:88px;aspect-ratio:1;}
-        
-        .home-section-heading{font-size:.7rem;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}
-        .section-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 6px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:inherit;transition:var(--tr);cursor:pointer;aspect-ratio:1;position:relative;overflow:hidden;}
-        .section-card::before{content:'';position:absolute;inset:0;background:transparent;border-radius:14px;transition:var(--tr);}
-        .section-card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow);}
-        .section-card:hover::before{background:var(--primary-dim);}
-        .section-card:active{transform:scale(.94);}
-        .sc-emoji{font-size:1.6rem;line-height:1;position:relative;z-index:1;}
-        .sc-name{font-size:.56rem;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.4px;text-align:center;line-height:1.2;position:relative;z-index:1;}
-        .section-card:hover .sc-name{color:var(--primary);}
-        .si-text{flex:1;min-width:0;}
-        .si-name{font-size:.9rem;font-weight:800;color:var(--text);}
-        .si-desc{font-size:.7rem;font-weight:600;color:var(--text-sub);margin-top:1px;}
-        .si-arrow{color:var(--text-dim);font-size:.85rem;flex-shrink:0;transition:var(--tr);}
-        .section-item:hover .si-arrow{color:var(--primary);transform:translateX(2px);}
-        .ic-blue{background:rgba(37,99,235,.1);} .ic-violet{background:rgba(124,58,237,.1);}
-        .ic-green{background:rgba(16,185,129,.1);} .ic-amber{background:rgba(245,158,11,.1);}
-        .ic-cyan{background:rgba(14,165,233,.1);} .ic-red{background:rgba(239,68,68,.1);}
-        .ic-indigo{background:rgba(99,102,241,.1);} .ic-teal{background:rgba(20,184,166,.1);}
-
-        
-        .menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:1000;backdrop-filter:blur(4px);}
-        .settings-drawer{position:fixed;top:0;right:-300px;width:290px;height:100%;background:var(--surface);z-index:1001;transition:.3s ease;padding:28px 20px;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.15);border-left:1px solid var(--border);overflow-y:auto;}
-        .settings-drawer.open{right:0;}
-        .drawer-header{font-size:1.1rem;font-weight:900;color:var(--primary);margin-bottom:4px;}
-        .drawer-email{font-size:.75rem;color:var(--text-dim);font-weight:600;margin-bottom:20px;}
-        .drawer-section-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:8px;display:block;}
-        .lang-selector{display:flex;background:var(--input-bg);border-radius:var(--radius-sm);padding:4px;gap:4px;margin-bottom:14px;border:1.5px solid var(--border);}
-        .lang-opt{flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;cursor:pointer;font-size:.75rem;font-weight:800;color:var(--text-sub);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr);}
-        .lang-opt.active{background:var(--primary);color:white;}
-        .drawer-btn{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;font-weight:700;margin-bottom:8px;font-size:.85rem;text-align:left;font-family:inherit;transition:var(--tr);display:flex;align-items:center;gap:10px;}
-        .drawer-btn:hover{background:var(--surface-2);border-color:var(--primary);}
-        .btn-danger{color:var(--danger)!important;border-color:rgba(239,68,68,.3)!important;}
-
-        #offline-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--surface);border:.5px solid #EF9F27;border-left:3px solid #BA7517;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:.8rem;font-weight:700;color:var(--text);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .35s ease;}
-        #offline-toast.show{opacity:1;}
-
-        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        .greeting-banner{animation:fadeIn .3s ease both;}
-        .quick-grid{animation:fadeIn .35s .05s ease both;}
-        .widget-budget{animation:fadeIn .35s .1s ease both;}
-        .widgets-grid{animation:fadeIn .35s .15s ease both;}
-        .weather-widget{animation:fadeIn .35s .18s ease both;}
-        .next-event-card{animation:fadeIn .35s .2s ease both;}
-        .tip-card{animation:fadeIn .35s .22s ease both;}
-        .section-card:nth-child(1){animation:fadeIn .3s .08s ease both;}
-        .section-card:nth-child(2){animation:fadeIn .3s .12s ease both;}
-        .section-card:nth-child(3){animation:fadeIn .3s .16s ease both;}
-        .section-card:nth-child(4){animation:fadeIn .3s .20s ease both;}
-        .section-card:nth-child(5){animation:fadeIn .3s .24s ease both;}
-        .section-card:nth-child(6){animation:fadeIn .3s .28s ease both;}
-        .section-card:nth-child(7){animation:fadeIn .3s .32s ease both;}
-    html,body{background:var(--bg)!important;background-image:none!important}
-        </style>
-    <link rel="stylesheet" href="assets/ui.css">
-<link rel="stylesheet" href="assets/cohesion.css">
-<script defer src="assets/localize.js"></script>
-<script src="assets/offline-status.js"></script>
-    <link rel="stylesheet" href="assets/ux.css">
-    <script src="assets/ux.js" defer></script>
-</head>
-<body>
-<div class="wrap">
-
-    <header class="app-header">
-        <div class="logo">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tg8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#2563eb"/></linearGradient><clipPath id="tc8"><rect width="32" height="32" rx="10"/></clipPath></defs><rect width="32" height="32" rx="10" fill="url(#tg8)"/><g clip-path="url(#tc8)"><path d="M-2 19.4 C6 15.2 10 15.2 16 19.4 S26 23.599999999999998 34 18.4" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 23.6 C6 19.400000000000002 10 19.400000000000002 16 23.6 S26 27.8 34 22.6" stroke="#fff" stroke-width="2.9" stroke-linecap="round"/><path d="M-2 27.8 C6 23.6 10 23.6 16 27.8 S26 32.0 34 26.8" stroke="#ef4444" stroke-width="2.9" stroke-linecap="round"/></g><polygon points="16.00,3.90 17.65,8.32 22.37,8.53 18.68,11.47 19.94,16.02 16.00,13.41 12.06,16.02 13.32,11.47 9.63,8.53 14.35,8.32" fill="#fff" stroke="#fff" stroke-width=".6" stroke-linejoin="round"/></svg>
-            <span class="wm">Tax<span class="wm-usa">USA</span></span>
-        </div>
-        <button class="btn-nav-set" id="btnSettings" onclick="toggleSettings()" title="Ajustes" aria-label="Ajustes">⚙️</button>
-    </header>
-    <script src="assets/ui.js"></script>
-    
-    <div class="greeting-banner" style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="flex-shrink:0;">
-            <div class="greeting-sub" data-i18n="greeting_sub">Bienvenido de vuelta</div>
-            <div class="greeting-name" id="greetingName">—</div>
-            <div class="greeting-date" id="greetingDate"></div>
-        </div>
-    </div>
-
-    
-    <a class="next-event-card" href="lugares.html?tab=actividades">
-        <div class="ne-dot" id="ne-dot">📅</div>
-        <div class="ne-info">
-            <div class="ne-label" data-i18n="next_event_label">Próximo evento</div>
-            <div class="ne-title" id="ne-title" data-i18n="next_event_empty">Sin eventos próximos</div>
-            <div class="ne-time" id="ne-time"></div>
-        </div>
-        <div class="ne-arrow">›</div>
-    </a>
-
-    <div class="home-section-heading" id="homePlanHeading">Tu viaje</div>
-    <section id="offline-readiness" class="offline-readiness" role="status" aria-live="polite"></section>
-    <div class="section-grid home-primary-grid" id="sectionList"></div>
-
-    
-    <div class="widget-budget" onclick="location.href='compras.html'">
-        <div class="wb-label" data-i18n="label_budget">Presupuesto Restante</div>
-        <div class="wb-row">
-            <div class="wb-value" id="wb-value">— USD</div>
-            <div class="wb-pct" id="wb-pct">—%</div>
-        </div>
-        <div class="wb-bar-track"><div class="wb-bar-fill" id="wb-bar" style="width:0%"></div></div>
-        <div class="wb-hint" data-i18n="budget_hint">Tocá para ver tus gastos →</div>
-    </div>
-
-    
-    <div class="widgets-grid">
-        
-        <div class="widget" style="cursor:default;">
-            <div class="w-label"><span class="w-icon">💱</span><span id="fx-widget-title">Dólar hoy</span></div>
-            <div class="fx-flags" id="fx-flags">
-                <button class="fx-flag-btn active" onclick="fxSelect('ars')" id="fx-btn-ars">
-                    <img src="https://flagcdn.com/20x15/ar.png" alt="" onerror="this.outerHTML='🇦🇷'"> ARS
-                </button>
-                <button class="fx-flag-btn" onclick="fxSelect('eur')" id="fx-btn-eur">
-                    <img src="https://flagcdn.com/20x15/eu.png" alt="" onerror="this.outerHTML='🇪🇺'"> EUR
-                </button>
-                <button class="fx-flag-btn" onclick="fxSelect('uyu')" id="fx-btn-uyu">
-                    <img src="https://flagcdn.com/20x15/uy.png" alt="" onerror="this.outerHTML='🇺🇾'"> UYU
-                </button>
-                <button class="fx-flag-btn" onclick="fxSelect('clp')" id="fx-btn-clp">
-                    <img src="https://flagcdn.com/20x15/cl.png" alt="" onerror="this.outerHTML='🇨🇱'"> CLP
-                </button>
-                <button class="fx-flag-btn" onclick="fxSelect('pen')" id="fx-btn-pen">
-                    <img src="https://flagcdn.com/20x15/pe.png" alt="" onerror="this.outerHTML='🇵🇪'"> PEN
-                </button>
-            </div>
-            <div id="fx-loading" style="font-size:.7rem;color:var(--text-dim);font-weight:600;">Cargando...</div>
-            <div id="fx-content" style="display:none;"></div>
-        </div>
-        
-        <div class="widget clickable" onclick="location.href='compras.html'">
-            <div class="w-label"><span class="w-icon">🧾</span><span data-i18n="widget_last_expense">Último gasto</span></div>
-            <div class="w-value" id="last-gasto-val">—</div>
-            <div class="w-sub" id="last-gasto-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-            <div class="w-badge warn" id="last-gasto-cat" style="display:none;"></div>
-            <div class="w-divider"></div>
-            <div class="w-label" style="margin-bottom:4px;"><span class="w-icon">📊</span><span data-i18n="widget_total">Total gastado</span></div>
-            <div class="w-value" id="total-gasto-val" style="font-size:.95rem;">—</div>
-            <div class="w-sub" id="total-gasto-maps-note" style="display:none;font-size:.65rem;margin-top:2px;"></div>
-        </div>
-    </div>
-
-    
-    <div class="weather-widget" id="weatherCard">
-        <div class="ww-top">
-            <span class="ww-label" id="ww-label">🌤️ &nbsp;<span data-i18n="widget_weather">Clima en destino</span></span>
-            <button class="ww-refresh" onclick="loadWeather(true)" title="Actualizar">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
-            </button>
-        </div>
-        <div id="ww-body"><div class="ww-loading"><div class="ww-spinner"></div><span data-i18n="loading">Cargando...</span></div></div>
-    </div>
-
-    
-
-
-    
-    <div class="tip-card" onclick="nextTip()">
-        <div class="tip-icon" id="tip-icon">💡</div>
-        <div style="flex:1;">
-            <div class="tip-label" data-i18n="tip_label">Tip de viaje</div>
-            <div class="tip-text" id="tip-text">—</div>
-            <div class="tip-hint" data-i18n="tip_hint">Tocá para ver otro tip →</div>
-        </div>
-    </div>
-
-
-
-</div>
-
-<div id="offline-toast">📵 <span data-i18n="offline_msg">Sin conexión</span></div>
-
-<script src="assets/trip-context.js"></script>
-<script src="assets/settings.js"></script>
-
-<div id="switchAppModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:var(--surface);border-radius:28px;padding:28px 24px;width:100%;max-width:340px;box-shadow:var(--shadow-lg);border:1px solid var(--border);text-align:center;">
-        <div style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:6px;">Cambiar Aplicación</div>
-        <div style="font-size:.8rem;font-weight:600;color:var(--text-sub);margin-bottom:22px;">¿A qué destino querés ir?</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            <button onclick="doSwitchApp('usa')" style="width:100%;padding:14px;border-radius:14px;border:2px solid rgba(239,68,68,.4);background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(239,68,68,.08));cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;color:var(--text);display:flex;align-items:center;gap:12px;">
-                <svg width="32" height="22" viewBox="0 0 18 13" style="border-radius:4px;flex-shrink:0;"><rect width="18" height="13" fill="#B22234"/><rect width="18" height="1" y="1" fill="#fff"/><rect width="18" height="1" y="3" fill="#fff"/><rect width="18" height="1" y="5" fill="#fff"/><rect width="18" height="1" y="7" fill="#fff"/><rect width="18" height="1" y="9" fill="#fff"/><rect width="18" height="1" y="11" fill="#fff"/><rect width="7" height="7" fill="#3C3B6E"/></svg>
-                <div style="text-align:left;"><div style="color:#ef4444;font-weight:900;">TaxUSA</div><div style="font-size:.72rem;font-weight:600;color:var(--text-sub);">Estados Unidos</div></div>
-            </button>
-            <button onclick="doSwitchApp('europe')" style="width:100%;padding:14px;border-radius:14px;border:2px solid rgba(0,51,153,.4);background:linear-gradient(135deg,rgba(0,51,153,.1),rgba(255,204,0,.06));cursor:pointer;font-family:inherit;font-weight:800;font-size:.95rem;color:var(--text);display:flex;align-items:center;gap:12px;">
-                <svg width="32" height="22" viewBox="0 0 36 24" style="border-radius:4px;flex-shrink:0;"><rect width="36" height="24" fill="#003399"/><g fill="#FFCC00"><polygon points="18,3 18.9,5.8 21.9,5.8 19.5,7.5 20.4,10.3 18,8.6 15.6,10.3 16.5,7.5 14.1,5.8 17.1,5.8"/><polygon points="18,14 18.9,16.8 21.9,16.8 19.5,18.5 20.4,21.3 18,19.6 15.6,21.3 16.5,18.5 14.1,16.8 17.1,16.8"/><polygon points="9,8.5 9.9,11.3 12.9,11.3 10.5,13 11.4,15.8 9,14.1 6.6,15.8 7.5,13 5.1,11.3 8.1,11.3"/><polygon points="27,8.5 27.9,11.3 30.9,11.3 28.5,13 29.4,15.8 27,14.1 24.6,15.8 25.5,13 23.1,11.3 26.1,11.3"/></g></svg>
-                <div style="text-align:left;"><div style="color:#003399;font-weight:900;">TaxEurope</div><div style="font-size:.72rem;font-weight:600;color:var(--text-sub);">Europa</div></div>
-            </button>
-            <button onclick="document.getElementById('switchAppModal').style.display='none'" style="width:100%;padding:11px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface-2);cursor:pointer;font-family:inherit;font-weight:700;font-size:.85rem;color:var(--text-sub);margin-top:4px;">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
 import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
@@ -424,9 +42,7 @@ let mapsSpentCache = 0;
 
 function computeMapsSpent(data) {
   if (!data) return 0;
-  const wm = data.countMarket ? parseFloat(data.walmartSpent) || 0 : 0;
-  const manual = (data.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
-  return wm + manual;
+  return (data.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
 }
 
 function listenMapsBudget() {
@@ -468,6 +84,8 @@ const I18N = {
     q_perfil: "Perfil",
     label_budget: "Presupuesto Restante",
     budget_hint: "Tocá para ver tus gastos →",
+    budget_over_label: "Te pasaste por",
+    budget_spent_sfx: "gastado",
     budget_no_data: "Sin presupuesto configurado",
     widget_fx: "Dólar hoy",
     fx_oficial: "Oficial",
@@ -479,6 +97,7 @@ const I18N = {
     widget_weather: "Clima en destino",
     next_event_label: "Próximo evento",
     next_event_empty: "Sin eventos próximos",
+    next_event_add: "＋ Agregar actividad",
     tip_label: "Tip de viaje",
     tip_hint: "Tocá para ver otro tip →",
     sections_title: "Secciones",
@@ -574,7 +193,7 @@ const I18N = {
   en: {
     nav_home: "HOME",
     nav_expenses: "EXPENSES",
-    nav_itinerary: "PLANIFICACIÓN",
+    nav_itinerary: "PLANNING",
     nav_units: "UNITS",
     nav_tickets: "DOCS",
     nav_group: "GROUP",
@@ -589,6 +208,8 @@ const I18N = {
     q_perfil: "Profile",
     label_budget: "Remaining Budget",
     budget_hint: "Tap to view your expenses →",
+    budget_over_label: "Over budget by",
+    budget_spent_sfx: "spent",
     budget_no_data: "No budget configured",
     widget_fx: "Dollar today",
     fx_oficial: "Official",
@@ -600,6 +221,7 @@ const I18N = {
     widget_weather: "Weather at destination",
     next_event_label: "Next event",
     next_event_empty: "No upcoming events",
+    next_event_add: "＋ Add activity",
     tip_label: "Travel tip",
     tip_hint: "Tap to see another tip →",
     sections_title: "Sections",
@@ -695,7 +317,7 @@ const I18N = {
   pt: {
     nav_home: "INÍCIO",
     nav_expenses: "GASTOS",
-    nav_itinerary: "PLANIFICACIÓN",
+    nav_itinerary: "PLANEJAMENTO",
     nav_units: "UNID.",
     nav_tickets: "DOCS",
     nav_group: "GRUPO",
@@ -710,6 +332,8 @@ const I18N = {
     q_perfil: "Perfil",
     label_budget: "Orçamento Restante",
     budget_hint: "Toque para ver seus gastos →",
+    budget_over_label: "Você passou em",
+    budget_spent_sfx: "gasto",
     budget_no_data: "Sem orçamento configurado",
     widget_fx: "Dólar hoje",
     fx_oficial: "Oficial",
@@ -721,6 +345,7 @@ const I18N = {
     widget_weather: "Clima no destino",
     next_event_label: "Próximo evento",
     next_event_empty: "Sem eventos próximos",
+    next_event_add: "＋ Adicionar atividade",
     tip_label: "Dica de viagem",
     tip_hint: "Toque para ver outra dica →",
     sections_title: "Seções",
@@ -835,6 +460,7 @@ function applyI18n() {
   [ "es", "en", "pt" ].forEach(l => document.getElementById("lang-" + l)?.classList.toggle("active", l === lang));
   renderSections();
   renderTip();
+  if (window._lastBudgetArgs) { try { renderBudgetUI(...window._lastBudgetArgs); } catch (e) {} }
   if (document.getElementById("fx-content")?.style.display !== "none") fxRender();
 }
 
@@ -870,6 +496,7 @@ function updateGreeting() {
 }
 
 function renderBudgetUI(base, gastos) {
+  window._lastBudgetArgs = [ base, gastos ];
   if (currentUser && perfilId) {
     const tripId=window.TripContext.view(currentUser.uid,perfilId);
     if (tripId!=="orlando") base=tripId==="unassigned"?0:Number(localStorage.getItem("taxusa_budget_cache_"+perfilId+"::"+currentUser.uid+"::"+tripId))||0;
@@ -909,18 +536,31 @@ function renderBudgetUI(base, gastos) {
   if (base <= 0) {
     document.getElementById("wb-value").textContent = t.budget_no_data || "—";
     document.getElementById("wb-pct").textContent = "—";
-    if (wbEl) wbEl.classList.add("is-empty");
+    const lbl0 = document.querySelector(".widget-budget .wb-label");
+    if (lbl0) { lbl0.setAttribute("data-i18n", "label_budget"); lbl0.textContent = t.label_budget; }
+    if (wbEl) { wbEl.classList.add("is-empty"); wbEl.classList.remove("is-over"); }
     return;
   }
   if (wbEl) wbEl.classList.remove("is-empty");
-  const restante = base - gastado, pct = Math.max(0, Math.min(100, Math.round(restante / base * 100)));
-  document.getElementById("wb-value").textContent = `USD ${restante.toLocaleString("en-US", {
+  const restante = base - gastado;
+  const spentPct = Math.round(gastado / base * 100);
+  const over = gastado > base;
+  const labelEl = document.querySelector(".widget-budget .wb-label");
+  if (labelEl) {
+    labelEl.setAttribute("data-i18n", over ? "budget_over_label" : "label_budget");
+    labelEl.textContent = over ? t.budget_over_label : t.label_budget;
+  }
+  if (wbEl) wbEl.classList.toggle("is-over", over);
+  document.getElementById("wb-value").textContent = `USD ${Math.abs(restante).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })}`;
-  document.getElementById("wb-pct").textContent = pct + "%";
-  document.getElementById("wb-bar").style.width = pct + "%";
-  if (pct < 20) document.getElementById("wb-pct").style.background = "rgba(239,68,68,.35)"; else if (pct < 40) document.getElementById("wb-pct").style.background = "rgba(245,158,11,.35)"; else document.getElementById("wb-pct").style.background = "";
+  const pctEl = document.getElementById("wb-pct");
+  pctEl.textContent = spentPct + "% " + (t.budget_spent_sfx || "");
+  const bar = document.getElementById("wb-bar");
+  bar.style.width = Math.min(100, Math.max(0, spentPct)) + "%";
+  bar.style.background = over ? "#fecaca" : "";
+  if (spentPct >= 90) pctEl.style.background = "rgba(239,68,68,.35)"; else if (spentPct >= 70) pctEl.style.background = "rgba(245,158,11,.35)"; else pctEl.style.background = "";
 }
 
 function loadBudget() {
@@ -1280,11 +920,11 @@ window.loadWeather = async function(force = false) {
       renderWeather(last.data, l);
       const note = document.createElement("div");
       note.className = "ww-error";
-      note.textContent = "Sin conexión · último clima guardado: " + new Date(last.ts).toLocaleString("es-AR") + " (no es actual)";
+      note.textContent = tfL3("Sin conexión · último clima guardado: ", "Offline · last saved weather: ", "Sem conexão · último clima salvo: ") + new Date(last.ts).toLocaleString(tfL3("es-AR", "en-US", "pt-BR")) + tfL3(" (no es actual)", " (not current)", " (não é atual)");
       body.append(note);
       return;
     }
-    if (body) body.innerHTML = '<div class="ww-error">📵 Sin conexión — clima no disponible</div>';
+    if (body) body.innerHTML = '<div class="ww-error">📵 ' + tfL3("Sin conexión — clima no disponible", "Offline — weather unavailable", "Sem conexão — clima indisponível") + '</div>';
     return;
   }
   if (body) body.innerHTML = '<div class="ww-loading"><div class="ww-spinner"></div><span>' + (l === "en" ? "Fetching weather..." : l === "pt" ? "Obtendo clima..." : "Obteniendo clima...") + "</span></div>";
@@ -1345,7 +985,10 @@ function loadNextEvent() {
       titleEl.textContent = t.next_event_empty || "Sin eventos próximos";
       titleEl.removeAttribute("data-has-event");
     }
-    document.getElementById("ne-time").textContent = "";
+    const timeEl = document.getElementById("ne-time");
+    timeEl.textContent = t.next_event_add || "＋ Agregar actividad";
+    timeEl.style.fontWeight = "700";
+    timeEl.style.color = "var(--primary, #4f8cff)";
     document.getElementById("ne-dot").textContent = "📅";
   }
   if (!currentUser || !perfilId) {
@@ -1621,11 +1264,3 @@ if ("serviceWorker" in navigator) {
 }
 
 sessionStorage.setItem("taxfly_last_page", "./index.html");
-</script>
-<script src="assets/map-links.js" defer></script>
-<script src="assets/reconnect.js" defer></script>
-<script src="assets/reconnect-sync.js" defer></script>
-<link rel="stylesheet" href="assets/travel-tools.css">
-<script src="assets/travel-tools.js" defer></script>
-</body>
-</html>
