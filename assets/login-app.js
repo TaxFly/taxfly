@@ -651,6 +651,12 @@ if (firebaseOk) onAuthStateChanged(auth, async user => {
     try {
       window.taxflyTouchActivity && window.taxflyTouchActivity();
     } catch (e) {}
+    const pendingAction = localStorage.getItem("taxusa_action");
+    if (pendingAction === "change_pin") {
+      localStorage.removeItem("taxusa_action");
+      window.showChangePinScreen();
+      return;
+    }
     if (!pinHash) {
       showCreatePinScreen();
     } else {
@@ -988,16 +994,4 @@ function renderKeypad(containerId, handler) {
   });
 }
 
-onAuthStateChanged(auth, async user => {
-  const action = localStorage.getItem("taxusa_action");
-  if (action === "change_pin" && user && user.emailVerified) {
-    localStorage.removeItem("taxusa_action");
-    window.showChangePinScreen();
-  }
-});
-
 initScreen();
-
-const _pendingAction = localStorage.getItem("taxusa_action");
-
-if (_pendingAction === "change_pin") {}
