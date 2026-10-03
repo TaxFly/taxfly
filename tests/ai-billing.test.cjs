@@ -5,7 +5,7 @@ const path = require('node:path');
 const root = path.join(__dirname, '..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 
-test('AI worker instruments Anthropic usage and keeps billing disabled by default', () => {
+test('AI worker instruments Anthropic usage with billing enabled', () => {
   const worker = read('claude-worker.js');
   const wrangler = read('wrangler.toml');
   assert.match(worker, /AI_ANALYTICS\.writeDataPoint/);
@@ -13,7 +13,7 @@ test('AI worker instruments Anthropic usage and keeps billing disabled by defaul
   assert.match(worker, /reserveCredits/);
   assert.match(worker, /finalizeReservation/);
   assert.match(worker, /requestId/);
-  assert.match(wrangler, /AI_BILLING_ENABLED = "false"/);
+  assert.match(wrangler, /AI_BILLING_ENABLED = "true"/);
   assert.match(wrangler, /binding = "AI_ANALYTICS"/);
 });
 
