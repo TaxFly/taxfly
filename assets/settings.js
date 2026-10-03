@@ -546,19 +546,28 @@
     var un = document.getElementById("userEmail");
     if (un && !un.textContent && nombre) un.textContent = nombre;
   }
-  var aiStatusAt = 0;
+  var aiStatusAt = 0, aiStatusRetry = 0, aiStatusBusy = false;
   function refreshAIStatus(force) {
     var el = document.getElementById("sxAIValue");
-    if (!el || typeof window.taxflyAIStatus !== "function") return;
-    if (!force && Date.now() - aiStatusAt < 30000) return;
-    aiStatusAt = Date.now();
+    if (!el || typeof window.taxflyAIStatus !== "function" || aiStatusBusy) return;
+    if (!force && aiStatusAt && Date.now() - aiStatusAt < 30000) return;
+    aiStatusBusy = true;
     el.textContent = "…";
     window.taxflyAIStatus().then(function(st) {
+      aiStatusAt = Date.now();
+      aiStatusRetry = 0;
       if (st && st.unlimited) el.textContent = "∞ · Owner";
       else if (st && typeof st.availableCredits === "number") el.textContent = String(st.availableCredits);
       else if (st && st.billingEnabled === false) el.textContent = "Beta";
       else el.textContent = "—";
-    }).catch(function() { el.textContent = "—"; });
+    }).catch(function() {
+      aiStatusAt = 0;
+      el.textContent = "—";
+      if (drawer.classList.contains("open") && aiStatusRetry < 4) {
+        aiStatusRetry += 1;
+        setTimeout(function(){ refreshAIStatus(true); }, 700 * aiStatusRetry);
+      }
+    }).finally(function(){ aiStatusBusy = false; });
   }
   function creditPackages() {
     var cfg = window.TAXFLY_CONFIG || {};
@@ -756,7 +765,7 @@
   var tripsUiUrl = new URL("trips-ui.js", document.currentScript.src).href;
   window.addEventListener("load", function() { import(tripsUiUrl).catch(function(e) { console.warn("[trips]", e); }); });
   new MutationObserver(function() {
-    if (drawer.classList.contains("open")) refresh();
+    if (drawer.classList.contains("open")) { refresh(); refreshAIStatus(true); }
   }).observe(drawer, {
     attributes: true,
     attributeFilter: [ "class" ]

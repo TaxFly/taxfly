@@ -44,14 +44,24 @@ window.taxflyWorker = async function(body) {
     "Content-Type": "application/json"
   };
   try {
-    const {getApps: getApps} = await (import(window.TAXFLY_CONFIG.FIREBASE_SDK + "/firebase-app.js"));
-    if (getApps().length) {
-      const {getAuth: getAuth} = await (import(window.TAXFLY_CONFIG.FIREBASE_SDK + "/firebase-auth.js"));
-      const auth = getAuth();
-      if (auth.authStateReady) await auth.authStateReady();
-      if (auth.currentUser) headers.Authorization = "Bearer " + await auth.currentUser.getIdToken();
+    const appMod = await import(window.TAXFLY_CONFIG.FIREBASE_SDK + "/firebase-app.js");
+    const app = appMod.getApps().length ? appMod.getApp() : appMod.initializeApp(window.TAXFLY_CONFIG.FIREBASE_CONFIG);
+    const authMod = await import(window.TAXFLY_CONFIG.FIREBASE_SDK + "/firebase-auth.js");
+    const auth = authMod.getAuth(app);
+    if (auth.authStateReady) await auth.authStateReady();
+    if (!auth.currentUser) {
+      await new Promise(function(resolve) {
+        var done = false, timer = setTimeout(function(){ if (!done) { done = true; resolve(); } }, 2500);
+        var unsub = authMod.onAuthStateChanged(auth, function(user) {
+          if (done) return;
+          if (user) { done = true; clearTimeout(timer); try { unsub(); } catch (e) {} resolve(); }
+        }, function(){ if (!done) { done = true; clearTimeout(timer); resolve(); } });
+      });
     }
-  } catch (e) {}
+    if (auth.currentUser) headers.Authorization = "Bearer " + await auth.currentUser.getIdToken();
+  } catch (e) {
+    if (window.DEBUG) console.warn("[taxflyWorker] auth token unavailable", e);
+  }
   return fetch(window.TAXFLY_CONFIG.WORKER_URL, {
     method: "POST",
     headers: headers,
