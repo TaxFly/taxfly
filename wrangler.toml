@@ -31,7 +31,7 @@ AI_BILLING_ENABLED = "false"
 AI_STARTER_CREDITS = "10"
 
 # Activar después de comprobar que la medición y los límites funcionan correctamente.
-AI_SAFETY_BUDGETS_ENABLED = "true"
+AI_SAFETY_BUDGETS_ENABLED = "false"
 AI_SAFETY_FAIL_CLOSED = "false"
 
 OWNER_DAILY_USD_LIMIT = "5"

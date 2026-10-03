@@ -134,7 +134,16 @@ async function batchGet(env, paths, transaction) {
   });
   if (!res.ok) throw new Error(`Firestore batchGet failed (${res.status})`);
   const text = await res.text();
-  const rows = text.trim() ? text.trim().split("\n").map(line => JSON.parse(line)) : [];
+  let rows = [];
+  if (text.trim()) {
+    try {
+      const parsed = JSON.parse(text);
+      rows = Array.isArray(parsed) ? parsed : [parsed];
+    } catch (_) {
+      // Some streaming transports may return one JSON object per line.
+      rows = text.trim().split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => JSON.parse(line.replace(/,$/, "")));
+    }
+  }
   const out = new Map(paths.map(p => [docName(env, p), null]));
   for (const row of rows) {
     if (row.found) out.set(row.found.name, decodeDocument(row.found));
