@@ -13,8 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # The cache version is derived from precached assets. A normal push can
+      # race with the separate workflow that commits the refreshed sw.js.
+      # Recalculate it only in this temporary Actions checkout before testing,
+      # so verification never fails just because that cache commit has not
+      # landed yet.
+      - name: Prepare service worker cache
+        run: node scripts/bump-cache.js
+
       - name: Run flow and PWA tests
         run: npm test

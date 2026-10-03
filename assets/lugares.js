@@ -165,6 +165,8 @@ const i18n = {
     label_notes: "📝 Notas y Recordatorios",
     note_placeholder: "Vuelos, hoteles, recordatorios...",
     btn_add_note: "AGREGAR NOTA",
+    search_activities_placeholder: "Buscar actividades…",
+    search_notes_placeholder: "Buscar notas…",
     label_checklist: "✅ Checklist de Viaje",
     settings_title: "Ajustes",
     label_language: "Idioma",
@@ -270,6 +272,8 @@ const i18n = {
     label_notes: "📝 Notes & Reminders",
     note_placeholder: "Flights, hotels, reminders...",
     btn_add_note: "ADD NOTE",
+    search_activities_placeholder: "Search activities…",
+    search_notes_placeholder: "Search notes…",
     label_checklist: "✅ Travel Checklist",
     btn_pin: "Change PIN Offline",
     settings_title: "Settings",
@@ -377,6 +381,8 @@ const i18n = {
     label_notes: "📝 Notas e Lembretes",
     note_placeholder: "Voos, hotéis, lembretes...",
     btn_add_note: "ADICIONAR NOTA",
+    search_activities_placeholder: "Buscar atividades…",
+    search_notes_placeholder: "Buscar notas…",
     label_checklist: "✅ Checklist de Viagem",
     settings_title: "Configurações",
     label_language: "Idioma",
@@ -461,6 +467,35 @@ const placesText = {
   en:{places:"Places to explore",parks:"Parks",nearby:"Some parks are outside the city; check the distance before visiting.",loading:"Checking wait times…",unavailable:"Live waits unavailable",average:"Average queue level",low:"Low",medium:"Moderate",high:"High",count:"measured attractions",closed:"Closed"},
   pt:{places:"Lugares para conhecer",parks:"Parques",nearby:"Alguns parques ficam fora da cidade; confira a distância antes de ir.",loading:"Consultando esperas…",unavailable:"Esperas ao vivo indisponíveis",average:"Nível médio das filas",low:"Baixo",medium:"Médio",high:"Alto",count:"atrações medidas",closed:"Fechado"}
 };
+
+function iconSvg(name) {
+  const icons = {
+    clock: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>`,
+    backpack: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8V7a3 3 0 0 1 6 0v1"></path><path d="M7 9h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"></path><path d="M9 9v2"></path><path d="M15 9v2"></path><path d="M9 15h6"></path></svg>`
+  };
+  return `<span class="icon-inline icon-${name}">${icons[name] || ""}</span>`;
+}
+
+function formatChecklistItem(item) {
+  if (typeof item !== "string") return esc(String(item ?? ""));
+  if (item.startsWith("🎒 ")) return `${iconSvg("backpack")}<span class="cl-label-text">${esc(item.slice(3))}</span>`;
+  return esc(item);
+}
+
+function activityTimeMeta(act, lang) {
+  const zone = esc(act.city || act.timeZone || "Orlando");
+  const departurePrefix = act.type === "vuelo" ? (lang === "en" ? "Departure " : lang === "pt" ? "Saída " : "Salida ") : "";
+  const arrivalPrefix = lang === "en" ? "Arrival " : lang === "pt" ? "Chegada " : "Llegada ";
+  const zoneText = lang === "en" ? `time in ${zone}` : lang === "pt" ? `horário de ${zone}` : `hora de ${zone}`;
+  const parts = [];
+  if (act.time) parts.push(`<span class="act-time">${iconSvg("clock")}${departurePrefix}${esc(act.time)} · ${zoneText}</span>`);
+  if (act.arrivalTime) {
+    const arrivalZone = esc(act.arrivalCity || act.arrivalZone || zone);
+    const arrivalZoneText = lang === "en" ? `time in ${arrivalZone}` : lang === "pt" ? `horário de ${arrivalZone}` : `hora de ${arrivalZone}`;
+    parts.push(`<span class="act-time">${iconSvg("clock")}${arrivalPrefix}${esc(act.arrivalDate || "")} ${esc(act.arrivalTime)} · ${arrivalZoneText}</span>`);
+  }
+  return parts.join("");
+}
 
 const checklistItems = {
   es: [ "🛂 Pasaporte vigente", "💳 Tarjeta avisada al banco", "🔌 Adaptador de corriente", "💊 Seguro médico / medicamentos", "🧳 Valija con medidas de aerolínea", "📱 SIM internacional / eSIM", "💵 Dólares en efectivo", "🔒 Candado TSA", "📄 Reservas impresas o en favoritos", "🗺️ Google Maps de la zona offline", "🎟️ Cuponeras de Outlets descargadas", "🚗 Licencia de conducir física" ],
@@ -764,7 +799,7 @@ function renderActivities(acts) {
     const dayActs = grouped[dateKey];
     const dateLabel = dateKey === "sin-fecha" ? "📌" : formatDate(dateKey, lang);
     const dayDone = dayActs.filter(a => a.done).length;
-    return `\n                <div>\n                    <div class="act-group-header">\n                        <span class="act-group-date">${dateLabel}</span>\n                        <span class="act-group-count">${dayDone}/${dayActs.length}</span>\n                    </div>\n                    ${dayActs.sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99")).map(act => `\n                        <div class="act-item ${act.done ? "done" : ""}" id="act-item-${act.id}" data-type="${act.type}">\n                            <div class="act-check ${act.done ? "checked" : ""}" onclick="toggleActivity('${act.id}', ${act.done})"></div>\n                            <div class="act-info">\n                                <div class="act-name">${typeIconMap[act.type] || "📌"} ${esc(act.name)}${window.tfSyncBadge ? tfSyncBadge(act._pending ? "pending" : "ok", true) : ""}</div>\n                                <div class="act-meta">\n                                    ${act.time ? `<span class="act-time">🕐 ${act.type==='vuelo'?'Salida ':''}${act.time} · hora de ${esc(act.city||act.timeZone||"Orlando")}</span>` : ""}\n                                    ${act.arrivalTime?`<span class="act-time">Llegada ${esc(act.arrivalDate)} ${esc(act.arrivalTime)} · hora de ${esc(act.arrivalCity||act.arrivalZone)}</span>`:""}\n                                    <span class="act-badge badge-${act.type}">${getBadgeLabel(act.type, lang)}</span>\n                                </div>\n                            </div>\n                            <button class="act-bell ${isReminderOn(act.id) ? "on" : ""}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g, "\\'")}','${act.date}','${act.time || ""}')" title="Recordatorio">🔔</button>\n                            <button class="act-del" onclick="deleteActivity('${act.id}')" aria-label="Eliminar actividad">✕</button>\n                        </div>\n                    `).join("")}\n                </div>\n            `;
+    return `\n                <div>\n                    <div class="act-group-header">\n                        <span class="act-group-date">${dateLabel}</span>\n                        <span class="act-group-count">${dayDone}/${dayActs.length}</span>\n                    </div>\n                    ${dayActs.sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99")).map(act => `\n                        <div class="act-item ${act.done ? "done" : ""}" id="act-item-${act.id}" data-type="${act.type}">\n                            <div class="act-check ${act.done ? "checked" : ""}" onclick="toggleActivity('${act.id}', ${act.done})"></div>\n                            <div class="act-info">\n                                <div class="act-name">${typeIconMap[act.type] || "📌"} ${esc(act.name)}${window.tfSyncBadge ? tfSyncBadge(act._pending ? "pending" : "ok", true) : ""}</div>\n                                <div class="act-meta">\n                                    ${activityTimeMeta(act, lang)}\n                                    <span class="act-badge badge-${act.type}">${getBadgeLabel(act.type, lang)}</span>\n                                </div>\n                            </div>\n                            <button class="act-bell ${isReminderOn(act.id) ? "on" : ""}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g, "\\'")}','${act.date}','${act.time || ""}')" title="Recordatorio">🔔</button>\n                            <button class="act-del" onclick="deleteActivity('${act.id}')" aria-label="Eliminar actividad">✕</button>\n                        </div>\n                    `).join("")}\n                </div>\n            `;
   }).join("");
 }
 
@@ -950,7 +985,7 @@ function renderChecklist(lang) {
   container.innerHTML = allItems.map((item, i) => {
     const isChecked = savedStatus[i] || false;
     const isCustom = i >= baseItems.length;
-    return `\n            <div class="checklist-item">\n                <div class="cl-check ${isChecked ? "checked" : ""}" onclick="toggleChecklist(${i})"></div>\n                <span class="cl-label" style="flex:1;">${item}</span>\n                ${isCustom ? `<button onclick="removeCustomItem(${i - baseItems.length})" aria-label="Quitar ítem" style="background:none;border:none;color:var(--danger);cursor:pointer;font-weight:bold;padding:0 5px;">✕</button>` : ""}\n            </div>\n        `;
+    return `\n            <div class="checklist-item">\n                <div class="cl-check ${isChecked ? "checked" : ""}" onclick="toggleChecklist(${i})"></div>\n                <span class="cl-label" style="flex:1;">${formatChecklistItem(item)}</span>\n                ${isCustom ? `<button onclick="removeCustomItem(${i - baseItems.length})" aria-label="Quitar ítem" style="background:none;border:none;color:var(--danger);cursor:pointer;font-weight:bold;padding:0 5px;">✕</button>` : ""}\n            </div>\n        `;
   }).join("");
   const progressCard = document.getElementById("checkProgressCard");
   const progressFill = document.getElementById("checkProgressFill");
@@ -999,6 +1034,10 @@ window.changeLanguage = lang => {
   document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
     const key = el.getAttribute("data-i18n-placeholder");
     if (i18n[lang]?.[key]) el.placeholder = i18n[lang][key];
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach(el => {
+    const key = el.getAttribute("data-i18n-aria-label");
+    if (i18n[lang]?.[key]) el.setAttribute("aria-label", i18n[lang][key]);
   });
   document.querySelectorAll(".lang-opt").forEach(b => b.classList.remove("active"));
   const btn = document.getElementById("lang-" + lang);
