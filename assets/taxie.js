@@ -182,6 +182,26 @@
         "es": "Iniciá sesión para hablar con Taxie.",
         "en": "Sign in to chat with Taxie.",
         "pt": "Entre na sua conta para falar com o Taxie."
+      },
+      "credits": {
+        "es": "No tenés créditos IA disponibles. Revisá Créditos IA en Ajustes para seguir usando Taxie.",
+        "en": "You don't have any AI credits available. Check AI Credits in Settings to keep using Taxie.",
+        "pt": "Você não tem créditos de IA disponíveis. Confira Créditos de IA em Ajustes para continuar usando o Taxie."
+      },
+      "profileLimit": {
+        "es": "Este perfil alcanzó su límite de créditos IA. El perfil principal puede cambiarlo desde Ajustes.",
+        "en": "This profile reached its AI credit limit. The primary profile can change it in Settings.",
+        "pt": "Este perfil atingiu o limite de créditos de IA. O perfil principal pode alterá-lo em Ajustes."
+      },
+      "profileBlocked": {
+        "es": "La IA está desactivada para este perfil. El perfil principal puede habilitarla desde Ajustes.",
+        "en": "AI is disabled for this profile. The primary profile can enable it in Settings.",
+        "pt": "A IA está desativada para este perfil. O perfil principal pode ativá-la em Ajustes."
+      },
+      "verifyEmail": {
+        "es": "Verificá tu email antes de usar los créditos IA.",
+        "en": "Verify your email before using AI credits.",
+        "pt": "Verifique seu e-mail antes de usar os créditos de IA."
       }
     }
   };
@@ -437,8 +457,15 @@
             return {};
           }).then(function(d) {
             if (!res.ok) {
-              var msg = res.status === 401 ? pick(S.login) : res.status === 429 ? pick(S.rate) : null;
-              console.error("[Taxie]", res.status, d && d.error);
+              var code = d && d.code;
+              var msg = code === "AI_CREDITS_REQUIRED" ? pick(S.credits)
+                : code === "PROFILE_AI_LIMIT_REACHED" ? pick(S.profileLimit)
+                : code === "PROFILE_AI_BLOCKED" ? pick(S.profileBlocked)
+                : code === "EMAIL_VERIFICATION_REQUIRED" ? pick(S.verifyEmail)
+                : res.status === 401 ? pick(S.login)
+                : res.status === 429 ? pick(S.rate)
+                : null;
+              console.error("[Taxie]", res.status, code || (d && d.error));
               return fail(msg);
             }
             var reply = d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;

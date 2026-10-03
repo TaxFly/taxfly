@@ -27,7 +27,7 @@ FIREBASE_SERVICE_ACCOUNT_EMAIL = "firebase-adminsdk-fbsvc@viajes-db538.iam.gserv
 OWNER_UID = "HQcW0u5TEtUNaGLgRqX5RX5MN942"
 
 # Activar SOLO después de probar que el Worker, Firestore y el owner funcionan bien.
-AI_BILLING_ENABLED = "true"
+AI_BILLING_ENABLED = "false"
 AI_STARTER_CREDITS = "10"
 
 # Activar después de comprobar que la medición y los límites funcionan correctamente.
