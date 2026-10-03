@@ -6,9 +6,11 @@ test('general profile guard is loaded by core pages',()=>{const g=read('assets/p
 test('new security PINs use six digits while legacy four-digit PINs remain supported',()=>{const l=read('assets/login-app.js');assert.match(l,/NEW_PIN_LENGTH = 6/);assert.match(l,/return n === 6 \? 6 : 4/);assert.match(l,/pinLength: NEW_PIN_LENGTH/);});
 
 
-test('uses node crypto for 600k PBKDF2 PIN verification',()=>{
-  const f=read('worker-firestore.js');
-  assert.match(f,/from \"node:crypto\"/);
-  assert.match(f,/pbkdf2Sync\(/);
-  assert.doesNotMatch(f,/subtle\.deriveBits\(\{ name:\"PBKDF2\"/);
+test('server PIN verification respects Cloudflare 100k PBKDF2 ceiling and migrates legacy hashes',()=>{
+  const f=read('worker-firestore.js'), sec=read('assets/security.js'), settings=read('assets/settings.js');
+  assert.match(f,/PIN_REHASH_REQUIRED/);
+  assert.match(f,/iterations > 100000/);
+  assert.match(f,/crypto\.subtle\.deriveBits/);
+  assert.match(sec,/TAXFLY_PIN_ITERATIONS = 100000/);
+  assert.match(settings,/security_pin_rehash/);
 });

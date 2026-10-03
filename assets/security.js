@@ -1,4 +1,4 @@
-const TAXFLY_PIN_ITERATIONS = 600000;
+const TAXFLY_PIN_ITERATIONS = 100000;
 const taxflyPinHex = bytes => Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, "0")).join("");
 window.hashPin = async function(pin) {
   const salt = localStorage.getItem("taxusa_offline_email") || localStorage.getItem("perfilActivoNombre") || "taxfly";

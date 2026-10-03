@@ -47,6 +47,7 @@
       security_pin_desc: "Ingresá tu PIN para abrir los controles de perfiles.",
       security_pin_placeholder: "4 o 6 dígitos",
       security_pin_invalid: "PIN incorrecto o sin autorización.",
+      security_pin_rehash: "Tu PIN de seguridad necesita actualizarse una vez para habilitar los controles de perfiles. Cambialo desde Ajustes y podés volver a usar el mismo número.",
       security_pin_setup: "Configurá primero el PIN de seguridad desde Ajustes.",
       primary_only: "Solo el perfil principal puede administrar estos controles.",
       transfer_primary: "Hacer principal",
@@ -180,6 +181,7 @@
       security_pin_desc: "Enter your PIN to open profile controls.",
       security_pin_placeholder: "4 or 6 digits",
       security_pin_invalid: "Incorrect PIN or insufficient authorization.",
+      security_pin_rehash: "Your security PIN needs a one-time update before profile controls can be used. Change it in Settings; you may reuse the same number.",
       security_pin_setup: "Set up your security PIN in Settings first.",
       primary_only: "Only the primary profile can manage these controls.",
       transfer_primary: "Make primary",
@@ -313,6 +315,7 @@
       security_pin_desc: "Digite seu PIN para abrir os controles de perfis.",
       security_pin_placeholder: "4 ou 6 dígitos",
       security_pin_invalid: "PIN incorreto ou sem autorização.",
+      security_pin_rehash: "Seu PIN de segurança precisa ser atualizado uma vez para habilitar os controles de perfis. Altere-o em Ajustes; você pode reutilizar o mesmo número.",
       security_pin_setup: "Configure primeiro o PIN de segurança em Ajustes.",
       primary_only: "Somente o perfil principal pode gerenciar estes controles.",
       transfer_primary: "Tornar principal",
@@ -653,7 +656,13 @@
   async function workerJson(body) {
     var res = await window.taxflyWorker(body);
     var data = await res.json().catch(function(){ return {}; });
-    if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+    if (!res.ok) {
+      var err = new Error(data.error || ("HTTP " + res.status));
+      err.code = data.code || data.error_code || "";
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
     return data;
   }
   function renderAIProfileCards(profiles, limits) {
@@ -721,7 +730,11 @@
           var active=activePid()||"";
           await workerJson({type:"security_pin_verify",pin:pin,actor_profile_id:active});
           finish(pin);
-        }catch(e){err.style.display="block";err.textContent=(String(e.message||"").indexOf("configured")>=0)?t("security_pin_setup"):t("security_pin_invalid");ok.disabled=false;}
+        }catch(e){
+          err.style.display="block";
+          err.textContent=(e && e.code === "PIN_REHASH_REQUIRED") ? t("security_pin_rehash") : ((String(e.message||"").indexOf("configured")>=0)?t("security_pin_setup"):t("security_pin_invalid"));
+          ok.disabled=false;
+        }
       }
       ok.addEventListener("click",check); input.addEventListener("keydown",function(e){if(e.key==="Enter")check();}); setTimeout(function(){input.focus()},50);
     });
