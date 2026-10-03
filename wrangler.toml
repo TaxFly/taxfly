@@ -23,17 +23,17 @@ dataset = "taxfly_ai_usage"
 [vars]
 ALLOWED_ORIGINS = "https://taxfly.github.io"
 FIREBASE_PROJECT_ID = "viajes-db538"
+FIREBASE_SERVICE_ACCOUNT_EMAIL = "firebase-adminsdk-fbsvc@viajes-db538.iam.gserviceaccount.com"
+OWNER_UID = "HQcW0u5TEtUNaGLgRqX5RX5MN942"
 
-# Activar SOLO después de configurar los secrets de Firestore y probar /ai_status.
+# Activar SOLO después de probar que el Worker, Firestore y el owner funcionan bien.
 AI_BILLING_ENABLED = "false"
 AI_STARTER_CREDITS = "10"
 
-# Los circuit breakers persistentes usan Firestore. Activar cuando los secrets estén configurados.
+# Activar después de comprobar que la medición y los límites funcionan correctamente.
 AI_SAFETY_BUDGETS_ENABLED = "false"
 AI_SAFETY_FAIL_CLOSED = "false"
+
 OWNER_DAILY_USD_LIMIT = "5"
 OWNER_WEEKLY_USD_LIMIT = "20"
 GLOBAL_DAILY_USD_LIMIT = "25"
-
-# No guardar OWNER_UID en GitHub si preferís mantenerlo privado. Se puede cargar como secret.
-# OWNER_UID = "PEGAR_UID_FIREBASE_AQUI"
