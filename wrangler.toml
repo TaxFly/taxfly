@@ -37,3 +37,37 @@ AI_SAFETY_FAIL_CLOSED = "false"
 OWNER_DAILY_USD_LIMIT = "5"
 OWNER_WEEKLY_USD_LIMIT = "20"
 GLOBAL_DAILY_USD_LIMIT = "25"
+
+# --- Compra de créditos (Mercado Pago) --------------------------------------
+# Secrets a cargar aparte (nunca acá en texto plano):
+#   npx wrangler secret put MERCADOPAGO_ACCESS_TOKEN
+#   npx wrangler secret put MERCADOPAGO_WEBHOOK_SECRET
+# Ver docs/AI_CREDITS_PAYMENTS.md para el paso a paso completo.
+
+# URL pública de este mismo Worker, para armar la notification_url del webhook.
+WORKER_PUBLIC_URL = "https://taxfly-claude.juanbria18.workers.dev"
+# URL pública de la app, para los back_urls del checkout.
+PUBLIC_APP_URL = "https://taxfly.github.io"
+
+# Precio de referencia en USD por crédito. Es el único precio que fija la
+# plata real; ajustalo cuando sepas tu costo real de Claude (ver docs/AI_BILLING_SETUP.md).
+AI_CREDIT_USD_PER_CREDIT = "0.05"
+# Cotización USD→ARS usada SOLO para cobrar en Mercado Pago (factura en ARS).
+# Es un valor manual que tenés que actualizar vos de tanto en tanto; no se
+# consulta ninguna API de cotización automáticamente.
+MP_USD_ARS_RATE = "1000"
+
+# --- Compra de créditos (Stripe y PayPal, pagos internacionales en USD) -----
+# Mismo precio por crédito que Mercado Pago (AI_CREDIT_USD_PER_CREDIT de arriba).
+# Secrets a cargar aparte (nunca acá en texto plano):
+#   npx wrangler secret put STRIPE_SECRET_KEY
+#   npx wrangler secret put STRIPE_WEBHOOK_SECRET
+#   npx wrangler secret put PAYPAL_CLIENT_ID
+#   npx wrangler secret put PAYPAL_CLIENT_SECRET
+# Ver docs/AI_CREDITS_PAYMENTS.md para el paso a paso completo (webhooks, sandbox, etc).
+
+# ID del webhook configurado en el dashboard de PayPal (no es secreto, es un
+# identificador). Necesario para que PayPal valide la firma de sus propios eventos.
+PAYPAL_WEBHOOK_ID = ""
+# "sandbox" mientras probás, "live" (o directamente vacío) cuando ya cobrás de verdad.
+PAYPAL_ENV = "sandbox"

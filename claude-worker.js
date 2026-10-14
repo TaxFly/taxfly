@@ -1,4 +1,5 @@
-import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits, getProfileLimits, setProfileLimit, getProfileControls, setProfileControl, verifySecurityPin, setPrimaryProfile } from "./worker-firestore.js";
+import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits, getProfileLimits, setProfileLimit, getProfileControls, setProfileControl, verifySecurityPin, setPrimaryProfile, createCreditCheckout, getCheckout, confirmCheckoutPayment, listLedger } from "./worker-firestore.js";
+import { createStripeCheckoutSession, verifyStripeSignature, createPaypalOrder, capturePaypalOrder, getPaypalOrder, findCompletedCapture, verifyPaypalWebhookSignature } from "./worker-payments.js";
 
 const FIREBASE_PROJECT_ID = "viajes-db538";
 
@@ -31,6 +32,15 @@ const WEB_SEARCH_USD_PER_REQUEST = 0.01;
 
 export default {
   async fetch(request, env) {
+    // Mercado Pago llama a esta URL directo desde sus servidores: sin Origin,
+    // sin el envelope { type } del resto de la app, autenticado por firma
+    // propia (x-signature) en vez de un token de Firebase. Se resuelve antes
+    // que cualquier otra cosa, incluyendo CORS.
+    const url = new URL(request.url);
+    if (url.pathname === "/mp/webhook") return handleMercadoPagoWebhook(request, env, url);
+    if (url.pathname === "/stripe/webhook") return handleStripeWebhook(request, env);
+    if (url.pathname === "/paypal/webhook") return handlePaypalWebhook(request, env);
+
     const origin = request.headers.get("Origin") || "";
     const allowed = isAllowedOrigin(origin, env);
     if (request.method === "OPTIONS") {
@@ -77,7 +87,7 @@ async function handle(request, env) {
   let user = null;
   if (token) {
     try { user = await verifyFirebaseToken(token); } catch (e) {
-      if (AI_TYPES.includes(body.type) || ["ai_status", "ai_grant_credits", "ai_profile_limits_get", "ai_profile_limit_set", "profile_controls_get", "profile_controls_set", "security_pin_verify", "primary_profile_set"].includes(body.type)) return json({ error: "Invalid or expired session" }, 401);
+      if (AI_TYPES.includes(body.type) || ["ai_status", "ai_grant_credits", "ai_credit_checkout_create", "ai_paypal_capture", "ai_ledger_list", "ai_profile_limits_get", "ai_profile_limit_set", "profile_controls_get", "profile_controls_set", "security_pin_verify", "primary_profile_set"].includes(body.type)) return json({ error: "Invalid or expired session" }, 401);
     }
   }
 
@@ -88,6 +98,18 @@ async function handle(request, env) {
   if (body.type === "ai_grant_credits") {
     if (!user) return json({ error: "Login required" }, 401);
     return handleAIGrant(body, env, user);
+  }
+  if (body.type === "ai_credit_checkout_create") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleCreditCheckoutCreate(body, env, user);
+  }
+  if (body.type === "ai_paypal_capture") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handlePaypalCapture(body, env, user);
+  }
+  if (body.type === "ai_ledger_list") {
+    if (!user) return json({ error: "Login required" }, 401);
+    return handleLedgerList(env, user);
   }
 
   if (body.type === "ai_profile_limits_get") {
@@ -242,7 +264,16 @@ async function recordBudgetUsage(ctx, costUsd) {
 }
 async function handleAIStatus(env, user) {
   const isOwner = !!env.OWNER_UID && user.uid === env.OWNER_UID;
-  const base = { owner: isOwner, unlimited: isOwner, billingEnabled: env.AI_BILLING_ENABLED === "true", emailVerified: !!user.emailVerified, starterCredits: starterCredits(env), features: Object.fromEntries(Object.entries(AI_FEATURES).map(([k, v]) => [k, { credits: v.credits }])) };
+  const base = {
+    owner: isOwner, unlimited: isOwner, billingEnabled: env.AI_BILLING_ENABLED === "true", emailVerified: !!user.emailVerified,
+    starterCredits: starterCredits(env), features: Object.fromEntries(Object.entries(AI_FEATURES).map(([k, v]) => [k, { credits: v.credits }])),
+    usdPerCredit: Number(env.AI_CREDIT_USD_PER_CREDIT) || null,
+    paymentProviders: {
+      mercadopago: !!env.MERCADOPAGO_ACCESS_TOKEN && creditPriceArs(env, 1) !== null,
+      stripe: !!env.STRIPE_SECRET_KEY,
+      paypal: !!(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET)
+    }
+  };
   if (isOwner) return json({ ...base, availableCredits: null, reservedCredits: 0 });
   if (!firestoreConfigured(env)) return json({ ...base, availableCredits: null, reservedCredits: 0, firestoreConfigured: false });
   try {
@@ -265,6 +296,264 @@ async function handleAIGrant(body, env, user) {
   } catch (e) {
     console.error("grant credits failed", e);
     return json({ error: "Could not grant credits" }, 503);
+  }
+}
+
+// --- Compra de créditos vía Mercado Pago ------------------------------------
+
+function creditPriceArs(env, credits) {
+  const usdPerCredit = Number(env.AI_CREDIT_USD_PER_CREDIT);
+  const arsRate = Number(env.MP_USD_ARS_RATE);
+  if (!(usdPerCredit > 0) || !(arsRate > 0)) return null;
+  // Redondeado al peso: Mercado Pago Argentina no opera con centavos fraccionarios raros.
+  return Math.max(1, Math.round(credits * usdPerCredit * arsRate));
+}
+function creditPriceUsd(env, credits) {
+  const usdPerCredit = Number(env.AI_CREDIT_USD_PER_CREDIT);
+  if (!(usdPerCredit > 0)) return null;
+  return Math.round(credits * usdPerCredit * 100) / 100;
+}
+
+async function handleCreditCheckoutCreate(body, env, user) {
+  if (!firestoreConfigured(env)) return json({ error: "Firestore service account not configured" }, 503);
+  const provider = ["mercadopago", "stripe", "paypal"].includes(body.provider) ? body.provider : "mercadopago";
+  const credits = Math.floor(Number(body.credits));
+  if (!Number.isFinite(credits) || credits < 10 || credits > 100000) return json({ error: "Invalid credits amount" }, 400);
+
+  if (env.GENERAL_LIMITER) {
+    const { success } = await env.GENERAL_LIMITER.limit({ key: `checkout:${user.uid}` });
+    if (!success) return json({ error: "Too many requests, try again in a bit" }, 429);
+  }
+
+  const appUrl = String(env.PUBLIC_APP_URL || "https://taxfly.github.io").replace(/\/$/, "");
+  const workerUrl = String(env.WORKER_PUBLIC_URL || "").replace(/\/$/, "");
+  // index.html (no mis-cosas.html) porque es la página que carga el drawer de
+  // Ajustes completo (assets/settings.js), que es quien procesa ?ai_checkout=...
+  const returnBase = `${appUrl}/index.html`;
+
+  if (provider === "mercadopago") {
+    const token = env.MERCADOPAGO_ACCESS_TOKEN;
+    if (!token) return json({ error: "Payment provider not configured yet" }, 503);
+    const priceArs = creditPriceArs(env, credits);
+    if (priceArs === null) return json({ error: "Credit pricing not configured yet" }, 503);
+    let checkout;
+    try { checkout = await createCreditCheckout(env, user.uid, credits, priceArs, { provider: "mercadopago", currency: "ARS" }); }
+    catch (e) { console.error("createCreditCheckout failed", e); return json({ error: "Could not start checkout" }, 503); }
+    const pref = {
+      items: [ { title: `${credits} créditos IA · TaxUSA`, quantity: 1, currency_id: "ARS", unit_price: priceArs } ],
+      external_reference: checkout.checkoutId,
+      back_urls: {
+        success: `${returnBase}?ai_checkout=success&provider=mercadopago`,
+        pending: `${returnBase}?ai_checkout=pending&provider=mercadopago`,
+        failure: `${returnBase}?ai_checkout=failure&provider=mercadopago`
+      },
+      auto_return: "approved",
+      notification_url: workerUrl ? `${workerUrl}/mp/webhook` : undefined,
+      statement_descriptor: "TAXUSA IA"
+    };
+    let mpRes;
+    try {
+      mpRes = await fetch("https://api.mercadopago.com/checkout/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(pref)
+      });
+    } catch (e) { console.error("Mercado Pago preference request failed", e); return json({ error: "Could not reach payment provider" }, 502); }
+    if (!mpRes.ok) { console.error("Mercado Pago preference error", mpRes.status, await mpRes.text().catch(() => "")); return json({ error: "Payment provider rejected the request" }, 502); }
+    const pdata = await mpRes.json();
+    return json({ checkout_id: checkout.checkoutId, provider, credits, price: priceArs, currency: "ARS", checkout_url: pdata.init_point || pdata.sandbox_init_point });
+  }
+
+  // Stripe y PayPal cobran en USD, con el mismo precio por crédito que Mercado Pago.
+  const priceUsd = creditPriceUsd(env, credits);
+  if (priceUsd === null) return json({ error: "Credit pricing not configured yet" }, 503);
+
+  if (provider === "stripe") {
+    if (!env.STRIPE_SECRET_KEY) return json({ error: "Payment provider not configured yet" }, 503);
+    let checkout;
+    try { checkout = await createCreditCheckout(env, user.uid, credits, priceUsd, { provider: "stripe", currency: "USD" }); }
+    catch (e) { console.error("createCreditCheckout failed", e); return json({ error: "Could not start checkout" }, 503); }
+    try {
+      const { checkoutUrl } = await createStripeCheckoutSession(env, { checkoutId: checkout.checkoutId, email: user.email, credits, amountUsd: priceUsd, returnBase });
+      return json({ checkout_id: checkout.checkoutId, provider, credits, price: priceUsd, currency: "USD", checkout_url: checkoutUrl });
+    } catch (e) {
+      console.error("Stripe checkout session failed", e, e?.detail);
+      return json({ error: "Payment provider rejected the request" }, 502);
+    }
+  }
+
+  // provider === "paypal"
+  if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_CLIENT_SECRET) return json({ error: "Payment provider not configured yet" }, 503);
+  let checkout;
+  try { checkout = await createCreditCheckout(env, user.uid, credits, priceUsd, { provider: "paypal", currency: "USD" }); }
+  catch (e) { console.error("createCreditCheckout failed", e); return json({ error: "Could not start checkout" }, 503); }
+  try {
+    const { checkoutUrl, orderId } = await createPaypalOrder(env, { checkoutId: checkout.checkoutId, credits, amountUsd: priceUsd, returnBase });
+    return json({ checkout_id: checkout.checkoutId, provider, credits, price: priceUsd, currency: "USD", checkout_url: checkoutUrl, order_id: orderId });
+  } catch (e) {
+    console.error("PayPal order creation failed", e, e?.detail);
+    return json({ error: "Payment provider rejected the request" }, 502);
+  }
+}
+
+// El comprador puede volver de PayPal antes de que llegue el webhook: esta ruta
+// autenticada captura el pago de una (si hace falta) y acredita al toque, usando
+// la misma confirmCheckoutPayment idempotente que usa el webhook — así, sin
+// importar cuál de los dos procesos gane la carrera, el crédito se otorga una sola vez.
+async function handlePaypalCapture(body, env, user) {
+  if (!firestoreConfigured(env)) return json({ error: "Firestore service account not configured" }, 503);
+  const orderId = String(body.order_id || "").trim();
+  const checkoutId = String(body.checkout_id || "").trim();
+  if (!orderId || !checkoutId) return json({ error: "Missing order_id or checkout_id" }, 400);
+  const checkout = await getCheckout(env, checkoutId).catch(() => null);
+  if (!checkout || checkout.uid !== user.uid) return json({ error: "Checkout not found" }, 404);
+  if (checkout.status !== "pending") {
+    return json({ ok: true, alreadyProcessed: true });
+  }
+  try {
+    let order = await capturePaypalOrder(env, orderId);
+    let found = findCompletedCapture(order);
+    if (!found) {
+      order = await getPaypalOrder(env, orderId);
+      found = findCompletedCapture(order);
+    }
+    if (!found) return json({ error: "Payment not completed yet" }, 409);
+    const result = await confirmCheckoutPayment(env, checkoutId, found.capture.id, Number(found.capture.amount?.value || 0));
+    if (!result.ok) return json({ error: result.reason || "Could not confirm payment" }, 409);
+    return json({ ok: true, availableCredits: result.wallet ? Number(result.wallet.availableCredits || 0) : null });
+  } catch (e) {
+    console.error("PayPal capture failed", e, e?.detail);
+    return json({ error: "Could not confirm PayPal payment" }, 502);
+  }
+}
+
+function mpSignatureParts(header) {
+  const out = {};
+  for (const part of String(header || "").split(",")) {
+    const [k, v] = part.split("=");
+    if (k && v) out[k.trim()] = v.trim();
+  }
+  return out;
+}
+
+async function verifyMpSignature(env, xSignature, xRequestId, dataId) {
+  const secret = env.MERCADOPAGO_WEBHOOK_SECRET;
+  if (!secret) return false;
+  const { ts, v1 } = mpSignatureParts(xSignature);
+  if (!ts || !v1) return false;
+  const manifest = `id:${String(dataId || "").toLowerCase()};request-id:${xRequestId || ""};ts:${ts};`;
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, [ "sign" ]);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(manifest));
+  const hex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
+  if (hex.length !== v1.length) return false;
+  let diff = 0;
+  for (let i = 0; i < hex.length; i++) diff |= hex.charCodeAt(i) ^ v1.charCodeAt(i);
+  return diff === 0;
+}
+
+async function handleMercadoPagoWebhook(request, env, url) {
+  if (request.method !== "POST") return new Response(null, { status: 405 });
+  if (!env.MERCADOPAGO_WEBHOOK_SECRET || !env.MERCADOPAGO_ACCESS_TOKEN) {
+    console.error("MP webhook received but provider is not configured");
+    return new Response(null, { status: 503 });
+  }
+  const dataId = url.searchParams.get("data.id") || url.searchParams.get("id") || "";
+  const xSignature = request.headers.get("x-signature") || "";
+  const xRequestId = request.headers.get("x-request-id") || "";
+  let validSig = false;
+  try { validSig = dataId && (await verifyMpSignature(env, xSignature, xRequestId, dataId)); }
+  catch (e) { console.error("MP signature check failed", e); }
+  // Consumimos el body igual (si lo hay) para no dejar la conexión colgada, pero
+  // nunca confiamos en sus datos: la fuente de verdad es la Payments API.
+  await request.text().catch(() => {});
+  if (!validSig) return new Response(null, { status: 401 });
+
+  let payment;
+  try {
+    const payRes = await fetch(`https://api.mercadopago.com/v1/payments/${encodeURIComponent(dataId)}`, {
+      headers: { Authorization: `Bearer ${env.MERCADOPAGO_ACCESS_TOKEN}` }
+    });
+    if (!payRes.ok) { console.error("MP payment fetch failed", payRes.status); return new Response(null, { status: 502 }); }
+    payment = await payRes.json();
+  } catch (e) {
+    console.error("MP payment fetch error", e);
+    return new Response(null, { status: 502 });
+  }
+
+  if (payment.status !== "approved") return new Response(null, { status: 200 });
+  const checkoutId = payment.external_reference;
+  if (!checkoutId) return new Response(null, { status: 200 });
+
+  try {
+    const result = await confirmCheckoutPayment(env, checkoutId, String(payment.id), Number(payment.transaction_amount || 0));
+    if (!result.ok && result.reason === "CHECKOUT_NOT_FOUND") { console.error("MP webhook: unknown checkout", checkoutId); return new Response(null, { status: 200 }); }
+    if (!result.ok && result.reason === "AMOUNT_MISMATCH") { console.error("MP webhook: amount mismatch", checkoutId, payment.transaction_amount); return new Response(null, { status: 200 }); }
+    return new Response(null, { status: 200 });
+  } catch (e) {
+    console.error("confirmCheckoutPayment failed", e);
+    // 500 para que Mercado Pago reintente: puede ser una falla transitoria de Firestore.
+    return new Response(null, { status: 500 });
+  }
+}
+
+async function handleStripeWebhook(request, env) {
+  if (request.method !== "POST") return new Response(null, { status: 405 });
+  const sig = request.headers.get("stripe-signature") || "";
+  const rawBody = await request.text().catch(() => "");
+  const valid = await verifyStripeSignature(env, rawBody, sig).catch(() => false);
+  if (!valid) return new Response(null, { status: 401 });
+  let event;
+  try { event = JSON.parse(rawBody); } catch (e) { return new Response(null, { status: 400 }); }
+  if (event.type !== "checkout.session.completed") return new Response(null, { status: 200 });
+  const session = event.data?.object || {};
+  if (session.payment_status !== "paid") return new Response(null, { status: 200 });
+  const checkoutId = session.client_reference_id || session.metadata?.checkoutId;
+  if (!checkoutId) return new Response(null, { status: 200 });
+  try {
+    const result = await confirmCheckoutPayment(env, checkoutId, session.id, Number(session.amount_total || 0) / 100);
+    if (!result.ok && result.reason === "CHECKOUT_NOT_FOUND") { console.error("Stripe webhook: unknown checkout", checkoutId); return new Response(null, { status: 200 }); }
+    if (!result.ok && result.reason === "AMOUNT_MISMATCH") { console.error("Stripe webhook: amount mismatch", checkoutId); return new Response(null, { status: 200 }); }
+    return new Response(null, { status: 200 });
+  } catch (e) {
+    console.error("confirmCheckoutPayment (stripe) failed", e);
+    return new Response(null, { status: 500 }); // 500 para que Stripe reintente
+  }
+}
+
+async function handlePaypalWebhook(request, env) {
+  if (request.method !== "POST") return new Response(null, { status: 405 });
+  const rawBody = await request.text().catch(() => "");
+  const valid = await verifyPaypalWebhookSignature(env, request.headers, rawBody).catch(() => false);
+  if (!valid) return new Response(null, { status: 401 });
+  let event;
+  try { event = JSON.parse(rawBody); } catch (e) { return new Response(null, { status: 400 }); }
+  if (event.event_type !== "PAYMENT.CAPTURE.COMPLETED") return new Response(null, { status: 200 });
+  const capture = event.resource || {};
+  const checkoutId = capture.custom_id || capture.invoice_id;
+  if (!checkoutId) return new Response(null, { status: 200 });
+  try {
+    const result = await confirmCheckoutPayment(env, checkoutId, capture.id, Number(capture.amount?.value || 0));
+    if (!result.ok && result.reason === "CHECKOUT_NOT_FOUND") { console.error("PayPal webhook: unknown checkout", checkoutId); return new Response(null, { status: 200 }); }
+    if (!result.ok && result.reason === "AMOUNT_MISMATCH") { console.error("PayPal webhook: amount mismatch", checkoutId); return new Response(null, { status: 200 }); }
+    return new Response(null, { status: 200 });
+  } catch (e) {
+    console.error("confirmCheckoutPayment (paypal) failed", e);
+    return new Response(null, { status: 500 }); // 500 para que PayPal reintente
+  }
+}
+
+async function handleLedgerList(env, user) {
+  if (!firestoreConfigured(env)) return json({ entries: [] });
+  try {
+    const entries = await listLedger(env, user.uid, 30);
+    return json({ entries: entries.map(e => ({
+      type: e.type || "", feature: e.feature || "", provider: e.provider || "", credits: Number(e.credits || 0), createdAt: e.createdAt || "",
+      amount: e.amount != null ? Number(e.amount) : (e.amountArs != null ? Number(e.amountArs) : null),
+      currency: e.currency || (e.amountArs != null ? "ARS" : null)
+    })) });
+  } catch (e) {
+    console.error("listLedger failed", e);
+    return json({ error: "Could not read AI usage history" }, 503);
   }
 }
 

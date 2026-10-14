@@ -540,6 +540,102 @@ export async function addBudgetUsage(env, uid, costUsd, dayKey, weekKey, isOwner
   });
 }
 
+// --- Compra de créditos (Mercado Pago) -------------------------------------
+//
+// Un "checkout" es un documento efímero que recuerda, del lado servidor,
+// cuántos créditos le corresponden a qué UID cuando Mercado Pago confirme el
+// pago. Nunca se crea ni se confía en nada que mande el navegador: el precio
+// se calcula en claude-worker.js con env.AI_CREDIT_USD_PER_CREDIT y
+// env.MP_USD_ARS_RATE, nunca con un precio recibido del cliente.
+
+// `provider` es "mercadopago" | "stripe" | "paypal". Para no romper el checkout
+// de Mercado Pago ya probado, mantiene exactamente su forma original
+// (priceArs/currency "ARS") cuando no se pasa provider, y guarda `price`/`currency`
+// genéricos para Stripe y PayPal (USD).
+export async function createCreditCheckout(env, uid, credits, price, options = {}) {
+  const provider = options.provider || "mercadopago";
+  const currency = options.currency || "ARS";
+  const checkoutId = crypto.randomUUID();
+  const path = `aiCheckouts/${safeId(checkoutId)}`;
+  const doc = {
+    uid, credits, provider, currency, status: "pending",
+    createdAt: new Date().toISOString()
+  };
+  // priceArs se mantiene como nombre de campo para no romper lecturas existentes
+  // del checkout de Mercado Pago; para otros proveedores el precio vive en `price`.
+  if (currency === "ARS") doc.priceArs = price; else doc.price = price;
+  await txRetry(async () => {
+    const tx = await beginTransaction(env);
+    await commit(env, tx, [writeUpdate(env, path, doc, { exists: false })]);
+  });
+  return { checkoutId, ...doc };
+}
+
+export async function getCheckout(env, checkoutId) {
+  return getDocument(env, `aiCheckouts/${safeId(checkoutId)}`);
+}
+
+// Acredita los créditos de un checkout pago exactamente una vez, sin importar
+// el proveedor. Es seguro llamarla más de una vez con el mismo paymentId
+// (reintentos de webhook, o una carrera webhook vs. retorno del comprador):
+// la segunda vez es un no-op porque el checkout ya no está "pending", y además
+// el ledger usa `${provider}_${paymentId}` como ID de documento con precondición
+// exists:false, así que ni un cambio de estado accidental podría duplicar el crédito.
+export async function confirmCheckoutPayment(env, checkoutId, paymentId, amountPaid, options = {}) {
+  const checkoutPath = `aiCheckouts/${safeId(checkoutId)}`;
+  return txRetry(async () => {
+    const tx = await beginTransaction(env);
+    const [checkout] = await batchGet(env, [checkoutPath], tx);
+    if (!checkout) { await commit(env, tx, []); return { ok: false, reason: "CHECKOUT_NOT_FOUND" }; }
+    const provider = checkout.provider || "mercadopago";
+    const ledgerPath = `aiLedger/${provider === "mercadopago" ? "mp" : provider}_${safeId(paymentId)}`;
+    if (checkout.status !== "pending") { await commit(env, tx, []); return { ok: true, alreadyProcessed: true, checkout }; }
+    const expected = Number(checkout.priceArs != null ? checkout.priceArs : checkout.price || 0);
+    // Tolerancia por redondeo: 1 unidad entera para ARS, 1 centavo para USD.
+    const tolerance = checkout.currency === "ARS" ? 1 : 0.01;
+    if (Number(amountPaid) < expected - tolerance) {
+      await commit(env, tx, [writeUpdate(env, checkoutPath, { ...checkout, status: "amount_mismatch", paymentId, paidAmount: Number(amountPaid), updatedAt: new Date().toISOString() })]);
+      return { ok: false, reason: "AMOUNT_MISMATCH" };
+    }
+    const walletPath = `aiWallets/${safeId(checkout.uid)}`;
+    const [wallet] = await batchGet(env, [walletPath], tx);
+    const base = wallet || { uid: checkout.uid, email: "", platformRole: "user", unlimited: false, availableCredits: 0, reservedCredits: 0, starterCreditsGranted: false, createdAt: new Date().toISOString() };
+    const credits = Number(checkout.credits || 0);
+    const nextWallet = { ...base, availableCredits: Number(base.availableCredits || 0) + credits, updatedAt: new Date().toISOString() };
+    const nextCheckout = { ...checkout, status: "paid", paymentId, paidAmount: Number(amountPaid), updatedAt: new Date().toISOString() };
+    await commit(env, tx, [
+      writeUpdate(env, checkoutPath, nextCheckout),
+      writeUpdate(env, walletPath, nextWallet, wallet ? null : { exists: false }),
+      writeUpdate(env, ledgerPath, { uid: checkout.uid, type: `${provider}_purchase`, provider, credits, paymentId, amount: Number(amountPaid), currency: checkout.currency || "ARS", createdAt: new Date().toISOString() }, { exists: false })
+    ]);
+    return { ok: true, wallet: nextWallet };
+  });
+}
+
+// --- Historial real para la UI ("Historial de uso") -------------------------
+//
+// Filtra solo por uid (sin orderBy en la query) para no depender de un
+// índice compuesto de Firestore; se ordena por fecha acá mismo y se recorta
+// al límite pedido. Para una wallet normal el volumen es chico, así que no
+// hace falta paginar todavía.
+export async function listLedger(env, uid, limit = 30) {
+  const res = await api(env, `${dbBase(env)}:runQuery`, {
+    method: "POST",
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: "aiLedger" }],
+        where: { fieldFilter: { field: { fieldPath: "uid" }, op: "EQUAL", value: { stringValue: uid } } },
+        limit: Math.min(200, Math.max(1, Number(limit) || 30) * 4)
+      }
+    })
+  });
+  if (!res.ok) throw new Error(`Firestore runQuery failed (${res.status})`);
+  const rows = JSON.parse(await res.text());
+  const docs = (Array.isArray(rows) ? rows : [rows]).map(r => r.document ? decodeDocument(r.document) : null).filter(Boolean);
+  docs.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+  return docs.slice(0, Math.max(1, Number(limit) || 30));
+}
+
 export async function grantCredits(env, targetUid, credits, actorUid, reason = "owner_grant") {
   if (!(credits > 0 && Number.isInteger(credits))) throw new Error("credits must be a positive integer");
   const walletPath = `aiWallets/${safeId(targetUid)}`;

@@ -86,9 +86,27 @@
       taxes_note: "El importe final puede variar por impuestos, tasas o conversión de moneda aplicados por tu país, banco o medio de pago.",
       credit_store_pending: "Los pagos todavía no están habilitados. Esta pantalla ya quedó preparada para conectarlos cuando activemos el proveedor de pagos.",
       credits_unit: "créditos",
+      credits_unit_count: "{n} créditos",
       soon: "Próximamente",
+      choose_payment_method: "Elegí cómo pagar",
+      pay_mercadopago: "Mercado Pago",
+      pay_mercadopago_hint: "Pesos argentinos (ARS)",
+      pay_card: "Tarjeta internacional",
+      pay_card_hint: "Dólares (USD), vía Stripe",
+      pay_paypal: "PayPal",
+      pay_paypal_hint: "Con tu saldo o tarjeta de PayPal",
+      checkout_starting: "Abriendo el pago…",
+      checkout_error: "No pudimos iniciar el pago. Probá de nuevo en un momento.",
+      ai_checkout_success: "¡Listo! Tu pago se está confirmando — los créditos aparecen en unos segundos.",
+      ai_checkout_failure: "El pago no se completó. No se descontó nada.",
+      ai_checkout_pending: "Tu pago quedó pendiente de aprobación. Te avisamos los créditos apenas se confirme.",
       history_title: "Historial de uso",
       history_pending: "El historial estará disponible cuando activemos el cobro de créditos. Tu cuenta owner seguirá mostrando acceso ilimitado.",
+      history_loading: "Cargando…",
+      history_empty: "Todavía no hay movimientos.",
+      history_error: "No se pudo cargar el historial.",
+      history_purchase: "Compra",
+      history_usage: "Uso de IA",
       cafecito_missing: "Falta configurar tu enlace de Cafecito en config.js (SUPPORT_CAFECITO_URL).",
       open_cafecito: "Abrir Cafecito",
       switch_profile: "Cambiar perfil",
@@ -220,9 +238,27 @@
       taxes_note: "The final amount may vary due to taxes, fees, or currency conversion applied by your country, bank, or payment method.",
       credit_store_pending: "Payments are not enabled yet. This screen is ready to connect once the payment provider is activated.",
       credits_unit: "credits",
+      credits_unit_count: "{n} credits",
       soon: "Coming soon",
+      choose_payment_method: "Choose how to pay",
+      pay_mercadopago: "Mercado Pago",
+      pay_mercadopago_hint: "Argentine pesos (ARS)",
+      pay_card: "International card",
+      pay_card_hint: "US dollars (USD), via Stripe",
+      pay_paypal: "PayPal",
+      pay_paypal_hint: "With your PayPal balance or card",
+      checkout_starting: "Opening checkout…",
+      checkout_error: "We couldn't start the payment. Please try again in a moment.",
+      ai_checkout_success: "All set! Your payment is confirming — credits will show up in a few seconds.",
+      ai_checkout_failure: "The payment wasn't completed. Nothing was charged.",
+      ai_checkout_pending: "Your payment is pending approval. We'll credit it as soon as it's confirmed.",
       history_title: "Usage history",
       history_pending: "History will be available once credit billing is enabled. Your owner account will keep unlimited access.",
+      history_loading: "Loading…",
+      history_empty: "No activity yet.",
+      history_error: "Could not load history.",
+      history_purchase: "Purchase",
+      history_usage: "AI usage",
       cafecito_missing: "Your Cafecito link still needs to be configured in config.js (SUPPORT_CAFECITO_URL).",
       open_cafecito: "Open Cafecito",
       switch_profile: "Change profile",
@@ -354,9 +390,27 @@
       taxes_note: "O valor final pode variar por impostos, taxas ou conversão de moeda aplicados pelo seu país, banco ou meio de pagamento.",
       credit_store_pending: "Os pagamentos ainda não estão habilitados. Esta tela já está pronta para conectar quando ativarmos o provedor de pagamentos.",
       credits_unit: "créditos",
+      credits_unit_count: "{n} créditos",
       soon: "Em breve",
+      choose_payment_method: "Escolha como pagar",
+      pay_mercadopago: "Mercado Pago",
+      pay_mercadopago_hint: "Pesos argentinos (ARS)",
+      pay_card: "Cartão internacional",
+      pay_card_hint: "Dólares (USD), via Stripe",
+      pay_paypal: "PayPal",
+      pay_paypal_hint: "Com seu saldo ou cartão do PayPal",
+      checkout_starting: "Abrindo o pagamento…",
+      checkout_error: "Não foi possível iniciar o pagamento. Tente novamente em instantes.",
+      ai_checkout_success: "Pronto! Seu pagamento está sendo confirmado — os créditos aparecem em segundos.",
+      ai_checkout_failure: "O pagamento não foi concluído. Nada foi cobrado.",
+      ai_checkout_pending: "Seu pagamento ficou pendente de aprovação. Avisamos assim que os créditos forem confirmados.",
       history_title: "Histórico de uso",
       history_pending: "O histórico estará disponível quando ativarmos a cobrança de créditos. Sua conta owner continuará com acesso ilimitado.",
+      history_loading: "Carregando…",
+      history_empty: "Ainda não há movimentações.",
+      history_error: "Não foi possível carregar o histórico.",
+      history_purchase: "Compra",
+      history_usage: "Uso de IA",
       cafecito_missing: "Falta configurar seu link do Cafecito em config.js (SUPPORT_CAFECITO_URL).",
       open_cafecito: "Abrir Cafecito",
       switch_profile: "Trocar perfil",
@@ -563,7 +617,7 @@
     var un = document.getElementById("userEmail");
     if (un && !un.textContent && nombre) un.textContent = nombre;
   }
-  var aiStatusAt = 0, aiStatusRetry = 0, aiStatusBusy = false;
+  var aiStatusAt = 0, aiStatusRetry = 0, aiStatusBusy = false, lastAIStatus = null;
   function refreshAIStatus(force) {
     var el = document.getElementById("sxAIValue");
     if (!el || typeof window.taxflyAIStatus !== "function" || aiStatusBusy) return;
@@ -573,6 +627,7 @@
     window.taxflyAIStatus().then(function(st) {
       aiStatusAt = Date.now();
       aiStatusRetry = 0;
+      lastAIStatus = st || null;
       if (st && st.unlimited) el.textContent = "∞ · Owner";
       else if (st && typeof st.availableCredits === "number") el.textContent = String(st.availableCredits);
       else if (st && st.billingEnabled === false) el.textContent = "Beta";
@@ -589,33 +644,42 @@
   function creditPackages() {
     var cfg = window.TAXFLY_CONFIG || {};
     var arr = Array.isArray(cfg.AI_CREDIT_PACKAGES) ? cfg.AI_CREDIT_PACKAGES : [];
-    if (!arr.length) arr = [50, 100, 250, 500].map(function(n) { return { credits: n, priceUsd: null, url: "" }; });
+    if (!arr.length) arr = [50, 100, 250, 500].map(function(n) { return { credits: n }; });
     return arr;
   }
   function usd(value) {
     var n = Number(value);
     return Number.isFinite(n) && n >= 0 ? "USD " + n.toFixed(2) : "USD —";
   }
-  function openCreditStore() {
-    var cfg = window.TAXFLY_CONFIG || {};
+  // PROVIDERS describe los tres medios de pago posibles; cuáles están realmente
+  // activos se decide en vivo con ai_status.paymentProviders (nunca hardcodeado acá).
+  var PROVIDERS = [
+    { id: "mercadopago", icon: "card", label_key: "pay_mercadopago", hint_key: "pay_mercadopago_hint" },
+    { id: "stripe", icon: "card", label_key: "pay_card", hint_key: "pay_card_hint" },
+    { id: "paypal", icon: "card", label_key: "pay_paypal", hint_key: "pay_paypal_hint" }
+  ];
+  async function openCreditStore() {
+    var perCredit = null, providers = {};
+    try {
+      var st = lastAIStatus || await window.taxflyAIStatus();
+      lastAIStatus = st || null;
+      perCredit = Number(st && st.usdPerCredit);
+      providers = (st && st.paymentProviders) || {};
+    } catch (e) {}
+    var anyProvider = !!(providers.mercadopago || providers.stripe || providers.paypal);
     var packs = creditPackages();
-    var enabled = packs.some(function(p) { return p && p.url; });
     var html = packs.map(function(p) {
       var n = Number(p && p.credits || 0);
-      var url = p && p.url ? String(p.url) : "";
-      var price = usd(p && p.priceUsd);
-      return '<button type="button" class="sxm-pack" data-pack-url="' + esc(url) + '"' + (url ? '' : ' disabled') + '><strong>' + esc(n) + ' ' + esc(t("credits_unit")) + '</strong><small>' + esc(price) + ' · ' + esc(url ? (p.label || t("buy_credits")) : t("soon")) + '</small></button>';
+      var price = (Number.isFinite(perCredit) && perCredit > 0) ? usd(n * perCredit) : "USD —";
+      return '<button type="button" class="sxm-pack" data-pack-credits="' + n + '"' + (anyProvider ? '' : ' disabled') + '><strong>' + esc(n) + ' ' + esc(t("credits_unit")) + '</strong><small>' + esc(price) + '</small></button>';
     }).join("");
-    var customUrl = String(cfg.AI_CUSTOM_CREDIT_CHECKOUT_URL || "").trim();
-    var perCredit = Number(cfg.AI_CREDIT_USD_PER_CREDIT);
-    var customEnabled = !!customUrl;
-    var custom = '<div class="sxm-custom"><div class="sxm-custom-title">' + esc(t("custom_credits")) + '</div><div class="sxm-custom-row"><input id="sxmCustomCredits" type="number" min="10" max="100000" step="1" inputmode="numeric" placeholder="' + esc(t("custom_credits_placeholder")) + '"><button type="button" id="sxmCustomBuy"' + (customEnabled ? '' : ' disabled') + '>' + esc(t("continue_purchase")) + '</button></div><div class="sxm-price-note" id="sxmCustomPrice">USD —</div></div>';
-    openModal('<h3 class="sxm-t">' + ic("card", 20) + esc(t("credit_store_title")) + '</h3><p class="sxm-s">' + esc(t("credit_store_desc")) + '</p><div class="sxm-packages">' + html + '</div>' + custom + '<p class="sxm-price-note"><strong>' + esc(t("price_currency_note")) + '</strong><br>' + esc(t("taxes_note")) + '</p>' + (!(enabled || customEnabled) ? '<p class="sxm-note">' + esc(t("credit_store_pending")) + '</p>' : '') + '<div class="sxm-btns"><button type="button" class="sxm-b" data-c="1">' + esc(t("close")) + '</button></div>');
+    var custom = '<div class="sxm-custom"><div class="sxm-custom-title">' + esc(t("custom_credits")) + '</div><div class="sxm-custom-row"><input id="sxmCustomCredits" type="number" min="10" max="100000" step="1" inputmode="numeric" placeholder="' + esc(t("custom_credits_placeholder")) + '"><button type="button" id="sxmCustomBuy"' + (anyProvider ? '' : ' disabled') + '>' + esc(t("continue_purchase")) + '</button></div><div class="sxm-price-note" id="sxmCustomPrice">USD —</div></div>';
+    openModal('<h3 class="sxm-t">' + ic("card", 20) + esc(t("credit_store_title")) + '</h3><p class="sxm-s">' + esc(t("credit_store_desc")) + '</p><div class="sxm-packages">' + html + '</div>' + custom + '<p class="sxm-price-note"><strong>' + esc(t("price_currency_note")) + '</strong><br>' + esc(t("taxes_note")) + '</p>' + (!anyProvider ? '<p class="sxm-note">' + esc(t("credit_store_pending")) + '</p>' : '') + '<div class="sxm-btns"><button type="button" class="sxm-b" data-c="1">' + esc(t("close")) + '</button></div>');
     bind("[data-c]", closeModal);
-    modal.querySelectorAll("[data-pack-url]").forEach(function(btn) {
+    modal.querySelectorAll("[data-pack-credits]").forEach(function(btn) {
       btn.addEventListener("click", function() {
-        var url = btn.getAttribute("data-pack-url");
-        if (url) window.open(url, "_blank", "noopener,noreferrer");
+        var credits = Number(btn.getAttribute("data-pack-credits"));
+        if (credits > 0) openProviderPicker(credits, providers);
       });
     });
     var input = modal.querySelector("#sxmCustomCredits");
@@ -626,16 +690,34 @@
       if (priceEl) priceEl.textContent = (credits > 0 && Number.isFinite(perCredit) && perCredit > 0) ? usd(credits * perCredit) : "USD —";
     }
     if (input) input.addEventListener("input", updateCustomPrice);
-    if (customBtn && customEnabled) customBtn.addEventListener("click", function() {
+    if (customBtn && anyProvider) customBtn.addEventListener("click", function() {
       var credits = Math.floor(Number(input && input.value || 0));
       if (!Number.isFinite(credits) || credits < 10 || credits > 100000) return;
-      try {
-        var u = new URL(customUrl, location.href);
-        u.searchParams.set("credits", String(credits));
-        u.searchParams.set("currency", "USD");
-        window.open(u.href, "_blank", "noopener,noreferrer");
-      } catch (e) {}
+      openProviderPicker(credits, providers);
     });
+  }
+  function openProviderPicker(credits, providers) {
+    var rows = PROVIDERS.map(function(p) {
+      var on = !!providers[p.id];
+      return '<button type="button" class="sxm-opt" data-provider="' + p.id + '"' + (on ? '' : ' disabled') + '>' + ic(p.icon, 18) + '<span><strong>' + esc(t(p.label_key)) + '</strong><small>' + esc(on ? t(p.hint_key) : t("soon")) + '</small></span></button>';
+    }).join("");
+    openModal('<h3 class="sxm-t">' + ic("card", 20) + esc(t("choose_payment_method")) + '</h3><p class="sxm-s">' + esc(t("credits_unit_count", { n: credits })) + '</p>' + rows + '<div class="sxm-btns"><button type="button" class="sxm-b" data-c="1">' + esc(t("cancel")) + '</button></div>');
+    bind("[data-c]", closeModal);
+    modal.querySelectorAll("[data-provider]").forEach(function(btn) {
+      btn.addEventListener("click", function() { startCheckout(btn.getAttribute("data-provider"), credits, btn); });
+    });
+  }
+  async function startCheckout(provider, credits, btn) {
+    if (btn) { btn.disabled = true; btn.querySelector("strong").textContent = t("checkout_starting"); }
+    try {
+      var data = await workerJson({ type: "ai_credit_checkout_create", provider: provider, credits: credits });
+      if (!data || !data.checkout_url) throw new Error("NO_URL");
+      location.href = data.checkout_url; // misma pestaña: vuelve a la app por success/cancel/return_url
+    } catch (e) {
+      if (btn) { btn.disabled = false; }
+      if (typeof window.showAlert === "function") await window.showAlert(t("checkout_error"));
+      else alert(t("checkout_error"));
+    }
   }
   async function loadAIProfiles() {
     var sdk = (window.TAXFLY_CONFIG && window.TAXFLY_CONFIG.FIREBASE_SDK) || "https://www.gstatic.com/firebasejs/12.12.1";
@@ -771,9 +853,54 @@
       var make=card.querySelector("[data-pc-primary]"); if(make) make.addEventListener("click",async function(){if(!confirm(t("transfer_confirm")))return;make.disabled=true;try{await workerJson({type:"primary_profile_set",profile_id:card.getAttribute("data-pid"),pin:pin,actor_profile_id:active});localStorage.setItem("taxfly_primary_profile_id",card.getAttribute("data-pid"));closeModal();location.href="profiles.html";}catch(e){make.textContent=t("error");make.disabled=false;}});
     });
   }
-  function openAIHistory() {
-    openModal('<h3 class="sxm-t">' + ic("history", 20) + esc(t("history_title")) + '</h3><p class="sxm-s">' + esc(t("history_pending")) + '</p><div class="sxm-btns"><button type="button" class="sxm-b pri" data-c="1">' + esc(t("ok")) + '</button></div>');
+  async function openAIHistory() {
+    openModal('<h3 class="sxm-t">' + ic("history", 20) + esc(t("history_title")) + '</h3><p class="sxm-s">' + esc(t("history_loading")) + '</p><div class="sxm-btns"><button type="button" class="sxm-b" data-c="1">' + esc(t("close")) + '</button></div>');
     bind("[data-c]", closeModal);
+    var body = modal.querySelector(".sxm-s");
+    try {
+      var data = await workerJson({ type: "ai_ledger_list" });
+      var entries = Array.isArray(data && data.entries) ? data.entries : [];
+      if (!entries.length) { if (body) body.textContent = t("history_empty"); return; }
+      var rows = entries.map(function(e) {
+        var isPurchase = e.type && /purchase$/.test(e.type);
+        var label = isPurchase ? t("history_purchase") : (e.feature || t("history_usage"));
+        var amount = isPurchase ? ("+" + Math.abs(Number(e.credits || 0))) : ("-" + Math.abs(Number(e.credits || 0)));
+        var when = e.createdAt ? new Date(e.createdAt).toLocaleString(lang()) : "";
+        var extra = isPurchase && e.amount != null ? (" · " + esc(e.currency || "") + " " + Number(e.amount).toFixed(2)) : "";
+        return '<div class="sxm-opt" style="cursor:default;justify-content:space-between;align-items:center"><span><strong>' + esc(label) + '</strong><small>' + esc(when) + extra + '</small></span><strong style="color:' + (isPurchase ? '#10b981' : 'var(--text-dim)') + '">' + esc(amount) + '</strong></div>';
+      }).join("");
+      if (body) { body.outerHTML = '<div class="sxm-s" style="max-height:50vh;overflow-y:auto">' + rows + '</div>'; }
+    } catch (e) {
+      if (body) body.textContent = t("history_error");
+    }
+  }
+  function aiCheckoutReturnMessageKey(status) {
+    if (status === "success" || status === "return") return "ai_checkout_success";
+    if (status === "pending") return "ai_checkout_pending";
+    return "ai_checkout_failure";
+  }
+  // El comprador vuelve acá después de Mercado Pago, Stripe o PayPal. Mercado Pago
+  // y Stripe ya acreditan por webhook del lado servidor; para PayPal además
+  // confirmamos acá mismo (capture-on-return) porque el webhook puede demorar.
+  async function handleAICheckoutReturn() {
+    var params = new URLSearchParams(location.search);
+    var status = params.get("ai_checkout");
+    if (!status) return;
+    var provider = params.get("provider") || "";
+    var checkoutId = params.get("checkout_id") || "";
+    history.replaceState(null, "", location.pathname + location.hash);
+    var effectiveStatus = status;
+    if (provider === "paypal" && status === "return" && checkoutId) {
+      var orderId = params.get("token") || params.get("order_id") || "";
+      effectiveStatus = "pending";
+      if (orderId) {
+        try { var r = await workerJson({ type: "ai_paypal_capture", order_id: orderId, checkout_id: checkoutId }); if (r && r.ok) effectiveStatus = "success"; }
+        catch (e) { console.warn("[settings] paypal capture", e); }
+      }
+    }
+    refreshAIStatus(true);
+    var msg = t(aiCheckoutReturnMessageKey(effectiveStatus));
+    if (typeof window.showAlert === "function") window.showAlert(msg); else alert(msg);
   }
   function openCafecito() {
     var url = String((window.TAXFLY_CONFIG && window.TAXFLY_CONFIG.SUPPORT_CAFECITO_URL) || "").trim();
@@ -789,6 +916,7 @@
     refreshAIStatus(false);
   }
   refresh();
+  if (location.search.indexOf("ai_checkout=") !== -1) handleAICheckoutReturn();
   var tripsUiUrl = new URL("trips-ui.js", document.currentScript.src).href;
   window.addEventListener("load", function() { import(tripsUiUrl).catch(function(e) { console.warn("[trips]", e); }); });
   new MutationObserver(function() {
