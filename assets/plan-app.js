@@ -4251,7 +4251,7 @@ function renderItinerario() {
     const fc = forecastForTripDate(d.fecha);
     const wBadge = fc ? `<span class="odt-weather" title="${escapeHtml(WMO[fc.code] || "")} · mín ${fc.tminF}°F">${WI[fc.code] || "🌡️"} ${fc.tmaxF}°</span>` : "";
     const pend = d.bloques.filter(b => !itinHechos.has(b.id)).length;
-    return `<div class="outlets-day-tab-wrap"><button class="outlets-day-tab${i === itinDay ? " active" : ""}" onclick="itinSwitchDay(${i})">${escapeHtml(d.nombre || "Día " + (i + 1))}<span class="odt-date">${escapeHtml(d.fecha || "")}${pend === 0 && d.bloques.length ? " ✓" : ""}${wBadge}</span></button><button type="button" class="outlets-day-tab-del" onclick="itinDeleteDayAt(${i},event)" title="Eliminar ${escapeHtml(d.nombre || "día")}" aria-label="Eliminar ${escapeHtml(d.nombre || "día")}">${ic("x", 10)}</button></div>`;
+    return `<button class="outlets-day-tab${i === itinDay ? " active" : ""}" onclick="itinSwitchDay(${i})">${escapeHtml(d.nombre || "Día " + (i + 1))}<span class="odt-date">${escapeHtml(d.fecha || "")}${pend === 0 && d.bloques.length ? " ✓" : ""}${wBadge}</span></button>`;
   }).join("")}\n    <button class="btn-nav-set" style="margin-left:2px" onclick="itinAddDay()" title="Agregar día">+</button>\n  </div><button type="button" class="day-tabs-arrow" onclick="this.previousElementSibling.scrollBy({left:260,behavior:'smooth'})" aria-label="Ver más días">›</button></div>`;
   html += `<div class="outlets-day-content">`;
   const total = day.bloques.length;
@@ -4462,22 +4462,12 @@ function itinSaveDay() {
 }
 
 async function itinDeleteDay() {
-  return itinDeleteDayAt(itinDay);
-}
-
-async function itinDeleteDayAt(i, e) {
-  e && e.stopPropagation();
-  const day = itinDias[i];
-  if (!day) return;
+  const day = itinGetDay();
   const ok = await showConfirm(`Se elimina "${day.nombre}" con sus ${day.bloques.length} bloques.`, "¿Eliminar el día?", "Eliminar");
   if (!ok) return;
   day.bloques.forEach(b => itinHechos.delete(b.id));
-  itinDias.splice(i, 1);
-  if (i === itinDay) {
-    if (itinDay >= itinDias.length) itinDay = Math.max(0, itinDias.length - 1);
-  } else if (i < itinDay) {
-    itinDay -= 1;
-  }
+  itinDias.splice(itinDay, 1);
+  if (itinDay >= itinDias.length) itinDay = Math.max(0, itinDias.length - 1);
   itinEditDay = false;
   itinSave();
   renderParques();

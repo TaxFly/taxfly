@@ -988,27 +988,6 @@ body {
   margin-top: 2px;
 }
 .outlets-day-tab.active .odt-date { color: var(--theme-accent); }
-.outlets-day-tab-wrap { position: relative; flex: 1 0 auto; min-width: 64px; }
-.outlets-day-tab-wrap .outlets-day-tab { width: 100%; }
-.outlets-day-tab-del {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  z-index: 1;
-}
-.outlets-day-tab-del:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 .shop-summary-bar {
   display: flex;
   gap: 10px;
@@ -1888,7 +1867,7 @@ body.theme-parques .header .global-counter { color: var(--muted); border: 0; }
 
 .outlets-day-tabs { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
 .outlets-day-tabs::-webkit-scrollbar { display: none; }
-.outlets-day-tab, .outlets-day-tab-wrap { flex: 1 0 auto; min-width: 64px; white-space: nowrap; }
+.outlets-day-tab { flex: 1 0 auto; min-width: 64px; white-space: nowrap; }
 .outlets-day-tabs > .btn-nav-set { flex-shrink: 0; align-self: center; }
 
 
