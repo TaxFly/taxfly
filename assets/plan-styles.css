@@ -1569,8 +1569,9 @@ body.theme-reservas { --theme-accent:#6366f1; --theme-accent2:#2563eb; }
 .reservation-form-head { display:flex; align-items:center; justify-content:space-between; }
 .reservation-form-head h3 { margin:0; font-size:15px; }
 .reservation-form label { display:grid; gap:5px; color:var(--text); font-size:12px; font-weight:700; }
-.reservation-form input,.reservation-form textarea { box-sizing:border-box; width:100%; min-width:0; padding:10px; border:1px solid var(--border2); border-radius:9px; background:var(--surface); color:var(--text); font:inherit; font-size:13px; }
-.reservation-form input:focus,.reservation-form textarea:focus { outline:2px solid var(--theme-accent); outline-offset:1px; }
+.reservation-form input,.reservation-form textarea,.reservation-form select { box-sizing:border-box; width:100%; min-width:0; padding:10px; border:1px solid var(--border2); border-radius:9px; background:var(--surface); color:var(--text); font:inherit; font-size:13px; }
+.reservation-form input:focus,.reservation-form textarea:focus,.reservation-form select:focus { outline:2px solid var(--theme-accent); outline-offset:1px; }
+.reservation-form select option { background:var(--surface2); color:var(--text); }
 .reservation-form label small { color:var(--muted); font-weight:500; line-height:1.4; }
 .reservation-form-dates { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
 .reservation-form-actions { display:flex; justify-content:flex-end; gap:8px; }
