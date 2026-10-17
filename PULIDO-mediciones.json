@@ -1,0 +1,21 @@
+{
+  "conditions": {
+    "samples": 3,
+    "normalDocumentMs": 20,
+    "unrelatedWalmartDocumentMs": 200,
+    "section": "agenda",
+    "scope": "Controlled Node simulation, not a browser or production Firebase measurement"
+  },
+  "baseline": {
+    "medianMs": 200.71,
+    "minMs": 200.03,
+    "maxMs": 201.02,
+    "reads": 16
+  },
+  "current": {
+    "medianMs": 20.42,
+    "minMs": 20.38,
+    "maxMs": 20.8,
+    "reads": 16
+  }
+}

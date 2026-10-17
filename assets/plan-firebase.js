@@ -140,7 +140,7 @@ function fbSet(docId, data) {
   return write;
 }
 
-async function fbGet(docId) {
+async function fbGet(docId, throwOnError=false) {
   try {
     const ref = orlandoDocRef(docId);
     // Cache local primero (instantaneo). Los listeners onSnapshot que se activan
@@ -153,6 +153,7 @@ async function fbGet(docId) {
     return snap.exists() ? snap.data() : null;
   } catch (e) {
     devError("fbGet error", e);
+    if(throwOnError)throw e;
     return null;
   }
 }
@@ -165,12 +166,11 @@ function stableStringify(v) {
 
 const CONFLICT_WINDOW_MS = 6e3;
 
+const initialPlanningCallbacks=new Map();
 function fbListen(docId, callback) {
   const generation=planGeneration;
-  return onSnapshot(orlandoDocRef(docId), snap => {
-    if(generation!==planGeneration)return;
-    if (!snap.exists()) return;
-    const data = snap.data();
+  const deliver=data=>{
+    if(generation!==planGeneration || !data)return;
     const pending = window._planPendingPayload?.(docId);
     if (pending) {
       try { if (stableStringify(JSON.parse(pending)) !== stableStringify(data)) return; } catch (_) { return; }
@@ -182,6 +182,18 @@ function fbListen(docId, callback) {
       }
     }
     callback(data);
+  };
+  initialPlanningCallbacks.set(docId,deliver);
+  return onSnapshot(orlandoDocRef(docId),{includeMetadataChanges:true},snap=>{
+    if(generation!==planGeneration)return;
+    if(!snap.exists()&&snap.metadata?.fromCache)return;
+    if(window._planInitialState)window._planInitialState[docId]="ready";
+    if(snap.exists())deliver(snap.data());
+    window.refreshPlanningLoadState?.();
+  },()=>{
+    if(generation!==planGeneration)return;
+    if(window._planInitialState?.[docId]!=="ready")window._planInitialState[docId]="error";
+    window.refreshPlanningLoadState?.();
   });
 }
 
@@ -317,38 +329,27 @@ async function startApp() {
   if(generation!==planGeneration)return;
   if (!trips.length) { location.replace("index.html#viajes"); return; }
   listenTripDocuments();
-  const withTimeout = (p, ms) => new Promise((resolve,reject) => {
-    const timer=setTimeout(()=>resolve(null),ms);
-    Promise.resolve(p).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
-  });
-  const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 6e3), withTimeout(fbGet("days"), 6e3), withTimeout(fbGet("visited"), 6e3), withTimeout(fbGet("meals"), 6e3), withTimeout(fbGet("walmart"), 6e3), withTimeout(fbGet("wmChecked"), 6e3), withTimeout(fbGet("shopping"), 6e3), withTimeout(fbGet("customParks"), 6e3), withTimeout(fbGet("parquesExtra"), 6e3), withTimeout(fbGet("coordOverrides"), 6e3), withTimeout(fbGet("parques"), 6e3), withTimeout(fbGet("budget"), 6e3), withTimeout(fbGet("itinerario"), 6e3), withTimeout(fbGet("tips"), 6e3), withTimeout(fbGet("parquesExcel"), 6e3), withTimeout(fbGet("reservations"), 6e3) ]);
+  initialPlanningCallbacks.clear();
+  const fields={"hotel": ["_hotelFromFb", null], "days": ["_daysFromFb", "days"], "visited": ["_visitedFromFb", "visited"], "meals": ["_mealsFromFb", "meals"], "walmart": ["_wmDataFromFb", "data"], "wmChecked": ["_wmCheckedFromFb", "checked"], "shopping": ["_shopFromFb", null], "customParks": ["_customParksFromFb", "items"], "parquesExtra": ["_parquesExtraFromFb", null], "coordOverrides": ["_coordOverridesFromFb", null], "parques": ["_parquesFromFb", "state"], "budget": ["_budgetFromFb", null], "itinerario": ["_itinFromFb", null], "tips": ["_tipsFromFb", null], "parquesExcel": ["_parquesExcelFromFb", null], "reservations": ["_reservationsFromFb", null]};
+  const loading=window.PlanLoading.create(id=>fbGet(id,true),(id,data)=>{
+    if(generation!==planGeneration)return;
+    const [name,field]=fields[id];
+    if(data)window[name]=field?data[field]:data;
+    if(id==="days"&&data)window._daysVersionFromFb=data.v||1;
+    if(window._appInited&&data)initialPlanningCallbacks.get(id)?.(data);
+  },id=>{if(generation===planGeneration){window.refreshPlanningLoadState?.();if(id==="budget")window.budgetRefresh?.();if(id==="meals")window.renderTodayCard?.();}});
+  window._planInitialState=loading.states;
+  const params=new URLSearchParams(location.search);
+  let section=params.get("section");
+  try{section=section||sessionStorage.getItem("orl_section");}catch(_){}
+  const first=section==="parques"||!section?(params.get("subtab")==="atracciones"?"atracciones":"agenda"):section;
+  await loading.waitFor(first);
   if(generation!==planGeneration)return;
-  const val = r => r.status === "fulfilled" ? r.value : null;
-  const [hotelData, daysData, visitedData, mealDataFb, wmDataFb, wmCheckedFb, shopDataFb, customParksDataFb, parquesExtraDataFb, coordOverridesDataFb, parquesDataFb, budgetDataFb, itinDataFb, tipsDataFb, parquesExcelDataFb, reservationsDataFb] = results.map(val);
-  if (hotelData) window._hotelFromFb = hotelData;
-  if (daysData && daysData.days) {
-    window._daysFromFb = daysData.days;
-    window._daysVersionFromFb = daysData.v || 1;
-  }
-  if (visitedData && visitedData.visited) window._visitedFromFb = visitedData.visited;
-  if (mealDataFb && mealDataFb.meals) window._mealsFromFb = mealDataFb.meals;
-  if (wmDataFb && wmDataFb.data) window._wmDataFromFb = wmDataFb.data;
-  if (wmCheckedFb && wmCheckedFb.checked) window._wmCheckedFromFb = wmCheckedFb.checked;
-  if (shopDataFb) window._shopFromFb = shopDataFb;
-  if (customParksDataFb && customParksDataFb.items) window._customParksFromFb = customParksDataFb.items;
-  if (parquesExtraDataFb) window._parquesExtraFromFb = parquesExtraDataFb;
-  if (coordOverridesDataFb) window._coordOverridesFromFb = coordOverridesDataFb;
-  if (parquesDataFb && parquesDataFb.state) window._parquesFromFb = parquesDataFb.state;
-  if (budgetDataFb) window._budgetFromFb = budgetDataFb;
-  if (itinDataFb) window._itinFromFb = itinDataFb;
-  if (tipsDataFb) window._tipsFromFb = tipsDataFb;
-  if (parquesExcelDataFb) window._parquesExcelFromFb = parquesExcelDataFb;
-  if (reservationsDataFb) window._reservationsFromFb = reservationsDataFb;
   window._fbReady = true;
-  if (results.some(r => r.status === "fulfilled" && r.value)) window.taxflyOfflineStatus?.mark("plan", currentUid, currentPerfilId, activeTripId);
+  if (Object.values(loading.states).some(state=>state==="ready")) window.taxflyOfflineStatus?.mark("plan", currentUid, currentPerfilId, activeTripId);
   if (window._appInit) window._appInit();
   document.getElementById("trip-loading")?.remove();
-  migrateManualExpenses().catch(e => devError("expense migration", e));
+  loading.jobs.budget.then(()=>{if(generation===planGeneration&&loading.states.budget==="ready")return migrateManualExpenses();}).catch(e => devError("expense migration", e));
   fbListen("hotel", data => {
     if (window.hotel) {
       Object.assign(window.hotel, data);

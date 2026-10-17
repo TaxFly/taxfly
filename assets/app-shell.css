@@ -1,0 +1,36 @@
+:root{--bg:#f1f5f9}[data-theme="dark"]{--bg:#0b1220}
+/* One continuous background and the existing shared navigation across TaxFly. */
+body { background: var(--bg) !important; }
+body::before { background: transparent !important; }
+.header { background: transparent !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+.app-header .logo, .taxfly-wordmark { display:inline-flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-size:1.4rem;line-height:1;font-weight:500;letter-spacing:-.045em;color:var(--text); }
+.app-header .wm, .taxfly-wordmark .wm {font-size:1.4rem;font-weight:500;letter-spacing:-.045em;line-height:1;color:var(--text)}
+.app-header .wm-usa, .taxfly-wordmark .wm-usa {font-weight:900;color:var(--header-color,var(--primary,#2563eb));}
+.taxfly-wordmark>svg,.app-header .logo>svg{width:32px;height:32px;flex:none;}
+.taxfly-main-nav.nav-bar {position:relative;top:auto;display:flex;align-items:center;gap:5px;padding:8px;margin:0 0 16px;width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow);overflow:visible;}
+.taxfly-main-nav.nav-bar>.btn-nav,.taxfly-main-nav.nav-bar>.btn-nav-more {flex:1 1 0;min-width:0;min-height:64px;padding:8px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;border-radius:11px;background:transparent;color:var(--text-sub,var(--muted));font:800 10px 'DM Sans',sans-serif;letter-spacing:.3px;text-transform:uppercase;text-decoration:none;cursor:pointer;}
+.taxfly-main-nav.nav-bar>.btn-nav.active{background:linear-gradient(135deg,#2563eb,#2563eb);color:#fff;box-shadow:0 6px 18px -6px #2563eb99;}
+.taxfly-main-nav .ni>svg {width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.taxfly-main-nav .ni{display:flex;align-items:center;justify-content:center;line-height:1;}
+.taxfly-main-nav .more-lbl {font:800 10px 'DM Sans',sans-serif;color:inherit;}
+.taxfly-main-nav .more-dots{height:27px;display:flex;gap:3px;align-items:center;}
+.taxfly-main-nav .more-dot{width:3.5px;height:3.5px;border-radius:50%;background:currentColor;}
+.taxfly-main-nav.nav-bar>.btn-nav-more.open,.taxfly-main-nav.nav-bar>.btn-nav-more.is-current{background:var(--primary-dim,rgba(37,99,235,.12));color:var(--primary,#2563eb);}
+.taxfly-main-nav #btnSettings{width:36px!important;height:36px!important;min-width:36px!important;flex:none;margin-left:4px;align-self:center;border-radius:50%;}
+.taxfly-main-nav .nav-dropdown{position:absolute;top:calc(100% + 10px);right:0;width:min(238px,calc(100vw - 40px));padding:6px;border:1.5px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow-lg);z-index:500;display:none;text-transform:none;letter-spacing:normal;}
+.taxfly-main-nav .nav-dropdown.show{display:block;}
+.taxfly-main-nav .dd-item{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:12px;text-align:left;text-decoration:none;color:var(--text);}
+.taxfly-main-nav .dd-item:hover,.taxfly-main-nav .dd-item.current{background:var(--primary-dim,rgba(37,99,235,.12));}
+.taxfly-main-nav .dd-icon{display:flex;align-items:center;justify-content:center;width:34px!important;height:34px;flex:none;border-radius:10px;color:var(--tone);background:color-mix(in srgb,var(--tone) 13%,transparent);}
+.taxfly-main-nav .dd-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.taxfly-main-nav .dd-name{font-size:11.5px;font-weight:800;text-transform:uppercase;color:var(--text);}
+.taxfly-main-nav .dd-desc{font-size:10.5px;font-weight:500;line-height:1.25;color:var(--text-sub,var(--muted));margin-top:1px;}
+.taxfly-main-nav [data-tone="cyan"]{--tone:#06b6d4}.taxfly-main-nav [data-tone="violet"]{--tone:#8b5cf6}.taxfly-main-nav [data-tone="red"]{--tone:#ef4444}.taxfly-main-nav [data-tone="amber"]{--tone:#f59e0b}.taxfly-main-nav [data-tone="indigo"]{--tone:#6366f1}
+.scroll-control .chips{flex:0 1 auto;max-width:100%;padding-bottom:2px;scrollbar-width:none;}
+.scroll-control .chips::-webkit-scrollbar{display:none}
+.scroll-control .chips>*{flex-shrink:0}
+.scroll-control .scroll-arrow[hidden]{display:none!important}
+.cat-bar-name svg,.legend-name svg{width:15px;height:15px;flex:none;vertical-align:-2px;margin-right:5px;}
+@media(max-width:599px){.taxfly-main-nav.nav-bar{gap:2px;padding:6px}.taxfly-main-nav.nav-bar>.btn-nav,.taxfly-main-nav.nav-bar>.btn-nav-more{font-size:7px;letter-spacing:0;min-height:55px}.taxfly-main-nav .more-lbl{font-size:7px}.taxfly-main-nav .ni>svg{width:23px;height:23px}}
+[data-theme="dark"] .taxfly-main-nav {--surface:#1a2434;--surface-2:#222e42;--border:#303f56;--text:#f1f5f9;--text-sub:#94a3b8;--primary:#2563eb;--primary-dim:rgba(37,99,235,.12);}
+[data-theme="dark"] :is(.app-header,.taxfly-wordmark) .wm-usa {color:#5b8def;}

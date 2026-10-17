@@ -1378,7 +1378,7 @@ function renderCapsEditor() {
   list.innerHTML = Object.keys(CAT_I18N_KEY).map(cat => {
     const key = CAT_I18N_KEY[cat];
     const val = catBudgets[key] ? String(catBudgets[key]) : "";
-    return `<div class="caps-row"><span class="caps-name">${catLabel(cat)}</span><input type="text" inputmode="decimal" data-capkey="${key}" placeholder="${bt("caps_placeholder")}" value="${val}" data-num></div>`;
+    return `<div class="caps-row"><span class="caps-name">${catLabelHtml(cat)}</span><input type="text" inputmode="decimal" data-capkey="${key}" placeholder="${bt("caps_placeholder")}" value="${val}" data-num></div>`;
   }).join("");
   updateCapsTotal();
 }
@@ -1430,7 +1430,7 @@ window.guardarTopes = async () => {
 };
 
 function renderCatBars(cats, total) {
-  const rows = cats.slice();
+  const rows = cats.filter(([cat]) => (catBudgets[CAT_I18N_KEY[cat]] || 0) > 0);
   Object.keys(CAT_I18N_KEY).forEach(cat => {
     if (catBudgets[CAT_I18N_KEY[cat]] && !rows.some(r => r[0] === cat)) rows.push([cat, 0]);
   });
@@ -1439,9 +1439,9 @@ function renderCatBars(cats, total) {
     if (cap > 0) {
       const p = val / cap * 100;
       const color = p >= 100 ? "var(--danger)" : p >= 80 ? "#f59e0b" : catColor(cat);
-      return `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabel(cat)}${p >= 100 ? " ⚠️" : ""}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">/ ${fmt(cap)}</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.min(100, Math.round(p))}%;background:${color};"></div></div></div>`;
+      return `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabelHtml(cat)}${p >= 100 ? " ⚠️" : ""}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">/ ${fmt(cap)}</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.min(100, Math.round(p))}%;background:${color};"></div></div></div>`;
     }
-    return `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabel(cat)}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">${Math.round(val / total * 100)}%</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.round(val / total * 100)}%;background:${catColor(cat)};"></div></div></div>`;
+    return `<div class="cat-bar-row"><div class="cat-bar-top"><div class="cat-bar-name">${catLabelHtml(cat)}</div><div class="cat-bar-amount">${fmt(val)} <span style="color:var(--text-dim);font-weight:600;">${Math.round(val / total * 100)}%</span></div></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.round(val / total * 100)}%;background:${catColor(cat)};"></div></div></div>`;
   }).join("");
 }
 
@@ -1663,6 +1663,12 @@ function catLabel(cat) {
   const lang = localStorage.getItem("appLang") || "es";
   const key = CAT_I18N_KEY[cat];
   return key && i18n[lang]?.[key] || cat;
+}
+function catLabelHtml(cat) {
+  const custom=customCats.find(item=>item.name===cat);
+  const key=autoCatIcon(cat);
+  const icon=custom?catIconSvg(custom.icon):key==="medical"?catIconSvg("stethoscope"):uiIconSvg(key);
+  return icon+esc(String(catLabel(cat)).replace(/^[\p{Extended_Pictographic}\u200d\ufe0f\s]+/u, "").trim());
 }
 
 // ═══════════ Categorías personalizadas ═══════════
@@ -2264,7 +2270,7 @@ function renderDashboard(gastos) {
     const c = g.cat || "📦 Otros";
     bycat[c] = (bycat[c] || 0) + g.valor;
   });
-  const cats = Object.entries(bycat).sort((a, b) => b[1] - a[1]);
+  const cats = Object.entries(bycat).filter(([,value])=>value>0).sort((a, b) => b[1] - a[1]);
   const svg = document.getElementById("donut-svg");
   const cx = 70, cy = 70, R = 58, r = 42;
   let angle = -Math.PI / 2, paths = "";
@@ -2279,7 +2285,7 @@ function renderDashboard(gastos) {
     angle += a;
   });
   svg.innerHTML = paths;
-  document.getElementById("donut-legend").innerHTML = cats.slice(0, 5).map(([cat, val]) => `<div class="legend-item"><div class="legend-dot" style="background:${catColor(cat)}"></div><div class="legend-name">${catLabel(cat)}</div><div class="legend-val">${fmt(val)}</div><div class="legend-pct">${Math.round(val / total * 100)}%</div></div>`).join("");
+  document.getElementById("donut-legend").innerHTML = cats.map(([cat, val]) => `<div class="legend-item"><div class="legend-dot" style="background:${catColor(cat)}"></div><div class="legend-name">${catLabelHtml(cat)}</div><div class="legend-val">${fmt(val)}</div><div class="legend-pct">${Math.round(val / total * 100)}%</div></div>`).join("");
   document.getElementById("cat-bars").innerHTML = renderCatBars(cats, total);
 }
 
@@ -2346,7 +2352,7 @@ function poblarExportCard() {
   document.getElementById("ec-cats-list").innerHTML = cats.map(([cat, val]) => {
     const pct = Math.round(val / total * 100);
     const col = catColor(cat);
-    return `<div class="ec-cat-row">\n            <div class="ec-cat-dot" style="background:${col}"></div>\n            <div class="ec-cat-name">${catLabel(cat)}</div>\n            <div class="ec-cat-bar-track"><div class="ec-cat-bar-fill" style="width:${pct}%;background:${col};"></div></div>\n            <div class="ec-cat-amt">${fmt(val)}</div>\n            <div class="ec-cat-pct">${pct}%</div>\n        </div>`;
+    return `<div class="ec-cat-row">\n            <div class="ec-cat-dot" style="background:${col}"></div>\n            <div class="ec-cat-name">${catLabelHtml(cat)}</div>\n            <div class="ec-cat-bar-track"><div class="ec-cat-bar-fill" style="width:${pct}%;background:${col};"></div></div>\n            <div class="ec-cat-amt">${fmt(val)}</div>\n            <div class="ec-cat-pct">${pct}%</div>\n        </div>`;
   }).join("");
   return {
     total: total,

@@ -1,5 +1,6 @@
 (function() {
   "use strict";
+  const navOnly = document.currentScript?.hasAttribute("data-nav-only");
   const ICONS = {
     home: '<path d="M3 11 12 3l9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/>',
     calculator: '<rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M8.5 7h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/>',
@@ -365,16 +366,24 @@
   const NAV_MAIN = [ [ "index.html", "home", "home" ], [ "tax.html", "calculator", "taxes" ], [ "compras.html", "bag", "shopping" ], [ "planificacion.html?section=parques", "calendar", "plan" ] ];
   const NAV_MORE = [ [ "tickets.html", "file", "tickets", "cyan" ], [ "mis-cosas.html", "briefcase", "things", "violet" ], [ "rutas.html", "map", "routes", "red" ], [ "unidades.html", "bulb", "units", "amber" ], [ "grupo.html", "users", "group", "indigo" ] ];
   function buildNav() {
-    const nav = document.querySelector(".nav-bar");
-    if (!nav || !nav.querySelector(".btn-nav")) return;
+    const nav = document.querySelector(".plan-app-nav") || document.querySelector(".nav-bar");
+    if (!nav || (!nav.classList.contains("plan-app-nav") && !nav.querySelector(".btn-nav"))) return;
+    nav.classList.add("nav-bar", "taxfly-main-nav");
     const lang = curLang();
     if (nav.getAttribute("data-ui-nav") === lang) return;
     const T = NAV_T[lang];
-    const set = nav.querySelector("#btnSettings");
+    const set = nav.querySelector("#btnSettings") || document.querySelector(".app-header #btnSettings");
     const main = NAV_MAIN.map(([href, icon, key]) => `<a href="${href}" class="btn-nav"><span class="ni">${svg(icon, 27)}</span><span>${T[key]}</span></a>`).join("");
     const more = NAV_MORE.map(([href, icon, key, tone]) => `<a href="${href}" class="dd-item"><span class="dd-icon ui-slot" data-tone="${tone}">${svg(icon, 18)}</span><div><div class="dd-name">${T[key]}</div><div class="dd-desc">${T[key + "_d"]}</div></div></a>`).join("");
     nav.innerHTML = main + `<button class="btn-nav-more" id="btnMore" onclick="toggleMoreMenu(event)" aria-label="${T.more}">\n                <div class="more-dots"><div class="more-dot"></div><div class="more-dot"></div><div class="more-dot"></div></div>\n                <span class="more-lbl">${T.more}</span>\n                <div class="nav-dropdown" id="navDropdown"><div class="dd-arrow"></div>${more}</div>\n            </button>`;
     if (set) nav.appendChild(set);
+    nav.querySelector("#btnMore").onclick = event => {
+      if(event.target.closest("a"))return;
+      event.stopPropagation();
+      const button=event.currentTarget, menu=button.querySelector(".nav-dropdown");
+      const open=menu.classList.toggle("show");button.classList.toggle("open",open);button.setAttribute("aria-expanded",String(open));
+    };
+    nav.querySelector("#btnMore").setAttribute("aria-expanded","false");
     nav.setAttribute("data-ui-nav", lang);
   }
   const LEAD_RE = /^(\s*)(\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*|[✓✕])(\s*)/u;
@@ -453,6 +462,7 @@
   }
   function run() {
     buildNav();
+    if(navOnly){markActive();return;}
     swapSlots(document);
     swapHeadings(document);
     swapLeading(document);
@@ -469,6 +479,16 @@
     });
   };
   function start() {
+    if(navOnly){
+      run();
+      window.I18N?.onChange(schedule);
+      document.addEventListener("click",event=>{
+        if(event.target.closest(".lang-opt,[data-lang]"))setTimeout(schedule,0);
+        if(!event.target.closest(".btn-nav-more"))document.querySelectorAll(".taxfly-main-nav .btn-nav-more").forEach(button=>{button.classList.remove("open");button.setAttribute("aria-expanded","false");button.querySelector(".nav-dropdown")?.classList.remove("show");});
+      });
+      window.addEventListener("storage",event=>{if(event.key==="appLang")schedule();});
+      return;
+    }
     document.querySelectorAll("body *").forEach(e => staticEls.add(e));
     run();
     if (document.readyState === "loading") {

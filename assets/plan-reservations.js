@@ -196,6 +196,7 @@ function reservationForm(type, item) {
 }
 
 function renderReservations() {
+    if(window.planPanelPending?.("reservas"))return;
   const panel = document.getElementById("panel-reservas");
   if (!panel) return;
   const linkedItem = reservations.find(r => r.id === new URLSearchParams(location.search).get("reservation"));

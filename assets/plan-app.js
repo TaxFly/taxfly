@@ -573,6 +573,7 @@ function mealPickerAdd(key) {
 }
 
 function renderComidas() {
+  if(window.planPanelPending?.("comidas"))return;
   mealNormalizeData();
   const panel = document.getElementById("panel-comidas");
   let html = '<div class="comidas-panel">';
@@ -1323,6 +1324,7 @@ function renderTodayCard() {
   const slot = document.getElementById("today-card-slot");
   const chip = document.getElementById("trip-chip-slot");
   if (!slot) return;
+  if(window._planInitialState&&window._planInitialState.meals!=="ready"){slot.style.display="none";return;}
   const day = findTodayMealDay();
   if (!day) {
     const countdown = daysUntilTrip();
@@ -1533,12 +1535,12 @@ function budgetDeleteGasto(id) {
   budgetRenderAll();
 }
 
-function planFinanceMessage(){const text=window._planFinanceError?'No se pudo actualizar.':!navigator.onLine?'Sin conexión · datos no disponibles':'Cargando…';return window.tr?window.tr(text):text;}
+function planFinanceMessage(){const text=(window._planFinanceError||window._planInitialState?.budget==="error")?'No se pudo actualizar.':!navigator.onLine?'Sin conexión · datos no disponibles':'Cargando…';return window.tr?window.tr(text):text;}
 
 function renderBudgetPill() {
   const slot = document.getElementById("budget-pill-slot");
   if (!slot) return;
-  if(!financePresReady||!financeExpensesReady){
+  if(!financePresReady||!financeExpensesReady||(window._planInitialState&&window._planInitialState.budget!=="ready")){
     slot.innerHTML=`<button type="button" class="budget-pill empty" disabled aria-busy="${!window._planFinanceError}"><span class="budget-pill-label">${planFinanceMessage()}</span></button>`;return;
   }
   const base = tfx.presupuesto || 0;
@@ -1569,7 +1571,7 @@ window.openBudgetFromPill = openBudgetFromPill;
 function renderBudgetBox() {
   const box = document.getElementById("budget-box");
   if (!box) return;
-  if(!financePresReady||!financeExpensesReady){box.innerHTML=`<div class="budget-note" role="status">${planFinanceMessage()}</div>`;return;}
+  if(!financePresReady||!financeExpensesReady||(window._planInitialState&&window._planInitialState.budget!=="ready")){box.innerHTML=`<div class="budget-note" role="status">${planFinanceMessage()}</div>`;return;}
   const base = tfx.presupuesto || 0;
   const hasTotal = base > 0 && !budgetEditingTotal;
   if (!hasTotal) {
@@ -2032,6 +2034,7 @@ async function wmRegisterExpense() {
 window.wmRegisterExpense = wmRegisterExpense;
 
 function renderWalmart() {
+  if(window.planPanelPending?.("walmart"))return;
   const panel = document.getElementById("panel-walmart");
   const total = wmCountAll();
   const checked = wmChecked.size;
@@ -2159,6 +2162,30 @@ const sectionMeta = {
   }
 };
 
+function planPanelPending(section) {
+  const states=window._planInitialState, panel=document.getElementById("panel-"+section);
+  if(!states||!panel)return false;
+  const group=section==="parques"?(parquesSubTab==="atracciones"?"atracciones":"agenda"):section;
+  const required=window.PlanLoading.groups[group]||[];
+  if(required.every(id=>states[id]==="ready")){
+    panel.removeAttribute("aria-busy");delete panel.dataset.planWaiting;return false;
+  }
+  const error=required.some(id=>states[id]==="error");
+  const message=window.I18N?.t(error?"No se pudo actualizar.":"Cargando…") || (error?"No se pudo actualizar.":"Cargando…");
+  panel.dataset.planWaiting="true";panel.setAttribute("aria-busy",String(!error));
+  panel.innerHTML=`<div class="budget-note" role="status" style="min-height:180px">${escapeHtml(message)}</div>`;
+  return true;
+}
+window.planPanelPending=planPanelPending;
+window.refreshPlanningLoadState=()=>{
+  for(const section of ["outlets","comidas","walmart","parques","reservas"]){
+    const panel=document.getElementById("panel-"+section);
+    if(!panel?.dataset.planWaiting)continue;
+    if(planPanelPending(section))continue;
+    if(section==="reservas")window.renderReservations?.();
+    else ({outlets:renderOutlets,comidas:renderComidas,walmart:renderWalmart,parques:renderParques})[section]();
+  }
+};
 const planSectionScroll = new Map();
 let visiblePlanSection = null;
 function planScrollKey(section) {
@@ -2264,6 +2291,7 @@ function shopGetItem(id) {
 let _outletsFirstRender = true;
 
 function renderOutlets() {
+  if(window.planPanelPending?.("outlets"))return;
   const panel = document.getElementById("panel-outlets");
   let html = `<div class="outlets-panel">\n    <div class="outlets-subtabs">\n      <button class="outlets-stab${outletSubTab === "cronograma" ? " active" : ""}" onclick="switchOutletTab('cronograma')">${ic("calendar", 13)} Cronograma</button>\n      <button class="outlets-stab${outletSubTab === "lista" ? " active" : ""}" onclick="switchOutletTab('lista')">${ic("shirt", 13)} Compras</button>\n    </div>`;
   if (outletSubTab === "cronograma") {
@@ -3674,6 +3702,7 @@ function switchParquesTab(t) {
 }
 
 function renderParques() {
+  if(window.planPanelPending?.("parques"))return;
   migrateLegacyParques();
   const panel = document.getElementById("panel-parques");
   const subtabs = `<div class="outlets-subtabs">\n      <button class="outlets-stab${parquesSubTab === "itinerario" ? " active" : ""}" onclick="switchParquesTab('itinerario')">${ic("calendar", 13)} Itinerario</button>\n      <button class="outlets-stab${parquesSubTab === "atracciones" ? " active" : ""}" onclick="switchParquesTab('atracciones')">${ic("sparkles", 13)} Atracciones</button>\n    </div>${legacyParksNotice()}`;

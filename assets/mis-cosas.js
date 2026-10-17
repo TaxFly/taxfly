@@ -1535,3 +1535,21 @@ function esperarFirebaseReady(timeoutMs) {
   const listo = await esperarFirebaseReady(8e3);
   if (listo && listo.DB) iniciarNube(listo.DB); else iniciarLocal();
 })();
+
+function updateMisFilterArrows() {
+  const row=document.getElementById("tabs"),wrap=row?.closest(".scroll-control");
+  if(!wrap)return;
+  const [left,right]=wrap.querySelectorAll(".scroll-arrow");
+  if(!left||!right)return;
+  const overflow=row.scrollWidth>row.clientWidth+2;
+  left.hidden=!overflow;right.hidden=!overflow;
+  left.disabled=row.scrollLeft<=1;right.disabled=row.scrollLeft>=row.scrollWidth-row.clientWidth-1;
+}
+function watchMisFilterArrows() {
+  const row=document.getElementById("tabs");if(!row)return;
+  const refresh=()=>requestAnimationFrame(updateMisFilterArrows);
+  new MutationObserver(refresh).observe(row,{childList:true,subtree:true,characterData:true});
+  if(window.ResizeObserver)new ResizeObserver(refresh).observe(row.parentElement);
+  row.addEventListener("scroll",refresh,{passive:true});window.addEventListener("resize",refresh);refresh();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",watchMisFilterArrows,{once:true});else watchMisFilterArrows();
