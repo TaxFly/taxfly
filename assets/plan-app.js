@@ -435,6 +435,8 @@ window._setMealData = function(d) {
 
 let mealData = [];
 
+let mealEditingDayId = null;
+
 const mealNames = [ "Desayuno", "Almuerzo", "Cena" ];
 
 const typeConf = {
@@ -480,7 +482,8 @@ function renderComidas() {
     const dots = day.meals.map(m => `<span class="meal-dot${m && m !== "—" ? " filled" : ""}"></span>`).join("");
     const mealsHtml = day.meals.map((m, i) => `<div class="meal-row-item" id="mcell-${day.id}-${i}" onclick="editMealCell(${day.id},${i})">\n        <span class="meal-row-label">${mealNames[i]}</span>\n        <span class="meal-row-text${!m || m === "—" ? " empty" : ""}" id="mtext-${day.id}-${i}">${!m || m === "—" ? "Sin planificar" : escapeHtml(m)}</span>\n        <span class="meal-row-edit-icon">${ic("pencil", 13)}</span>\n      </div>`).join("");
     const snackChips = day.snacks.map((s, si) => `<span class="snack-chip">${escapeHtml(s)}<button class="snack-chip-rm" onclick="removeSnackM(${day.id},${si})">×</button></span>`).join("");
-    html += `\n      <div class="day-meal-card" id="mcard-${day.id}">\n        <div class="day-meal-header" onclick="toggleMealCard(${day.id})">\n          <div class="meal-date-pill">\n            <span class="meal-date-num">${dateNum}</span>\n            <span class="meal-date-mon">${dateMon}</span>\n          </div>\n          <div class="meal-header-center">\n            <div class="meal-day-title">${day.title}</div>\n            <span class="meal-day-badge ${tc.cls}">${tc.icon ? ic(tc.icon, 11) : ""}${tc.label}</span>\n          </div>\n          <div class="meal-preview">${dots}</div>\n          <span class="meal-chevron">${ic("chevronDown", 14)}</span>\n        </div>\n        <div class="day-meal-body">\n          <div class="meals-stack">${mealsHtml}</div>\n          <div class="meal-extras">\n            <div class="snacks-row" id="msnacks-${day.id}">\n              <div class="snacks-row-label">${ic("backpack", 11)} Mochila / Snacks</div>\n              <div class="snack-chips" id="msnack-list-${day.id}">\n                ${snackChips}\n                <button class="snack-chip-add" onclick="showSnackInputM(${day.id})">+ agregar</button>\n              </div>\n              <div class="snack-inline-input" id="msnack-input-${day.id}" style="display:none">\n                <input class="snack-field" type="text" id="msnack-field-${day.id}" placeholder="ej: Granola bar"\n                  onkeydown="if(event.key==='Enter')addSnackM(${day.id})">\n                <button class="mbtn msave" onclick="addSnackM(${day.id})">OK</button>\n                <button class="mbtn" onclick="hideSnackInputM(${day.id})">${ic("x", 14)}</button>\n              </div>\n            </div>\n            ${day.notes || true ? `<textarea class="notes-ta" placeholder="Notas del día..." rows="2"\n              onchange="saveMealNotes(${day.id},this.value)">${escapeHtml(day.notes)}</textarea>` : ""}\n            <div class="del-day-row">\n              <button class="mbtn mdel" onclick="deleteMealDay(${day.id})">Eliminar día</button>\n            </div>\n          </div>\n        </div>\n      </div>`;
+    const isEditingDay = mealEditingDayId === day.id;
+    html += `\n      <div class="day-meal-card${isEditingDay ? " open" : ""}" id="mcard-${day.id}">\n        <div class="day-meal-header" onclick="toggleMealCard(${day.id})">\n          <div class="meal-date-pill">\n            <span class="meal-date-num">${dateNum}</span>\n            <span class="meal-date-mon">${dateMon}</span>\n          </div>\n          <div class="meal-header-center">\n            <div class="meal-day-title">${day.title}</div>\n            <span class="meal-day-badge ${tc.cls}">${tc.icon ? ic(tc.icon, 11) : ""}${tc.label}</span>\n          </div>\n          <div class="meal-preview">${dots}</div>\n          <button class="wm-icon-btn" onclick="mealStartEditDay(${day.id});event.stopPropagation()" title="Editar día" aria-label="Editar día">${ic("pencil", 13)}</button>\n          <span class="meal-chevron">${ic("chevronDown", 14)}</span>\n        </div>\n        <div class="day-meal-body">\n          ${isEditingDay ? mealDayEditForm(day) : ""}\n          <div class="meals-stack">${mealsHtml}</div>\n          <div class="meal-extras">\n            <div class="snacks-row" id="msnacks-${day.id}">\n              <div class="snacks-row-label">${ic("backpack", 11)} Mochila / Snacks</div>\n              <div class="snack-chips" id="msnack-list-${day.id}">\n                ${snackChips}\n                <button class="snack-chip-add" onclick="showSnackInputM(${day.id})">+ agregar</button>\n              </div>\n              <div class="snack-inline-input" id="msnack-input-${day.id}" style="display:none">\n                <input class="snack-field" type="text" id="msnack-field-${day.id}" placeholder="ej: Granola bar"\n                  onkeydown="if(event.key==='Enter')addSnackM(${day.id})">\n                <button class="mbtn msave" onclick="addSnackM(${day.id})">OK</button>\n                <button class="mbtn" onclick="hideSnackInputM(${day.id})">${ic("x", 14)}</button>\n              </div>\n            </div>\n            ${day.notes || true ? `<textarea class="notes-ta" placeholder="Notas del día..." rows="2"\n              onchange="saveMealNotes(${day.id},this.value)">${escapeHtml(day.notes)}</textarea>` : ""}\n          </div>\n        </div>\n      </div>`;
   });
   html += "</div>";
   panel.innerHTML = html;
@@ -568,6 +571,7 @@ function deleteMealDay(id) {
   const idx = mealData.findIndex(d => d.id === id);
   if (idx === -1) return;
   const [removedDay] = mealData.splice(idx, 1);
+  if (mealEditingDayId === id) mealEditingDayId = null;
   mealSave();
   renderComidas();
   showUndoToast(`Día "${removedDay.title || removedDay.date}" eliminado`, () => {
@@ -575,6 +579,64 @@ function deleteMealDay(id) {
     mealSave();
     renderComidas();
   });
+}
+
+function mealDayEditForm(day) {
+  const idx = mealData.indexOf(day);
+  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch;margin-bottom:14px">\n      <div class="wm-edit-form" style="width:100%">\n        <input class="wm-edit-input" id="meal-day-edit-date" value="${escapeHtml(day.date || "")}" placeholder="Fecha (ej: 19 ene)" style="margin-bottom:6px;width:100%">\n        <input class="wm-edit-input" id="meal-day-edit-title" value="${escapeHtml(day.title || "")}" placeholder="Título (ej: Disney extra)" style="margin-bottom:6px;width:100%">\n        <select class="wm-edit-input" id="meal-day-edit-type" style="margin-bottom:6px;width:100%">\n          ${Object.entries(typeConf).map(([k, t]) => `<option value="${k}"${day.type === k ? " selected" : ""}>${t.label}</option>`).join("")}\n        </select>\n        <div class="del-day-row" style="margin:0 0 8px">\n          ${mealData.length > 1 ? `<button class="mbtn" onclick="mealMoveDay(${day.id},-1)" ${idx === 0 ? "disabled" : ""} title="Mover el día hacia arriba">${ic("chevronUp", 13)} Mover</button>\n          <button class="mbtn" onclick="mealMoveDay(${day.id},1)" ${idx === mealData.length - 1 ? "disabled" : ""} title="Mover el día hacia abajo">Mover ${ic("chevronDown", 13)}</button>` : ""}\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn mdel" onclick="deleteMealDay(${day.id})">Eliminar día</button>\n          <button class="mbtn" onclick="mealCancelEditDay()">Cancelar</button>\n          <button class="mbtn msave" onclick="mealSaveDay(${day.id})">Guardar</button>\n        </div>\n      </div>\n    </div>`;
+}
+
+function mealStartEditDay(id) {
+  mealEditingDayId = id;
+  renderComidas();
+  setTimeout(() => document.getElementById("meal-day-edit-date")?.focus(), 50);
+  setTimeout(() => document.getElementById("mcard-" + id)?.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  }), 60);
+}
+
+function mealCancelEditDay() {
+  mealEditingDayId = null;
+  renderComidas();
+}
+
+function mealMoveDay(id, dir) {
+  const idx = mealData.findIndex(d => d.id === id);
+  if (idx === -1) return;
+  const j = idx + dir;
+  if (j < 0 || j >= mealData.length) return;
+  [mealData[idx], mealData[j]] = [ mealData[j], mealData[idx] ];
+  mealSave();
+  renderComidas();
+  setTimeout(() => document.getElementById("mcard-" + id)?.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  }), 60);
+}
+
+function mealSaveDay(id) {
+  const day = mealData.find(d => d.id === id);
+  if (!day) return;
+  const dateVal = (document.getElementById("meal-day-edit-date").value || "").trim();
+  const titleVal = (document.getElementById("meal-day-edit-title").value || "").trim();
+  day.date = dateVal;
+  day.title = titleVal || day.title;
+  day.type = document.getElementById("meal-day-edit-type").value;
+  if (day.date && !parseTripDayDate(day.date)) {
+    showMToast(`No reconozco "${day.date}" como fecha (probá "19 ene") — puede no ordenarse bien`);
+  } else if (day.date) {
+    const dup = mealData.find(d => d !== day && itinMismaFecha(d.date, day.date));
+    if (dup) showMToast(`Ojo: "${dup.title}" ya tiene esa misma fecha`);
+  }
+  mealData.sort((a, b) => itinFechaOrden(a.date) - itinFechaOrden(b.date));
+  mealEditingDayId = null;
+  mealSave();
+  renderComidas();
+  setTimeout(() => document.getElementById("mcard-" + id)?.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  }), 60);
 }
 
 function openMealModal() {
