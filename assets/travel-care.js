@@ -52,7 +52,9 @@ function measure(){const n=performance.getEntriesByType('navigation')[0];if(n&&n
 if(document.readyState==='complete')measure();else window.addEventListener('load',()=>setTimeout(measure,0),{once:true});
 let observer;function observePaint(){if(observer||!diagnosticEnabled()||!window.PerformanceObserver)return;try{observer=new PerformanceObserver(list=>{const entry=list.getEntries().at(-1);if(entry)record('lcp',entry.startTime);});observer.observe({type:'largest-contentful-paint',buffered:true});}catch(_){}}
 observePaint();
+function ensureStyles(){if(document.getElementById('tf-care-css'))return;const link=document.createElement('link');link.id='tf-care-css';link.rel='stylesheet';const src=document.currentScript?.src||[...document.scripts].map(x=>x.src).find(x=>/travel-care\.js/.test(x))||'';link.href=src?src.replace(/travel-care\.js.*$/,'travel-care.css'):'assets/travel-care.css';document.head.append(link);}
 function preferences(){
+ ensureStyles();
  const drawer=document.querySelector('#settingsDrawer .sx-scroll');if(!drawer)return;
  if(!root){root=document.createElement('section');root.id='tf-care-preferences';root.setAttribute('data-notr','');}if(!root.isConnected)drawer.append(root);
  const permission=window.Notification?.permission;
