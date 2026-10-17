@@ -1378,7 +1378,7 @@ function renderCapsEditor() {
   list.innerHTML = Object.keys(CAT_I18N_KEY).map(cat => {
     const key = CAT_I18N_KEY[cat];
     const val = catBudgets[key] ? String(catBudgets[key]) : "";
-    return `<div class="caps-row"><span class="caps-name">${catLabelHtml(cat)}</span><input type="text" inputmode="decimal" data-capkey="${key}" placeholder="${bt("caps_placeholder")}" value="${val}" data-num></div>`;
+    return `<div class="caps-row"><label class="caps-name" for="cap-${esc(key)}">${catLabelHtml(cat)}</label><input id="cap-${esc(key)}" type="text" inputmode="decimal" data-capkey="${esc(key)}" placeholder="${bt("caps_placeholder")}" value="${val}" data-num></div>`;
   }).join("");
   updateCapsTotal();
 }
@@ -1668,7 +1668,7 @@ function catLabelHtml(cat) {
   const custom=customCats.find(item=>item.name===cat);
   const key=autoCatIcon(cat);
   const icon=custom?catIconSvg(custom.icon):key==="medical"?catIconSvg("stethoscope"):uiIconSvg(key);
-  return icon+esc(String(catLabel(cat)).replace(/^[\p{Extended_Pictographic}\u200d\ufe0f\s]+/u, "").trim());
+  return `<span class="tf-category-icon" aria-hidden="true">${icon}</span><span class="tf-category-label">${esc(String(catLabel(cat)).replace(/^[\p{Extended_Pictographic}\u200d\ufe0f\s]+/u, "").trim())}</span>`;
 }
 
 // ═══════════ Categorías personalizadas ═══════════

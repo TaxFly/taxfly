@@ -36,7 +36,7 @@ body::before { background: transparent !important; }
 [data-theme="dark"] :is(.app-header,.taxfly-wordmark) .wm-usa {color:#5b8def;}
 
 /* Trip search uses the existing surfaces, borders and typography. */
-.tf-trip-search{box-sizing:border-box;width:min(600px,calc(100vw - 28px));max-height:calc(100dvh - 40px);padding:20px;border:1px solid var(--border);border-radius:var(--radius,20px);background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);font-family:'DM Sans',sans-serif;overflow:auto;}
+.tf-trip-search{position:fixed;inset:0;margin:auto;height:fit-content;box-sizing:border-box;width:min(600px,calc(100vw - 28px));max-height:calc(100dvh - 40px);padding:20px;border:1px solid var(--border);border-radius:var(--radius,20px);background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);font-family:'DM Sans',sans-serif;overflow:auto;}
 .tf-trip-search::backdrop{background:rgba(11,18,32,.6)}
 .tf-search-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.tf-search-head h2{font:800 1.15rem 'DM Sans',sans-serif;margin:0;overflow-wrap:anywhere}
 .tf-trip-search button{min-height:44px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm,12px);background:var(--surface-2);color:var(--text);font:600 .85rem 'DM Sans',sans-serif;cursor:pointer}.tf-search-head button{min-width:44px;font-size:1.4rem;flex:none}.tf-trip-search button:disabled{opacity:.55;cursor:wait}
@@ -75,3 +75,12 @@ body::before { background: transparent !important; }
 /* Arrow surfaces remain above the transparent shadow allowance. */
 :is(.scroll-control,.park-filter-control)>.scroll-arrow,
 .day-tabs-control>.day-tabs-arrow{position:relative;z-index:2}
+
+/* Category icons retain their small intrinsic box in every label consumer. */
+.tf-category-icon{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;flex:0 0 15px;vertical-align:-2px;margin-right:5px}
+.tf-category-icon>svg{display:block;width:15px;height:15px;flex:none;margin:0}
+.tf-category-label{min-width:0;overflow-wrap:anywhere}
+.caps-row{min-width:0}
+.caps-name{display:flex;align-items:center;gap:6px;min-width:0;line-height:1.4}
+.caps-name .tf-category-icon{margin-right:0}
+.caps-row input{flex:0 0 auto;max-width:38%;min-width:76px;box-sizing:border-box}
