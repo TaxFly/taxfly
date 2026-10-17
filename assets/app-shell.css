@@ -35,14 +35,37 @@ body::before { background: transparent !important; }
 [data-theme="dark"] .taxfly-main-nav {--surface:#1a2434;--surface-2:#222e42;--border:#303f56;--text:#f1f5f9;--text-sub:#94a3b8;--primary:#2563eb;--primary-dim:rgba(37,99,235,.12);}
 [data-theme="dark"] :is(.app-header,.taxfly-wordmark) .wm-usa {color:#5b8def;}
 
-/* Trip search uses the existing surfaces, borders and typography. */
-.tf-trip-search{position:fixed;inset:0;margin:auto;height:fit-content;box-sizing:border-box;width:min(600px,calc(100vw - 28px));max-height:calc(100dvh - 40px);padding:20px;border:1px solid var(--border);border-radius:var(--radius,20px);background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);font-family:'DM Sans',sans-serif;overflow:auto;}
-.tf-trip-search::backdrop{background:rgba(11,18,32,.6)}
-.tf-search-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.tf-search-head h2{font:800 1.15rem 'DM Sans',sans-serif;margin:0;overflow-wrap:anywhere}
-.tf-trip-search button{min-height:44px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm,12px);background:var(--surface-2);color:var(--text);font:600 .85rem 'DM Sans',sans-serif;cursor:pointer}.tf-search-head button{min-width:44px;font-size:1.4rem;flex:none}.tf-trip-search button:disabled{opacity:.55;cursor:wait}
-.tf-trip-search input{box-sizing:border-box;display:block;width:100%;min-height:46px;margin:16px 0 8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm,12px);background:var(--surface-2);color:var(--text);font:inherit}
-.tf-trip-search p{font-size:.85rem;line-height:1.45;overflow-wrap:anywhere}.tf-trip-search [role=status]{color:var(--text-sub,var(--muted))}.tf-search-result{padding:14px 0;border-top:1px solid var(--border)}.tf-search-result small{display:block;color:var(--text-sub,var(--muted));margin-bottom:5px}.tf-search-result a{display:block;color:var(--primary);font-weight:700;overflow-wrap:anywhere}.tf-search-result p{white-space:pre-wrap;margin:6px 0 0}.tf-trip-search :focus-visible{outline:2px solid var(--primary);outline-offset:3px}
-@media(max-width:599px){.tf-trip-search{padding:16px;max-height:calc(100dvh - 24px)}}
+/* Trip search lives in the header: same surfaces, borders and typography as the rest of the app. */
+.tf-has-search{gap:12px}
+.tf-hsearch{position:relative;display:flex;align-items:center;gap:8px;flex:1 1 0;min-width:0;max-width:340px;height:40px;margin:0 0 0 auto;padding:0 12px;box-sizing:border-box;border:1px solid var(--border);border-radius:var(--radius-sm,12px);background:var(--surface-2,var(--surface));color:var(--text-sub,var(--muted));cursor:text;transition:border-color .15s,box-shadow .15s}
+.tf-hsearch:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 22%,transparent);color:var(--primary)}
+.tf-hsearch-ic{display:inline-flex;flex:none}
+.tf-hsearch input,.tf-hsearch input:focus,.tf-hsearch input:focus-visible{outline:0!important;box-shadow:none!important;border:0!important;border-radius:0!important;background:transparent!important}
+.tf-hsearch input{flex:1;min-width:0;width:100%;height:100%;padding:0;margin:0;border:0;outline:0;background:transparent;color:var(--text);font:500 16px 'DM Sans',sans-serif;-webkit-appearance:none;appearance:none}
+.tf-hsearch input::placeholder{color:var(--text-sub,var(--muted));opacity:.85;overflow:hidden;text-overflow:ellipsis}
+.tf-hsearch-kbd{display:none;flex:none;padding:2px 6px;border:1px solid var(--border);border-radius:6px;font:600 .68rem 'DM Sans',sans-serif;color:var(--text-sub,var(--muted));background:var(--surface)}
+@media(hover:hover) and (pointer:fine){.tf-hsearch-kbd{display:inline-block}.tf-hsearch:focus-within .tf-hsearch-kbd{display:none}}
+.tf-hsearch-cancel{display:none;flex:none;min-height:40px;padding:0 4px;border:0;background:transparent;color:var(--primary);font:700 .9rem 'DM Sans',sans-serif;cursor:pointer}
+/* Active: the field takes the whole header row, with a Cancel action and a results panel below it. */
+.tf-searching{position:relative;z-index:260}
+.tf-searching>:not(.tf-hsearch):not(.tf-hsearch-cancel):not(.tf-hsearch-panel){display:none!important}
+.tf-searching .tf-hsearch{max-width:none;margin-left:0;animation:tf-hsearch-in .18s ease-out}
+.tf-searching .tf-hsearch-cancel{display:inline-block}
+@keyframes tf-hsearch-in{from{opacity:.6;transform:translateX(12px)}to{opacity:1;transform:none}}
+.tf-hsearch-scrim{position:fixed;inset:0;z-index:250;background:rgba(11,18,32,.55);-webkit-tap-highlight-color:transparent}
+.tf-hsearch-scrim[hidden],.tf-hsearch-panel[hidden]{display:none}
+.tf-hsearch-panel{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:1;box-sizing:border-box;padding:14px 16px;max-height:60vh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:var(--radius,20px);background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);font-family:'DM Sans',sans-serif}
+.tf-hsearch-panel p{margin:0;font-size:.85rem;line-height:1.45;overflow-wrap:anywhere}
+.tf-hsearch-panel [role=status]{color:var(--text-sub,var(--muted))}.tf-hsearch-panel [role=status]:empty{display:none}
+.tf-search-results p:first-child{margin-top:6px;color:var(--text-sub,var(--muted))}
+.tf-search-result{padding:12px 0;border-top:1px solid var(--border)}.tf-search-result:first-of-type{margin-top:8px}
+.tf-search-result small{display:block;color:var(--text-sub,var(--muted));margin-bottom:4px}
+.tf-search-result a{display:block;color:var(--primary);font-weight:700;overflow-wrap:anywhere;text-decoration:none}
+.tf-search-result p{white-space:pre-wrap;margin:6px 0 0}
+.tf-hsearch-refresh{display:block;width:100%;min-height:44px;margin-top:10px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm,12px);background:var(--surface-2);color:var(--text);font:600 .85rem 'DM Sans',sans-serif;cursor:pointer}
+.tf-hsearch-refresh:disabled{opacity:.55;cursor:wait}
+.tf-hsearch :focus-visible{outline:0}.tf-hsearch-cancel:focus-visible,.tf-hsearch-refresh:focus-visible,.tf-search-result a:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.tf-searching .tf-hsearch{animation:none}.tf-hsearch{transition:none}}
 
 .taxfly-main-nav .nav-dropdown{max-height:min(440px,55dvh);overflow-y:auto;}
 
