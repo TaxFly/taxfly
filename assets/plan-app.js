@@ -252,6 +252,8 @@ let stopEditingIdx = null;
 
 let stopAddingDay = null;
 
+let outletEditingDayIdx = null;
+
 function saveState() {
   const visitedArr = visited.map(s => [ ...s ]);
   syncedSave(STORAGE_KEY, visitedArr, "visited", {
@@ -1897,6 +1899,9 @@ function switchOutletTab(tab) {
 
 function switchOutletDay(d) {
   currentOutletDay = d;
+  outletEditingDayIdx = null;
+  stopEditingIdx = null;
+  stopAddingDay = null;
   renderOutlets();
   revealSelectedDay();
 }
@@ -1975,6 +1980,7 @@ function outletMoveDay(idx, dir) {
   [days[idx], days[j]] = [ days[j], days[idx] ];
   [visited[idx], visited[j]] = [ visited[j], visited[idx] ];
   currentOutletDay = j;
+  if (outletEditingDayIdx === idx) outletEditingDayIdx = j;
   saveState();
   renderOutlets();
   updateGlobal();
@@ -1985,6 +1991,7 @@ function outletDeleteDay(idx) {
   const [removedDay] = days.splice(idx, 1);
   const [removedVisited] = visited.splice(idx, 1);
   if (currentOutletDay >= days.length) currentOutletDay = days.length - 1;
+  outletEditingDayIdx = null;
   saveState();
   renderOutlets();
   updateGlobal();
@@ -1998,6 +2005,42 @@ function outletDeleteDay(idx) {
   });
 }
 
+function outletStartEditDay(d) {
+  outletEditingDayIdx = d;
+  stopEditingIdx = null;
+  stopAddingDay = null;
+  renderOutlets();
+  setTimeout(() => document.getElementById("outlet-day-edit-name")?.focus(), 50);
+}
+
+function outletCancelEditDay() {
+  outletEditingDayIdx = null;
+  renderOutlets();
+}
+
+function outletSaveDay(d) {
+  const day = days[d];
+  if (!day) return;
+  const nameVal = (document.getElementById("outlet-day-edit-name").value || "").trim();
+  const dateVal = (document.getElementById("outlet-day-edit-date").value || "").trim();
+  const labelVal = (document.getElementById("outlet-day-edit-label").value || "").trim();
+  day.dayName = nameVal || day.dayName;
+  day.date = dateVal;
+  day.label = labelVal || "Sin descripción todavía";
+  if (day.date && !parseTripDayDate(day.date)) {
+    showMToast(`No reconozco "${day.date}" como fecha (probá "Jue 28/01") — puede no ordenarse bien`);
+  } else if (day.date) {
+    const dup = days.find(x => x !== day && itinMismaFecha(x.date, day.date));
+    if (dup) showMToast(`Ojo: "${dup.dayName}" ya tiene esa misma fecha`);
+  }
+  outletsSortByDate();
+  currentOutletDay = days.indexOf(day);
+  outletEditingDayIdx = null;
+  saveState();
+  renderOutlets();
+  updateGlobal();
+}
+
 function renderDayContent(d) {
   const day = days[d];
   const total = day.stops.length;
@@ -2005,10 +2048,10 @@ function renderDayContent(d) {
   const pct = total > 0 ? Math.round(done / total * 100) : 0;
   const allDone = done === total && total > 0;
   let html = `\n    <div class="hotel-bar" id="hotel-bar-${d}">\n      <div class="hotel-icon">${ic("home", 16)}</div>\n      <div class="hotel-info">\n        <div class="hotel-label">Punto de partida</div>\n        <div class="hotel-addr">${hotel.addr ? escapeHtml(hotel.addr) : "Sin definir — tocá el lápiz para agregarlo"}</div>\n      </div>\n      ${tripMapLink(hotel.addr, "hotel-map-link")}\n      <button class="wm-icon-btn hotel-edit-btn" onclick="openHotelEdit()" title="Editar dirección" aria-label="Editar punto de partida">${ic("pencil", 13)}</button>\n    </div>`;
-  if (stopEditingIdx?.dayIdx === d && stopEditingIdx?.stopIdx === "label") {
-    html += `<div style="margin-bottom:14px">\n      <input id="stop-edit-label" class="wm-edit-input" style="width:100%;margin-bottom:6px" value="${escapeHtml(day.label)}">\n      <div style="display:flex;gap:6px;justify-content:flex-end">\n        <button class="mbtn" onclick="stopCancelEdit()">Cancelar</button>\n        <button class="mbtn msave" onclick="stopSaveDayLabel(${d})">Guardar</button>\n      </div>\n    </div>`;
+  if (outletEditingDayIdx === d) {
+    html += `<div class="stop-card" style="cursor:default;flex-direction:column;align-items:stretch;margin-bottom:14px">\n      <div class="wm-edit-form" style="width:100%">\n        <input class="wm-edit-input" id="outlet-day-edit-name" value="${escapeHtml(day.dayName || "")}" placeholder="Nombre del día (ej: Día 4)" style="margin-bottom:6px;width:100%">\n        <input class="wm-edit-input" id="outlet-day-edit-date" value="${escapeHtml(day.date || "")}" placeholder="Fecha (ej: Jue 28/01)" style="margin-bottom:6px;width:100%">\n        <textarea class="wm-edit-input" id="outlet-day-edit-label" placeholder="Descripción del día" style="margin-bottom:6px;width:100%;min-height:48px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(day.label || "")}</textarea>\n        <div class="del-day-row" style="margin:0 0 8px">\n          ${days.length > 1 ? `<button class="mbtn" onclick="outletMoveDay(${d},-1)" ${d === 0 ? "disabled" : ""} title="Mover el día hacia la izquierda">${ic("chevronLeft", 13)} Mover</button>\n          <button class="mbtn" onclick="outletMoveDay(${d},1)" ${d === days.length - 1 ? "disabled" : ""} title="Mover el día hacia la derecha">Mover ${ic("chevronRight", 13)}</button>` : ""}\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn mdel" onclick="outletDeleteDay(${d})">Eliminar día</button>\n          <button class="mbtn" onclick="outletCancelEditDay()">Cancelar</button>\n          <button class="mbtn msave" onclick="outletSaveDay(${d})">Guardar</button>\n        </div>\n      </div>\n    </div>`;
   } else {
-    html += `<div class="day-label" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">\n      <span style="flex:1">${escapeHtml(day.label)}</span>\n      <button class="wm-icon-btn" onclick="stopStartEditLabel(${d});event.stopPropagation()" title="Editar descripción del día" style="flex-shrink:0">${ic("pencil", 13)}</button>\n    </div>`;
+    html += `<div class="itin-daybar" style="margin-bottom:10px">\n      <div class="itin-daybar-main">\n        <div class="itin-daybar-title">${escapeHtml(day.dayName || "Día")} <span class="itin-daybar-date">${escapeHtml(day.date || "")}</span></div>\n      </div>\n      <button class="wm-icon-btn" onclick="outletStartEditDay(${d})" title="Editar día" aria-label="Editar día">${ic("pencil", 14)}</button>\n    </div>\n    <div class="day-label" style="margin-bottom:14px">${escapeHtml(day.label)}</div>`;
   }
   html += `<div class="progress-wrap">\n      <div class="progress-meta">\n        <div class="progress-stats">\n          <div class="stat"><div class="stat-val ${done > 0 ? "accent" : ""}">${done}</div><div class="stat-lbl">visitadas</div></div>\n          <div class="stat"><div class="stat-val">${total}</div><div class="stat-lbl">paradas</div></div>\n          <div class="stat"><div class="stat-val ${pct === 100 ? "accent" : ""}">${pct}%</div><div class="stat-lbl">completado</div></div>\n        </div>\n        <button class="reset-btn" onclick="resetDay(${d})">↺ reiniciar</button>\n      </div>\n      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>\n    </div>`;
   if (allDone) {
@@ -2043,7 +2086,6 @@ function renderDayContent(d) {
     const canOptimize = stopsWithCoords.length === day.stops.length && stopsWithCoords.length >= 3;
     html += `\n      <div class="day-map-wrap" style="margin-top:14px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);">\n        <div class="day-map-header" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);">\n          <div class="day-map-title">${ic("map", 13)} Mapa del día · ${stopsWithCoords.length} paradas</div>\n          ${canOptimize ? `<button class="mbtn" id="optimize-btn-${d}" onclick="optimizeDayOrder(${d})" title="Reordena las paradas para viajar menos entre ellas">↻ Optimizar orden</button>` : ""}\n        </div>\n        ${stopsWithCoords.length > 1 ? `<div class="day-route-info" id="day-route-info-${d}">Calculando ruta…</div>` : ""}\n        <div id="day-map-container-${d}" class="day-map-container"></div>\n      </div>`;
   }
-  html += `<div class="del-day-row">\n      ${days.length > 1 ? `<button class="mbtn" onclick="outletMoveDay(${d},-1)" ${d === 0 ? "disabled" : ""} title="Mover el día hacia la izquierda">${ic("chevronLeft", 13)} Mover</button>\n      <button class="mbtn" onclick="outletMoveDay(${d},1)" ${d === days.length - 1 ? "disabled" : ""} title="Mover el día hacia la derecha">Mover ${ic("chevronRight", 13)}</button>` : ""}\n      <button class="mbtn mdel" onclick="outletDeleteDay(${d})">Eliminar este día</button>\n    </div>`;
   return html;
 }
 
@@ -2203,16 +2245,6 @@ function stopStartEdit(dayIdx, stopIdx) {
   setTimeout(() => document.getElementById("stop-edit-name")?.focus(), 50);
 }
 
-function stopStartEditLabel(dayIdx) {
-  stopEditingIdx = {
-    dayIdx: dayIdx,
-    stopIdx: "label"
-  };
-  stopAddingDay = null;
-  renderOutlets();
-  setTimeout(() => document.getElementById("stop-edit-label")?.focus(), 50);
-}
-
 function stopCancelEdit() {
   stopEditingIdx = null;
   renderOutlets();
@@ -2336,16 +2368,6 @@ async function recoverStopLocations(dayIdx) {
   _routeCache = {};
   renderOutlets();
   showMToast(restored ? `${restored} ubicación${restored === 1 ? "" : "es"} recuperada${restored === 1 ? "" : "s"}. Revisá los pines en el mapa.` : "No se encontraron ubicaciones; podés ingresar coordenadas al editar cada parada.");
-}
-
-function stopSaveDayLabel(dayIdx) {
-  const label = document.getElementById("stop-edit-label").value.trim();
-  if (!label) return;
-  days[dayIdx].label = label;
-  stopEditingIdx = null;
-  saveState();
-  renderOutlets();
-  showMToast("Descripción guardada ✓");
 }
 
 function stopDelete(dayIdx, stopIdx, e) {
