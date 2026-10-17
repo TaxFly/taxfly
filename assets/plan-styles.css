@@ -648,6 +648,20 @@ body {
 .mbadge-free     { background: rgba(16,185,129,.15);  color: #10b981; }
 .mbadge-arrival  { background: rgba(155,125,212,.15); color: #9b7dd4; }
 .mbadge-walmart  { background: rgba(37,99,235,.15);  color: var(--theme-accent); }
+.mbadge-departure{ background: rgba(245,158,11,.15);  color: #d97706; }
+.mbadge-c0 { background: rgba(91,143,212,.15);  color: #5b8fd4; }
+.mbadge-c1 { background: rgba(212,91,106,.15);  color: #d45b6a; }
+.mbadge-c2 { background: rgba(16,185,129,.15);  color: #10b981; }
+.mbadge-c3 { background: rgba(37,99,235,.15);   color: var(--theme-accent); }
+.mbadge-c4 { background: rgba(236,72,153,.15);  color: #db2777; }
+.mbadge-c5 { background: rgba(20,184,166,.15);  color: #0d9488; }
+.meal-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.meal-tag-label { font-size: var(--fs-2xs); font-weight: 600; color: var(--text-muted, inherit); margin: 2px 0 6px; }
+.meal-tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.meal-tag-chip { font: inherit; font-size: var(--fs-2xs); font-weight: 600; padding: 5px 11px; border-radius: 999px; border: 1.5px solid transparent; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; opacity: .55; }
+.meal-tag-chip.on { opacity: 1; border-color: currentColor; }
+.meal-tag-new { display: flex; gap: 6px; align-items: center; }
+.meal-tag-new .wm-edit-input { flex: 1; min-width: 0; }
 .meal-preview { display: flex; gap: 3px; align-items: center; flex-shrink: 0; }
 .meal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border2); transition: background .2s; }
 .meal-dot.filled { background: var(--theme-accent); opacity: 0.7; }

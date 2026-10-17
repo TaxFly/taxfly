@@ -439,35 +439,140 @@ let mealEditingDayId = null;
 
 const mealNames = [ "Desayuno", "Almuerzo", "Cena" ];
 
-const typeConf = {
-  disney: {
-    label: "Disney",
-    cls: "mbadge-disney",
-    icon: "castle"
-  },
-  universal: {
-    label: "Universal",
-    cls: "mbadge-universal",
-    icon: "clapper"
-  },
-  free: {
-    label: "Libre",
-    cls: "mbadge-free",
-    icon: null
-  },
-  arrival: {
+// Categorías de cada día: solo "Llegada" y "Salida" vienen fijas; el resto las crea cada usuario.
+// Un día puede tener varias (ej: Disney + Supermercado). Se guardan en day.tags como lista de textos:
+// "sys:arrival" / "sys:departure" para las fijas y el nombre tal cual para las propias.
+const MEAL_SYS_TAGS = {
+  "sys:arrival": {
     label: "Llegada",
     cls: "mbadge-arrival",
     icon: "plane"
   },
-  walmart: {
-    label: "Supermercado",
-    cls: "mbadge-walmart",
-    icon: "cart"
+  "sys:departure": {
+    label: "Salida",
+    cls: "mbadge-departure",
+    icon: "plane"
   }
 };
 
+const MEAL_CUSTOM_CLASSES = 6;
+
+function mealTagMeta(tag) {
+  if (MEAL_SYS_TAGS[tag]) return MEAL_SYS_TAGS[tag];
+  let h = 0;
+  for (let i = 0; i < tag.length; i++) h = (h * 31 + tag.charCodeAt(i)) >>> 0;
+  return {
+    label: tag,
+    cls: "mbadge-c" + (h % MEAL_CUSTOM_CLASSES),
+    icon: null
+  };
+}
+
+function mealTagKey(tag) {
+  return MEAL_SYS_TAGS[tag] ? tag : itinNorm(tag);
+}
+
+// Los días viejos tenían un solo "type" (disney/universal/free/arrival/walmart): se pasan a categorías.
+const MEAL_LEGACY_TYPE_TAGS = {
+  disney: [ "Disney" ],
+  universal: [ "Universal" ],
+  walmart: [ "Supermercado" ],
+  arrival: [ "sys:arrival" ]
+};
+
+function mealCleanTags(list) {
+  const seen = new Set;
+  const out = [];
+  (Array.isArray(list) ? list : []).forEach(t => {
+    t = String(t == null ? "" : t).trim();
+    if (!t) return;
+    const lower = t.toLowerCase();
+    if (lower === "llegada") t = "sys:arrival"; else if (lower === "salida") t = "sys:departure";
+    const k = mealTagKey(t);
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push(t);
+  });
+  return out;
+}
+
+function mealNormalizeData() {
+  if (!Array.isArray(mealData)) return;
+  mealData.forEach(d => {
+    if (!d) return;
+    d.tags = mealCleanTags(Array.isArray(d.tags) ? d.tags : MEAL_LEGACY_TYPE_TAGS[d.type] || []);
+    delete d.type;
+  });
+}
+
+function mealBadgesHtml(day, size) {
+  const tags = day.tags || [];
+  if (!tags.length) return "";
+  return `<div class="meal-badges">${tags.map(t => {
+    const m = mealTagMeta(t);
+    return `<span class="meal-day-badge ${m.cls}">${m.icon ? ic(m.icon, size || 11) : ""}${escapeHtml(m.label)}</span>`;
+  }).join("")}</div>`;
+}
+
+// Selector de categorías (se usa al agregar y al editar un día)
+const mealPickers = {
+  add: [],
+  edit: []
+};
+
+function mealKnownCustomTags() {
+  const seen = new Map;
+  const add = t => {
+    if (!MEAL_SYS_TAGS[t] && !seen.has(mealTagKey(t))) seen.set(mealTagKey(t), t);
+  };
+  mealData.forEach(d => (d.tags || []).forEach(add));
+  Object.values(mealPickers).forEach(list => list.forEach(add));
+  return [ ...seen.values() ];
+}
+
+function mealPickerHtml(key) {
+  const sel = new Set(mealPickers[key].map(mealTagKey));
+  const all = [ ...Object.keys(MEAL_SYS_TAGS), ...mealKnownCustomTags() ];
+  const chips = all.map(t => {
+    const m = mealTagMeta(t);
+    const on = sel.has(mealTagKey(t));
+    return `<button type="button" class="meal-tag-chip ${m.cls}${on ? " on" : ""}" data-tag="${escapeHtml(t)}" aria-pressed="${on}" onclick="mealPickerToggle('${key}',this.dataset.tag)">${m.icon ? ic(m.icon, 11) : ""}${escapeHtml(m.label)}</button>`;
+  }).join("");
+  return `<div class="meal-tag-chips">${chips}</div>
+    <div class="meal-tag-new">
+      <input type="text" class="wm-edit-input" id="mtag-new-${key}" maxlength="30" placeholder="Nueva categoría (ej: Disney, Supermercado)" onkeydown="if(event.key==='Enter'){event.preventDefault();mealPickerAdd('${key}')}">
+      <button type="button" class="mbtn msave" onclick="mealPickerAdd('${key}')">Agregar</button>
+    </div>`;
+}
+
+function mealPickerRender(key) {
+  const box = document.getElementById("mpick-" + key);
+  if (box) box.innerHTML = mealPickerHtml(key);
+}
+
+function mealPickerToggle(key, tag) {
+  const k = mealTagKey(tag);
+  const list = mealPickers[key];
+  const i = list.findIndex(t => mealTagKey(t) === k);
+  if (i === -1) list.push(tag); else list.splice(i, 1);
+  mealPickerRender(key);
+}
+
+function mealPickerAdd(key) {
+  const input = document.getElementById("mtag-new-" + key);
+  if (!input) return;
+  const clean = mealCleanTags([ input.value ])[0];
+  if (!clean) return;
+  const k = mealTagKey(clean);
+  const existing = mealKnownCustomTags().find(t => mealTagKey(t) === k);
+  const tag = MEAL_SYS_TAGS[clean] ? clean : existing || clean;
+  if (!mealPickers[key].some(t => mealTagKey(t) === k)) mealPickers[key].push(tag);
+  mealPickerRender(key);
+  document.getElementById("mtag-new-" + key)?.focus();
+}
+
 function renderComidas() {
+  mealNormalizeData();
   const panel = document.getElementById("panel-comidas");
   let html = '<div class="comidas-panel">';
   html += `<div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:10px">\n      <button class="wm-reset-btn" onclick="mealOpenImport()">${ic("file", 12)} ${mealData.length ? "Actualizar" : "Importar"} desde Excel</button>\n      ${mealData.length ? `<button class="wm-reset-btn" onclick="mealExportExcel()">${ic("download", 12)} Exportar a Excel</button>` : ""}\n    </div>`;
@@ -475,7 +580,6 @@ function renderComidas() {
     html += `<div class="all-done" style="display:block">\n        <div class="all-done-emoji">${ic("calendar", 44)}</div>\n        <div class="all-done-title">Sin días cargados</div>\n        <div class="all-done-sub">Agregá el primer día del viaje con el botón + o importalo desde un Excel con una pestaña llamada «Menú».</div>\n      </div>`;
   }
   mealData.forEach(day => {
-    const tc = typeConf[day.type];
     const dateParts = day.date.split(" ");
     const dateNum = dateParts[0] || day.date;
     const dateMon = dateParts[1] || "";
@@ -483,7 +587,7 @@ function renderComidas() {
     const mealsHtml = day.meals.map((m, i) => `<div class="meal-row-item" id="mcell-${day.id}-${i}" onclick="editMealCell(${day.id},${i})">\n        <span class="meal-row-label">${mealNames[i]}</span>\n        <span class="meal-row-text${!m || m === "—" ? " empty" : ""}" id="mtext-${day.id}-${i}">${!m || m === "—" ? "Sin planificar" : escapeHtml(m)}</span>\n        <span class="meal-row-edit-icon">${ic("pencil", 13)}</span>\n      </div>`).join("");
     const snackChips = day.snacks.map((s, si) => `<span class="snack-chip">${escapeHtml(s)}<button class="snack-chip-rm" onclick="removeSnackM(${day.id},${si})">×</button></span>`).join("");
     const isEditingDay = mealEditingDayId === day.id;
-    html += `\n      <div class="day-meal-card${isEditingDay ? " open" : ""}" id="mcard-${day.id}">\n        <div class="day-meal-header" onclick="toggleMealCard(${day.id})">\n          <div class="meal-date-pill">\n            <span class="meal-date-num">${dateNum}</span>\n            <span class="meal-date-mon">${dateMon}</span>\n          </div>\n          <div class="meal-header-center">\n            <div class="meal-day-title">${day.title}</div>\n            <span class="meal-day-badge ${tc.cls}">${tc.icon ? ic(tc.icon, 11) : ""}${tc.label}</span>\n          </div>\n          <div class="meal-preview">${dots}</div>\n          <button class="wm-icon-btn" onclick="mealStartEditDay(${day.id});event.stopPropagation()" title="Editar día" aria-label="Editar día">${ic("pencil", 13)}</button>\n          <span class="meal-chevron">${ic("chevronDown", 14)}</span>\n        </div>\n        <div class="day-meal-body">\n          ${isEditingDay ? mealDayEditForm(day) : ""}\n          <div class="meals-stack">${mealsHtml}</div>\n          <div class="meal-extras">\n            <div class="snacks-row" id="msnacks-${day.id}">\n              <div class="snacks-row-label">${ic("backpack", 11)} Mochila / Snacks</div>\n              <div class="snack-chips" id="msnack-list-${day.id}">\n                ${snackChips}\n                <button class="snack-chip-add" onclick="showSnackInputM(${day.id})">+ agregar</button>\n              </div>\n              <div class="snack-inline-input" id="msnack-input-${day.id}" style="display:none">\n                <input class="snack-field" type="text" id="msnack-field-${day.id}" placeholder="ej: Granola bar"\n                  onkeydown="if(event.key==='Enter')addSnackM(${day.id})">\n                <button class="mbtn msave" onclick="addSnackM(${day.id})">OK</button>\n                <button class="mbtn" onclick="hideSnackInputM(${day.id})">${ic("x", 14)}</button>\n              </div>\n            </div>\n            ${day.notes || true ? `<textarea class="notes-ta" placeholder="Notas del día..." rows="2"\n              onchange="saveMealNotes(${day.id},this.value)">${escapeHtml(day.notes)}</textarea>` : ""}\n          </div>\n        </div>\n      </div>`;
+    html += `\n      <div class="day-meal-card${isEditingDay ? " open" : ""}" id="mcard-${day.id}">\n        <div class="day-meal-header" onclick="toggleMealCard(${day.id})">\n          <div class="meal-date-pill">\n            <span class="meal-date-num">${dateNum}</span>\n            <span class="meal-date-mon">${dateMon}</span>\n          </div>\n          <div class="meal-header-center">\n            <div class="meal-day-title">${day.title}</div>\n            ${mealBadgesHtml(day)}\n          </div>\n          <div class="meal-preview">${dots}</div>\n          <button class="wm-icon-btn" onclick="mealStartEditDay(${day.id});event.stopPropagation()" title="Editar día" aria-label="Editar día">${ic("pencil", 13)}</button>\n          <span class="meal-chevron">${ic("chevronDown", 14)}</span>\n        </div>\n        <div class="day-meal-body">\n          ${isEditingDay ? mealDayEditForm(day) : ""}\n          <div class="meals-stack">${mealsHtml}</div>\n          <div class="meal-extras">\n            <div class="snacks-row" id="msnacks-${day.id}">\n              <div class="snacks-row-label">${ic("backpack", 11)} Mochila / Snacks</div>\n              <div class="snack-chips" id="msnack-list-${day.id}">\n                ${snackChips}\n                <button class="snack-chip-add" onclick="showSnackInputM(${day.id})">+ agregar</button>\n              </div>\n              <div class="snack-inline-input" id="msnack-input-${day.id}" style="display:none">\n                <input class="snack-field" type="text" id="msnack-field-${day.id}" placeholder="ej: Granola bar"\n                  onkeydown="if(event.key==='Enter')addSnackM(${day.id})">\n                <button class="mbtn msave" onclick="addSnackM(${day.id})">OK</button>\n                <button class="mbtn" onclick="hideSnackInputM(${day.id})">${ic("x", 14)}</button>\n              </div>\n            </div>\n            ${day.notes || true ? `<textarea class="notes-ta" placeholder="Notas del día..." rows="2"\n              onchange="saveMealNotes(${day.id},this.value)">${escapeHtml(day.notes)}</textarea>` : ""}\n          </div>\n        </div>\n      </div>`;
   });
   html += "</div>";
   panel.innerHTML = html;
@@ -583,11 +687,13 @@ function deleteMealDay(id) {
 
 function mealDayEditForm(day) {
   const idx = mealData.indexOf(day);
-  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch;margin-bottom:14px">\n      <div class="wm-edit-form" style="width:100%">\n        <input class="wm-edit-input" id="meal-day-edit-date" value="${escapeHtml(day.date || "")}" placeholder="Fecha (ej: 19 ene)" style="margin-bottom:6px;width:100%">\n        <input class="wm-edit-input" id="meal-day-edit-title" value="${escapeHtml(day.title || "")}" placeholder="Título (ej: Disney extra)" style="margin-bottom:6px;width:100%">\n        <select class="wm-edit-input" id="meal-day-edit-type" style="margin-bottom:6px;width:100%">\n          ${Object.entries(typeConf).map(([k, t]) => `<option value="${k}"${day.type === k ? " selected" : ""}>${t.label}</option>`).join("")}\n        </select>\n        <div class="del-day-row" style="margin:0 0 8px">\n          ${mealData.length > 1 ? `<button class="mbtn" onclick="mealMoveDay(${day.id},-1)" ${idx === 0 ? "disabled" : ""} title="Mover el día hacia arriba">${ic("chevronUp", 13)} Mover</button>\n          <button class="mbtn" onclick="mealMoveDay(${day.id},1)" ${idx === mealData.length - 1 ? "disabled" : ""} title="Mover el día hacia abajo">Mover ${ic("chevronDown", 13)}</button>` : ""}\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn mdel" onclick="deleteMealDay(${day.id})">Eliminar día</button>\n          <button class="mbtn" onclick="mealCancelEditDay()">Cancelar</button>\n          <button class="mbtn msave" onclick="mealSaveDay(${day.id})">Guardar</button>\n        </div>\n      </div>\n    </div>`;
+  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch;margin-bottom:14px">\n      <div class="wm-edit-form" style="width:100%">\n        <input class="wm-edit-input" id="meal-day-edit-date" value="${escapeHtml(day.date || "")}" placeholder="Fecha (ej: 19 ene)" style="margin-bottom:6px;width:100%">\n        <input class="wm-edit-input" id="meal-day-edit-title" value="${escapeHtml(day.title || "")}" placeholder="Título (ej: Disney extra)" style="margin-bottom:6px;width:100%">\n        <div class="meal-tag-label">Categorías</div>\n        <div class="meal-tag-picker" id="mpick-edit" style="margin-bottom:8px">${mealPickerHtml("edit")}</div>\n        <div class="del-day-row" style="margin:0 0 8px">\n          ${mealData.length > 1 ? `<button class="mbtn" onclick="mealMoveDay(${day.id},-1)" ${idx === 0 ? "disabled" : ""} title="Mover el día hacia arriba">${ic("chevronUp", 13)} Mover</button>\n          <button class="mbtn" onclick="mealMoveDay(${day.id},1)" ${idx === mealData.length - 1 ? "disabled" : ""} title="Mover el día hacia abajo">Mover ${ic("chevronDown", 13)}</button>` : ""}\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn mdel" onclick="deleteMealDay(${day.id})">Eliminar día</button>\n          <button class="mbtn" onclick="mealCancelEditDay()">Cancelar</button>\n          <button class="mbtn msave" onclick="mealSaveDay(${day.id})">Guardar</button>\n        </div>\n      </div>\n    </div>`;
 }
 
 function mealStartEditDay(id) {
   mealEditingDayId = id;
+  mealNormalizeData();
+  mealPickers.edit = (mealData.find(d => d.id === id)?.tags || []).slice();
   renderComidas();
   setTimeout(() => document.getElementById("meal-day-edit-date")?.focus(), 50);
   setTimeout(() => document.getElementById("mcard-" + id)?.scrollIntoView({
@@ -622,7 +728,8 @@ function mealSaveDay(id) {
   const titleVal = (document.getElementById("meal-day-edit-title").value || "").trim();
   day.date = dateVal;
   day.title = titleVal || day.title;
-  day.type = document.getElementById("meal-day-edit-type").value;
+  day.tags = mealCleanTags(mealPickers.edit);
+  delete day.type;
   if (day.date && !parseTripDayDate(day.date)) {
     showMToast(`No reconozco "${day.date}" como fecha (probá "19 ene") — puede no ordenarse bien`);
   } else if (day.date) {
@@ -640,6 +747,8 @@ function mealSaveDay(id) {
 }
 
 function openMealModal() {
+  mealPickers.add = [];
+  mealPickerRender("add");
   document.getElementById("mealModal").classList.add("open");
 }
 
@@ -676,7 +785,7 @@ function addMealDay() {
     id: newId,
     date: date,
     title: title,
-    type: document.getElementById("mType").value,
+    tags: mealCleanTags(mealPickers.add),
     meals: [ document.getElementById("mBreakfast").value.trim() || "—", document.getElementById("mLunch").value.trim() || "—", document.getElementById("mDinner").value.trim() || "—" ],
     snacks: [],
     notes: ""
@@ -685,6 +794,7 @@ function addMealDay() {
   mealSave();
   renderComidas();
   closeMealModal();
+  mealPickers.add = [];
   [ "mDate", "mTitle", "mBreakfast", "mLunch", "mDinner" ].forEach(id => document.getElementById(id).value = "");
   if (!parseTripDayDate(date)) {
     showMToast(`No reconozco "${date}" como fecha (probá "19 ene") — puede no ordenarse bien`);
@@ -1194,8 +1304,9 @@ function renderTodayCard() {
     return;
   }
   if (chip) chip.innerHTML = "";
-  const meta = typeof typeConf !== "undefined" && typeConf[day.type] || {
-    icon: "calendar"
+  const firstTag = (day.tags || []).find(t => MEAL_SYS_TAGS[t]);
+  const meta = {
+    icon: firstTag ? MEAL_SYS_TAGS[firstTag].icon : "calendar"
   };
   const mealsLine = (day.meals || []).filter(m => m && m !== "—").slice(0, 2).join(" · ");
   slot.style.display = "flex";
@@ -3916,31 +4027,16 @@ function itinFechaOrden(f) {
   return (mes === -1 ? 11 : mes) * 100 + parseInt(m[1], 10);
 }
 
-const MEAL_TIPO_MATCH = [ {
-  id: "arrival",
-  match: [ "llegada" ]
-}, {
-  id: "walmart",
-  match: [ "supermercado", "walmart", "compras" ]
-}, {
-  id: "universal",
-  match: [ "universal", "islands of adventure", "epic universe" ]
-}, {
-  id: "disney",
-  match: [ "magic kingdom", "epcot", "hollywood studios", "animal kingdom", "disney" ]
-}, {
-  id: "free",
-  match: [ "libre" ]
-} ];
+function mealTitleTags(v) {
+  const n = itinNorm(v);
+  const tags = [];
+  if (n.includes("llegada")) tags.push("sys:arrival");
+  if (/\bsalida\b|\bvuelta\b|\bregreso\b/.test(n)) tags.push("sys:departure");
+  return tags;
+}
 
 function mealTituloLimpio(v) {
   return String(v || "").trim().replace(/^d[ií]a\s*\d+\s*[—-]\s*/i, "").trim();
-}
-
-function mealTipoFromTitulo(v) {
-  const n = itinNorm(v);
-  const hit = MEAL_TIPO_MATCH.find(t => t.match.some(m => n.includes(m)));
-  return hit ? hit.id : "free";
 }
 
 function mealParseWorkbook(wb) {
@@ -3970,6 +4066,7 @@ function mealParseWorkbook(wb) {
   const cAlm = col("almuerzo");
   const cCena = col("cena");
   const cSnack = col("snack", "nota");
+  const cCat = col("categoria");
   if (cFecha === -1) throw new Error("encabezados");
   const limpiar = v => {
     const s = String(v == null ? "" : v).trim();
@@ -3987,7 +4084,7 @@ function mealParseWorkbook(wb) {
     dias.push({
       fecha: fecha,
       titulo: titulo,
-      tipo: mealTipoFromTitulo(tituloRaw),
+      tags: mealCleanTags([ ...mealTitleTags(tituloRaw), ...(cCat > -1 ? limpiar(r[cCat]).split(/[+,;]/) : []) ]),
       meals: [ cDes > -1 ? limpiar(r[cDes]) || "—" : "—", cAlm > -1 ? limpiar(r[cAlm]) || "—" : "—", cCena > -1 ? limpiar(r[cCena]) || "—" : "—" ],
       snacks: snackNota ? [ snackNota ] : [],
       notes: ""
@@ -4078,7 +4175,7 @@ async function mealAplicarImport(modo) {
       id: Date.now() + i,
       date: d.fecha,
       title: d.titulo,
-      type: d.tipo,
+      tags: (d.tags || []).slice(),
       meals: d.meals.slice(),
       snacks: d.snacks.slice(),
       notes: prev ? prev.notes : ""
@@ -4109,16 +4206,18 @@ async function mealExportExcel() {
     showAlert("No se pudo cargar el lector de Excel. Probá con señal o wifi, porque la primera vez necesita descargarlo.", "Sin conexión");
     return;
   }
-  const aoa = [ [ "Día", "Fecha", "Desayuno", "Almuerzo", "Cena", "Snack / Notas" ] ];
+  const aoa = [ [ "Día", "Fecha", "Categorías", "Desayuno", "Almuerzo", "Cena", "Snack / Notas" ] ];
   mealData.forEach((d, i) => {
     const snackNotas = [ ...(d.snacks || []), d.notes || "" ].filter(Boolean).join(" / ");
-    aoa.push([ d.title || `Día ${i + 1}`, d.date || "", d.meals[0] === "—" ? "" : d.meals[0] || "", d.meals[1] === "—" ? "" : d.meals[1] || "", d.meals[2] === "—" ? "" : d.meals[2] || "", snackNotas ]);
+    aoa.push([ d.title || `Día ${i + 1}`, d.date || "", (d.tags || []).map(t => mealTagMeta(t).label).join(" + "), d.meals[0] === "—" ? "" : d.meals[0] || "", d.meals[1] === "—" ? "" : d.meals[1] || "", d.meals[2] === "—" ? "" : d.meals[2] || "", snackNotas ]);
   });
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   ws["!cols"] = [ {
     wch: 30
   }, {
     wch: 10
+  }, {
+    wch: 24
   }, {
     wch: 30
   }, {

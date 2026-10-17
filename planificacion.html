@@ -227,14 +227,8 @@ if ("serviceWorker" in navigator) {
       <input type="text" id="mTitle" placeholder="ej: Disney extra" oninput="this.classList.remove('error');document.getElementById('mTitle-err').classList.remove('show')">
       <div class="field-error" id="mTitle-err">Completá el título del día</div>
     </div>
-    <div class="mform-group"><label>Tipo</label>
-      <select id="mType">
-        <option value="disney">Disney 🏰</option>
-        <option value="universal">Universal 🎢</option>
-        <option value="free">Libre</option>
-        <option value="arrival">Llegada</option>
-        <option value="walmart">Walmart</option>
-      </select>
+    <div class="mform-group"><label>Categorías</label>
+      <div class="meal-tag-picker" id="mpick-add"></div>
     </div>
     <div class="mform-group"><label>Desayuno</label><input type="text" id="mBreakfast"></div>
     <div class="mform-group"><label>Almuerzo</label><input type="text" id="mLunch"></div>
