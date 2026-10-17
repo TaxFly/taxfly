@@ -14,7 +14,7 @@
       jobs[name]=new Promise((resolve,reject)=>{
         const timer=setTimeout(()=>reject(Error("timeout")),timeout);
         Promise.resolve().then(()=>read(name)).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
-      }).then(value=>{if(states[name]==="loading")publish(name,value);states[name]="ready";onState?.(name);return value;},()=>{if(states[name]!=="ready")states[name]="error";onState?.(name);return undefined;});
+      }).then(value=>{if(states[name]==="loading")publish(name,value);states[name]="ready";onState?.(name);return value;},()=>{if(states[name]!=="ready"){states[name]="error";root.TaxflyDiagnostics?.record("planning");}onState?.(name);return undefined;});
     }
     return {states,jobs,waitFor:section=>Promise.all((groups[section]||groups.agenda).map(name=>jobs[name]))};
   }

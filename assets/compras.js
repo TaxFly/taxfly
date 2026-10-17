@@ -1993,7 +1993,7 @@ function listenGastos() {
   allGastos=window.TaxflyTravel.overlayExpenses(items,getPendingGastos());
   localStorage.setItem(key,JSON.stringify(allGastos));
   renderGastosList(allGastos);offerReservationPayment();
- },()=>{if(expenseValid(generation,scope)){financeStates.expenses.fail();renderGastosList(allGastos);renderBudgetCard();}}));
+ },()=>{if(expenseValid(generation,scope)){financeStates.expenses.fail();window.TaxflyDiagnostics?.record("expenses");renderGastosList(allGastos);renderBudgetCard();}}));
 }
 function listenPresupuestoYOrlando() {
  if(!currentUser||!perfilId)return;

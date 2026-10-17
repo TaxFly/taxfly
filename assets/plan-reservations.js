@@ -161,10 +161,12 @@ function reservationCard(item) {
     ${item.provider ? `<div class="reservation-meta">Proveedor: ${escapeHtml(item.provider)}</div>` : ""}
     ${item.reference ? `<div class="reservation-meta">Código: <b>${escapeHtml(item.reference)}</b></div>` : ""}
     ${item.address ? `<div class="reservation-meta">${ic("pin", 14)} ${escapeHtml(item.address)}</div>` : ""}
+    ${window.reservationReminderSummary?.(item)||""}
     ${item.notes ? `<p class="reservation-notes">${escapeHtml(item.notes)}</p>` : ""}
     <div class="reservation-footer">${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${ic("link", 15)} Abrir reserva</a>` : "<span class=\"reservation-no-link\">Sin enlace cargado</span>"}
       ${docs.map(d => `<a href="tickets.html?doc=${encodeURIComponent(d.id)}">${ic("file", 14)} ${escapeHtml(d.name || "Documento")}</a>`).join("")}
       <button type="button" data-res-action="payment" data-res-id="${escapeHtml(item.id)}">${paid>0?"Ver / editar pago":"Registrar pago"}</button>
+      ${item.reminder?`<button type="button" data-notr data-res-action="calendar" data-res-id="${escapeHtml(item.id)}">${window.tfL3?.("Exportar recordatorio","Export reminder","Exportar lembrete")||""}</button>`:""}
       <button type="button" data-res-action="attach" data-res-id="${escapeHtml(item.id)}">${ic("plus", 14)} Adjuntar documento</button>
       ${item.type === "stay" && item.address ? `<button type="button" data-res-action="starting-point" data-res-id="${escapeHtml(item.id)}">Usar como punto de partida</button>${reservationMapLink(item.address)}` : ""}
     </div>
@@ -188,6 +190,7 @@ function reservationForm(type, item) {
     <label>Código de reserva (opcional)<input name="reference" maxlength="50" autocomplete="off" placeholder="Localizador o número de confirmación" value="${escapeHtml(item?.reference || "")}"></label>
     ${stay ? `${stay&&!item&&hotel.addr?`<button type="button" class="mbtn" data-res-action="reuse-stay">Usar alojamiento guardado</button>`:""}<label>Dirección del alojamiento (opcional)<input name="lodgingLocation" autocomplete="new-password" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
     <label>Enlace a mi reserva (opcional)<input name="url" type="url" inputmode="url" placeholder="https://…" value="${escapeHtml(item?.url || "")}"><small>Puede ser el enlace de la aerolínea, Airbnb o el sitio del alojamiento.</small></label>
+    ${window.reservationReminderFields?.(item)||""}
     <label>Notas (opcional)<textarea name="notes" maxlength="400" rows="2" placeholder="Check-in, horario o dato útil">${escapeHtml(item?.notes || "")}</textarea></label>
     <label>Documento existente (opcional)<select name="documentId"><option value="">Sin documento vinculado</option>${(window._tripDocuments || []).map(d => `<option value="${escapeHtml(d.id)}"${item?.documentId === d.id ? " selected" : ""}>${escapeHtml(d.name || "Documento")}</option>`).join("")}</select><small>Elegí uno existente o adjuntá un archivo nuevo.</small></label>
     <label>Adjuntar PDF o imagen (opcional)<input name="quickFile" type="file" accept="application/pdf,image/*"><small>Se guardará en Documentos y quedará vinculado a esta reserva.</small></label>
@@ -195,7 +198,8 @@ function reservationForm(type, item) {
   </form>`;
 }
 
-function renderReservations() {
+function renderReservations(force=false) {
+  if(!force&&reservationFormType&&document.getElementById("reservation-form"))return;
     if(window.planPanelPending?.("reservas"))return;
   const panel = document.getElementById("panel-reservas");
   if (!panel) return;
@@ -228,6 +232,7 @@ function renderReservations() {
   const form = panel.querySelector("#reservation-form");
   if (form) {
     form.addEventListener("submit", saveReservation);
+    window.applyReservationReminderForm?.(form);
     if (reservationFormType === "flight") {
       const nameInput = form.elements.reservationTitle;
       nameInput.addEventListener("input", () => {
@@ -239,9 +244,10 @@ function renderReservations() {
         form.querySelector(".reservation-airline-preview").innerHTML = reservationStayLogo(nameInput.value);
       });
     }
-    const cancel = () => { reservationFormType = null; reservationEditingId = null; renderReservations(); };
+    const cancel = async () => { if(window.TaxflyDrafts&&!await window.TaxflyDrafts.resolve())return;reservationFormType = null; reservationEditingId = null; renderReservations(); };
     form.querySelector("#reservation-cancel").addEventListener("click", cancel);
     form.querySelector("#reservation-cancel-bottom").addEventListener("click", cancel);
+    window.mountReservationDraft?.();
   }
   const params = new URLSearchParams(location.search);
   const linkedId = params.get("reservation");
@@ -251,6 +257,7 @@ function renderReservations() {
     setTimeout(() => document.getElementById("reservation-" + linkedId)?.scrollIntoView({ block: "center", behavior: "smooth" }), 250);
   }
 }
+window.mountReservationDraft=()=>{const form=document.getElementById("reservation-form");if(form)window.TaxflyDrafts?.mount(form,{id:JSON.stringify(["reservation",reservationFormType,reservationEditingId||"new"]),onAbandon:()=>{reservationFormType=null;reservationEditingId=null;renderReservations(true);}});};
 window.renderReservations = renderReservations;
 
 async function onReservationAction(event) {
@@ -258,20 +265,22 @@ async function onReservationAction(event) {
   const action = button.dataset.resAction;
   const item = reservations.find(r => r.id === button.dataset.resId);
   if (action === "add" || action === "edit") {
+    if(window.TaxflyDrafts&&!await window.TaxflyDrafts.resolve())return;
     reservationFormType = item?.type || button.dataset.resType;
     reservationEditingId = item?.id || null;
     reservationOpen.add(reservationFormType);
-    renderReservations();
+    renderReservations(true);
     document.querySelector("#reservation-form input[name=reservationTitle]")?.focus();
     return;
   }
   if(action==="reuse-stay"){
     const field=document.querySelector('#reservation-form [name="lodgingLocation"]');
-    if(field&&hotel.addr)field.value=hotel.addr;
+    if(field&&hotel.addr){field.value=hotel.addr;field.dispatchEvent(new Event("input",{bubbles:true}));}
     return;
   }
   if (!item) return;
-  if (action === "payment") { location.href="compras.html?reservation="+encodeURIComponent(item.id)+"&trip="+encodeURIComponent(window._tripId);return; }
+  if(action==="calendar"){window.taxflyExportReminder?.(item);return;}
+  if (action === "payment") { if(window.TaxflyDrafts&&!await window.TaxflyDrafts.resolve())return;location.href="compras.html?reservation="+encodeURIComponent(item.id)+"&trip="+encodeURIComponent(window._tripId);return; }
   if (action === "attach") {
     window.openAttachChoice?.(item.id, item.name);
     return;
@@ -285,6 +294,7 @@ async function onReservationAction(event) {
     return;
   }
   if (action === "delete") {
+    if(window.TaxflyDrafts&&!await window.TaxflyDrafts.resolve())return;
     const context=JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId]);
     const ok = await showConfirm("Se va a eliminar esta reserva del viaje.", "¿Eliminar reserva?", "Eliminar");
     if (!ok||context!==JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId])) return;
@@ -307,6 +317,9 @@ async function saveReservation(event) {
   const values = Object.fromEntries(new FormData(form));
   const name = values.reservationTitle.trim();
   if (!name) return;
+  const saveContext=JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId]);
+  const reminder=typeof window.taxflyReadReservationReminder==="function"&&values.reminderKind!==undefined?window.taxflyReadReservationReminder(values):(reservations.find(r=>r.id===reservationEditingId)?.reminder||null);
+  if(reminder===false){showMToast(window.tfL3("Revisá la fecha, hora y zona del recordatorio.","Check the reminder date, time and time zone.","Verifique a data, a hora e o fuso do lembrete."));return;}
   const url = values.url.trim();
   if (url && !reservationUrl(url)) {
     form.elements.url.setCustomValidity("Usá un enlace que empiece con https:// o http://");
@@ -319,7 +332,7 @@ async function saveReservation(event) {
   if(values.departureTime && !Number.isFinite(window.TaxflyTravel.instant(values.startDate,values.departureTime,values.departureZone))) {showMToast("Revisá la fecha y hora de salida: ese horario no existe en la zona elegida.");return;}
   if(values.arrivalTime && (!Number.isFinite(window.TaxflyTravel.instant(values.arrivalDate,values.arrivalTime,values.arrivalZone)) || (values.departureTime && window.TaxflyTravel.instant(values.arrivalDate,values.arrivalTime,values.arrivalZone)<window.TaxflyTravel.instant(values.startDate,values.departureTime,values.departureZone)))) {showMToast("Revisá la llegada: debe tener fecha y ser posterior a la salida en su zona horaria.");return;}
   const item = {
-    ...existing,
+    ...existing,reminder,
     totalPrice:values.totalPrice===''?null:Number(values.totalPrice), currency:"USD", provider:values.provider.trim(),
     departureCity:values.departureCity.trim(),departureZone:values.departureZone,departureTime:values.departureTime||"",
     arrivalCity:values.arrivalCity?.trim()||"",arrivalZone:values.arrivalZone||"",arrivalDate:values.arrivalDate||"",arrivalTime:values.arrivalTime||"",
@@ -346,6 +359,7 @@ async function saveReservation(event) {
         req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains("kv")) req.result.createObjectStore("kv"); };
         req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error);
       });
+      if(saveContext!==JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId])){db.close();return;}
       await new Promise((resolve, reject) => {
         const tx = db.transaction("kv", "readwrite");
         tx.objectStore("kv").put({uid:window._taxflyTripUid || window._uid, profile:window._perfilId, tripId:window._tripId || 'orlando', reservationId:item.id, name:item.name, file:attached}, "taxfly-quick-attachment");
@@ -353,6 +367,8 @@ async function saveReservation(event) {
       }); db.close();
     } catch(e) { showMToast("No se pudo guardar el archivo en este dispositivo. Volvé a elegirlo."); return; }
   }
+  if(saveContext!==JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId]))return;
+  window.TaxflyDrafts?.complete(form);
   reservations = existing ? reservations.map(r => r.id === item.id ? item : r) : [...reservations, item];
   syncedSave(RESERVATIONS_KEY, { items: reservations }, "reservations");
   reservationFormType = null;

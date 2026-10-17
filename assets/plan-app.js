@@ -3717,6 +3717,7 @@ function renderParques() {
   const subtabs = `<div class="outlets-subtabs">\n      <button class="outlets-stab${parquesSubTab === "itinerario" ? " active" : ""}" onclick="switchParquesTab('itinerario')">${ic("calendar", 13)} Itinerario</button>\n      <button class="outlets-stab${parquesSubTab === "atracciones" ? " active" : ""}" onclick="switchParquesTab('atracciones')">${ic("sparkles", 13)} Atracciones</button>\n    </div>${legacyParksNotice()}`;
   if (parquesSubTab === "itinerario") {
     panel.innerHTML = `<div class="parques-panel">${subtabs}${itinMochilaLink()}${renderItinerario()}</div>`;
+    window.mountAgendaDraft?.();
     updateParquesCounter();
     requestAnimationFrame(revealRequestedItineraryStop);
     if (_itinNeedsReveal) {
@@ -4936,6 +4937,10 @@ window.refreshItineraryDocumentOptions=()=>{
   const select=document.getElementById("itin-f-document");
   if(select){const selected=select.value;select.innerHTML=itineraryDocumentOptions(selected);select.value=selected;}
 };
+window.mountAgendaDraft=()=>{
+  const root=document.getElementById("itin-f-titulo")?.closest(".stop-card");
+  if(root)window.TaxflyDrafts?.mount(root,{id:JSON.stringify(["agenda",itinGetDay()?.id,itinEditing||"new"]),onAbandon:()=>{itinEditing=null;itinAdding=false;renderParques();}});
+};
 function itinEditForm(b, idx) {
   const v = b || {
     hora: "",
@@ -5003,6 +5008,7 @@ function itinSaveEdit(id) {
     showAlert("Escribí qué hacés en este bloque.", "Falta el nombre");
     return;
   }
+  window.TaxflyDrafts?.complete(document.getElementById("itin-f-titulo")?.closest(".stop-card"));
   Object.assign(b, f);
   itinEditing = null;
   itinSave();
@@ -5026,6 +5032,7 @@ function itinAddConfirm() {
     showAlert("Escribí qué hacés en este bloque.", "Falta el nombre");
     return;
   }
+  window.TaxflyDrafts?.complete(document.getElementById("itin-f-titulo")?.closest(".stop-card"));
   itinGetDay().bloques.push(Object.assign({
     id: itinNewId()
   }, f));

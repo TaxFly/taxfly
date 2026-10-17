@@ -107,11 +107,23 @@ async function idbSet(key, value) {
 }
 
 async function guardarDocsEnCache(docs) {
-  await idbSet(DOCS_CACHE_KEY_PFX + (window._uid || "sin-usuario") + "::" + getPerfilId(), docs);
+  const uid=window._uid||"sin-usuario",pid=getPerfilId();
+  const saved=await idbSet(DOCS_CACHE_KEY_PFX + uid + "::" + pid, docs);
+  if(uid===(window._uid||"sin-usuario")&&pid===getPerfilId()){
+    window._tfDocsCacheScope=JSON.stringify([uid,pid]);
+    window._tfDocsCachedIds=new Set(saved?docs.filter(d=>d.files?.length&&d.files.every(f=>f.dataUrl)).map(d=>d.id):[]);
+  }
+  return saved;
 }
 
 async function cargarDocsDesdeCache() {
-  return await idbGet(DOCS_CACHE_KEY_PFX + (window._uid || "sin-usuario") + "::" + getPerfilId());
+  const uid=window._uid||"sin-usuario",pid=getPerfilId();
+  const docs=await idbGet(DOCS_CACHE_KEY_PFX + uid + "::" + pid);
+  if(uid===(window._uid||"sin-usuario")&&pid===getPerfilId()){
+    window._tfDocsCacheScope=JSON.stringify([uid,pid]);
+    window._tfDocsCachedIds=new Set((docs||[]).filter(d=>d.files?.length&&d.files.every(f=>f.dataUrl)).map(d=>d.id));
+  }
+  return docs;
 }
 
 window.addEventListener("offline", () => {
@@ -827,6 +839,7 @@ async function initDocs() {
     window.taxflyOfflineStatus?.mark("docs", window._uid, perfilId);
     hideSyncBanner();
   } catch (e) {
+    window.TaxflyDiagnostics?.record("documents");
     console.warn("Firestore load error", e);
     hideSyncBanner();
     if (!cached) {
@@ -1089,24 +1102,24 @@ function renderList() {
     });
     let preview = "";
     const hasFiles = doc.files && doc.files.length > 0;
-    const filesHaveData = hasFiles && doc.files.some(f => f.dataUrl && f.dataUrl.length > 0);
-    const offlineBadge = hasFiles && !filesHaveData && !navigator.onLine ? `<div class="doc-offline-badge">📵 Archivo no disponible offline</div>` : "";
-    if (f0?.kind === "img" && f0.dataUrl) {
-      preview = `<img class="doc-thumb" src="${f0.dataUrl}" alt="preview" loading="lazy">`;
-    } else if (f0?.kind === "pdf" && f0.dataUrl) {
-      const pagesLabel = pages === 1 ? "1 pág." : pages + " págs.";
-      const sizeKB = Math.round((f0.dataUrl?.length || 0) * .75 / 1024);
-      const sizeStr = sizeKB > 1024 ? (sizeKB / 1024).toFixed(1) + " MB" : sizeKB + " KB";
-      const fname = f0.name || doc.name + ".pdf";
-      preview = `<div class="doc-pdf-preview">\n                <div class="doc-pdf-icon"><span>PDF</span></div>\n                <div class="doc-pdf-meta">\n                    <div class="doc-pdf-filename">${fname}</div>\n                    <div class="doc-pdf-size">${sizeStr} · ${pagesLabel}</div>\n                </div>\n                <div class="doc-pdf-badge">PDF</div>\n            </div>`;
+    const availability=window.TaxflyCare?.documentAvailability(doc);
+    const allLocal=!!availability?.complete&&window._tfDocsCacheScope===JSON.stringify([window._uid||"sin-usuario",getPerfilId()])&&!!window._tfDocsCachedIds?.has(doc.id);
+    const offlineBadge=`<div class="doc-offline-badge" data-notr>${!hasFiles?tfL3('Sin archivos adjuntos','No attached files','Sem arquivos anexados'):allLocal?tfL3('Disponible sin conexión','Available offline','Disponível sem conexão'):tfL3('Archivos pendientes de descargar','Files not downloaded yet','Arquivos ainda não baixados')}</div>`;
+    if(f0?.kind==='img'&&f0.dataUrl){
+      preview=`<img class="doc-thumb" src="${f0.dataUrl}" alt="${esc(tfL3('Vista previa del documento','Document preview','Prévia do documento'))}" loading="lazy">`;
+    }else if(f0){
+      const kind=f0.kind==='pdf'?'PDF':tfL3('Imagen','Image','Imagem');
+      preview=`<div class="doc-pdf-preview" data-notr><div class="doc-pdf-icon"><span>${kind}</span></div><div class="doc-pdf-meta"><div class="doc-pdf-filename">${esc(f0.name||doc.name)}</div><div class="doc-pdf-size">${kind}</div></div></div>`;
     }
+    if(hasFiles){preview+=`<ul class="tf-document-files" data-notr>${doc.files.map(file=>`<li><span>${esc(file.name||doc.name)}</span><small>${file.kind==='pdf'?'PDF':tfL3('Imagen','Image','Imagem')}</small></li>`).join('')}</ul>`;}
     const typeLabel = lbl[doc.type] || "Doc";
     const totalFiles = doc.files?.length || 0;
-    return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}${window.tfSyncBadge ? tfSyncBadge(window._tfPendingDocs && window._tfPendingDocs.has(doc.id) ? "pending" : "ok", true) : ""}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            ${linked ? `<span class="doc-meta-dot"></span><span>Reserva: ${esc(linked.name)}</span>` : ""}\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${t.lbl_pgs || "pág."}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        ${linked ? `<a class="doc-view-btn" href="planificacion.html?section=reservas&reservation=${encodeURIComponent(linked.id)}" onclick="event.stopPropagation()" style="text-decoration:none;">VER RESERVA</a>` : ""}\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${linked?'CAMBIAR VÍNCULO':'VINCULAR'}</button>
+    return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}${window.tfSyncBadge ? tfSyncBadge(window._tfPendingDocs && window._tfPendingDocs.has(doc.id) ? "pending" : "ok", true) : ""}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            ${linked ? `<span class="doc-meta-dot"></span><span>Reserva: ${esc(linked.name)}</span>` : ""}\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${totalFiles===1?tfL3("archivo","file","arquivo"):tfL3("archivos","files","arquivos")}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        ${linked ? `<a class="doc-view-btn" href="planificacion.html?section=reservas&reservation=${encodeURIComponent(linked.id)}" onclick="event.stopPropagation()" style="text-decoration:none;">VER RESERVA</a>` : ""}\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${linked?'CAMBIAR VÍNCULO':'VINCULAR'}</button>
                         <button class="doc-view-btn" onclick="event.stopPropagation();openViewer('${doc.id}')">${t.lbl_ver || "VER"}</button>\n                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar" aria-label="Eliminar documento">🗑️</button>\n                    </div>\n                </div>\n                ${!linked && suggested ? `<div class="doc-link-hint">🔗 Podría corresponder a <button type="button" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${esc(suggested.reservation.name)}</button></div>` : ""}\n                ${preview}\n                ${offlineBadge}\n            </div>\n        </div>`;
   }).join("");
 }
 
+window.addEventListener('taxfly:care-ready',()=>renderList());
 window.setFilter = f => {
   activeFilter = f;
   document.querySelectorAll(".filter-pill").forEach(p => p.classList.toggle("active", p.dataset.filter === f));
