@@ -219,7 +219,10 @@ if ("serviceWorker" in navigator) {
     <h2>Agregar día</h2>
     <div class="mform-group">
       <label>Fecha</label>
-      <input type="text" id="mDate" placeholder="ej: 29 ene" oninput="this.classList.remove('error');document.getElementById('mDate-err').classList.remove('show')">
+      <div class="date-pair">
+        <input type="text" id="mDate" placeholder="ej: 29 ene" oninput="this.classList.remove('error');document.getElementById('mDate-err').classList.remove('show');mealSyncPick('mDate','mDatePick')">
+        <input type="date" id="mDatePick" aria-label="Elegir fecha en el calendario" onchange="mealPickDate('mDate',this.value)">
+      </div>
       <div class="field-error" id="mDate-err">Completá la fecha</div>
     </div>
     <div class="mform-group">
@@ -266,7 +269,7 @@ if ("serviceWorker" in navigator) {
     <h2 style="display:flex;align-items:center;gap:8px"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg> Editar punto de partida</h2>
     <div class="mform-group">
       <label>Dirección</label>
-      <input type="text" id="hotel-edit-addr" placeholder="ej: 324 Newcastle Dr, Kissimmee FL">
+      <input type="text" id="hotel-edit-addr" placeholder="ej: Av. Principal 123, Ciudad">
     </div>
     <div class="mform-group">
       <label>Link de Google Maps</label>
@@ -316,7 +319,7 @@ if ("serviceWorker" in navigator) {
     </div>
     <div class="mform-group">
       <label>Categoría</label>
-      <select id="wm-add-cat">
+      <select id="wm-add-cat" onchange="wmCatChanged()">
         <option value="pan">🥖 Panadería y Snacks</option>
         <option value="lacteos">🥚 Lácteos y Huevos</option>
         <option value="carnes">🥩 Carnes y Fiambres</option>
@@ -325,6 +328,7 @@ if ("serviceWorker" in navigator) {
         <option value="desayuno">☕ Desayuno y Bebidas</option>
         <option value="extras">🎒 Extras</option>
       </select>
+      <input type="text" id="wm-add-newcat" maxlength="40" placeholder="Nombre de la nueva categoría (ej: Bebidas, Limpieza)" style="display:none;margin-top:8px">
     </div>
     <div class="mform-group">
       <label>Cantidad</label>

@@ -687,7 +687,7 @@ function deleteMealDay(id) {
 
 function mealDayEditForm(day) {
   const idx = mealData.indexOf(day);
-  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch;margin-bottom:14px">\n      <div class="wm-edit-form" style="width:100%">\n        <input class="wm-edit-input" id="meal-day-edit-date" value="${escapeHtml(day.date || "")}" placeholder="Fecha (ej: 19 ene)" style="margin-bottom:6px;width:100%">\n        <input class="wm-edit-input" id="meal-day-edit-title" value="${escapeHtml(day.title || "")}" placeholder="Título (ej: Disney extra)" style="margin-bottom:6px;width:100%">\n        <div class="meal-tag-label">Categorías</div>\n        <div class="meal-tag-picker" id="mpick-edit" style="margin-bottom:8px">${mealPickerHtml("edit")}</div>\n        <div class="del-day-row" style="margin:0 0 8px">\n          ${mealData.length > 1 ? `<button class="mbtn" onclick="mealMoveDay(${day.id},-1)" ${idx === 0 ? "disabled" : ""} title="Mover el día hacia arriba">${ic("chevronUp", 13)} Mover</button>\n          <button class="mbtn" onclick="mealMoveDay(${day.id},1)" ${idx === mealData.length - 1 ? "disabled" : ""} title="Mover el día hacia abajo">Mover ${ic("chevronDown", 13)}</button>` : ""}\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn mdel" onclick="deleteMealDay(${day.id})">Eliminar día</button>\n          <button class="mbtn" onclick="mealCancelEditDay()">Cancelar</button>\n          <button class="mbtn msave" onclick="mealSaveDay(${day.id})">Guardar</button>\n        </div>\n      </div>\n    </div>`;
+  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch;margin-bottom:14px">\n      <div class="wm-edit-form" style="width:100%">\n        <div class="date-pair" style="margin-bottom:6px"><input class="wm-edit-input" id="meal-day-edit-date" value="${escapeHtml(day.date || "")}" placeholder="Fecha (ej: 19 ene)" oninput="mealSyncPick('meal-day-edit-date','meal-day-edit-datepick')"><input type="date" class="wm-edit-input" id="meal-day-edit-datepick" aria-label="Elegir fecha en el calendario" onchange="mealPickDate('meal-day-edit-date',this.value)"></div>\n        <input class="wm-edit-input" id="meal-day-edit-title" value="${escapeHtml(day.title || "")}" placeholder="Título (ej: Disney extra)" style="margin-bottom:6px;width:100%">\n        <div class="meal-tag-label">Categorías</div>\n        <div class="meal-tag-picker" id="mpick-edit" style="margin-bottom:8px">${mealPickerHtml("edit")}</div>\n        <div class="del-day-row" style="margin:0 0 8px">\n          ${mealData.length > 1 ? `<button class="mbtn" onclick="mealMoveDay(${day.id},-1)" ${idx === 0 ? "disabled" : ""} title="Mover el día hacia arriba">${ic("chevronUp", 13)} Mover</button>\n          <button class="mbtn" onclick="mealMoveDay(${day.id},1)" ${idx === mealData.length - 1 ? "disabled" : ""} title="Mover el día hacia abajo">Mover ${ic("chevronDown", 13)}</button>` : ""}\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn mdel" onclick="deleteMealDay(${day.id})">Eliminar día</button>\n          <button class="mbtn" onclick="mealCancelEditDay()">Cancelar</button>\n          <button class="mbtn msave" onclick="mealSaveDay(${day.id})">Guardar</button>\n        </div>\n      </div>\n    </div>`;
 }
 
 function mealStartEditDay(id) {
@@ -695,6 +695,7 @@ function mealStartEditDay(id) {
   mealNormalizeData();
   mealPickers.edit = (mealData.find(d => d.id === id)?.tags || []).slice();
   renderComidas();
+  mealSyncPick("meal-day-edit-date", "meal-day-edit-datepick");
   setTimeout(() => document.getElementById("meal-day-edit-date")?.focus(), 50);
   setTimeout(() => document.getElementById("mcard-" + id)?.scrollIntoView({
     behavior: "smooth",
@@ -748,6 +749,7 @@ function mealSaveDay(id) {
 
 function openMealModal() {
   mealPickers.add = [];
+  mealSyncPick("mDate", "mDatePick");
   mealPickerRender("add");
   document.getElementById("mealModal").classList.add("open");
 }
@@ -796,6 +798,8 @@ function addMealDay() {
   closeMealModal();
   mealPickers.add = [];
   [ "mDate", "mTitle", "mBreakfast", "mLunch", "mDinner" ].forEach(id => document.getElementById(id).value = "");
+  const dp = document.getElementById("mDatePick");
+  if (dp) dp.value = "";
   if (!parseTripDayDate(date)) {
     showMToast(`No reconozco "${date}" como fecha (probá "19 ene") — puede no ordenarse bien`);
   } else if (dup) {
@@ -1216,6 +1220,37 @@ const MONTHS_ES = {
   nov: 11,
   dic: 12
 };
+
+const MONTHS_ABBR_ES = [ "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic" ];
+
+// Del selector de calendario (aaaa-mm-dd) al texto que usa la app ("19 ene")
+function mealPickDate(textId, iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  const el = document.getElementById(textId);
+  if (!m || !el) return;
+  el.value = +m[3] + " " + MONTHS_ABBR_ES[+m[2] - 1];
+  el.dispatchEvent(new Event("input", {
+    bubbles: true
+  }));
+}
+
+// Del texto ("19 ene" / "19/1") al selector de calendario, usando la próxima vez que cae esa fecha
+function mealSyncPick(textId, pickId) {
+  const text = document.getElementById(textId);
+  const pick = document.getElementById(pickId);
+  if (!text || !pick) return;
+  const p = parseTripDayDate(text.value);
+  if (!p || p.mo < 1 || p.mo > 12 || p.d < 1 || p.d > 31) {
+    pick.value = "";
+    return;
+  }
+  const dt = nextOccurrence(p.mo, p.d);
+  if (dt.getMonth() + 1 !== p.mo) {
+    pick.value = "";
+    return;
+  }
+  pick.value = dt.getFullYear() + "-" + String(p.mo).padStart(2, "0") + "-" + String(p.d).padStart(2, "0");
+}
 
 function parseTripDayDate(str) {
   if (!str) return null;
@@ -1743,21 +1778,131 @@ function wmSaveEdit() {
   showMToast("Guardado ✓");
 }
 
+const WM_NEW_CAT = "__new__";
+
+function wmCatSlug(name) {
+  return "c-" + (itinNorm(name).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || Date.now());
+}
+
+const WM_DEFAULT_EMOJI = {
+  pan: "🥖",
+  lacteos: "🥚",
+  carnes: "🥩",
+  secos: "🍝",
+  congelados: "🧊",
+  desayuno: "☕",
+  extras: "🎒"
+};
+
+function wmCatTitle(cat) {
+  return cat.title || (wmCatMeta[cat.id] || {}).title || cat.id;
+}
+
+function wmFillCatSelect() {
+  const sel = document.getElementById("wm-add-cat");
+  if (!sel) return;
+  const opt = (value, text) => {
+    const o = document.createElement("option");
+    o.value = value;
+    o.textContent = text;
+    return o;
+  };
+  sel.innerHTML = "";
+  Object.keys(wmCatMeta).forEach(id => {
+    const cat = wmGetCat(id);
+    sel.appendChild(opt(id, WM_DEFAULT_EMOJI[id] + " " + (cat ? wmCatTitle(cat) : wmCatMeta[id].title)));
+  });
+  wmData.filter(c => !wmCatMeta[c.id]).forEach(c => sel.appendChild(opt(c.id, "🛒 " + wmCatTitle(c))));
+  sel.appendChild(opt(WM_NEW_CAT, "＋ Nueva categoría…"));
+}
+
+let wmEditingCat = null;
+
+function wmStartEditCat(id) {
+  wmEditingCat = id;
+  wmEditingItem = null;
+  renderWalmart();
+  const input = document.getElementById("wm-cat-edit-input");
+  if (input) {
+    input.focus();
+    input.select();
+  }
+}
+
+function wmCancelEditCat() {
+  wmEditingCat = null;
+  renderWalmart();
+}
+
+function wmSaveCat(id) {
+  const cat = wmGetCat(id);
+  if (!cat) return;
+  const name = (document.getElementById("wm-cat-edit-input")?.value || "").trim();
+  if (!name) {
+    showMToast("Escribí el nombre de la categoría");
+    return;
+  }
+  const dup = wmData.find(c => c !== cat && itinNorm(wmCatTitle(c)) === itinNorm(name));
+  if (dup) {
+    showMToast("Ya existe una categoría con ese nombre");
+    return;
+  }
+  cat.title = name;
+  wmEditingCat = null;
+  wmSave();
+  renderWalmart();
+  showMToast("Categoría renombrada ✓");
+}
+
+async function wmDeleteCat(id) {
+  const idx = wmData.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  const cat = wmData[idx];
+  const n = cat.items.length;
+  const msg = n ? `Se borra la categoría «${wmCatTitle(cat)}» y sus ${n} ${n === 1 ? "producto" : "productos"}.` : `Se borra la categoría «${wmCatTitle(cat)}».`;
+  const ok = await showConfirm(msg, "¿Eliminar categoría?", "Eliminar", true);
+  if (!ok) return;
+  const wasChecked = cat.items.map(i => i.id).filter(x => wmChecked.has(x));
+  wmData.splice(idx, 1);
+  wasChecked.forEach(x => wmChecked.delete(x));
+  wmOpenSections.delete(id);
+  wmEditingCat = null;
+  wmSave();
+  renderWalmart();
+  showUndoToast(`Categoría "${wmCatTitle(cat)}" eliminada`, () => {
+    wmData.splice(Math.min(idx, wmData.length), 0, cat);
+    wasChecked.forEach(x => wmChecked.add(x));
+    wmSave();
+    renderWalmart();
+  });
+}
+
+function wmCatChanged() {
+  const isNew = document.getElementById("wm-add-cat").value === WM_NEW_CAT;
+  const input = document.getElementById("wm-add-newcat");
+  input.style.display = isNew ? "" : "none";
+  if (isNew) input.focus();
+}
+
 function wmOpenAddModal() {
+  wmFillCatSelect();
+  wmCatChanged();
   document.getElementById("wmAddModal").classList.add("open");
   document.getElementById("wm-add-name").focus();
 }
 
 function wmCloseAddModal() {
   document.getElementById("wmAddModal").classList.remove("open");
-  [ "wm-add-name", "wm-add-qty", "wm-add-unit", "wm-add-price" ].forEach(id => {
-    document.getElementById(id).value = "";
+  [ "wm-add-name", "wm-add-qty", "wm-add-unit", "wm-add-price", "wm-add-newcat" ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
   });
 }
 
 function wmAddItem() {
   const name = document.getElementById("wm-add-name").value.trim();
-  const catId = document.getElementById("wm-add-cat").value;
+  let catId = document.getElementById("wm-add-cat").value;
+  let newCatTitle = "";
   const qty = parseFloat(document.getElementById("wm-add-qty").value) || 1;
   const unit = document.getElementById("wm-add-unit").value.trim() || "";
   const price = parseFloat(document.getElementById("wm-add-price").value) || 0;
@@ -1768,15 +1913,28 @@ function wmAddItem() {
     el.focus();
     return;
   }
+  if (catId === WM_NEW_CAT) {
+    newCatTitle = document.getElementById("wm-add-newcat").value.trim();
+    if (!newCatTitle) {
+      const el = document.getElementById("wm-add-newcat");
+      el.focus();
+      showMToast("Escribí el nombre de la categoría");
+      return;
+    }
+    const same = wmData.find(c => itinNorm(c.title || (wmCatMeta[c.id] || {}).title || c.id) === itinNorm(newCatTitle));
+    catId = same ? same.id : wmCatSlug(newCatTitle);
+  }
   let cat = wmGetCat(catId);
   if (!cat) {
     cat = {
       id: catId,
       items: []
     };
+    if (newCatTitle) cat.title = newCatTitle;
     wmData.push(cat);
     const order = Object.keys(wmCatMeta);
-    wmData.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+    const pos = c => order.indexOf(c.id) === -1 ? order.length : order.indexOf(c.id);
+    wmData.sort((a, b) => pos(a) - pos(b));
   }
   const newId = "custom-" + Date.now();
   cat.items.push({
@@ -1830,7 +1988,7 @@ async function wmRegisterExpense() {
   if (!ok) return;
   _wmRegistering = true;
   try {
-    const saved = await (window._fb?.addTaxflyGasto?.({ nombre: "Walmart", valor: total, cat: "🍔 Comida", source: "walmart" }) ?? false);
+    const saved = await (window._fb?.addTaxflyGasto?.({ nombre: "Supermercado", valor: total, cat: "🍔 Comida", source: "walmart" }) ?? false);
     if (!saved) {
       showAlert("No se pudo guardar el gasto. Probá de nuevo.", "Error");
       return;
@@ -1856,13 +2014,27 @@ function renderWalmart() {
   html += `\n    <div class="wm-summary-bar">\n      <div class="wm-stat"><div class="wm-stat-val">${checked}</div><div class="wm-stat-lbl">en carrito</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${total - checked}</div><div class="wm-stat-lbl">pendientes</div></div>\n      <div class="wm-stat"><div class="wm-stat-val">${pct}%</div><div class="wm-stat-lbl">listo</div></div>\n    </div>\n    <div class="wm-total-bar">\n      <span class="wm-total-label">Total del carrito</span>\n      <span class="wm-total-val">$${totalChk} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${totalAll}</span></span>\n    </div>\n    ${currentArsRate ? `\n    <div class="wm-total-bar wm-total-bar-ars" onclick="wmRefreshFx(event)" title="Tocar para actualizar cotización">\n      <span class="wm-total-label">≈ pesos <span class="wm-fx-badge">$${fmtArs(currentArsRate)} ${currentArsLabel === "oficial" ? "oficial" : currentArsLabel}</span></span>\n      <span class="wm-total-val wm-total-val-ars">$${fmtArs(wmTotalChecked() * currentArsRate)} <span style="font-size:12px;color:var(--muted);font-weight:400;">/ $${fmtArs(wmTotalAll() * currentArsRate)}</span></span>\n    </div>` : `<div class="wm-fx-loading">Cotización USD→ARS: buscando…</div>`}\n    <button type="button" class="wm-register-btn" onclick="wmRegisterExpense()" ${checked ? "" : "disabled"}>${ic("wallet", 16)} <span>Registrar como gasto</span></button>\n    <div class="wm-progress-bar-bg">\n      <div class="wm-progress-bar-fill" style="width:${pct}%"></div>\n    </div>`;
   wmData.forEach(cat => {
     const meta = wmCatMeta[cat.id] || {
-      icon: "📦",
-      title: cat.id
+      icon: "cart",
+      title: cat.title || cat.id
     };
     const catDone = cat.items.filter(i => wmChecked.has(i.id)).length;
     const isOpen = wmOpenSections.has(cat.id);
     const isEditing = wmEditingItem?.catId === cat.id;
-    html += `\n      <div class="wm-section ${isOpen ? "open" : ""}" id="wmsec-${cat.id}">\n        <div class="wm-section-header" onclick="wmToggleSection('${cat.id}')">\n          <span class="wm-section-icon">${ic(meta.icon, 16)}</span>\n          <span class="wm-section-title">${meta.title}</span>\n          <span class="wm-section-count">${catDone}/${cat.items.length}</span>\n          <span class="wm-section-chevron">${ic("chevronDown", 14)}</span>\n        </div>\n        <div class="wm-items">`;
+    const catTitle = cat.title || meta.title;
+    const header = wmEditingCat === cat.id ? `<div class="wm-section-header wm-cat-editing" onclick="event.stopPropagation()">
+          <span class="wm-section-icon">${ic(meta.icon, 16)}</span>
+          <input class="wm-edit-input" id="wm-cat-edit-input" maxlength="40" value="${escapeHtml(catTitle)}" onkeydown="if(event.key==='Enter')wmSaveCat('${cat.id}');if(event.key==='Escape')wmCancelEditCat()">
+          <button class="mbtn mdel" onclick="wmDeleteCat('${cat.id}')">Eliminar</button>
+          <button class="mbtn" onclick="wmCancelEditCat()" aria-label="Cancelar">${ic("x", 14)}</button>
+          <button class="mbtn msave" onclick="wmSaveCat('${cat.id}')">Guardar</button>
+        </div>` : `<div class="wm-section-header" onclick="wmToggleSection('${cat.id}')">
+          <span class="wm-section-icon">${ic(meta.icon, 16)}</span>
+          <span class="wm-section-title">${escapeHtml(catTitle)}</span>
+          <button class="wm-icon-btn" onclick="wmStartEditCat('${cat.id}');event.stopPropagation()" title="Renombrar o eliminar categoría" aria-label="Renombrar o eliminar categoría">${ic("pencil", 13)}</button>
+          <span class="wm-section-count">${catDone}/${cat.items.length}</span>
+          <span class="wm-section-chevron">${ic("chevronDown", 14)}</span>
+        </div>`;
+    html += `\n      <div class="wm-section ${isOpen ? "open" : ""}" id="wmsec-${cat.id}">\n        ${header}\n        <div class="wm-items">`;
     cat.items.forEach(item => {
       const isChecked = wmChecked.has(item.id);
       const isEditingThis = wmEditingItem?.catId === cat.id && wmEditingItem?.itemId === item.id;

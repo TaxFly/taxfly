@@ -1990,3 +1990,9 @@ a, a:visited, a:hover, a:focus, a:active { text-decoration: none !important; }
 .reservation-group.is-open .reservation-chevron{transform:rotate(-135deg);margin-top:4px;margin-bottom:0;}
 .reservation-body{display:none;margin-top:12px;}
 .reservation-group.is-open .reservation-body{display:block;}
+
+.date-pair { display: flex; gap: 6px; align-items: center; }
+.date-pair input[type="text"] { flex: 1; min-width: 0; }
+.date-pair input[type="date"] { flex: 0 0 auto; width: auto; max-width: 150px; font: inherit; }
+.wm-cat-editing { gap: 6px; flex-wrap: wrap; cursor: default; }
+.wm-cat-editing .wm-edit-input { flex: 1; min-width: 120px; }
