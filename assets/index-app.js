@@ -1260,10 +1260,8 @@ loadExchangeRate();
 loadWeather();
 
 if ("serviceWorker" in navigator) {
-  const hadServiceWorker = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     window.taxflyOfflineStatus?.render(currentUser?.uid || localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId"));
-    if (hadServiceWorker) location.reload();
   }, { once: true });
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }

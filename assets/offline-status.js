@@ -19,6 +19,7 @@
   const tx = () => { let l = 'es'; try { l = localStorage.getItem('appLang') || 'es'; } catch (_) {} return TXT[l] || TXT.es; };
   let dismissed = false;
   let dismissTimer;
+  let renderGeneration=0;
   const key = (uid, profile, trip) => prefix + uid + '::' + profile + '::' + trip;
   function trip(uid, profile) {
     return window.TripContext?.view(uid, profile) || 'orlando';
@@ -34,15 +35,19 @@
     } catch (_) {}
   }
   function pending(uid, profile) {
-    const count = k => { try { const x = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(x) ? x.length : Object.keys(x).length; } catch (_) { return 0; } };
-    const selected = trip(uid, profile);
-    return count('taxusa_gastos_pending_' + profile + '::' + uid)
-      + count('taxusa_itin_pending::' + uid + '::' + profile)
-      + count('trip-planning-pending::' + uid + '::' + profile)
-      + count('taxusa_pending_ops::' + uid)
-      + count('days::' + profile + (selected === 'orlando' ? '' : '::' + selected) + '::pending')
-      + Number(localStorage.getItem('taxfly-offline-pending-docs::' + uid + '::' + profile) || 0);
+    if(!uid||!profile)return 0;
+    const selected=trip(uid,profile), suffix='::'+profile+(selected==='orlando'?'':'::'+selected);
+    let total=0;
+    const count=key=>{try{const value=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(value)?value.length:value&&typeof value==='object'?Object.keys(value).length:0;}catch(_){return 0;}};
+    for(const key of ['taxusa_gastos_pending_'+profile+'::'+uid,'taxusa_itin_pending::'+uid+'::'+profile,'trip-planning-pending::'+uid+'::'+profile,'taxusa_pending_ops::'+uid,'taxfly-packing-deletes::'+uid+'::'+profile+'::'+selected])total+=count(key);
+    for(const name of ['orlando-hotel-v1','outlets-orlando-days-v2','outlets-orlando-visited-v2','orlando-meals-v1','orlando-budget-v1','walmart-orlando-data-v2','walmart-orlando-checked-v2','outlets-shopping-list','parkTracker_v2','parques-custom','parques-extra-zonas','parques-coord-overrides','parques-excel-datos','orlando-tips-v1','orlando-itinerario-v1']) {
+      if(localStorage.getItem(name+suffix+'::pending')!==null)total++;
+    }
+    if(localStorage.getItem('trip-reservations-v1'+suffix+'::'+uid+'::pending')!==null)total++;
+    const docs=Number(localStorage.getItem('taxfly-offline-pending-docs::'+uid+'::'+profile));
+    return total+(Number.isFinite(docs)&&docs>0?docs:0);
   }
+
   async function shellReady() {
     if (!navigator.serviceWorker) return false;
     try {
@@ -61,11 +66,12 @@
     const box = document.getElementById('offline-readiness');
     if (!box || !uid || !profile) return;
     if (dismissed) { box.hidden = true; return; }
+    const generation=++renderGeneration;
     const current = trip(uid, profile);
     let data = {};
     try { data = JSON.parse(localStorage.getItem(key(uid, profile, current)) || '{}'); } catch (_) {}
     const ready = await shellReady();
-    if (dismissed) return;
+    if (dismissed || generation!==renderGeneration || current!==trip(uid,profile)) return;
     const latest = Math.max(0, ...Object.values(data).filter(Number.isFinite));
     const T = tx();
     const sections = Object.keys(labels).filter(section => data[section]).map(section => T.labels[section]);
@@ -103,5 +109,5 @@
     clearTimeout(dismissTimer);
     dismissTimer = setTimeout(dismiss, 8000);
   }
-  window.taxflyOfflineStatus = {mark, render};
+  window.taxflyOfflineStatus = {mark, render, pending};
 })();

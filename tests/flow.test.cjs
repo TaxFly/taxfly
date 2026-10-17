@@ -325,14 +325,15 @@ test('cache version changes with an asset and install keeps old worker if shell 
   } finally {fs.rmSync(temp,{recursive:true,force:true})}
   async function install(fails) {
     const listeners={},cached=new Map([['taxfly-old',{}],['other-app',{}]]);let skipped=false,required=[];
-    const self={location:{origin:'https://taxfly.example'},addEventListener:(k,fn)=>listeners[k]=fn,skipWaiting:async()=>{skipped=true},clients:{claim:async()=>{}}};
+    const self={location:{origin:'https://taxfly.example',href:'https://taxfly.example/sw.js'},addEventListener:(k,fn)=>listeners[k]=fn,skipWaiting:async()=>{skipped=true},clients:{claim:async()=>{}}};
     const caches={open:async name=>({addAll:async urls=>{required=urls;if(fails)throw Error('shell failed')},add:async()=>{}}),keys:async()=>[...cached.keys()],delete:async k=>cached.delete(k)};
-    const c=context(source,{self,caches,fetch:async()=>{},console,Promise,URL,Response,setTimeout,clearTimeout});
+    const c=context(source,{self,caches,fetch:async()=>{},console,Promise,URL,Request,Response,setTimeout,clearTimeout});
     let installing;listeners.install({waitUntil:p=>installing=p});
     if(fails)await assert.rejects(installing,/shell failed/);else await installing;
-    assert.deepEqual(Array.from(required).filter(x=>x.startsWith("./")),paths);
-    assert.equal(Array.from(required).filter(x=>x.includes("gstatic.com/firebasejs/")).length,4);
-    assert.equal(skipped,!fails);
+    assert.deepEqual(Array.from(required).map(request=>request.url).filter(url=>url.startsWith('https://taxfly.example/')).map(url=>'./'+new URL(url).pathname.slice(1)),paths);
+    assert.equal(Array.from(required).filter(x=>x.url.includes("gstatic.com/firebasejs/")).length,4);
+    assert.equal(skipped,false);
+    assert.equal(cached.has('taxfly-old'),true);
     if(!fails){let activating;listeners.activate({waitUntil:p=>activating=p});await activating;assert.equal(cached.has('taxfly-old'),false);assert.equal(cached.has('other-app'),true)}
   }
   await install(true);await install(false);
@@ -348,20 +349,15 @@ test('offline status reports a missing essential screen', async () => {
   await done;assert.equal(result.ready,false);assert.equal(result.missing,1);
 });
 
-test('installed PWA shortcut loads cached login offline and refreshes HTML online', async () => {
+test('installed PWA keeps cached HTML consistent with its active build online and offline', async () => {
   const listeners={};let online=false,updated=false;
   const self={location:{origin:'https://taxfly.example'},addEventListener:(k,fn)=>listeners[k]=fn};
-  const caches={
-    match:async (_request,opts)=>opts?.ignoreSearch ? new Response('cached login') : undefined,
-    open:async()=>({put:async()=>{updated=true}}),
-  };
+  const caches={open:async()=>({match:async()=>new Response('cached login'),put:async()=>{updated=true}})};
   const fetch=async()=>{if(!online)throw Error('offline');return new Response('new login',{status:200})};
   context(read('sw.js'),{self,caches,fetch,console,Promise,URL,Response,setTimeout,clearTimeout});
   const request={url:'https://taxfly.example/login.html?next=compras.html',headers:{get:()=> 'text/html'},method:'GET'};
   async function navigate(){let p;listeners.fetch({request,respondWith:value=>p=value});return (await p).text()}
-  assert.equal(await navigate(),'cached login');
-  online=true;assert.equal(await navigate(),'new login');
-  await new Promise(resolve=>setImmediate(resolve));assert.equal(updated,true);
+  assert.equal(await navigate(),'cached login');online=true;assert.equal(await navigate(),'cached login');assert.equal(updated,false);
 });
 
 test('legacy Trip Planning expenses move once to the personal ledger before clearing the old list', async () => {
@@ -551,7 +547,7 @@ test('planning modules share Firebase initialization and section icons remain vi
   assert.match(html,/id="nav-parques"[^>]*[\s\S]*?stroke="currentColor"/);
 });
 
-test('returning online verifies the server before reloading the offline screen', async () => {
+test('returning online verifies the server without reloading the current screen', async () => {
   const events = new Map();
   let online = false, reachable = false, reloads = 0, probes = 0, nextId = 0;
   const timers = new Map();
@@ -570,8 +566,8 @@ test('returning online verifies the server before reloading the offline screen',
   reachable = true;
   await tick();
   assert.equal(probes,2);
-  await tick();
-  assert.equal(reloads,1);
+  assert.equal(timers.size,0);
+  assert.equal(reloads,0);
 });
 
 test('planning retains every local write pending until Firebase confirms it', () => {

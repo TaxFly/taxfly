@@ -3,6 +3,17 @@
   const $ = s => document.querySelector(s);
   const LANG=()=>localStorage.getItem('appLang')||'es';
   const D={
+    'Sin conexión':['Offline','Sem conexão'],
+    'Conexión de red disponible':['Network connection available','Conexão de rede disponível'],
+    'Disponibilidad sin conexión':['Offline availability','Disponibilidade offline'],
+    'Pantallas de la app':['App screens','Telas do app'],
+    'Última descarga de datos: ':['Last data download: ','Último download de dados: '],
+    'Datos de Planificación descargados':['Downloaded Planning data','Dados do Planejamento baixados'],
+    'Cambios pendientes':['Changes pending','Alterações pendentes'],
+    'Sin cambios pendientes detectados':['No pending changes detected','Nenhuma alteração pendente detectada'],
+    'Los cambios del servidor se verifican al conectar.':['Server changes are checked when connected.','As alterações do servidor são verificadas ao conectar.'],
+    'Actualización lista. Cerrá todas las pestañas de TaxFly y volvé a abrirlo cuando termines de guardar.':['Update ready. Close all TaxFly tabs and reopen after you finish saving.','Atualização pronta. Feche todas as abas do TaxFly e reabra quando terminar de salvar.'],
+    'Los documentos todavía se están actualizando. Reintentá en un momento.':['Documents are still updating. Try again shortly.','Os documentos ainda estão sendo atualizados. Tente novamente em instantes.'],
     'Cargando el perfil…':['Loading profile…','Carregando o perfil…'],
     'Guardado en este dispositivo':['Saved on this device','Salvo neste dispositivo'],
     'Necesita atención':['Needs attention','Precisa de atenção'],
@@ -50,9 +61,9 @@
   const docsKey = () => `taxusa_docs_cache_${uid()}::${profile()}`;
   const prepKey = () => `taxfly-prepared::${uid()}::${profile()}::${trip()}`;
   const root = document.createElement('section'); root.id='tf-tools';
-  root.innerHTML='<span class="sx-sec">Sin conexión</span><div class="tf-offline-card"><div id="tf-tools-section"></div></div>';
+  root.innerHTML='<span class="sx-sec">'+L('Disponibilidad sin conexión')+'</span><div class="tf-offline-card"><div id="tf-tools-section"></div></div>';
   const section = () => root.querySelector('#tf-tools-section');
-  const tab='offline', discovered=new Set(); let preparing=false;
+  const tab='offline', discovered=new Set(); let preparing=false, offlineGeneration=0;
   function attach() {
     if(root.isConnected)return;
     const drawer=document.querySelector('#settingsDrawer .sx-scroll');
@@ -68,6 +79,8 @@
   window.addEventListener('online',()=>{discovered.clear();offline()});
   window.addEventListener('offline',offline);
   window.addEventListener('taxfly:offline-status',offline);
+  window.addEventListener('taxfly-pending-updated',offline);
+  navigator.serviceWorker?.addEventListener('controllerchange',offline);
   window.addEventListener('taxfly:tripchange',offline);
   document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.lang-opt,[data-lang]'))setTimeout(offline,60)});
   window.addEventListener('storage',e=>{if(e.key==='appLang')offline()});
@@ -75,23 +88,28 @@
   function idbGet(key) { return new Promise(resolve=>{const request=indexedDB.open('taxfly_docs_db',1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('kv'))request.result.createObjectStore('kv')};request.onerror=()=>resolve(null);request.onsuccess=()=>{const db=request.result, q=db.transaction('kv').objectStore('kv').get(key);q.onsuccess=()=>{resolve(q.result||null);db.close()};q.onerror=()=>{resolve(null);db.close()}}}); }
   function idbPut(key,value) { return new Promise((resolve,reject)=>{const request=indexedDB.open('taxfly_docs_db',1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('kv'))request.result.createObjectStore('kv')};request.onerror=()=>reject(request.error);request.onsuccess=()=>{const db=request.result,tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(value,key);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}}}); }
   function pendingCount() {
-    const u=uid(),p=profile(); let n=0;
-    for(const key of [`taxusa_gastos_pending_${p}::${u}`,`taxusa_itin_pending::${u}::${p}`,`taxusa_pending_ops::${u}`,`trip-planning-pending::${u}::${p}`,`${scoped('outlets-orlando-days-v2')}::pending`]) { const v=read(key); n+=Array.isArray(v)?v.length:v&&typeof v==='object'?Object.keys(v).length:v?1:0; }
-    n+=Number(localStorage.getItem(`taxfly-offline-pending-docs::${u}::${p}`)||0); return n;
+    return window.taxflyOfflineStatus?.pending(uid(),profile()) || 0;
   }
+
   async function offline() {
     if(!root.isConnected)return;
+    root.querySelector('.sx-sec').textContent=L('Disponibilidad sin conexión');
     if(!uid()||!profile()) {section().textContent=L('Cargando el perfil…');return;}
+    const generation=++offlineGeneration;
     const scope=prepKey(), stamp=read(scope), cached=await idbGet(docsKey());
-    if(!root.isConnected||scope!==prepKey())return;
+    if(!root.isConnected||scope!==prepKey()||generation!==offlineGeneration)return;
     const docs=(cached||[]).filter(d=>(d.tripId||'unassigned')===trip());
-    const ready=docs.filter(d=>d.files?.length && d.files.every(f=>f.dataUrl));
+    const ready=docs.filter(d=>d._offlineVerified && d.files?.length && d.files.every(f=>f.dataUrl));
     const count=pendingCount(), ageKey=`taxfly-pending-since::${uid()}::${profile()}`;
     if(count && !localStorage.getItem(ageKey))localStorage.setItem(ageKey,String(Date.now()));
     if(!count)localStorage.removeItem(ageKey);
     const age=Date.now()-Number(localStorage.getItem(ageKey)||Date.now());
-    const syncLabel=count ? !navigator.onLine?L('Guardado en este dispositivo'):age>300000?L('Necesita atención'):L('Sincronizando') : L('Sincronizado');
-    section().innerHTML=`<h3>${L('Viaje sin conexión')}</h3><p>${stamp?.at?L('Preparado: ')+new Date(stamp.at).toLocaleString(LOC()):L('Todavía no preparado en este dispositivo')}</p><button type="button" class="tf-primary" id="tf-prepare" ${preparing?'disabled':''}>${preparing?L('Preparando…'):L('Preparar viaje')}</button><div id="tf-progress" role="status" aria-live="polite"></div><div class="tf-row"><div><strong>${syncLabel}</strong><small>${count?count+' '+L('cambio(s) pendiente(s)'):L('Sin cambios pendientes')}</small></div>${count&&navigator.onLine?'<button type="button" class="tf-secondary" id="tf-retry">'+L('Reintentar')+'</button>':''}</div><details class="tf-details"><summary>${L('Ver datos y documentos')}</summary><div class="tf-row"><div><strong>${L('Reservas, agenda, rutas y listas')}</strong></div><span class="tf-status ${stamp?.core?'':'wait'}">${stamp?.core?L('Disponible'):L('Pendiente')}</span></div>${docs.map(d=>`<div class="tf-row"><label><input type="checkbox" data-doc="${escape(d.id)}" ${ready.includes(d)?'checked':''}> ${escape(d.name)}</label><span class="tf-status ${ready.includes(d)?'':'wait'}">${ready.includes(d)?L('Disponible'):L('Pendiente')}</span></div>`).join('')||'<p>'+L('Al abrir Ajustes con internet aparecerán los archivos de este viaje.')+'</p>'}<div class="tf-row"><div><strong>${L('Clima, filas y Maps')}</strong><small>${L('Las direcciones siguen visibles en Reservas.')}</small></div><span class="tf-status live">${L('Requiere internet')}</span></div></details>`;
+    const syncLabel=count ? !navigator.onLine?L('Guardado en este dispositivo'):age>300000?L('Necesita atención'):L('Cambios pendientes') : L('Sin cambios pendientes detectados');
+    const screensReady=await shellReady();
+    if(!root.isConnected||scope!==prepKey()||generation!==offlineGeneration)return;
+    let waiting=false;try{waiting=!!(await navigator.serviceWorker?.getRegistration())?.waiting;}catch(_){}
+    if(!root.isConnected||scope!==prepKey()||generation!==offlineGeneration)return;
+    section().innerHTML=`<h3>${L('Viaje sin conexión')}</h3><p>${navigator.onLine?L('Conexión de red disponible'):L('Sin conexión')}</p><p>${stamp?.at?L('Última descarga de datos: ')+new Date(stamp.at).toLocaleString(LOC()):L('Todavía no preparado en este dispositivo')}</p><button type="button" class="tf-primary" id="tf-prepare" ${preparing?'disabled':''}>${preparing?L('Preparando…'):L('Preparar viaje')}</button><div id="tf-progress" role="status" aria-live="polite"></div><div class="tf-row"><div><strong>${syncLabel}</strong><small>${count?count+' '+L('cambio(s) pendiente(s)'):L('Los cambios del servidor se verifican al conectar.')}</small></div>${count&&navigator.onLine?'<button type="button" class="tf-secondary" id="tf-retry">'+L('Reintentar')+'</button>':''}</div><p>${L('Pantallas de la app')}: ${screensReady?L('Disponible'):L('Pendiente')}</p>${waiting?'<p role="status">'+L('Actualización lista. Cerrá todas las pestañas de TaxFly y volvé a abrirlo cuando termines de guardar.')+'</p>':''}<details class="tf-details"><summary>${L('Ver datos y documentos')}</summary><div class="tf-row"><div><strong>${L('Datos de Planificación descargados')}</strong></div><span class="tf-status ${stamp?.schema===2&&stamp.core?'':'wait'}">${stamp?.schema===2&&stamp.core?L('Disponible'):L('Pendiente')}</span></div>${docs.map(d=>`<div class="tf-row"><label><input type="checkbox" data-doc="${escape(d.id)}" ${ready.includes(d)?'checked':''}> ${escape(d.name)}</label><span class="tf-status ${ready.includes(d)?'':'wait'}">${ready.includes(d)?L('Disponible'):L('Pendiente')}</span></div>`).join('')||'<p>'+L('Al abrir Ajustes con internet aparecerán los archivos de este viaje.')+'</p>'}<div class="tf-row"><div><strong>${L('Clima, filas y Maps')}</strong><small>${L('Las direcciones siguen visibles en Reservas.')}</small></div><span class="tf-status live">${L('Requiere internet')}</span></div></details>`;
     root.querySelector('#tf-prepare').onclick=()=>prepare(docs);
     const retry=root.querySelector('#tf-retry');if(retry)retry.onclick=async()=>{retry.disabled=true;retry.textContent=L('Reintentando…');await window.taxflyRetryPending?.();await offline()};
     if(navigator.onLine && document.getElementById('settingsDrawer')?.classList.contains('open') && !discovered.has(scope)) {
@@ -100,14 +118,16 @@
     }
   }
   async function discoverDocs() {
-    const {fs,db,user}=await firebase(), p=profile(),t=trip();
+    const expectedScope=prepKey(),savedDocsKey=docsKey();
+    const {fs,db,user}=await firebase();if(expectedScope!==prepKey())return;
+    const p=profile(),t=trip();
     if(!await window.TaxflyDocsTree.ensure(user.uid,p))throw Error(L('Los documentos todavía se están actualizando. Reintentá en un momento.'));
     const snapshot=await fs.getDocsFromServer(fs.collection(db,...window.TaxflyDocsTree.base(user.uid,p)));
-    const previous=await idbGet(docsKey())||[], byId=new Map(previous.map(d=>[d.id,d])); let changed=false;
+    const previous=await idbGet(savedDocsKey)||[], byId=new Map(previous.map(d=>[d.id,d])); let changed=false;
     for(const snap of snapshot.docs) { const item={id:snap.id,...snap.data()};if((item.tripId||'unassigned')!==t)continue;
       if(!byId.has(item.id)){byId.set(item.id,item);changed=true;}
     }
-    if(changed){await idbPut(docsKey(),[...byId.values()]);await offline();}
+    if(changed&&expectedScope===prepKey()){await idbPut(savedDocsKey,[...byId.values()]);await offline();}
   }
   async function firebase() {
     const base='https://www.gstatic.com/firebasejs/12.12.1/';
@@ -129,18 +149,23 @@
   }
   async function prepare(oldDocs) {
     if(preparing)return; if(!navigator.onLine){$('#tf-progress').textContent=L('Conectate para descargar los datos.');return;}
+    const expectedScope=prepKey();
+    const assertContext=()=>{if(expectedScope!==prepKey())throw Error(L('El perfil cambió. Volvé a abrir la preparación.'));};
     preparing=true;const selected=[...root.querySelectorAll('[data-doc]:checked')].map(e=>e.dataset.doc);const status=$('#tf-progress');$('#tf-prepare').disabled=true;
     try {
-      const {fs,db,user}=await firebase(),u=user.uid,p=profile(),t=trip();
+      const {fs,db,user}=await firebase();assertContext();
+      const u=user.uid,p=profile(),t=trip(),savedDocsKey=docsKey(),savedPrepKey=prepKey();
+      if(u!==uid())throw Error(L('El perfil cambió. Volvé a abrir la preparación.'));
       const base=t==='orlando'?['usuarios',u,'perfiles',p,'orlando']:['usuarios',u,'perfiles',p,'tripPlanning',t,'data'];
       const names=['reservations','days','itinerario','hotel','meals','shopping','visited','budget','parques','walmart','wmChecked','customParks','parquesExtra','coordOverrides','tips','parquesExcel'];
       let loaded=0;
       for(const name of names){
+        assertContext();
         if(!navigator.onLine)throw Error(L('Se perdió la conexión durante la descarga.'));
         status.textContent=`${L('Descargando datos del viaje')}: ${++loaded} ${L('de')} ${names.length}…`;
-        try { const snap=await fs.getDocFromServer(fs.doc(db,...base,name)); if(snap.exists()) {
+        try { const snap=await fs.getDocFromServer(fs.doc(db,...base,name)); assertContext();if(snap.exists()) {
           const raw=snap.data(); const fields={days:'days',meals:'meals',visited:'visited',parques:'state',walmart:'data',wmChecked:'checked',customParks:'items'}; const value=fields[name] ? raw[fields[name]] : raw; const keys={reservations:'trip-reservations-v1',days:'outlets-orlando-days-v2',itinerario:'orlando-itinerario-v1',hotel:'orlando-hotel-v1',meals:'orlando-meals-v1',shopping:'outlets-shopping-list',visited:'outlets-orlando-visited-v2',budget:'orlando-budget-v1',parques:'parkTracker_v2',walmart:'walmart-orlando-data-v2',wmChecked:'walmart-orlando-checked-v2',customParks:'parques-custom',parquesExtra:'parques-extra-zonas',coordOverrides:'parques-coord-overrides',tips:'orlando-tips-v1',parquesExcel:'parques-excel-datos'};
-          const key=`${keys[name]}::${p}${t==='orlando'?'':'::'+t}`;
+          const key=`${keys[name]}::${p}${t==='orlando'?'':'::'+t}`+(name==='reservations'?'::'+u:'');
           if(value!==undefined && !localStorage.getItem(key+'::pending'))localStorage.setItem(key,JSON.stringify(value));
         }} catch(e){throw Error(L('No se pudieron descargar ')+name+'. '+e.message)}
       }
@@ -148,21 +173,27 @@
       if(!await window.TaxflyDocsTree.ensure(u,p))throw Error(L('Los documentos todavía se están actualizando. Reintentá en un momento.'));
       const docSnap=await fs.getDocsFromServer(fs.collection(db,...window.TaxflyDocsTree.base(u,p)));
       const byId=new Map((oldDocs||[]).map(d=>[d.id,d]));
-      for(const snap of docSnap.docs){const meta={id:snap.id,...snap.data()};const existing=byId.get(meta.id);if(existing?.files?.every(f=>f.dataUrl)&&existing.files.length===meta.files?.length)continue;byId.set(meta.id,{...meta,files:meta.files||[]});}
+      for(const snap of docSnap.docs){const meta={id:snap.id,...snap.data()};const existing=byId.get(meta.id);byId.set(meta.id,{...meta,files:existing?.files?.every(f=>f.dataUrl)?existing.files:meta.files||[],_serverFiles:meta.files||[],_offlineVerified:!!existing?._offlineVerified});}
       const inTrip=[...byId.values()].filter(d=>(d.tripId||'unassigned')===t);
-      for(const d of inTrip){if(!selected.includes(d.id))continue;if(d.files?.every(f=>f.dataUrl))continue;
+      for(const d of inTrip){assertContext();if(!selected.includes(d.id))continue;
         status.textContent=`${L('Descargando')} ${d.name}…`;
         const chunks=await fs.getDocsFromServer(fs.collection(db,...window.TaxflyDocsTree.base(u,p),d.id,'chunks'));
         const parts={}; chunks.forEach(s=>{const [fi,ci]=s.id.split('_').map(Number);(parts[fi]||=[])[ci]=s.data().data});
-        const files=d.files.map(f=>({...f,dataUrl:Array.isArray(f.chunks)?f.chunks.join(''):(parts[f.fileIdx]||[]).join('')}));
+        assertContext();
+        const files=(d._serverFiles||d.files).map(f=>{
+          const pieces=Array.isArray(f.chunks)?f.chunks:parts[f.fileIdx]||[];
+          const expected=Array.isArray(f.chunks)?f.chunks.length:Number(f.numChunks);
+          if(!Number.isInteger(expected)||expected<1||pieces.length!==expected||!Array.from({length:expected},(_,i)=>typeof pieces[i]==='string'&&pieces[i].length>0).every(Boolean))throw Error(L('Faltan partes de ')+d.name+'.');
+          return {...f,dataUrl:pieces.join('')};
+        });
         if(files.some(f=>!f.dataUrl))throw Error(L('Faltan partes de ')+d.name+'.');
-        byId.set(d.id,{...d,files});
+        byId.set(d.id,{...d,files,_offlineVerified:true});
       }
       const thingsBase=t==='orlando'?['usuarios',u,'perfiles',p,'misCosas','root']:['usuarios',u,'perfiles',p,'tripPlanning',t,'misCosas','root'];
       for(const group of ['accesorios','ropa','esenciales','estado']) { const snap=await fs.getDocsFromServer(fs.collection(db,...thingsBase,group)); await idbPut(`taxfly-prepared-things::${u}::${p}::${t}::${group}`,snap.docs.map(d=>({id:d.id,...d.data()}))); }
-      await idbPut(docsKey(),[...byId.values()]);
+      assertContext();await idbPut(savedDocsKey,[...byId.values()]);assertContext();
       if(!await shellReady())throw Error(L('Las pantallas todavía no están guardadas. Recargá la app con internet y reintentá.'));
-      localStorage.setItem(prepKey(),JSON.stringify({at:Date.now(),core:true}));
+      assertContext();localStorage.setItem(savedPrepKey,JSON.stringify({at:Date.now(),core:true,schema:2}));
       window.taxflyOfflineStatus?.mark('plan',u,p,t); window.taxflyOfflineStatus?.mark('docs',u,p,t);
       status.textContent=L('Preparación terminada. Los archivos marcados están disponibles en este dispositivo.');
       preparing=false;await offline();

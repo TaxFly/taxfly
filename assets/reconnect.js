@@ -1,5 +1,4 @@
-/* Reboot the current screen after a verified offline-to-online transition.
-   All saved queues survive navigation and flush during the fresh initialization. */
+/* Verify restored connectivity and retry saved work without navigating or losing forms. */
 (function () {
   let wasOffline = !navigator.onLine;
   let reconnecting = false;
@@ -24,8 +23,12 @@
       if (!response.ok) throw new Error('Sin conexión al servidor');
       reconnecting = true;
       window.dispatchEvent(new Event('taxfly:reconnected'));
-      // Give in-page queue handlers a chance to start; saved changes are replayed on load.
-      setTimeout(() => location.reload(), 1200);
+      wasOffline = false;
+      attempts = 0;
+      for (const retry of [window.taxflyRetryPending,window.flushPendingGastos,window._flushPending,window._flushTicketsPending,window.retryPendingPlanning]) {
+        try { Promise.resolve(retry?.()).catch(()=>{}); } catch (_) {}
+      }
+      window.TaxflyOffline?.refresh();
     } catch (_) {
       attempts++;
       schedule(Math.min(30000, 2000 * Math.pow(2, Math.min(attempts, 4))));

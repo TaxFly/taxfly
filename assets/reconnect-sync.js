@@ -1,10 +1,20 @@
 /* Replay account-scoped offline queues even when another screen is open. */
 const __fsDb = async (fs, app) => { try { const { fsNet } = await import(new URL('assets/fs-net.js', document.baseURI).href); return fs.initializeFirestore(app, { ...(await fsNet()), localCache: fs.persistentLocalCache({ tabManager: fs.persistentMultipleTabManager(), cacheSizeBytes: 200 * 1024 * 1024 }) }); } catch (e) { return fs.getFirestore(app); } };
-(async function syncAll() {
-  window.taxflyRetryPending = syncAll;
+let reconnectSyncJob=null,reconnectSyncTimer;
+window.taxflyRetryPending=()=>{
+  if(reconnectSyncJob)return reconnectSyncJob;
+  clearTimeout(reconnectSyncTimer);
+  reconnectSyncJob=syncAll().finally(()=>{reconnectSyncJob=null;});
+  return reconnectSyncJob;
+};
+async function syncAll() {
   if (!navigator.onLine || !window.TAXFLY_CONFIG?.FIREBASE_CONFIG) return;
   const profile = localStorage.getItem('perfilActivoId');
   if (!profile) return;
+  // Retry the current screen's queues too; they are deliberately skipped below.
+  for(const retry of [window.flushPendingGastos,window._flushPending,window._flushTicketsPending,window.retryPendingPlanning]) {
+    try { Promise.resolve(retry?.()).catch(()=>{}); } catch (_) {}
+  }
   let activeUid = null;
   const possible = Object.keys(localStorage).some(k =>
     k.startsWith('taxusa_gastos_pending_' + profile + '::') ||
@@ -142,12 +152,13 @@ const __fsDb = async (fs, app) => { try { const { fsNet } = await import(new URL
     ];
     const stillPending = !activeUid || keys?.some(k => { try { return JSON.parse(localStorage.getItem(k) || '[]').length > 0; } catch (_) { return false; } }) ||
       (activeUid && Number(localStorage.getItem('taxfly-offline-pending-docs::'+activeUid+'::'+profile)) > 0);
-    if (stillPending && navigator.onLine) setTimeout(() => {
+    if (stillPending && navigator.onLine) reconnectSyncTimer=setTimeout(() => {
       const page = location.pathname.split('/').pop();
       if (page === 'compras.html') window.flushPendingGastos?.();
       if (page === 'lugares.html' || page === 'grupo.html') window._flushPending?.();
       if (page === 'tickets.html') window._flushTicketsPending?.();
-      syncAll();
+      window.taxflyRetryPending();
     }, 30000);
   }
-}());
+}
+window.taxflyRetryPending();

@@ -144,6 +144,7 @@ async function flushPendingGastos() {
   if(!failed.length&&latest.some(op=>!ops.some(old=>JSON.stringify(old)===JSON.stringify(op)))&&navigator.onLine&&currentUser?.uid===uid)flushPendingGastos();
 }
 
+window.flushPendingGastos = flushPendingGastos;
 window.addEventListener("online", () => {
   flushPendingGastos();
 });

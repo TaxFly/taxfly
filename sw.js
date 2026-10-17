@@ -1,4 +1,4 @@
-const CACHE = "taxfly-a04afa22d5ee";
+const CACHE = "taxfly-b28daf1d2797";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 
@@ -13,17 +13,16 @@ self.addEventListener("install", e => {
     // Firebase modules are imported by the signed-in screens. They are as
     // essential as the local scripts for opening those screens offline.
     const required = PRECACHE.filter(url => url.startsWith("./") || url.includes("gstatic.com/firebasejs/"));
-    await cache.addAll(required);
+    await cache.addAll(required.map(url => new Request(new URL(url, self.location.href), {cache:"reload"})));
     const optional = PRECACHE.filter(url => !required.includes(url));
     await Promise.allSettled(optional.map(url => cache.add(url).catch(err => {
       console.warn("[SW] No se pudo cachear:", url, err);
     })));
-    await self.skipWaiting();
   }));
 });
 
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith("taxfly-") && k !== CACHE && k !== TILES_CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith("taxfly-") && k !== CACHE && k !== TILES_CACHE).map(k => caches.delete(k)))));
 });
 
 async function trimTileCache() {
@@ -38,8 +37,35 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
   if (url.protocol === "chrome-extension:") return;
+  const base = new URL("./", self.location.href || self.location.origin + "/sw.js");
+  const relative = url.origin===base.origin && url.pathname.startsWith(base.pathname)
+    ? "./" + (url.pathname.slice(base.pathname.length) || "index.html") : "";
+  if(url.origin===self.location.origin && url.pathname.endsWith("/config.js") && url.searchParams.has("connectivity"))return;
   const networkOnly = [ "dolarapi.com", "open.er-api.com", "queue-times.com", "firebaseapp.com", "googleapis.com", "securetoken.googleapis.com", "firebaseio.com", "firestore.googleapis.com", "corsproxy.io", "recaptcha", "taxfly-claude", "taxfly-sync", "taxusa-proxy", "taxusa.juanbria18.workers.dev", "groq", "llama", "anthropic", "osrm", "generate_204" ];
-  if (networkOnly.some(d => url.href.includes(d))) return;
+  if (networkOnly.some(d => url.href.includes(d)) && !PRECACHE.includes(relative) && !/^fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) return;
+  // A controlled page and its scripts/translations belong to one installed build.
+  if (PRECACHE.includes(relative)) {
+    e.respondWith(caches.open(CACHE).then(async cache => {
+      const cached = await cache.match(relative);
+      if (cached) return cached;
+      // Repair an evicted entry only if the deployed worker identifies this build.
+      try {
+        const workerResponse=await fetchWithTimeout(new Request(new URL("sw.js",base),{cache:"no-store"}),8000);
+        const workerSource=await workerResponse.text();
+        const deployed=workerSource.match(/^const CACHE = ["']([^"']+)["'];/m)?.[1];
+        if(workerResponse.ok && deployed===CACHE) {
+          const restored=await fetchWithTimeout(new Request(new URL(relative,base),{cache:"reload"}),8000);
+          if(restored.ok){await cache.put(relative,restored.clone());return restored;}
+        }
+      } catch (_) {}
+      // Do not pair a new network document with this worker's older assets.
+      if (e.request.headers.get("accept")?.includes("text/html"))
+        return await cache.match(OFFLINE_FALLBACK) || new Response(null,{status:503});
+      return new Response(null,{status:503});
+    }));
+    return;
+  }
+
   if (/(^|\.)tile\.openstreetmap\.org$/.test(url.hostname)) {
     e.respondWith(caches.open(TILES_CACHE).then(cache => cache.match(e.request).then(cached => {
       const network = fetch(e.request).then(res => {
@@ -82,14 +108,10 @@ self.addEventListener("fetch", e => {
     return;
   }
   if (url.origin === self.location.origin && e.request.headers.get("accept")?.includes("text/html")) {
-    e.respondWith(fetchWithTimeout(e.request, 8e3).then(res => {
-      if (res && res.status === 200) {
-        caches.open(CACHE).then(cache => cache.put(e.request, res.clone())).catch(() => {});
-      }
-      return res;
-    }).catch(() => caches.match(e.request).then(cached => cached || caches.match(e.request, {
-      ignoreSearch: true
-    }) || caches.match(OFFLINE_FALLBACK))));
+    e.respondWith(fetchWithTimeout(e.request, 8e3).catch(async () => {
+      const cache=await caches.open(CACHE);
+      return await cache.match(e.request) || await cache.match(e.request,{ignoreSearch:true}) || await cache.match(OFFLINE_FALLBACK) || new Response(null,{status:503});
+    }));
     return;
   }
   if (url.origin === self.location.origin && /\.(?:js|css)$/.test(url.pathname)) {
@@ -136,10 +158,9 @@ self.addEventListener("message", e => {
       const local = PRECACHE.filter(url => url.startsWith("./") || url.includes("gstatic.com/firebasejs/"));
       const missing = [];
       for (const url of local) if (!await cache.match(url)) missing.push(url);
-      e.ports[0]?.postMessage({ready: missing.length === 0, total: local.length, missing: missing.length});
+      e.ports[0]?.postMessage({ready: missing.length === 0, version:CACHE, total: local.length, missing: missing.length});
     }).catch(() => e.ports[0]?.postMessage({ready: false, missing: -1})));
   }
-  if (e.data?.type === "SKIP_WAITING") self.skipWaiting();
   if (e.data?.type === "CLEAR_CACHE") {
     caches.delete(CACHE).then(() => e.ports[0]?.postMessage({
       ok: true
