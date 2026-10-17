@@ -196,6 +196,10 @@ let outletSubTab = "cronograma";
 
 let currentOutletDay = 0;
 
+let _outletsJumpedToday = false;
+
+let _outletsNeedsReveal = false;
+
 const SHOPPING_KEY = "outlets-shopping-list";
 
 const shopCats = [ {
@@ -273,6 +277,14 @@ function loadState() {
   if (Array.isArray(savedVisited)) savedVisited.forEach(arr => visited.push(new Set(Array.isArray(arr) ? arr : [])));
   syncVisitedLength(true);
   if (currentOutletDay >= days.length) currentOutletDay = 0;
+  if (!_outletsJumpedToday && days.length) {
+    _outletsJumpedToday = true;
+    const idxHoy = days.findIndex(d => itinEsHoy(d.date));
+    if (idxHoy !== -1) {
+      currentOutletDay = idxHoy;
+      _outletsNeedsReveal = true;
+    }
+  }
   try {
     if (localStorage.getItem(scopedKey(DAYS_KEY) + "::pending") && window._fb) {
       syncedSave(DAYS_KEY, days, "days", { days, v: DAYS_VERSION });
@@ -550,13 +562,17 @@ function saveMealNotes(id, val) {
   mealSave();
 }
 
-async function deleteMealDay(id) {
-  const ok = await showConfirm("¿Eliminar este día del plan de comidas?", "¿Eliminar día?", "Eliminar");
-  if (!ok) return;
-  mealData = mealData.filter(d => d.id !== id);
+function deleteMealDay(id) {
+  const idx = mealData.findIndex(d => d.id === id);
+  if (idx === -1) return;
+  const [removedDay] = mealData.splice(idx, 1);
   mealSave();
   renderComidas();
-  showMToast("Día eliminado");
+  showUndoToast(`Día "${removedDay.title || removedDay.date}" eliminado`, () => {
+    mealData.splice(idx, 0, removedDay);
+    mealSave();
+    renderComidas();
+  });
 }
 
 function openMealModal() {
@@ -591,6 +607,7 @@ function addMealDay() {
   });
   if (hasError) return;
   const newId = Date.now();
+  const dup = mealData.find(d => itinMismaFecha(d.date, date));
   mealData.push({
     id: newId,
     date: date,
@@ -600,11 +617,18 @@ function addMealDay() {
     snacks: [],
     notes: ""
   });
+  mealData.sort((a, b) => itinFechaOrden(a.date) - itinFechaOrden(b.date));
   mealSave();
   renderComidas();
   closeMealModal();
   [ "mDate", "mTitle", "mBreakfast", "mLunch", "mDinner" ].forEach(id => document.getElementById(id).value = "");
-  showMToast("Día agregado ✓");
+  if (!parseTripDayDate(date)) {
+    showMToast(`No reconozco "${date}" como fecha (probá "19 ene") — puede no ordenarse bien`);
+  } else if (dup) {
+    showMToast(`Ojo: "${dup.title}" ya tiene esa misma fecha`);
+  } else {
+    showMToast("Día agregado ✓");
+  }
   setTimeout(() => {
     document.getElementById("mcard-" + newId)?.scrollIntoView({
       behavior: "smooth",
@@ -1035,6 +1059,20 @@ function parseTripDayDate(str) {
     };
   }
   return null;
+}
+
+function itinEsHoy(str) {
+  const p = parseTripDayDate(str);
+  if (!p) return false;
+  const now = new Date;
+  return p.d === now.getDate() && p.mo === now.getMonth() + 1;
+}
+
+function itinMismaFecha(a, b) {
+  if (!a || !b) return false;
+  const pa = parseTripDayDate(a), pb = parseTripDayDate(b);
+  if (pa && pb) return pa.d === pb.d && pa.mo === pb.mo;
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
 function findTodayMealDay() {
@@ -1823,7 +1861,8 @@ function renderOutlets() {
       html += `<div class="day-tabs-control"><button type="button" class="day-tabs-arrow" onclick="this.nextElementSibling.scrollBy({left:-260,behavior:'smooth'})" aria-label="Días anteriores">‹</button><div class="outlets-day-tabs">\n        ${days.map((d, i) => {
         const fc = forecastForTripDate(d.date);
         const wBadge = fc ? `<span class="odt-weather" title="${escapeHtml(WMO[fc.code] || "")} · mín ${fc.tminF}°F">${WI[fc.code] || "🌡️"} ${fc.tmaxF}°</span>` : "";
-        return `<button class="outlets-day-tab${i === currentDay ? " active" : ""}" onclick="switchOutletDay(${i})">${escapeHtml(d.dayName || "Día " + (i + 1))}<span class="odt-date">${escapeHtml(d.date || "")}${wBadge}</span></button>`;
+        const hoyBadge = itinEsHoy(d.date) ? `<span class="odt-today-badge">HOY</span> ` : "";
+        return `<button class="outlets-day-tab${i === currentDay ? " active" : ""}" onclick="switchOutletDay(${i})">${escapeHtml(d.dayName || "Día " + (i + 1))}<span class="odt-date">${hoyBadge}${escapeHtml(d.date || "")}${wBadge}</span></button>`;
       }).join("")}\n        <button class="btn-nav-set" style="margin-left:2px" onclick="openOutletDayModal()" title="Agregar día">+</button>\n      </div><button type="button" class="day-tabs-arrow" onclick="this.previousElementSibling.scrollBy({left:260,behavior:'smooth'})" aria-label="Ver más días">›</button></div>`;
       html += `<div class="outlets-day-content">`;
       html += renderDayContent(currentDay);
@@ -1837,6 +1876,10 @@ function renderOutlets() {
   if (outletSubTab === "cronograma" && days.length > 0) {
     const currentDay = typeof currentOutletDay !== "undefined" ? currentOutletDay : 0;
     setTimeout(() => initDayMap(currentDay), 100);
+  }
+  if (_outletsNeedsReveal) {
+    _outletsNeedsReveal = false;
+    revealSelectedDay();
   }
   if (_outletsFirstRender) {
     _outletsFirstRender = false;
@@ -1882,6 +1925,16 @@ function closeOutletDayModal() {
   document.getElementById("outletDayModal").classList.remove("open");
 }
 
+function outletsSortByDate() {
+  const order = days.map((d, i) => i).sort((a, b) => itinFechaOrden(days[a].date) - itinFechaOrden(days[b].date));
+  const newDays = order.map(i => days[i]);
+  const newVisited = order.map(i => visited[i]);
+  days.length = 0;
+  days.push(...newDays);
+  visited.length = 0;
+  visited.push(...newVisited);
+}
+
 function addOutletDay() {
   const dateEl = document.getElementById("outlet-day-date");
   const date = dateEl.value.trim();
@@ -1890,21 +1943,30 @@ function addOutletDay() {
     document.getElementById("outlet-day-date-err").classList.add("show");
     return;
   }
+  const dup = days.find(d => itinMismaFecha(d.date, date));
   const dayName = document.getElementById("outlet-day-name").value.trim() || "Día " + (days.length + 1);
   const label = document.getElementById("outlet-day-label").value.trim() || "Sin descripción todavía";
-  days.push({
+  const newDay = {
     dayName: dayName,
     date: date,
     label: label,
     stops: []
-  });
+  };
+  days.push(newDay);
   visited.push(new Set);
-  currentOutletDay = days.length - 1;
+  outletsSortByDate();
+  currentOutletDay = days.indexOf(newDay);
   saveState();
   closeOutletDayModal();
   renderOutlets();
   updateGlobal();
-  showMToast("Día agregado");
+  if (!parseTripDayDate(date)) {
+    showMToast(`No reconozco "${date}" como fecha (probá "Jue 28/01") — puede no ordenarse bien`);
+  } else if (dup) {
+    showMToast(`Ojo: "${dup.dayName}" ya tiene esa misma fecha`);
+  } else {
+    showMToast("Día agregado");
+  }
 }
 
 function outletMoveDay(idx, dir) {
@@ -3127,6 +3189,10 @@ function renderParques() {
   if (parquesSubTab === "itinerario") {
     panel.innerHTML = `<div class="parques-panel">${subtabs}${itinMochilaLink()}${renderItinerario()}</div>`;
     updateParquesCounter();
+    if (_itinNeedsReveal) {
+      _itinNeedsReveal = false;
+      revealSelectedDay();
+    }
     return;
   }
   const {done: gDone, total: gTotal} = pkCountAll();
@@ -4181,11 +4247,23 @@ function itinSave() {
   syncedSave(ITIN_KEY, payload, "itinerario", payload);
 }
 
+let _itinJumpedToday = false;
+
+let _itinNeedsReveal = false;
+
 function itinLoad() {
   const d = syncedLoad(ITIN_KEY, window._itinFromFb);
   itinDias = d && d.dias ? d.dias : itinDefault();
   itinHechos = new Set(d && d.hechos || []);
   if (itinDay >= itinDias.length) itinDay = 0;
+  if (!_itinJumpedToday && itinDias.length) {
+    _itinJumpedToday = true;
+    const idxHoy = itinDias.findIndex(d => itinEsHoy(d.fecha));
+    if (idxHoy !== -1) {
+      itinDay = idxHoy;
+      _itinNeedsReveal = true;
+    }
+  }
 }
 
 window._setItinData = function(d) {
@@ -4251,7 +4329,8 @@ function renderItinerario() {
     const fc = forecastForTripDate(d.fecha);
     const wBadge = fc ? `<span class="odt-weather" title="${escapeHtml(WMO[fc.code] || "")} · mín ${fc.tminF}°F">${WI[fc.code] || "🌡️"} ${fc.tmaxF}°</span>` : "";
     const pend = d.bloques.filter(b => !itinHechos.has(b.id)).length;
-    return `<button class="outlets-day-tab${i === itinDay ? " active" : ""}" onclick="itinSwitchDay(${i})">${escapeHtml(d.nombre || "Día " + (i + 1))}<span class="odt-date">${escapeHtml(d.fecha || "")}${pend === 0 && d.bloques.length ? " ✓" : ""}${wBadge}</span></button>`;
+    const hoyBadge = itinEsHoy(d.fecha) ? `<span class="odt-today-badge">HOY</span> ` : "";
+    return `<button class="outlets-day-tab${i === itinDay ? " active" : ""}" onclick="itinSwitchDay(${i})">${escapeHtml(d.nombre || "Día " + (i + 1))}<span class="odt-date">${hoyBadge}${escapeHtml(d.fecha || "")}${pend === 0 && d.bloques.length ? " ✓" : ""}${wBadge}</span></button>`;
   }).join("")}\n    <button class="btn-nav-set" style="margin-left:2px" onclick="itinAddDay()" title="Agregar día">+</button>\n  </div><button type="button" class="day-tabs-arrow" onclick="this.previousElementSibling.scrollBy({left:260,behavior:'smooth'})" aria-label="Ver más días">›</button></div>`;
   html += `<div class="outlets-day-content">`;
   const total = day.bloques.length;
@@ -4456,6 +4535,12 @@ function itinSaveDay() {
   day.nombre = (document.getElementById("itin-day-name").value || "").trim() || "Día " + (itinDay + 1);
   day.fecha = (document.getElementById("itin-day-fecha").value || "").trim();
   day.nota = (document.getElementById("itin-day-nota").value || "").trim();
+  if (day.fecha && !parseTripDayDate(day.fecha)) {
+    showMToast(`No reconozco "${day.fecha}" como fecha (probá "19 ene") — puede no ordenarse bien`);
+  } else if (day.fecha) {
+    const dup = itinDias.find(d => d !== day && itinMismaFecha(d.fecha, day.fecha));
+    if (dup) showMToast(`Ojo: "${dup.nombre}" ya tiene esa misma fecha`);
+  }
   itinDias.sort((a, b) => itinFechaOrden(a.fecha) - itinFechaOrden(b.fecha));
   itinDay = itinDias.indexOf(day);
   itinEditDay = false;
@@ -4463,16 +4548,22 @@ function itinSaveDay() {
   renderParques();
 }
 
-async function itinDeleteDay() {
-  const day = itinGetDay();
-  const ok = await showConfirm(`Se elimina "${day.nombre}" con sus ${day.bloques.length} bloques.`, "¿Eliminar el día?", "Eliminar");
-  if (!ok) return;
-  day.bloques.forEach(b => itinHechos.delete(b.id));
-  itinDias.splice(itinDay, 1);
+function itinDeleteDay() {
+  const idx = itinDay;
+  const [day] = itinDias.splice(idx, 1);
+  const hechosRemovidos = day.bloques.map(b => b.id).filter(id => itinHechos.has(id));
+  hechosRemovidos.forEach(id => itinHechos.delete(id));
   if (itinDay >= itinDias.length) itinDay = Math.max(0, itinDias.length - 1);
   itinEditDay = false;
   itinSave();
   renderParques();
+  showUndoToast(`Día "${day.nombre}" eliminado`, () => {
+    itinDias.splice(idx, 0, day);
+    hechosRemovidos.forEach(id => itinHechos.add(id));
+    itinDay = idx;
+    itinSave();
+    renderParques();
+  });
 }
 
 async function itinResetDay() {
