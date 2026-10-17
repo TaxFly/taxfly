@@ -1378,8 +1378,14 @@ let tfx = Object.assign({
 }, localLoad(TFX_KEY) || {});
 
 let _tfxPresLoaded = false;
+let financePresReady=false, financeExpensesReady=false;
 
 let budgetEditingTotal = false;
+window._resetTaxflyFinance=()=>{
+ financePresReady=false;financeExpensesReady=false;_tfxPresLoaded=false;
+ window._planFinanceError=false;window._planBudgetError=false;window._planExpenseError=false;
+ tfx={presupuesto:0,gastos:0,gastosN:0};budgetRenderAll();
+};
 
 
 function budgetLoad() {
@@ -1392,6 +1398,17 @@ function budgetLoad() {
     gastosN: 0
   }, t);
   if (!Array.isArray(budgetData.gastos)) budgetData.gastos = [];
+  // Only reuse financial caches belonging to this account, profile and trip.
+  const uid=window._taxflyTripUid,pid=window._perfilId,id=window._tripId;
+  try {
+    const base=localStorage.getItem('taxusa_budget_cache_'+pid+'::'+uid+(id==='orlando'?'':'::'+id));
+    financePresReady=base!==null&&Number.isFinite(Number(base));
+    tfx.presupuesto=financePresReady?Number(base):0;
+    const raw=localStorage.getItem('taxusa_gastos_cache_'+pid+'::'+uid);
+    financeExpensesReady=raw!==null&&Array.isArray(JSON.parse(raw));
+    const expenses=financeExpensesReady?JSON.parse(raw).filter(g=>(g.tripId||'unassigned')===id):[];
+    tfx.gastos=expenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0);tfx.gastosN=expenses.length;
+  }catch(_){financePresReady=false;financeExpensesReady=false;}
   budgetRenderAll();
 }
 
@@ -1413,6 +1430,8 @@ window._setBudgetData = function(d) {
 };
 
 window._setTaxflyBudget = function(p) {
+  if("presupuesto" in p)financePresReady=true;
+  if("gastos" in p)financeExpensesReady=true;
   Object.assign(tfx, p);
   try {
     localStorage.setItem(scopedKey(TFX_KEY), JSON.stringify(tfx));
@@ -1497,6 +1516,7 @@ function budgetSetTotal() {
     return;
   }
   tfx.presupuesto = v;
+  financePresReady=true;
   try {
     localStorage.setItem(scopedKey(TFX_KEY), JSON.stringify(tfx));
   } catch (e) {}
@@ -1511,9 +1531,14 @@ function budgetDeleteGasto(id) {
   budgetRenderAll();
 }
 
+function planFinanceMessage(){const text=window._planFinanceError?'No se pudo actualizar.':!navigator.onLine?'Sin conexión · datos no disponibles':'Cargando…';return window.tr?window.tr(text):text;}
+
 function renderBudgetPill() {
   const slot = document.getElementById("budget-pill-slot");
   if (!slot) return;
+  if(!financePresReady||!financeExpensesReady){
+    slot.innerHTML=`<button type="button" class="budget-pill empty" disabled aria-busy="${!window._planFinanceError}"><span class="budget-pill-label">${planFinanceMessage()}</span></button>`;return;
+  }
   const base = tfx.presupuesto || 0;
   let cls = "budget-pill", label, val = "";
   if (base <= 0) {
@@ -1530,7 +1555,7 @@ function renderBudgetPill() {
     }
     val = budgetUsd(Math.abs(rem));
   }
-  slot.innerHTML = `<button type="button" class="${cls}" onclick="openBudgetFromPill()" title="Ver detalle del presupuesto">\n    <span class="budget-pill-icon">${ic("wallet", 15)}</span>\n    ${cls.includes("over") ? `<span class="budget-pill-label">${label}</span><span class="budget-pill-val">${val}</span>` : `${val ? `<span class="budget-pill-val">${val}</span>` : ""}<span class="budget-pill-label">${label}</span>`}\n  </button>`;
+  slot.innerHTML = `<button type="button" class="${cls}" onclick="openBudgetFromPill()" title="${window._planFinanceError?planFinanceMessage():'Ver detalle del presupuesto'}">\n    <span class="budget-pill-icon">${ic("wallet", 15)}</span>\n    ${cls.includes("over") ? `<span class="budget-pill-label">${label}</span><span class="budget-pill-val">${val}</span>` : `${val ? `<span class="budget-pill-val">${val}</span>` : ""}<span class="budget-pill-label">${label}</span>`}\n  </button>`;
 }
 
 function openBudgetFromPill() {
@@ -1542,6 +1567,7 @@ window.openBudgetFromPill = openBudgetFromPill;
 function renderBudgetBox() {
   const box = document.getElementById("budget-box");
   if (!box) return;
+  if(!financePresReady||!financeExpensesReady){box.innerHTML=`<div class="budget-note" role="status">${planFinanceMessage()}</div>`;return;}
   const base = tfx.presupuesto || 0;
   const hasTotal = base > 0 && !budgetEditingTotal;
   if (!hasTotal) {
@@ -1558,7 +1584,7 @@ function renderBudgetBox() {
     gastosHtml += `\n      <div class="budget-gasto-row">\n        <span class="budget-gasto-cat">${ic(meta.icon, 13)} ${meta.label}${g.nota ? " · " + escapeHtml(g.nota) : ""}</span>\n        <span class="budget-gasto-monto">${budgetUsd(g.monto)}\n          <button class="wm-icon-btn wm-icon-del" onclick="budgetDeleteGasto('${g.id}')" title="Eliminar" aria-label="Eliminar gasto">${ic("x", 14)}</button>\n        </span>\n      </div>`;
   });
   const addForm = `<a class="budget-add-cat-btn" href="compras.html">${ic("wallet", 15)} <span>Registrar gasto en TaxFly</span></a>`;
-  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. Todo en USD.</div>`;
+  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. Todo en USD.${window._planFinanceError?' '+planFinanceMessage():''}</div>`;
 }
 
 window.renderBudgetBox = renderBudgetBox;

@@ -327,6 +327,9 @@
   };
   window.tr = t;
   add({
+    "Cargando…": ["Loading…", "Carregando…"],
+    "No se pudo actualizar.": ["Could not refresh.", "Não foi possível atualizar."],
+    "Sin conexión · datos no disponibles": ["Offline · data unavailable", "Sem conexão · dados indisponíveis"],
     Cancelar: [ "Cancel", "Cancelar" ],
     Guardar: [ "Save", "Salvar" ],
     Eliminar: [ "Delete", "Excluir" ],

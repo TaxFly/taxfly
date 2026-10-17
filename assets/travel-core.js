@@ -32,11 +32,33 @@ const reservationKey=(uid,pid,trip)=>'taxfly-reservations::'+scope(uid,pid,trip)
 function readReservations(uid,pid,trip){try{return JSON.parse(localStorage.getItem(reservationKey(uid,pid,trip))||'[]');}catch(_){return [];}}
 function writeReservations(uid,pid,trip,items){try{localStorage.setItem(reservationKey(uid,pid,trip),JSON.stringify(items));}catch(_){}}
 function planningKey(uid,pid,trip){return 'trip-reservations-v1::'+pid+(trip==='orlando'?'':'::'+trip)+'::'+uid;}
-function watchReservations({uid,pid,trip,db,doc,onSnapshot,onChange}){
- onChange(readReservations(uid,pid,trip));if(['all','unassigned'].includes(trip))return ()=>{};
+// A cached empty snapshot is not proof that the server has no data.
+function loadState(value) {
+ const state={value,hasValue:value!==undefined,source:value===undefined?'loading':'local',error:false};
+ state.receive=(next,snapshot,empty=false)=>{
+  if(snapshot?.metadata?.fromCache && !snapshot.metadata.hasPendingWrites && (empty || state.hasValue))return false;
+  state.value=next;state.hasValue=true;state.error=false;
+  state.source=snapshot?.metadata?.fromCache?'cache':'server';return true;
+ };
+ state.fail=()=>{state.error=true;};
+ return state;
+}
+function watchReservations({uid,pid,trip,db,doc,onSnapshot,onChange,onState}){
+ let raw=null;try{raw=localStorage.getItem(reservationKey(uid,pid,trip));}catch(_){}
+ let cached;try{const parsed=JSON.parse(raw);if(Array.isArray(parsed))cached=parsed;const pending=localStorage.getItem(planningKey(uid,pid,trip)+'::pending');if(pending){const items=JSON.parse(pending).items;if(Array.isArray(items))cached=items;}}catch(_){}
+ const state=loadState(cached);
+ const publish=()=>{if(state.hasValue)onChange(state.value);onState?.(state);};
+ publish();if(['all','unassigned'].includes(trip)){state.receive([],null);publish();return ()=>{};}
  const path=['usuarios',uid,'perfiles',pid,...(trip==='orlando'?['orlando','reservations']:['tripPlanning',trip,'data','reservations'])];
- return onSnapshot(doc(db,...path),snap=>{let items=snap.exists()?snap.data().items||[]:[];try{const p=localStorage.getItem(planningKey(uid,pid,trip)+'::pending');if(p)items=JSON.parse(p).items||[];}catch(_){}writeReservations(uid,pid,trip,items);onChange(items);},()=>{});
+ let active=true;
+ const stop=onSnapshot(doc(db,...path),{includeMetadataChanges:true},snap=>{
+  if(!active)return;
+  let items=snap.exists()?snap.data().items||[]:[];
+  try{const p=localStorage.getItem(planningKey(uid,pid,trip)+'::pending');if(p)items=JSON.parse(p).items||[];}catch(_){}
+  if(state.receive(items,snap,!items.length)){writeReservations(uid,pid,trip,items);publish();}
+ },()=>{if(active){state.fail();publish();}});
+ return ()=>{active=false;stop();};
 }
 function overlayExpenses(expenses,ops){const map=new Map((expenses||[]).map(g=>[g.id,g]));for(const op of ops||[]){if(op.type==='upsert')map.set(op.id,{...map.get(op.id),...op.data,id:op.id,_pending:true});else if(op.type==='upd'&&map.has(op.id))map.set(op.id,{...map.get(op.id),...op.data});else if(op.type==='del')map.delete(op.id);}return [...map.values()];}
-const api={cities,scope,alertKey,paymentId,validZone,destination,instant,localDate,zoneFields,paid,outstanding,budget,budgetText,readReservations,writeReservations,planningKey,watchReservations,overlayExpenses};root.TaxflyTravel=api;if(typeof module!=='undefined')module.exports=api;
+const api={cities,scope,alertKey,paymentId,validZone,destination,instant,localDate,zoneFields,paid,outstanding,budget,budgetText,readReservations,writeReservations,planningKey,watchReservations,loadState,overlayExpenses};root.TaxflyTravel=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

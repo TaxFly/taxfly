@@ -2,6 +2,15 @@
   const region=()=>'usa';
   const legacy = {id:'orlando', name:'Mi viaje a Orlando', destinations:[{city:'Orlando',state:'Florida'}]};
   let sdk = null;
+  const hydration = new Map();
+  const hydrationKey=(uid,profile)=>JSON.stringify([uid,profile]);
+  function status(uid,profile) {
+    return {...(hydration.get(hydrationKey(uid,profile))||{phase:'loading'}),hasData:safeGet(keys(uid,profile).list)!==null};
+  }
+  function setStatus(uid,profile,phase) {
+    hydration.set(hydrationKey(uid,profile),{phase,hasData:safeGet(keys(uid,profile).list)!==null});
+    window.dispatchEvent?.(new CustomEvent('taxfly:tripstatus',{detail:{uid,profile}}));
+  }
   function keys(uid, profile) {
     return {active:`trip-planning-active::${uid}::${profile}`,
       list:`trip-planning-trips::${uid}::${profile}`,
@@ -90,10 +99,12 @@
   }
   async function hydrate(db,uid,profile,getDocs,collection,onChange) {
     configure({...sdk,db,getDocs,collection});
+    setStatus(uid,profile,navigator.onLine?'loading':'offline');
     onChange?.();
     if (navigator.onLine) {
       try {
         const snap=await within(getDocs(collection(db,'usuarios',uid,'perfiles',profile,'tripPlanning')),5000);
+        if(snap.metadata?.fromCache)throw new Error('Trips not confirmed by server');
         const byId=new Map(readAllTrips(uid,profile).map(t=>[t.id,t]));
         snap.forEach(d=>byId.set(d.id,{...d.data(),id:d.id}));
         if (!byId.has('orlando')) {
@@ -124,7 +135,8 @@
         }
         Object.values(pending(uid,profile)).forEach(t=>byId.set(t.id,t));
         cache(uid,profile,[...byId.values()].filter(t=>t.status!=='deleted'));
-      } catch(e) {  }
+        setStatus(uid,profile,'ready');
+      } catch(e) { setStatus(uid,profile,'error'); }
     }
     await flush(uid,profile);
     onChange?.();
@@ -266,8 +278,11 @@
   }
   window.addEventListener?.('online',()=>{
     const uid=window._taxflyTripUid, profile=window._taxflyTripProfile;
-    if (uid&&profile) flush(uid,profile);
+    if(uid&&profile){
+      if(sdk?.getDocs&&sdk?.collection&&['error','offline'].includes(status(uid,profile).phase))hydrate(sdk.db,uid,profile,sdk.getDocs,sdk.collection);
+      else flush(uid,profile);
+    }
   });
   window.TripContext={region,keys,readTrips,active,view,matches,filter,assign,render,select,
-    hydrate,configure,flush,save,create,archive,remove,removeOrphans,orphanCount,pending,legacy};
+    hydrate,status,configure,flush,save,create,archive,remove,removeOrphans,orphanCount,pending,legacy};
 })();

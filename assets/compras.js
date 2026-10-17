@@ -69,7 +69,8 @@ function guardarGastosEnCache(gastos) {
 function cargarGastosDesdeCache() {
   try {
     const raw = localStorage.getItem(gastosCacheKey());
-    return raw ? JSON.parse(raw) : null;
+    const parsed=raw?JSON.parse(raw):null;
+    return Array.isArray(parsed)?parsed:null;
   } catch (e) {
     return null;
   }
@@ -83,7 +84,8 @@ function guardarPresupuestoEnCache(v) {
 
 function cargarPresupuestoDesdeCache() {
   const v = localStorage.getItem(currentBudgetKey());
-  return v !== null ? parseFloat(v) : null;
+  const parsed=v!==null?Number(v):NaN;
+  return Number.isFinite(parsed)?parsed:null;
 }
 
 function getPendingGastos() {
@@ -157,33 +159,59 @@ let financeReservations=[], expenseSnapshotReady=false, paymentOpened=false;
 function filteredGastos() {
   return currentUser && perfilId ? window.TripContext.filter(allGastos, currentUser.uid, perfilId) : allGastos;
 }
-function refreshGastosTrip() {
-  if (!currentUser || !perfilId) return;
-  window.TripContext.render(document.getElementById("trip-filter-expenses"), currentUser.uid, perfilId);
-  renderGastosList(allGastos);
-  listenTripPlanningSpent();
+let expenseGeneration=0, expenseScope='', expenseStops=[];
+let financeStates={base:window.TaxflyTravel.loadState(),expenses:window.TaxflyTravel.loadState(),maps:window.TaxflyTravel.loadState(),reservations:window.TaxflyTravel.loadState()};
+function expenseContext(){return currentUser&&perfilId?JSON.stringify([currentUser.uid,perfilId,window.TripContext.view(currentUser.uid,perfilId)]):'';}
+function expenseContextReady(){const state=window.TripContext.status(currentUser?.uid,perfilId);return state.hasData||state.phase==='ready';}
+function expenseValid(generation,scope){return generation===expenseGeneration&&scope===expenseContext();}
+function financeMessage(states){
+ if(currentUser&&!expenseContextReady()&&window.TripContext.status(currentUser.uid,perfilId).phase==='error')return bt('load_error');
+ if(states.some(s=>s.error))return bt('load_error');
+ if(!navigator.onLine)return states.every(s=>s.hasValue)?bt('saved_offline'):bt('no_local_data');
+ return bt('loading_data');
 }
+function refreshGastosTrip() {
+ if(!currentUser||!perfilId)return;
+ window.TripContext.render(document.getElementById('trip-filter-expenses'),currentUser.uid,perfilId);
+ if(!expenseContextReady()){renderBudgetCard();return;}
+ if(expenseScope===expenseContext()){renderBudgetCard();return;}
+ expenseStops.forEach(stop=>stop());expenseStops=[];
+ tripBudgetUnsubs.forEach(stop=>stop());tripBudgetUnsubs=[];
+ expenseScope=expenseContext();expenseGeneration++;
+ const cached=cargarGastosDesdeCache(),base=cargarPresupuestoDesdeCache();
+ financeStates={base:window.TaxflyTravel.loadState(Number.isFinite(base)?base:undefined),expenses:window.TaxflyTravel.loadState(Array.isArray(cached)?cached:undefined),maps:window.TaxflyTravel.loadState(),reservations:window.TaxflyTravel.loadState()};
+ allGastos=window.TaxflyTravel.overlayExpenses(cached||[],getPendingGastos());
+ if(getPendingGastos().length&&!financeStates.expenses.hasValue)financeStates.expenses=window.TaxflyTravel.loadState(allGastos);
+ presupuestoBase=base??0;mapsSpent=0;financeReservations=[];expenseSnapshotReady=false;
+ document.getElementById('budget-set-row')._editing=false;
+ renderGastosList(allGastos);renderBudgetCard();
+ listenGastos();listenPresupuestoYOrlando();
+}
+window.addEventListener('taxfly:tripchange',refreshGastosTrip);
+window.addEventListener('taxfly:tripstatus',refreshGastosTrip);
+window.addEventListener('offline',()=>{renderGastosList(allGastos);renderBudgetCard();});
+window.addEventListener('online',()=>{renderGastosList(allGastos);renderBudgetCard();});
 function listenTripPlanningSpent() {
-  tripBudgetUnsubs.forEach(stop => stop());
-  tripBudgetUnsubs = [];
-  const tc = window.TripContext;
-  const selection = tc.view(currentUser.uid, perfilId);
-  const trips = tc.readTrips(currentUser.uid, perfilId);
-  const ids = selection === "all" ? ["orlando", ...trips.filter(t => t.id !== "orlando" && t.status !== "deleted").map(t => t.id)] : selection === "unassigned" ? [] : [selection];
-  const totals = new Map();
-  mapsSpent = 0;
-  financeReservations=[];
-  tripBudgetUnsubs.push(window.TaxflyTravel.watchReservations({uid:currentUser.uid,pid:perfilId,trip:selection,db,doc,onSnapshot,onChange:items=>{financeReservations=items;renderBudgetCard();offerReservationPayment();}}));
-  updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
-  ids.forEach(id => {
-    const path = id === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", id, "data", "budget"];
-    tripBudgetUnsubs.push(onSnapshot(doc(db, ...path), snap => {
-      const d = snap.exists() ? snap.data() : null;
-      totals.set(id, (d?.gastos || []).reduce((s, g) => s + (Number(g.monto) || 0), 0));
-      mapsSpent = [...totals.values()].reduce((a, b) => a + b, 0);
-      updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
-    }, () => {}));
-  });
+ tripBudgetUnsubs.forEach(stop=>stop());tripBudgetUnsubs=[];
+ const generation=expenseGeneration,scope=expenseScope;
+ const selection=window.TripContext.view(currentUser.uid,perfilId);
+ const key='taxusa_maps_budget_cache_'+perfilId+'::'+currentUser.uid+'_'+selection;
+ const cached=localStorage.getItem(key);
+ financeStates.maps=window.TaxflyTravel.loadState(cached!==null&&Number.isFinite(Number(cached))?Number(cached):undefined);
+ if(selection==='unassigned')financeStates.maps.receive(0);
+ mapsSpent=financeStates.maps.value||0;
+ tripBudgetUnsubs.push(window.TaxflyTravel.watchReservations({uid:currentUser.uid,pid:perfilId,trip:selection,db,doc,onSnapshot,
+  onChange:items=>{if(expenseValid(generation,scope))financeReservations=items;},
+  onState:state=>{if(expenseValid(generation,scope)){financeStates.reservations=state;renderBudgetCard();offerReservationPayment();}}}));
+ if(selection!=='unassigned'){
+  const path=selection==='orlando'?['usuarios',currentUser.uid,'perfiles',perfilId,'orlando','budget']:['usuarios',currentUser.uid,'perfiles',perfilId,'tripPlanning',selection,'data','budget'];
+  tripBudgetUnsubs.push(onSnapshot(doc(db,...path),{includeMetadataChanges:true},snap=>{
+   if(!expenseValid(generation,scope))return;
+   const d=snap.exists()?snap.data():null,value=(d?.gastos||[]).reduce((sum,g)=>sum+(Number(g.monto)||0),0);
+   if(financeStates.maps.receive(value,snap,value===0)){mapsSpent=value;localStorage.setItem(key,String(value));updateBudgetDisplay(lastGastosTotal);}
+  },()=>{if(expenseValid(generation,scope)){financeStates.maps.fail();renderBudgetCard();}}));
+ }
+ updateBudgetDisplay(filteredGastos().reduce((sum,g)=>sum+(Number(g.valor)||0),0));
 }
 
 let lastGastosTotal = 0;
@@ -215,6 +243,7 @@ let video, stream;
 
 const i18n = {
   es: {
+    loading_data: "Cargando…", load_error: "No se pudo actualizar.", saved_offline: "Sin conexión · datos guardados", no_local_data: "Sin conexión · datos no disponibles",
     nav_home: "INICIO",
     nav_taxes: "TAXES",
     nav_itinerary: "PLANIFICACIÓN",
@@ -393,6 +422,7 @@ const i18n = {
     sz_us_num: "US (núm.)"
   },
   en: {
+    loading_data: "Loading…", load_error: "Could not refresh.", saved_offline: "Offline · saved data", no_local_data: "Offline · data unavailable",
     nav_home: "HOME",
     nav_taxes: "TAXES",
     nav_itinerary: "PLANNING",
@@ -571,6 +601,7 @@ const i18n = {
     sz_us_num: "US (num)"
   },
   pt: {
+    loading_data: "Carregando…", load_error: "Não foi possível atualizar.", saved_offline: "Sem conexão · dados salvos", no_local_data: "Sem conexão · dados indisponíveis",
     nav_home: "INÍCIO",
     nav_taxes: "TAXES",
     nav_itinerary: "PLANEJAMENTO",
@@ -851,7 +882,7 @@ window.changeLanguage = lang => {
   if (window.szReRender) window.szReRender();
   if (typeof allGastos !== "undefined" && allGastos.length) renderDashboard(allGastos);
   try { renderBudgetCard(); renderCapsEditor(); } catch (e) {}
-  try { if (typeof allGastos !== "undefined" && allGastos.length) renderGastosList(allGastos); } catch (e) {}
+  try { if (typeof allGastos !== "undefined") renderGastosList(allGastos); } catch (e) {}
 };
 
 (function() {
@@ -1183,6 +1214,16 @@ function renderBudgetCard() {
   const card = document.getElementById("budget-card");
   const row = document.getElementById("budget-set-row");
   if (!card || !row) return;
+  const states=[financeStates.base,financeStates.expenses,financeStates.maps];
+  const ready=currentUser&&expenseContextReady()&&expenseScope===expenseContext()&&states.every(x=>x.hasValue);
+  const loading=document.getElementById('bc-loading');
+  card.setAttribute('aria-busy',String(!ready&&navigator.onLine&&!states.some(x=>x.error)));
+  if(loading){loading.style.display=ready?'none':'block';loading.textContent=financeMessage(states);}
+  if(!ready){
+    for(const id of ['bc-empty','bc-main','budget-set-row'])document.getElementById(id).style.display='none';
+    document.getElementById('bc-hint').textContent=bt('label_budget');
+    return;
+  }
   const has = presupuestoBase > 0;
   const editing = row._editing === true;
   // Lo registrado desde Supermercado ("Registrar como gasto") se muestra en el chip Planificación, no en Gastos.
@@ -1216,7 +1257,7 @@ function renderBudgetCard() {
   if (has) {
     const rest = presupuestoBase - eff;
     const trip=currentUser?window.TripContext.readTrips(currentUser.uid,perfilId).find(t=>t.id===window.TripContext.view(currentUser.uid,perfilId)):null;
-    const daily=document.getElementById("budget-daily");if(daily)daily.textContent=window.TaxflyTravel.budgetText(window.TaxflyTravel.budget(presupuestoBase,eff,financeReservations,filteredGastos().filter(g=>!pendingDeletes.has(g.id)),trip));
+    const daily=document.getElementById("budget-daily");if(daily)daily.textContent=!financeStates.reservations.hasValue?financeMessage([financeStates.reservations]):window.TaxflyTravel.budgetText(window.TaxflyTravel.budget(presupuestoBase,eff,financeReservations,filteredGastos().filter(g=>!pendingDeletes.has(g.id)),trip));
     const disp = document.getElementById("disp-fondo");
     if (disp) disp.textContent = "USD " + fmt(rest);
     const fill = document.getElementById("bc-fill");
@@ -1239,7 +1280,7 @@ function renderBudgetCard() {
   const hint = document.getElementById("bc-hint");
   if (hint) {
     const unassigned = currentUser && perfilId && window.TripContext.view(currentUser.uid, perfilId) === "unassigned";
-    hint.textContent = unassigned ? bt("bc_hint_unassigned") : bt("bc_hint");
+    hint.textContent = [...states,financeStates.reservations].some(x=>x.error)||!navigator.onLine?financeMessage([...states,financeStates.reservations]):unassigned ? bt("bc_hint_unassigned") : bt("bc_hint");
   }
 }
 
@@ -1295,6 +1336,7 @@ window.updateFondo = async () => {
     return;
   }
   presupuestoBase = v;
+  financeStates.base.receive(v);
   guardarPresupuestoEnCache(v);
   const row = document.getElementById("budget-set-row");
   if (row) row._editing = false;
@@ -1900,6 +1942,11 @@ function renderGastosList(gastos) {
   if (currentUser && perfilId) gastos = window.TripContext.filter(gastos, currentUser.uid, perfilId);
   gastos = (gastos || []).filter(g => !pendingDeletes.has(g.id));
   const c = document.getElementById("listaGastos");
+  const ready=currentUser&&expenseContextReady()&&expenseScope===expenseContext()&&financeStates.expenses.hasValue;
+  c.setAttribute('aria-busy',String(!ready&&navigator.onLine&&!financeStates.expenses.error));
+  const notice=document.getElementById('expense-load-status');
+  if(notice)notice.textContent=financeStates.expenses.error||!navigator.onLine?financeMessage([financeStates.expenses]):'';
+  if(!ready){c.innerHTML='<p style="text-align:center;color:var(--text-dim);font-size:.85rem;">'+esc(financeMessage([financeStates.expenses]))+'</p>';renderDashboard([]);return;}
   if (!gastos.length) {
     c.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:.85rem;" data-i18n="empty_expenses">' + esc(bt("empty_expenses")) + '</p>';
     updateBudgetDisplay(0);
@@ -1926,59 +1973,35 @@ function renderGastosList(gastos) {
 }
 
 function listenGastos() {
-  if (!currentUser || !perfilId) return;
-  const cached = cargarGastosDesdeCache();
-  if (cached && cached.length) {
-    allGastos = window.TaxflyTravel.overlayExpenses(cached,getPendingGastos());
-    if(!navigator.onLine)expenseSnapshotReady=true;
-    renderGastosList(allGastos);
-  }
-  const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), orderBy("fecha", "desc"));
-  onSnapshot(q, snap => {
-    if (!snap.metadata?.fromCache) window.taxflyOfflineStatus?.mark("expenses", currentUser.uid, perfilId);
-    expenseSnapshotReady=!navigator.onLine || !snap.metadata?.fromCache;
-    if (snap.empty) {
-      const pending = getPendingGastos();
-      const hayLocales = allGastos.some(g => String(g.id).startsWith("local_"));
-      if (pending.length > 0 || hayLocales) {allGastos=window.TaxflyTravel.overlayExpenses(allGastos,pending);renderGastosList(allGastos);offerReservationPayment();return;}
-      allGastos = window.TaxflyTravel.overlayExpenses([],getPendingGastos());
-      guardarGastosEnCache(allGastos);
-      renderGastosList(allGastos);offerReservationPayment();
-      return;
-    }
-    const gastosFirestore = snap.docs.map(d => {
-      const data = d.data(), val = parseFloat(data.valor) || 0;
-      return {
-        ...data,
-        id: d.id,
-        valor: val
-      };
-    });
-    allGastos = window.TaxflyTravel.overlayExpenses(gastosFirestore,getPendingGastos());
-    guardarGastosEnCache(allGastos);
-    renderGastosList(allGastos);offerReservationPayment();
-  });
+ if(!currentUser||!perfilId)return;
+ const generation=expenseGeneration,scope=expenseScope,key=gastosCacheKey(),uid=currentUser.uid;
+ const q=query(collection(db,'usuarios',uid,'perfiles',perfilId,'gastos'),orderBy('fecha','desc'));
+ expenseStops.push(onSnapshot(q,{includeMetadataChanges:true},snap=>{
+  if(!expenseValid(generation,scope))return;
+  const items=snap.docs.map(d=>({...d.data(),id:d.id,valor:parseFloat(d.data().valor)||0}));
+  if(!financeStates.expenses.receive(items,snap,!items.length))return;
+  expenseSnapshotReady=!snap.metadata?.fromCache;
+  if(expenseSnapshotReady)window.taxflyOfflineStatus?.mark('expenses',uid,perfilId);
+  allGastos=window.TaxflyTravel.overlayExpenses(items,getPendingGastos());
+  localStorage.setItem(key,JSON.stringify(allGastos));
+  renderGastosList(allGastos);offerReservationPayment();
+ },()=>{if(expenseValid(generation,scope)){financeStates.expenses.fail();renderGastosList(allGastos);renderBudgetCard();}}));
 }
-
 function listenPresupuestoYOrlando() {
-  if (!currentUser || !perfilId) return;
-  const ref=currentBudgetRef(), field=currentBudgetField();
-  if (ref) onSnapshot(ref,snap=>{
-    if (!snap.exists()) return;
-    const cats=snap.data().presupuestoCats;
-    if (cats && typeof cats==="object") {
-      catBudgets=normalizeCatBudgets(cats);
-      guardarTopesEnCache(catBudgets);
-      if (!document.getElementById("caps-box")?.open) renderCapsEditor();
-      if (typeof allGastos!=="undefined") renderDashboard(allGastos);
-    }
-    if (snap.data()[field]===undefined) return;
-    presupuestoBase=Number(snap.data()[field])||0;
-    guardarPresupuestoEnCache(presupuestoBase);
-    updateBudgetDisplay(lastGastosTotal);
-    refreshBudgetInfoRow();
-  },()=>{});
-  listenTripPlanningSpent();
+ if(!currentUser||!perfilId)return;
+ const generation=expenseGeneration,scope=expenseScope,ref=currentBudgetRef(),field=currentBudgetField(),key=currentBudgetKey();
+ if(!ref)financeStates.base.receive(0);
+ if(ref)expenseStops.push(onSnapshot(ref,{includeMetadataChanges:true},snap=>{
+  if(!expenseValid(generation,scope))return;
+  const data=snap.exists()?snap.data():{},value=Number(data[field])||0;
+  if(!financeStates.base.receive(value,snap,value===0))return;
+  if(data.presupuestoCats&&typeof data.presupuestoCats==='object'){
+   catBudgets=normalizeCatBudgets(data.presupuestoCats);guardarTopesEnCache(catBudgets);
+   if(!document.getElementById('caps-box')?.open)renderCapsEditor();
+  }
+  presupuestoBase=value;localStorage.setItem(key,String(value));updateBudgetDisplay(lastGastosTotal);
+ },()=>{if(expenseValid(generation,scope)){financeStates.base.fail();renderBudgetCard();}}));
+ listenTripPlanningSpent();
 }
 
 function updateBudgetDisplay(spent) {
@@ -2214,6 +2237,7 @@ function renderDashboard(gastos) {
   const empty = document.getElementById("dash-empty");
   const content = document.getElementById("dash-content");
   if (!empty || !content) return;
+  if(!currentUser||!expenseContextReady()||expenseScope!==expenseContext()||!financeStates.expenses.hasValue){empty.style.display='none';content.style.display='none';return;}
   if (!gastos || !gastos.length) {
     empty.style.display = "block";
     content.style.display = "none";
@@ -3107,25 +3131,20 @@ window.doDeleteAccount = () => window.confirmAndDeleteAccount({
 
 onAuthStateChanged(auth, async user => {
   if (!user) {
+    currentUser=null;expenseGeneration++;expenseStops.forEach(stop=>stop());tripBudgetUnsubs.forEach(stop=>stop());
     window.location.replace("login.html");
     return;
   }
+  if(currentUser&&currentUser.uid!==user.uid){
+    expenseGeneration++;expenseStops.forEach(stop=>stop());tripBudgetUnsubs.forEach(stop=>stop());
+    expenseStops=[];tripBudgetUnsubs=[];expenseScope='';allGastos=[];
+    financeStates={base:window.TaxflyTravel.loadState(),expenses:window.TaxflyTravel.loadState(),maps:window.TaxflyTravel.loadState(),reservations:window.TaxflyTravel.loadState()};
+  }
   currentUser = user;
+  renderGastosList(allGastos);renderBudgetCard();
   const requestedTrip=new URLSearchParams(location.search).get("trip");
   if(requestedTrip && window.TripContext.readTrips(user.uid,perfilId).some(t=>t.id===requestedTrip))window.TripContext.select(user.uid,perfilId,requestedTrip);
-  const cachedBudget = cargarPresupuestoDesdeCache();
-  presupuestoBase = cachedBudget ?? 0;
   catBudgets = cargarTopesDesdeCache();
-  if (cachedBudget !== null) {
-    presupuestoBase = cachedBudget;
-    const inputFondo = document.getElementById("input-fondo");
-    if (inputFondo) {
-      inputFondo.value = "";
-      inputFondo.placeholder = "USD 0";
-    }
-    refreshBudgetInfoRow();
-  }
-
   const perfilNombre = localStorage.getItem("perfilActivoNombre");
   document.getElementById("userEmail").innerText = perfilNombre || user.email;
   if (!perfilId) {
@@ -3139,27 +3158,6 @@ onAuthStateChanged(auth, async user => {
     b.innerText = "";
   }
   loadCustomCats();
-  try {
-    const ref=currentBudgetRef();
-    const snap=ref ? await getDoc(ref) : null;
-    const field=currentBudgetField();
-    if (snap?.exists() && snap.data().presupuestoCats && typeof snap.data().presupuestoCats === "object") {
-      catBudgets = normalizeCatBudgets(snap.data().presupuestoCats);
-      guardarTopesEnCache(catBudgets);
-    }
-    if (snap?.exists() && snap.data()[field] !== undefined) {
-      presupuestoBase = Number(snap.data()[field]);
-      guardarPresupuestoEnCache(presupuestoBase);
-      const inputF = document.getElementById("input-fondo");
-      if (inputF) {
-        inputF.value = "";
-        inputF.placeholder = "USD 0";
-      }
-      refreshBudgetInfoRow();
-    }
-  } catch (e) {
-    console.error(e);
-  }
   fetchRates();
   const tripSelect = document.getElementById("trip-filter-expenses");
   tripSelect.addEventListener("change", () => {
@@ -3167,9 +3165,7 @@ onAuthStateChanged(auth, async user => {
     location.reload();
   });
   window.TripContext.hydrate(db, user.uid, perfilId, getDocs, collection, refreshGastosTrip);
-  listenGastos();
-  listenPresupuestoYOrlando();
-  setTimeout(refreshBudgetInfoRow, 500);
+  refreshGastosTrip();
   flushPendingGastos();
   initPushNotifications();
   const lang = localStorage.getItem("appLang") || "es";

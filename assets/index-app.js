@@ -38,7 +38,7 @@ if (navigator.onLine) {
 }
 
 function mapsBudgetCacheKey() {
-  return "taxusa_maps_budget_cache_" + perfilId + "::" + currentUser.uid + "_" + (localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando");
+  return "taxusa_maps_budget_cache_" + perfilId + "::" + currentUser.uid + "_" + window.TripContext.view(currentUser.uid,perfilId);
 }
 
 let mapsSpentCache = 0, homeReservations=[], homeReservationUnsub=()=>{}, renderUpcoming=()=>{};
@@ -51,28 +51,33 @@ function computeMapsSpent(data) {
   return (data.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
 }
 
+let homeGeneration=0, homeStops=[], homeScope='', homeFinance=null, homeEventStop=()=>{};
+function readHomeCache(key) { try {const raw=localStorage.getItem(key);return raw===null?undefined:JSON.parse(raw);}catch(_){return undefined;} }
+function homeContext() {return currentUser&&perfilId?JSON.stringify([currentUser.uid,perfilId,window.TripContext.view(currentUser.uid,perfilId)]):'';}
+function homeContextReady(){const state=window.TripContext.status(currentUser?.uid,perfilId);return state.hasData||state.phase==='ready';}
+function homeValid(generation,scope){return generation===homeGeneration&&scope===homeContext();}
+function homeMessage(states) {
+ if(states.some(s=>s.error))return t.load_error;
+ if(!navigator.onLine)return states.length&&states.every(s=>s.hasValue)?t.saved_offline:t.no_local_data;
+ return t.loading;
+}
 function listenMapsBudget() {
   if (!currentUser || !perfilId) return;
-  mapsSpentCache = parseFloat(localStorage.getItem(mapsBudgetCacheKey())) || 0;
-  const tripId = window.TripContext.view(currentUser.uid, perfilId);
-  if (tripId === "unassigned") { mapsSpentCache=0; return; }
-  const path = tripId === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", tripId, "data", "budget"];
-  onSnapshot(doc(db, ...path), snap => {
-    mapsSpentCache = computeMapsSpent(snap.exists() ? snap.data() : null);
-    try {
-      localStorage.setItem(mapsBudgetCacheKey(), String(mapsSpentCache));
-    } catch (e) {}
-    const base = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
-    let g = [];
-    try {
-      g = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
-    } catch (e) {}
-    renderBudgetUI(base, g);
-  }, () => {});
+  const generation=homeGeneration,scope=homeScope,key=mapsBudgetCacheKey();
+  const state=homeFinance.maps;
+  const tripId=window.TripContext.view(currentUser.uid,perfilId);
+  if(tripId==='unassigned'){state.receive(0);renderBudgetUI();return;}
+  const path=tripId==='orlando'?['usuarios',currentUser.uid,'perfiles',perfilId,'orlando','budget']:['usuarios',currentUser.uid,'perfiles',perfilId,'tripPlanning',tripId,'data','budget'];
+  homeStops.push(onSnapshot(doc(db,...path),{includeMetadataChanges:true},snap=>{
+    if(!homeValid(generation,scope))return;
+    const value=computeMapsSpent(snap.exists()?snap.data():null);
+    if(state.receive(value,snap,value===0)){localStorage.setItem(key,String(value));renderBudgetUI();}
+  },()=>{if(homeValid(generation,scope)){state.fail();renderBudgetUI();}}));
 }
 
 const I18N = {
   es: {
+    load_error: "No se pudo actualizar.", saved_offline: "Sin conexión · datos guardados", no_local_data: "Sin conexión · datos no disponibles",
     nav_home: "INICIO",
     nav_expenses: "GASTOS",
     nav_itinerary: "PLANIFICACIÓN",
@@ -196,6 +201,7 @@ const I18N = {
     } ]
   },
   en: {
+    load_error: "Could not refresh.", saved_offline: "Offline · saved data", no_local_data: "Offline · data unavailable",
     nav_home: "HOME",
     nav_expenses: "EXPENSES",
     nav_itinerary: "PLANNING",
@@ -319,6 +325,7 @@ const I18N = {
     } ]
   },
   pt: {
+    load_error: "Não foi possível atualizar.", saved_offline: "Sem conexão · dados salvos", no_local_data: "Sem conexão · dados indisponíveis",
     nav_home: "INÍCIO",
     nav_expenses: "GASTOS",
     nav_itinerary: "PLANEJAMENTO",
@@ -457,13 +464,14 @@ function applyI18n() {
   t = I18N[lang] || I18N.es;
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const k = el.getAttribute("data-i18n");
-    if (el.id === "ne-title" && el.getAttribute("data-has-event") === "true") return;
+    if (el.id === "ne-title") return;
     if (t[k]) el.textContent = t[k];
   });
   [ "es", "en", "pt" ].forEach(l => document.getElementById("lang-" + l)?.classList.toggle("active", l === lang));
   renderSections();
   renderTip();
-  if (window._lastBudgetArgs) { try { renderBudgetUI(...window._lastBudgetArgs); } catch (e) {} }
+  renderBudgetUI();
+  renderUpcoming();
   if (document.getElementById("fx-content")?.style.display !== "none") fxRender();
 }
 
@@ -498,18 +506,41 @@ function updateGreeting() {
   });
 }
 
-function renderBudgetUI(base, gastos) {
+function renderBudgetUI() {
+ const f=homeFinance, ready=currentUser&&homeContextReady()&&homeScope===homeContext();
+ const states=f?[f.base,f.expenses,f.maps]:[];
+ const complete=ready&&states.every(x=>x.hasValue);
+ const budget=document.querySelector('.widget-budget');
+ budget?.setAttribute('aria-busy',String(!complete&&navigator.onLine&&!states.some(x=>x.error)));
+ if(complete){mapsSpentCache=f.maps.value;renderBudgetValues(f.base.value,f.expenses.value);}
+ else {
+  document.getElementById('wb-value').textContent='—';
+  document.getElementById('wb-pct').textContent='—';
+  document.getElementById('wb-bar').style.width='0%';
+  document.getElementById('wb-daily').textContent='';
+  document.getElementById('last-gasto-val').textContent='—';
+  document.getElementById('last-gasto-name').textContent=homeMessage(states);
+  document.getElementById('total-gasto-val').textContent='—';
+  document.getElementById('last-gasto-cat').style.display='none';
+ }
+ const unavailable=!ready&&currentUser&&['error','offline'].includes(window.TripContext.status(currentUser.uid,perfilId).phase);
+ const hint=document.querySelector('.widget-budget .wb-hint');
+ if(hint)hint.textContent=unavailable?(!navigator.onLine?t.no_local_data:t.load_error):!complete||states.some(x=>x.error)||!navigator.onLine?homeMessage(states):t.budget_hint;
+ if(f&&complete&&(!f.reservations.hasValue||f.reservations.error))document.getElementById('wb-daily').textContent=homeMessage([f.reservations]);
+}
+function renderBudgetValues(base, gastos) {
   gastos=window.TaxflyTravel.overlayExpenses(gastos,homePending());
   window._lastBudgetArgs = [ base, gastos ];
   if (currentUser && perfilId) {
     const tripId=window.TripContext.view(currentUser.uid,perfilId);
-    base=tripId==="unassigned"?0:Number(localStorage.getItem(homeBudgetKey()))||0;
+    base=tripId==="unassigned"?0:base;
     gastos = gastos.filter(g => (g.tripId || "unassigned") === window.TripContext.view(currentUser.uid, perfilId));
   }
   const gastadoPropio = gastos.reduce((s, g) => s + (parseFloat(g.valor || g.monto) || 0), 0);
   const gastado = gastadoPropio + (mapsSpentCache || 0);
   const totalEl = document.getElementById("total-gasto-val");
   const mapsNoteEl = document.getElementById("total-gasto-maps-note");
+  document.getElementById("last-gasto-cat").style.display = "none";
   if (!gastos || gastos.length === 0) {
     document.getElementById("last-gasto-val").textContent = "—";
     document.getElementById("last-gasto-name").textContent = t.no_gastos || "Sin gastos";
@@ -570,44 +601,40 @@ function renderBudgetUI(base, gastos) {
 }
 
 function loadBudget() {
-  homeReservationUnsub();homeReservations=[];
-  if(currentUser&&perfilId)homeReservationUnsub=window.TaxflyTravel.watchReservations({uid:currentUser.uid,pid:perfilId,trip:window.TripContext.view(currentUser.uid,perfilId),db,doc,onSnapshot,onChange:items=>{homeReservations=items;if(window._lastBudgetArgs)renderBudgetUI(...window._lastBudgetArgs);renderUpcoming();}});
-  const cachedBase = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
-  let cachedGastos = [];
-  try {
-    cachedGastos = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
-  } catch (e) {}
-  renderBudgetUI(cachedBase, cachedGastos);
+  homeStops.forEach(stop=>stop());homeStops=[];homeReservationUnsub();
+  homeGeneration++;homeScope=homeContext();homeReservations=[];window._lastBudgetArgs=null;
+  if(!currentUser||!homeContextReady()){homeFinance=null;renderBudgetUI();return;}
+  const generation=homeGeneration,scope=homeScope,uid=currentUser.uid,tripId=window.TripContext.view(uid,perfilId);
+  const baseKey=homeBudgetKey(),expensesKey=homeExpensesKey();
+  const cachedBase=readHomeCache(baseKey),cachedExpenses=readHomeCache(expensesKey),cachedMaps=readHomeCache(mapsBudgetCacheKey());
+  homeFinance={base:window.TaxflyTravel.loadState(Number.isFinite(cachedBase)?cachedBase:undefined),expenses:window.TaxflyTravel.loadState(Array.isArray(cachedExpenses)?cachedExpenses:undefined),maps:window.TaxflyTravel.loadState(Number.isFinite(cachedMaps)?cachedMaps:undefined),reservations:window.TaxflyTravel.loadState()};
+  if(tripId==='unassigned'){homeFinance.base.receive(0);homeFinance.maps.receive(0);}
+  renderBudgetUI();
+  homeReservationUnsub=window.TaxflyTravel.watchReservations({uid,pid:perfilId,trip:tripId,db,doc,onSnapshot,
+   onChange:items=>{if(homeValid(generation,scope))homeReservations=items;},
+   onState:state=>{if(homeValid(generation,scope)){homeFinance.reservations=state;renderBudgetUI();renderUpcoming();}}});
   listenMapsBudget();
-  if (!currentUser || !perfilId) return;
-  const tripId=window.TripContext.view(currentUser.uid,perfilId);
-  const budgetRef=tripId==="orlando"?doc(db,"usuarios",currentUser.uid,"perfiles",perfilId):tripId==="unassigned"?null:doc(db,"usuarios",currentUser.uid,"perfiles",perfilId,"tripPlanning",tripId);
-  if (budgetRef) onSnapshot(budgetRef, snap => {
-    const field=tripId==="orlando"?"presupuesto":"taxflyBudget";
-    if (snap.exists() && snap.data()[field] !== undefined) {
-      const base = parseFloat(snap.data()[field]) || 0;
-      const key=homeBudgetKey();
-      localStorage.setItem(key, String(base));
-      let g = [];
-      try {
-        g = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
-      } catch (e) {}
-      renderBudgetUI(base, g);
-    }
-  }, () => {});
-  const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), orderBy("fecha", "desc"));
-  onSnapshot(q, snap => {
-    const gastos = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }));
-    try {
-      localStorage.setItem(homeExpensesKey(), JSON.stringify(gastos));
-    } catch (e) {}
-    const base = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
-    renderBudgetUI(base, gastos);
-  }, () => {});
+  const budgetRef=tripId==='orlando'?doc(db,'usuarios',uid,'perfiles',perfilId):tripId==='unassigned'?null:doc(db,'usuarios',uid,'perfiles',perfilId,'tripPlanning',tripId);
+  const field=tripId==='orlando'?'presupuesto':'taxflyBudget';
+  if(budgetRef)homeStops.push(onSnapshot(budgetRef,{includeMetadataChanges:true},snap=>{
+   if(!homeValid(generation,scope))return;
+   const value=Number(snap.exists()?snap.data()[field]:0)||0;
+   if(homeFinance.base.receive(value,snap,value===0)){localStorage.setItem(baseKey,String(value));renderBudgetUI();}
+  },()=>{if(homeValid(generation,scope)){homeFinance.base.fail();renderBudgetUI();}}));
+  const q=query(collection(db,'usuarios',uid,'perfiles',perfilId,'gastos'),orderBy('fecha','desc'));
+  homeStops.push(onSnapshot(q,{includeMetadataChanges:true},snap=>{
+   if(!homeValid(generation,scope))return;
+   const items=snap.docs.map(d=>({id:d.id,...d.data()}));
+   if(homeFinance.expenses.receive(items,snap,!items.length)){localStorage.setItem(expensesKey,JSON.stringify(items));renderBudgetUI();}
+  },()=>{if(homeValid(generation,scope)){homeFinance.expenses.fail();renderBudgetUI();}}));
 }
+function syncHomeContext() {
+ if(!currentUser)return;
+ if(homeContextReady()&&(!homeFinance||homeScope!==homeContext())){loadBudget();loadNextEvent();}
+ else {renderBudgetUI();renderUpcoming();}
+}
+window.addEventListener('taxfly:tripchange',syncHomeContext);
+window.addEventListener('taxfly:tripstatus',syncHomeContext);
 
 let fxData = {
   ars: {},
@@ -986,9 +1013,17 @@ window.loadWeather = async function(force = false) {
 };
 
 function loadNextEvent(){
- let activities=[];
+ homeEventStop();
+ const generation=homeGeneration,scope=homeScope;
+ if(!currentUser||!homeContextReady()){renderUpcoming=()=>{document.getElementById('ne-title').textContent=t.loading;};renderUpcoming();return;}
+ const key='taxfly-home-activities::'+window.TaxflyTravel.scope(currentUser.uid,perfilId,'all');
+ const cachedActivities=readHomeCache(key);
+ const state=window.TaxflyTravel.loadState(Array.isArray(cachedActivities)?cachedActivities:undefined);
  renderUpcoming=()=>{
-  if(!currentUser||!perfilId)return;
+  if(!homeValid(generation,scope))return;
+  const reservations=homeFinance.reservations,title=document.getElementById('ne-title'),time=document.getElementById('ne-time');
+  if(!state.hasValue||!reservations.hasValue){title.textContent=homeMessage([state,reservations]);time.textContent='';return;}
+  const activities=state.value;
   const tripId=window.TripContext.view(currentUser.uid,perfilId),trip=window.TripContext.readTrips(currentUser.uid,perfilId).find(t=>t.id===tripId),dest=window.TaxflyTravel.destination(trip);
   const flights=homeReservations.filter(r=>r.type==='flight').flatMap(r=>[
    {name:r.name,date:r.startDate,time:r.departureTime,timeZone:r.departureZone,city:r.departureCity,type:'vuelo',tripId,label:'Salida'},
@@ -996,16 +1031,21 @@ function loadNextEvent(){
   ].filter(e=>e.date&&e.time));
   const activityEvents=activities.flatMap(e=>[e,...(e.arrivalDate&&e.arrivalTime?[{...e,date:e.arrivalDate,time:e.arrivalTime,timeZone:e.arrivalZone,city:e.arrivalCity,label:'Llegada'}]:[])]);
   const upcoming=[...activityEvents,...flights].filter(e=>(e.tripId||'unassigned')===tripId&&!e.done).map(e=>({...e,instant:window.TaxflyTravel.instant(e.date,e.time||'00:00',e.timeZone||dest.timeZone)})).filter(e=>e.instant>=Date.now()).sort((a,b)=>a.instant-b.instant);
-  const ev=upcoming[0],title=document.getElementById('ne-title'),time=document.getElementById('ne-time');
-  if(!ev){title.textContent=t.next_event_empty||'Sin eventos próximos';time.textContent=t.next_event_add||'＋ Agregar actividad';document.getElementById('ne-dot').textContent='📅';return;}
+  const ev=upcoming[0];
+  if(!ev){title.textContent=t.next_event_empty;time.textContent=t.next_event_add+((state.error||reservations.error)?' · '+t.load_error:!navigator.onLine?' · '+t.saved_offline:'');document.getElementById('ne-dot').textContent='📅';return;}
   title.textContent=ev.name||'—';
   const zone=ev.timeZone||dest.timeZone,locale={es:'es-AR',en:'en-US',pt:'pt-BR'}[lang]||'es-AR';
   const date=new Intl.DateTimeFormat(locale,{timeZone:zone,weekday:'short',day:'numeric',month:'short'}).format(ev.instant);
   time.textContent=date+(ev.time?' · '+(ev.label?ev.label+' ':'')+ev.time+' · '+tfL3('hora de ','local time in ','hora de ')+(ev.city||zone):'');
   document.getElementById('ne-dot').textContent={vuelo:'✈️',hotel:'🏨',parque:'🎡',comida:'🍔',otro:'📍'}[ev.type]||'📍';
+  if(state.error||reservations.error)time.textContent+=' · '+t.load_error;
+  else if(!navigator.onLine)time.textContent+=' · '+t.saved_offline;
  };
- if(!currentUser||!perfilId)return;
- onSnapshot(query(collection(db,'usuarios',currentUser.uid,'perfiles',perfilId,'actividades'),orderBy('date','asc')),snap=>{activities=snap.docs.map(d=>({...d.data(),id:d.id}));renderUpcoming();},()=>renderUpcoming());
+ homeEventStop=onSnapshot(query(collection(db,'usuarios',currentUser.uid,'perfiles',perfilId,'actividades'),orderBy('date','asc')),{includeMetadataChanges:true},snap=>{
+  if(!homeValid(generation,scope))return;
+  const activities=snap.docs.map(d=>({...d.data(),id:d.id}));
+  if(state.receive(activities,snap,!activities.length)){localStorage.setItem(key,JSON.stringify(activities));renderUpcoming();}
+ },()=>{if(homeValid(generation,scope)){state.fail();renderUpcoming();}});
  renderUpcoming();
 }
 
@@ -1173,14 +1213,17 @@ function loadOfflineUI() {
       b.textContent = "";
     }
   }
+  currentUser={uid:localStorage.getItem("taxusa_offline_uid")};
   loadBudget();
   loadNextEvent();
   window.taxflyOfflineStatus?.render(localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId"));
 }
 
 onAuthStateChanged(auth, user => {
+  if(!user){currentUser=null;homeGeneration++;homeStops.forEach(stop=>stop());homeReservationUnsub();homeEventStop();homeFinance=null;renderBudgetUI();}
   guardOfflineAuth(user, u => {
     currentUser = u;
+    if(!localStorage.getItem("perfilActivoId")){window.location.replace("profiles.html");return;}
     window.taxflyOfflineStatus?.render(u.uid, localStorage.getItem("perfilActivoId"));
     const perfilNombre = localStorage.getItem("perfilActivoNombre");
     document.getElementById("userEmail").textContent = perfilNombre || u.email || "";
@@ -1200,14 +1243,15 @@ onAuthStateChanged(auth, user => {
   function upd() {
     toast.classList.toggle("show", !navigator.onLine);
   }
-  window.addEventListener("online", upd);
-  window.addEventListener("offline", upd);
+  window.addEventListener("online", () => {upd();renderBudgetUI();renderUpcoming();});
+  window.addEventListener("offline", () => {upd();renderBudgetUI();renderUpcoming();});
   window.addEventListener("taxfly:tripchange", () => window.taxflyOfflineStatus?.render(currentUser?.uid || localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId")));
   window.addEventListener("taxfly:offline-status", () => window.taxflyOfflineStatus?.render(currentUser?.uid || localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId")));
   upd();
 })();
 
 applyI18n();
+document.getElementById("ne-title").textContent=t.loading;
 
 updateGreeting();
 

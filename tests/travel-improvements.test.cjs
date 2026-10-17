@@ -94,7 +94,7 @@ test('retries update one deterministic document after an uncertain network respo
 test('reservation watches use user/profile/trip paths and keep unsynced reservations',()=>{
  const ls=storage(),values=[],paths=[];global.localStorage=ls;
  ls.setItem(T.planningKey('u','p','a')+'::pending',JSON.stringify({items:[{id:'local',totalPrice:30}]}));
- T.watchReservations({uid:'u',pid:'p',trip:'a',db:{},doc:(_,...p)=>{paths.push(p.join('/'));return {};},onSnapshot:(_,cb)=>{cb({exists:()=>true,data:()=>({items:[{id:'old'}]})});return ()=>{}},onChange:x=>values.push(x)});
+ T.watchReservations({uid:'u',pid:'p',trip:'a',db:{},doc:(_,...p)=>{paths.push(p.join('/'));return {};},onSnapshot:(_,options,cb)=>{cb({exists:()=>true,data:()=>({items:[{id:'old'}]})});return ()=>{}},onChange:x=>values.push(x)});
  assert.equal(values.at(-1)[0].id,'local');assert.equal(paths[0],'usuarios/u/perfiles/p/tripPlanning/a/data/reservations');
  assert.equal(T.readReservations('other','p','a').length,0);delete global.localStorage;
 });
@@ -138,7 +138,7 @@ test('pagehide passes unloading flag and removes the delayed timer',()=>{
 test('Home sorts events by destination instant and labels Miami local time',()=>{
  const els=Object.fromEntries(['ne-title','ne-time','ne-dot'].map(id=>[id,{style:{},textContent:''}]));
  const now=Date.parse('2026-10-05T12:00:00Z'),records=[{name:'Late LA',date:'2026-10-05',time:'08:00',timeZone:'America/Los_Angeles',city:'Los Ángeles',tripId:'a'},{name:'Miami breakfast',date:'2026-10-05',time:'09:00',timeZone:'America/New_York',city:'Miami',tripId:'a'},{name:'Other trip',date:'2026-10-05',time:'08:01',timeZone:'America/New_York',tripId:'b'}];
- const c=context(between(read('assets/index-app.js'),'function loadNextEvent(){','function renderTip()'),{window:{TaxflyTravel:T,TripContext:{view:()=> 'a',readTrips:()=>[trip]}},currentUser:{uid:'u'},perfilId:'p',homeReservations:[],renderUpcoming:()=>{},document:{getElementById:id=>els[id]},query:()=>{},collection:()=>{},orderBy:()=>{},db:{},onSnapshot:(_,cb)=>cb({docs:records.map(e=>({id:e.name,data:()=>e}))}),Date:class extends Date{static now(){return now}},lang:'es',t:{},Intl,tfL3:a=>a});
+ const c=context(between(read('assets/index-app.js'),'function loadNextEvent(){','function renderTip()'),{window:{TaxflyTravel:T,TripContext:{view:()=> 'a',readTrips:()=>[trip]}},currentUser:{uid:'u'},perfilId:'p',homeReservations:[],homeEventStop:()=>{},homeGeneration:1,homeScope:'a',homeContextReady:()=>true,homeValid:()=>true,readHomeCache:()=>undefined,homeFinance:{reservations:T.loadState([])},homeMessage:()=> 'Loading',localStorage:storage(),navigator:{onLine:true},renderUpcoming:()=>{},document:{getElementById:id=>els[id]},query:()=>{},collection:()=>{},orderBy:()=>{},db:{},onSnapshot:(_,options,cb)=>{cb({docs:records.map(e=>({id:e.name,data:()=>e}))});return ()=>{}},Date:class extends Date{static now(){return now}},lang:'es',t:{},Intl,tfL3:a=>a});
  c.loadNextEvent();assert.equal(els['ne-title'].textContent,'Miami breakfast');assert.match(els['ne-time'].textContent,/09:00 · hora de Miami/);
 });
 test('Repeating Registrar pago opens the existing expense instead of rendering another payment',()=>{

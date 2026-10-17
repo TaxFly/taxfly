@@ -47,6 +47,7 @@ const TAXFLY_PROFILES_URL = "https://taxfly.github.io/taxfly/profiles.html";
 const PENDING_REDIRECT_KEY = "taxusa_pending_redirect";
 
 let currentUid = null;
+let planGeneration=0;
 
 let currentPerfilId = null;
 
@@ -161,7 +162,9 @@ function stableStringify(v) {
 const CONFLICT_WINDOW_MS = 6e3;
 
 function fbListen(docId, callback) {
+  const generation=planGeneration;
   return onSnapshot(orlandoDocRef(docId), snap => {
+    if(generation!==planGeneration)return;
     if (!snap.exists()) return;
     const data = snap.data();
     const pending = window._planPendingPayload?.(docId);
@@ -177,6 +180,8 @@ function fbListen(docId, callback) {
     callback(data);
   });
 }
+
+function tripDocRef(id){return doc(db,'usuarios',currentUid,'perfiles',currentPerfilId,'tripPlanning',id);}
 
 function perfilDocRef() {
   return doc(db, "usuarios", currentUid, "perfiles", currentPerfilId);
@@ -194,30 +199,34 @@ async function fbSetPresupuesto(v) {
 }
 
 function listenTaxflyPresupuesto(cb) {
-  const ref=activeTripId==="orlando"?perfilDocRef():tripDocRef(activeTripId);
-  return onSnapshot(ref, snap => {
-    const p = snap.exists() ? snap.data()[activeTripId==="orlando"?"presupuesto":"taxflyBudget"] : undefined;
-    cb(p === undefined || p === null ? 0 : parseFloat(p) || 0);
-  }, () => {});
+  const uid=currentUid,pid=currentPerfilId,trip=activeTripId;
+  const key='taxusa_budget_cache_'+pid+'::'+uid+(trip==='orlando'?'':'::'+trip);
+  const cached=localStorage.getItem(key),state=window.TaxflyTravel.loadState(cached!==null&&Number.isFinite(Number(cached))?Number(cached):undefined);
+  const valid=()=>uid===currentUid&&pid===currentPerfilId&&trip===activeTripId;
+  if(state.hasValue)cb(state.value);
+  const ref=trip==='orlando'?perfilDocRef():tripDocRef(trip);
+  return onSnapshot(ref,{includeMetadataChanges:true},snap=>{
+    if(!valid())return;
+    const value=Number(snap.exists()?snap.data()[trip==='orlando'?'presupuesto':'taxflyBudget']:0)||0;
+    if(state.receive(value,snap,value===0)){window._planBudgetError=false;window._planFinanceError=!!window._planExpenseError;localStorage.setItem(key,String(value));cb(value);}
+  },()=>{if(valid()){window._planBudgetError=true;window._planFinanceError=true;window.budgetRefresh?.();}});
 }
-
 function listenTaxflyGastos(cb) {
-  try{const expenses=JSON.parse(localStorage.getItem("taxusa_gastos_cache_"+currentPerfilId+"::"+currentUid)||'[]'),ops=JSON.parse(localStorage.getItem("taxusa_gastos_pending_"+currentPerfilId+"::"+currentUid)||'[]');window._tripExpenses=window.TaxflyTravel.overlayExpenses(expenses,ops).filter(g=>g.tripId===activeTripId);window.renderReservations?.();}catch(_){}
-  return onSnapshot(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "gastos"), snap => {
-    let total = 0, n = 0;
-    window._tripExpenses=[];
-    snap.forEach(d => {
-      const x = d.data() || {};
-      if ((x.tripId || "unassigned") !== activeTripId) return;
-      window._tripExpenses.push({...x,id:d.id});
-      total += parseFloat(x.valor || x.monto) || 0;
-      n++;
-    });
-    try { const pending=JSON.parse(localStorage.getItem("taxusa_gastos_pending_"+currentPerfilId+"::"+currentUid)||'[]');window._tripExpenses=window.TaxflyTravel.overlayExpenses(window._tripExpenses,pending).filter(g=>g.tripId===activeTripId); } catch(_){}
-    window.renderReservations?.();
-    total=window._tripExpenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0);n=window._tripExpenses.length;
-    cb(total, n);
-  }, () => {});
+  const uid=currentUid,pid=currentPerfilId,trip=activeTripId,key='taxusa_gastos_cache_'+pid+'::'+uid;
+  let cached;try{const raw=localStorage.getItem(key);if(raw!==null)cached=JSON.parse(raw);}catch(_){}
+  const state=window.TaxflyTravel.loadState(Array.isArray(cached)?cached:undefined);
+  const valid=()=>uid===currentUid&&pid===currentPerfilId&&trip===activeTripId;
+  const publish=()=>{
+    const ops=JSON.parse(localStorage.getItem('taxusa_gastos_pending_'+pid+'::'+uid)||'[]');
+    window._tripExpenses=window.TaxflyTravel.overlayExpenses(state.value||[],ops).filter(g=>(g.tripId||'unassigned')===trip);
+    window.renderReservations?.();cb(window._tripExpenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0),window._tripExpenses.length);
+  };
+  if(state.hasValue)publish();
+  return onSnapshot(collection(db,'usuarios',uid,'perfiles',pid,'gastos'),{includeMetadataChanges:true},snap=>{
+    if(!valid())return;
+    const items=snap.docs.map(d=>({...d.data(),id:d.id}));
+    if(state.receive(items,snap,!items.length)){window._planExpenseError=false;window._planFinanceError=!!window._planBudgetError;localStorage.setItem(key,JSON.stringify(items));publish();}
+  },()=>{if(valid()){window._planExpenseError=true;window._planFinanceError=true;window.budgetRefresh?.();}});
 }
 
 async function migrateManualExpenses() {
@@ -290,11 +299,14 @@ window._fbSignOut = async function() {
 };
 
 async function startApp() {
+  const generation=planGeneration;
   await loadTrips();
+  if(generation!==planGeneration)return;
   if (!trips.length) { location.replace("index.html#viajes"); return; }
   listenTripDocuments();
   const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
   const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 6e3), withTimeout(fbGet("days"), 6e3), withTimeout(fbGet("visited"), 6e3), withTimeout(fbGet("meals"), 6e3), withTimeout(fbGet("walmart"), 6e3), withTimeout(fbGet("wmChecked"), 6e3), withTimeout(fbGet("shopping"), 6e3), withTimeout(fbGet("customParks"), 6e3), withTimeout(fbGet("parquesExtra"), 6e3), withTimeout(fbGet("coordOverrides"), 6e3), withTimeout(fbGet("parques"), 6e3), withTimeout(fbGet("budget"), 6e3), withTimeout(fbGet("itinerario"), 6e3), withTimeout(fbGet("tips"), 6e3), withTimeout(fbGet("parquesExcel"), 6e3), withTimeout(fbGet("reservations"), 6e3) ]);
+  if(generation!==planGeneration)return;
   const val = r => r.status === "fulfilled" ? r.value : null;
   const [hotelData, daysData, visitedData, mealDataFb, wmDataFb, wmCheckedFb, shopDataFb, customParksDataFb, parquesExtraDataFb, coordOverridesDataFb, parquesDataFb, budgetDataFb, itinDataFb, tipsDataFb, parquesExcelDataFb, reservationsDataFb] = results.map(val);
   if (hotelData) window._hotelFromFb = hotelData;
@@ -435,7 +447,9 @@ async function startApp() {
 }
 
 onAuthStateChanged(auth, user => {
+  planGeneration++;
   if (!user) {
+    currentUid=null;currentPerfilId=null;window._resetTaxflyFinance?.();
     try {
       localStorage.setItem(PENDING_REDIRECT_KEY, location.href);
     } catch (e) {}
@@ -453,6 +467,7 @@ onAuthStateChanged(auth, user => {
     window.location.replace(TAXFLY_PROFILES_URL);
     return;
   }
+  if(currentUid!==user.uid||currentPerfilId!==perfilId)window._resetTaxflyFinance?.();
   currentUid = user.uid;
   currentPerfilId = perfilId;
   window._perfilId = perfilId;

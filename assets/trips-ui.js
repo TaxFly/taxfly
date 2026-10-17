@@ -37,9 +37,9 @@ if (settings) settings.insertBefore(card,settings.firstChild);
 const home=location.pathname.endsWith('/index.html')||location.pathname.endsWith('/');
 if (home) { const top=document.querySelector('header'); if(top) { const c=card.cloneNode(); c.id='tf-trip-home';top.insertAdjacentElement('afterend',c); } }
 const words={
- es:{orphan:"Registros sin viaje",activeTrip:"Viaje activo",orphanView:"Viendo registros sin viaje",destination:"Elegí un destino",pending:"pendiente de Firebase",trips:"Mis viajes",openTrips:"Abrir mis viajes",close:"Cerrar viajes",completed:"Finalizado",suspended:"Suspendido",active:"Activo",choose:"Elegir",edit:"Editar",restore:"Restaurar",finish:"Finalizar",suspend:"Suspender",delete:"Eliminar",none:"Sin viaje",see:"Ver registros",editTrip:"Editar viaje",newTrip:"Nuevo viaje",name:"Nombre",from:"Desde",until:"Hasta",addCity:"+ Agregar ciudad",save:"Guardar cambios",create:"Crear viaje",cancel:"Cancelar",city:"Ciudad",state:"Estado",removeCity:"Quitar ciudad",required:"Completá ciudad y estado.",local:"Guardado en este dispositivo; pendiente de sincronización con Firebase.",saved:"Viaje guardado en Firebase.",confirm:"Se eliminarán definitivamente este viaje y todos sus datos: reservas, gastos, actividades, listas y documentos. ¿Continuar?",clearOrphans:"Eliminar Sin viaje",confirmOrphans:"Se eliminarán definitivamente todos los gastos, actividades, notas y documentos guardados en Sin viaje. ¿Continuar?",empty:"Todavía no hay viajes. Creá el primero para empezar.",failed:"No se pudo eliminar. Revisá tu conexión.",changed:"Cambio guardado en Firebase.",changePending:"Cambio pendiente de sincronización."},
- en:{orphan:"Records without a trip",activeTrip:"Active trip",orphanView:"Viewing records without a trip",destination:"Choose a destination",pending:"pending Firebase sync",trips:"My trips",openTrips:"Open my trips",close:"Close trips",completed:"Completed",suspended:"Paused",active:"Active",choose:"Select",edit:"Edit",restore:"Restore",finish:"Finish",suspend:"Pause",delete:"Delete",none:"No trip",see:"View records",editTrip:"Edit trip",newTrip:"New trip",name:"Name",from:"From",until:"Until",addCity:"+ Add city",save:"Save changes",create:"Create trip",cancel:"Cancel",city:"City",state:"State",removeCity:"Remove city",required:"Enter a city and state.",local:"Saved on this device; Firebase sync pending.",saved:"Trip saved to Firebase.",confirm:"Permanently delete this trip and all its reservations, expenses, activities, lists and documents?",clearOrphans:"Delete No trip",confirmOrphans:"Permanently delete all expenses, activities, notes and documents without a trip?",empty:"No trips yet. Create your first trip to begin.",failed:"Could not delete. Check your connection.",changed:"Change saved to Firebase.",changePending:"Change pending sync."},
- pt:{orphan:"Registros sem viagem",activeTrip:"Viagem ativa",orphanView:"Exibindo registros sem viagem",destination:"Escolha um destino",pending:"sincronização pendente",trips:"Minhas viagens",openTrips:"Abrir minhas viagens",close:"Fechar viagens",completed:"Concluída",suspended:"Pausada",active:"Ativa",choose:"Selecionar",edit:"Editar",restore:"Restaurar",finish:"Concluir",suspend:"Pausar",delete:"Excluir",none:"Sem viagem",see:"Ver registros",editTrip:"Editar viagem",newTrip:"Nova viagem",name:"Nome",from:"De",until:"Até",addCity:"+ Adicionar cidade",save:"Salvar alterações",create:"Criar viagem",cancel:"Cancelar",city:"Cidade",state:"Estado",removeCity:"Remover cidade",required:"Informe cidade e estado.",local:"Salvo neste dispositivo; sincronização com Firebase pendente.",saved:"Viagem salva no Firebase.",confirm:"Excluir esta viagem e todos os seus dados, reservas, despesas, listas e documentos permanentemente?",clearOrphans:"Excluir Sem viagem",confirmOrphans:"Excluir permanentemente todas as despesas, atividades, notas e documentos sem viagem?",empty:"Ainda não há viagens. Crie a primeira para começar.",failed:"Não foi possível excluir. Verifique sua conexão.",changed:"Alteração salva no Firebase.",changePending:"Alteração aguardando sincronização."}
+ es:{loading:"Cargando…",loadError:"No se pudieron cargar los viajes.",noLocal:"Sin conexión · viajes no disponibles",orphan:"Registros sin viaje",activeTrip:"Viaje activo",orphanView:"Viendo registros sin viaje",destination:"Elegí un destino",pending:"pendiente de Firebase",trips:"Mis viajes",openTrips:"Abrir mis viajes",close:"Cerrar viajes",completed:"Finalizado",suspended:"Suspendido",active:"Activo",choose:"Elegir",edit:"Editar",restore:"Restaurar",finish:"Finalizar",suspend:"Suspender",delete:"Eliminar",none:"Sin viaje",see:"Ver registros",editTrip:"Editar viaje",newTrip:"Nuevo viaje",name:"Nombre",from:"Desde",until:"Hasta",addCity:"+ Agregar ciudad",save:"Guardar cambios",create:"Crear viaje",cancel:"Cancelar",city:"Ciudad",state:"Estado",removeCity:"Quitar ciudad",required:"Completá ciudad y estado.",local:"Guardado en este dispositivo; pendiente de sincronización con Firebase.",saved:"Viaje guardado en Firebase.",confirm:"Se eliminarán definitivamente este viaje y todos sus datos: reservas, gastos, actividades, listas y documentos. ¿Continuar?",clearOrphans:"Eliminar Sin viaje",confirmOrphans:"Se eliminarán definitivamente todos los gastos, actividades, notas y documentos guardados en Sin viaje. ¿Continuar?",empty:"Todavía no hay viajes. Creá el primero para empezar.",failed:"No se pudo eliminar. Revisá tu conexión.",changed:"Cambio guardado en Firebase.",changePending:"Cambio pendiente de sincronización."},
+ en:{loading:"Loading…",loadError:"Could not load trips.",noLocal:"Offline · trips unavailable",orphan:"Records without a trip",activeTrip:"Active trip",orphanView:"Viewing records without a trip",destination:"Choose a destination",pending:"pending Firebase sync",trips:"My trips",openTrips:"Open my trips",close:"Close trips",completed:"Completed",suspended:"Paused",active:"Active",choose:"Select",edit:"Edit",restore:"Restore",finish:"Finish",suspend:"Pause",delete:"Delete",none:"No trip",see:"View records",editTrip:"Edit trip",newTrip:"New trip",name:"Name",from:"From",until:"Until",addCity:"+ Add city",save:"Save changes",create:"Create trip",cancel:"Cancel",city:"City",state:"State",removeCity:"Remove city",required:"Enter a city and state.",local:"Saved on this device; Firebase sync pending.",saved:"Trip saved to Firebase.",confirm:"Permanently delete this trip and all its reservations, expenses, activities, lists and documents?",clearOrphans:"Delete No trip",confirmOrphans:"Permanently delete all expenses, activities, notes and documents without a trip?",empty:"No trips yet. Create your first trip to begin.",failed:"Could not delete. Check your connection.",changed:"Change saved to Firebase.",changePending:"Change pending sync."},
+ pt:{loading:"Carregando…",loadError:"Não foi possível carregar as viagens.",noLocal:"Sem conexão · viagens indisponíveis",orphan:"Registros sem viagem",activeTrip:"Viagem ativa",orphanView:"Exibindo registros sem viagem",destination:"Escolha um destino",pending:"sincronização pendente",trips:"Minhas viagens",openTrips:"Abrir minhas viagens",close:"Fechar viagens",completed:"Concluída",suspended:"Pausada",active:"Ativa",choose:"Selecionar",edit:"Editar",restore:"Restaurar",finish:"Concluir",suspend:"Pausar",delete:"Excluir",none:"Sem viagem",see:"Ver registros",editTrip:"Editar viagem",newTrip:"Nova viagem",name:"Nome",from:"De",until:"Até",addCity:"+ Adicionar cidade",save:"Salvar alterações",create:"Criar viagem",cancel:"Cancelar",city:"Cidade",state:"Estado",removeCity:"Remover cidade",required:"Informe cidade e estado.",local:"Salvo neste dispositivo; sincronização com Firebase pendente.",saved:"Viagem salva no Firebase.",confirm:"Excluir esta viagem e todos os seus dados, reservas, despesas, listas e documentos permanentemente?",clearOrphans:"Excluir Sem viagem",confirmOrphans:"Excluir permanentemente todas as despesas, atividades, notas e documentos sem viagem?",empty:"Ainda não há viagens. Crie a primeira para começar.",failed:"Não foi possível excluir. Verifique sua conexão.",changed:"Alteração salva no Firebase.",changePending:"Alteração aguardando sincronização."}
 };
 const tr=key=>(words[localStorage.getItem('appLang')]||words.es)[key]||words.es[key];
 function activeTrip(){return tc.readTrips(uid,profile).find(t=>t.id===tc.active(uid,profile))||null;}
@@ -50,9 +50,12 @@ function syncCard(){
     el.hidden=false;el.replaceChildren();
     const label=document.createElement('span'); label.className='tf-trip-copy';
     const eyebrow=document.createElement('span');eyebrow.className='tf-trip-eyebrow';eyebrow.textContent=trip?(tc.view(uid,profile)==='unassigned'?tr('orphan'):tr('activeTrip')):tr('trips');
-    const strong=document.createElement('strong'); strong.textContent=trip?.name||tr('newTrip');
+    const phase=tc.status(uid,profile).phase;
+    const waiting=phase!=='ready'&&!trip;
+    const loadLabel=tr(phase==='error'?'loadError':phase==='offline'?'noLocal':'loading');
+    const strong=document.createElement('strong'); strong.textContent=trip?.name||(waiting?loadLabel:tr('newTrip'));
     const small=document.createElement('small');
-    const locationLabel=!trip?tr('empty'):tc.view(uid,profile)==='unassigned'?tr('orphanView'):dest ? `${dest.city}, ${dest.state}` : tr('destination');
+    const locationLabel=!trip?(waiting?'':tr('empty')):tc.view(uid,profile)==='unassigned'?tr('orphanView'):dest ? `${dest.city}, ${dest.state}` : tr('destination');
     small.textContent=locationLabel+(Object.keys(tc.pending(uid,profile)).length?' · pendiente de Firebase':'');
     label.append(eyebrow,strong,small);
     const btn=document.createElement('button'); btn.type='button';btn.textContent=tr('trips');btn.setAttribute('aria-label',tr('openTrips'));btn.onclick=()=>openManager();
@@ -68,7 +71,7 @@ function openManager(){ if(!uid||!profile)return;renderDialog();if(!dialog.open)
     if(old)old.remove();
     if(n>0){const row=document.createElement('div');row.className='tf-line';row.dataset.id='unassigned';
       row.innerHTML=`<strong>${tr('none')} · ${n}</strong><button data-action="select">${tr('see')}</button><button data-action="clear-orphans">${tr('clearOrphans')}</button>`;
-      dialog.querySelector('#tf-trip-form').before(row);
+      dialog.querySelector('#tf-trip-form')?.before(row);
       row.querySelector('[data-action="select"]').onclick=()=>{tc.select(uid,profile,'unassigned');location.reload()};
       row.querySelector('[data-action="clear-orphans"]').onclick=async()=>{
         if(!confirm(tr('confirmOrphans')))return;
@@ -79,6 +82,11 @@ function openManager(){ if(!uid||!profile)return;renderDialog();if(!dialog.open)
   }).catch(()=>{}); }
 function renderDialog(){
   const trips=tc.readTrips(uid,profile), active=tc.active(uid,profile);
+  const phase=tc.status(uid,profile).phase;
+  if(!trips.length&&phase!=='ready'){
+    dialog.innerHTML=`<div class="tf-modal-head"><h2>${tr('trips')}</h2><button type="button" class="tf-modal-close" aria-label="${tr('close')}">×</button></div><div class="tf-modal-content"><p class="tf-msg" role="status">${tr(phase==='error'?'loadError':phase==='offline'?'noLocal':'loading')}</p></div>`;
+    dialog.querySelector('button').onclick=()=>dialog.close();return;
+  }
   dialog.innerHTML=`<div class="tf-modal-head"><h2>${tr("trips")}</h2>${trips.length?`<button type="button" class="tf-modal-close" aria-label="${tr("close")}">×</button>`:''}</div><div class="tf-modal-content"><div class="tf-msg" role="status"></div>${trips.length?'':`<p class="tf-msg">${tr('empty')}</p>`}
     ${trips.map(t=>`<div class="tf-line" data-id="${esc(t.id)}"><strong>${esc(t.name)}${t.status?' · '+(t.status==='completed'?tr('completed'):tr('suspended')):''}</strong>
     ${t.id===active?`<small>${tr("active")}</small>`:`<button data-action="select">${tr("choose")}</button>`}
@@ -132,7 +140,7 @@ function renderDialog(){
     renderDialog();syncCard();notify(ok?tr('changed'):tr('changePending'));
   });
 }
-dialog.addEventListener('cancel',e=>{if(uid&&profile&&!tc.readTrips(uid,profile).length)e.preventDefault()});
+dialog.addEventListener('cancel',e=>{if(uid&&profile&&!tc.readTrips(uid,profile).length&&tc.status(uid,profile).phase==='ready')e.preventDefault()});
 window.taxflyOpenTrips=openManager;
 window.taxflyRefreshTrips=()=>{syncCard();if(dialog.open)renderDialog()};
 document.addEventListener('click',e=>{if(e.target.closest('.lang-opt,[data-lang]'))setTimeout(window.taxflyRefreshTrips,0)});
@@ -146,6 +154,6 @@ onAuthStateChanged(getAuth(app),user=>{
   if(!user)return;uid=user.uid;profile=localStorage.getItem('perfilActivoId');if(!profile)return;
   window._taxflyTripUid=uid;window._taxflyTripProfile=profile;
   tc.hydrate(db,uid,profile,getDocs,collection,()=>{syncCard();if(dialog.open)renderDialog()}).then(()=>{
-    if(openFromHash||!tc.readTrips(uid,profile).length){openFromHash=false;openManager()}
+    if(openFromHash||(!tc.readTrips(uid,profile).length&&tc.status(uid,profile).phase==='ready')){openFromHash=false;openManager()}
   });
 });
