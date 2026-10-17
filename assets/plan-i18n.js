@@ -327,6 +327,9 @@
   };
   window.tr = t;
   add({
+    "Cargando mapa…": ["Loading map…", "Carregando mapa…"],
+    "No se pudo cargar el mapa.": ["Could not load the map.", "Não foi possível carregar o mapa."],
+    "Reintentar": ["Retry", "Tentar novamente"],
     "Cargando…": ["Loading…", "Carregando…"],
     "No se pudo actualizar.": ["Could not refresh.", "Não foi possível atualizar."],
     "Sin conexión · datos no disponibles": ["Offline · data unavailable", "Sem conexão · dados indisponíveis"],

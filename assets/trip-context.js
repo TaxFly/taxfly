@@ -3,6 +3,7 @@
   const legacy = {id:'orlando', name:'Mi viaje a Orlando', destinations:[{city:'Orlando',state:'Florida'}]};
   let sdk = null;
   const hydration = new Map();
+  const hydrationJobs = new Map();
   const hydrationKey=(uid,profile)=>JSON.stringify([uid,profile]);
   function status(uid,profile) {
     return {...(hydration.get(hydrationKey(uid,profile))||{phase:'loading'}),hasData:safeGet(keys(uid,profile).list)!==null};
@@ -97,7 +98,24 @@
     }
     emit(uid,profile); return success;
   }
-  async function hydrate(db,uid,profile,getDocs,collection,onChange) {
+  // Settings and the page can request the same trip list concurrently.
+  // Share only in-flight work for the exact account/profile and Firestore instance.
+  function hydrate(db,uid,profile,getDocs,collection,onChange) {
+    const key=hydrationKey(uid,profile),existing=hydrationJobs.get(key);
+    if(existing&&existing.db===db){
+      if(onChange){existing.listeners.add(onChange);try{onChange();}catch(_){}}
+      return existing.promise;
+    }
+    const job={db,listeners:new Set(onChange?[onChange]:[]),promise:null};
+    hydrationJobs.set(key,job);
+    const notify=()=>{for(const listener of job.listeners){try{listener();}catch(_){}}};
+    job.promise=Promise.resolve().then(()=>hydrateOnce(db,uid,profile,getDocs,collection,notify)).finally(()=>{
+      if(hydrationJobs.get(key)===job)hydrationJobs.delete(key);
+      job.listeners.clear();
+    });
+    return job.promise;
+  }
+  async function hydrateOnce(db,uid,profile,getDocs,collection,onChange) {
     configure({...sdk,db,getDocs,collection});
     setStatus(uid,profile,navigator.onLine?'loading':'offline');
     onChange?.();
@@ -115,7 +133,7 @@
               if (safeGet(`${key}::${profile}`)) {byId.set('orlando',legacy);break;}
             }
           }
-          if (legacyData.empty) {
+          if (legacyData.empty && !byId.has('orlando')) {
             for (const group of ['gastos','actividades','notas']) {
               const records=await within(getDocs(collection(db,'usuarios',uid,'perfiles',profile,group)),5000);
               if (records.docs.some(d=>d.data().tripId==='orlando')) {byId.set('orlando',legacy);break;}
@@ -138,6 +156,7 @@
         setStatus(uid,profile,'ready');
       } catch(e) { setStatus(uid,profile,'error'); }
     }
+    onChange?.(); // Data is ready even if queued writes are still synchronizing.
     await flush(uid,profile);
     onChange?.();
   }

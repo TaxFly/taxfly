@@ -2555,11 +2555,59 @@ async function optimizeDayOrder(d) {
   }
 }
 
+// Maps are optional: load their existing vendor and stylesheet only for a visible map.
+let leafletPromise=null;
+function ensureLeaflet() {
+  if(leafletPromise)return leafletPromise;
+  const added=[];
+  let timer;
+  const ready=new Promise((resolve,reject)=>{
+    timer=setTimeout(()=>reject(new Error('Map resources timed out')),12000);
+    const resource=(tag,attributes)=>new Promise((done,fail)=>{
+      const node=document.createElement(tag);
+      Object.assign(node,attributes);
+      node.onload=()=>done();node.onerror=()=>fail(new Error('Map resource unavailable'));
+      added.push(node);document.head.appendChild(node);
+    });
+    const css=document.querySelector('link[data-taxfly-leaflet]');
+    const styleReady=css?.sheet?Promise.resolve():resource('link',{rel:'stylesheet',href:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'});
+    if(!css&&added.length)added[0].setAttribute('data-taxfly-leaflet','');
+    const scriptReady=window.L?Promise.resolve():resource('script',{src:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',async:true});
+    Promise.all([styleReady,scriptReady]).then(()=>window.L?resolve(window.L):reject(new Error('Map library unavailable')),reject);
+  });
+  leafletPromise=ready.then(value=>{clearTimeout(timer);return value;},error=>{
+    clearTimeout(timer);added.forEach(node=>{node.onload=null;node.onerror=null;node.remove();});leafletPromise=null;throw error;
+  });
+  return leafletPromise;
+}
+function mapIsCurrent(container,id,panelId) {
+  return container.isConnected!==false&&document.getElementById(id)===container&&document.getElementById(panelId)?.classList.contains('active');
+}
+function mapLoading(container){container.setAttribute('aria-busy','true');container.textContent=window.tr?window.tr('Cargando mapa…'):'Cargando mapa…';}
+function mapLoadError(container,retry){
+  container.setAttribute('aria-busy','false');container.replaceChildren();
+  const note=document.createElement('p');note.className='budget-note';
+  note.textContent=window.tr?window.tr('No se pudo cargar el mapa.'):'No se pudo cargar el mapa.';
+  const button=document.createElement('button');button.type='button';button.className='mbtn';
+  button.textContent=window.tr?window.tr('Reintentar'):'Reintentar';button.addEventListener('click',retry);
+  container.append(note,button);
+}
+let dayMapRequest=0;
+const parkMapRequests=new Map();
+
 let _leafletMap = null;
 
-function initDayMap(d) {
-  const container = document.getElementById(`day-map-container-${d}`);
-  if (!container) return;
+async function initDayMap(d) {
+  const request=++dayMapRequest,id=`day-map-container-${d}`;
+  const container = document.getElementById(id);
+  if (!container || !mapIsCurrent(container,id,'panel-outlets') || !days[d]) return;
+  mapLoading(container);
+  try {await ensureLeaflet();}catch(_){
+    if(request===dayMapRequest&&mapIsCurrent(container,id,'panel-outlets'))mapLoadError(container,()=>initDayMap(d));
+    return;
+  }
+  if(request!==dayMapRequest||!mapIsCurrent(container,id,'panel-outlets'))return;
+  container.setAttribute('aria-busy','false');
   if (_leafletMap) {
     _leafletMap.remove();
     _leafletMap = null;
@@ -3508,9 +3556,18 @@ function pkToggleParkMap(parkId) {
   }
 }
 
-function initParkMap(parkId) {
-  const container = document.getElementById(`pkmap-container-${parkId}`);
-  if (!container || container.style.display === "none") return;
+async function initParkMap(parkId) {
+  const id=`pkmap-container-${parkId}`,request=(parkMapRequests.get(parkId)||0)+1;
+  parkMapRequests.set(parkId,request);
+  const container = document.getElementById(id);
+  if (!container || container.style.display === "none" || !mapIsCurrent(container,id,'panel-parques')) return;
+  mapLoading(container);
+  try {await ensureLeaflet();}catch(_){
+    if(parkMapRequests.get(parkId)===request&&container.style.display!=='none'&&mapIsCurrent(container,id,'panel-parques'))mapLoadError(container,()=>initParkMap(parkId));
+    return;
+  }
+  if(parkMapRequests.get(parkId)!==request||container.style.display==='none'||!mapIsCurrent(container,id,'panel-parques'))return;
+  container.setAttribute('aria-busy','false');
   if (_parkMaps[parkId]) {
     _parkMaps[parkId].remove();
     delete _parkMaps[parkId];

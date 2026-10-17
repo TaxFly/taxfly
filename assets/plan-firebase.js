@@ -72,9 +72,13 @@ async function loadTrips() {
   // y la sincronizacion con el servidor sigue en segundo plano.
   publishTrip();
   const startedWith = activeTripId;
-  const hydrating = window.TripContext.hydrate(db,currentUid,currentPerfilId,getDocs,collection,publishTrip)
-    .catch(() => {}).then(() => publishTrip());
-  if (!trips.length) { await hydrating; return; }
+  let resolveReady;
+  const ready = new Promise(resolve => { resolveReady=resolve; });
+  const hydrating = window.TripContext.hydrate(db,currentUid,currentPerfilId,getDocs,collection,()=>{
+    publishTrip();
+    if(trips.length || window.TripContext.status(currentUid,currentPerfilId).phase!=='loading')resolveReady();
+  }).catch(() => {}).then(() => {publishTrip();resolveReady();});
+  if (!trips.length) { await ready; return; }
   hydrating.then(() => { if (activeTripId !== startedWith) location.reload(); });
 }
 function listenTripDocuments() {
@@ -304,7 +308,10 @@ async function startApp() {
   if(generation!==planGeneration)return;
   if (!trips.length) { location.replace("index.html#viajes"); return; }
   listenTripDocuments();
-  const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
+  const withTimeout = (p, ms) => new Promise((resolve,reject) => {
+    const timer=setTimeout(()=>resolve(null),ms);
+    Promise.resolve(p).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
+  });
   const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 6e3), withTimeout(fbGet("days"), 6e3), withTimeout(fbGet("visited"), 6e3), withTimeout(fbGet("meals"), 6e3), withTimeout(fbGet("walmart"), 6e3), withTimeout(fbGet("wmChecked"), 6e3), withTimeout(fbGet("shopping"), 6e3), withTimeout(fbGet("customParks"), 6e3), withTimeout(fbGet("parquesExtra"), 6e3), withTimeout(fbGet("coordOverrides"), 6e3), withTimeout(fbGet("parques"), 6e3), withTimeout(fbGet("budget"), 6e3), withTimeout(fbGet("itinerario"), 6e3), withTimeout(fbGet("tips"), 6e3), withTimeout(fbGet("parquesExcel"), 6e3), withTimeout(fbGet("reservations"), 6e3) ]);
   if(generation!==planGeneration)return;
   const val = r => r.status === "fulfilled" ? r.value : null;
