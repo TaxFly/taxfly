@@ -327,6 +327,9 @@
   };
   window.tr = t;
   add({
+    "Flexible": ["Flexible", "Flexível"],
+    "Fila estimada": ["Estimated wait", "Espera estimada"],
+    "Revisar duración": ["Check duration", "Revisar duração"],
     "Cargando mapa…": ["Loading map…", "Carregando mapa…"],
     "No se pudo cargar el mapa.": ["Could not load the map.", "Não foi possível carregar o mapa."],
     "Reintentar": ["Retry", "Tentar novamente"],

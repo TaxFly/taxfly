@@ -1996,3 +1996,22 @@ a, a:visited, a:hover, a:focus, a:active { text-decoration: none !important; }
 .date-pair input[type="date"] { flex: 0 0 auto; width: auto; max-width: 150px; font: inherit; }
 .wm-cat-editing { gap: 6px; flex-wrap: wrap; cursor: default; }
 .wm-cat-editing .wm-edit-input { flex: 1; min-width: 120px; }
+
+/* Stage 3: preserve the existing palette and components, improve compact controls. */
+.wm-icon-btn { min-width: 32px; min-height: 32px; opacity: .72; }
+.wm-icon-btn:disabled, .wm-icon-btn:disabled:hover {
+  opacity: .3; cursor: default; background: none;
+}
+.wm-icon-btn:focus-visible, .day-tabs-arrow:focus-visible, .outlets-day-tab:focus-visible {
+  outline: 2px solid var(--theme-accent); outline-offset: 2px;
+}
+.itin-time { width: 54px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.itin-actions { flex-wrap: wrap; max-width: 100px; justify-content: flex-end; }
+.itin-meta, .itin-daynote { overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .itin-block { flex-wrap: wrap; }
+  .itin-body { flex-basis: calc(100% - 100px); }
+  .itin-actions { max-width: none; margin-left: auto; }
+  .itin-move-col { flex-direction: row; }
+  .wm-icon-btn { min-width: 40px; min-height: 40px; }
+}

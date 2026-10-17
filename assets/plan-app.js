@@ -380,6 +380,7 @@ window._appInit = function() {
   importSharedRoute();
   tipsLoad();
   budgetLoad();
+  const restoredSection = restorePlanView();
   renderOutlets();
   updateGlobal();
   renderTodayCard();
@@ -406,7 +407,7 @@ window._appInit = function() {
     const OK = [ "outlets", "comidas", "walmart", "parques", "reservas", "lugares" ];
     let back = null;
     try {
-      back = sessionStorage.getItem("orl_section");
+      back = restoredSection || sessionStorage.getItem("orl_section");
     } catch (e) {}
     if (sec && OK.includes(sec)) switchSection(sec); else if (back && OK.includes(back)) switchSection(back); else switchSection("parques");
   } catch (e) {}
@@ -2157,7 +2158,48 @@ const sectionMeta = {
   }
 };
 
+const planSectionScroll = new Map();
+let visiblePlanSection = null;
+function planScrollKey(section) {
+  return JSON.stringify([window._taxflyTripUid || "sin-usuario", window._perfilId || "sinperfil", window._tripId || "orlando", section]);
+}
+function savePlanView() {
+  if (!visiblePlanSection || !window._appInited) return;
+  planSectionScroll.set(visiblePlanSection, window.scrollY || 0);
+  try {
+    sessionStorage.setItem(planScrollKey("view-v1"), JSON.stringify({
+      section: JSON.parse(visiblePlanSection)[3],
+      scroll: [...planSectionScroll].filter(([key]) => key === planScrollKey(JSON.parse(key)[3])),
+      dayId: itinDias[itinDay]?.id, day: itinDay, pending: itinSoloPend,
+      outletDay: currentOutletDay, outletTab: outletSubTab,
+      parkTab: parquesSubTab, parkFilter: pkFilter, search: pkSearchQuery
+    }));
+  } catch (_) {}
+}
+function restorePlanView() {
+  try {
+    const view = JSON.parse(sessionStorage.getItem(planScrollKey("view-v1")) || "null");
+    if (!view) return null;
+    const savedDay = view.dayId == null ? view.day : itinDias.findIndex(day => day.id === view.dayId);
+    if (Number.isInteger(savedDay) && savedDay >= 0 && savedDay < itinDias.length) itinDay = savedDay;
+    if (typeof view.pending === "boolean") itinSoloPend = view.pending;
+    if (Number.isInteger(view.outletDay) && view.outletDay >= 0 && view.outletDay < days.length) currentOutletDay = view.outletDay;
+    if (["cronograma", "lista"].includes(view.outletTab)) outletSubTab = view.outletTab;
+    if (["itinerario", "atracciones"].includes(view.parkTab)) parquesSubTab = view.parkTab;
+    if (typeof view.parkFilter === "string" && pkFilterMetaList().some(f => f.id === view.parkFilter)) pkFilter = view.parkFilter;
+    if (typeof view.search === "string") pkSearchQuery = view.search;
+    for (const [key, top] of Array.isArray(view.scroll) ? view.scroll : []) {
+      const context = JSON.parse(key);
+      if (key === planScrollKey(context[3]) && Number.isFinite(top) && top >= 0) planSectionScroll.set(key, top);
+    }
+    _itinNeedsReveal = false;
+    _outletsNeedsReveal = false;
+    return view.section;
+  } catch (_) { return null; }
+}
+window.addEventListener("pagehide", savePlanView);
 function switchSection(section) {
+  if (visiblePlanSection) planSectionScroll.set(visiblePlanSection, window.scrollY || 0);
   if (section === "lugares") { window.location.href = "lugares.html"; return; }
   window.taxflySetPlanSection?.(section === "parques" ? parquesSubTab === "atracciones" ? "atracciones" : "agenda" : section === "reservas" ? "reservas" : section);
   try {
@@ -2195,10 +2237,8 @@ function switchSection(section) {
   } else {
     updateGlobal();
   }
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+  visiblePlanSection = planScrollKey(section);
+  window.scrollTo({top: planSectionScroll.get(visiblePlanSection) || 0, behavior: "instant"});
 }
 
 function shopSave() {
@@ -3835,9 +3875,30 @@ function itinParseHora(v) {
   return String(h).padStart(2, "0") + ":" + min;
 }
 
+// Preserve ranges and ambiguous source values; never concatenate their digits.
 function itinParseNum(v) {
-  const n = parseInt(String(v == null ? "" : v).replace(/[^\d]/g, ""), 10);
-  return isNaN(n) || n < 0 ? 0 : n;
+  const text = String(v ?? "").trim();
+  if (!text) return 0;
+  const numeric = text.match(/^(\d+(?:[.,]\d+)?)\s*(?:min(?:utos?|utes?)?\.?)?$/i);
+  return numeric ? Number(numeric[1].replace(",", ".")) : text;
+}
+
+function itinDurationText(value) {
+  const parsed = itinParseNum(value);
+  const tr = window.I18N?.t || (text => text);
+  const locale = {es:"es-AR", en:"en-US", pt:"pt-BR"}[window.I18N?.lang] || "es-AR";
+  const fmt = n => new Intl.NumberFormat(locale, {maximumFractionDigits: 2}).format(n);
+  if (typeof parsed === "number") {
+    if (!parsed) return "";
+    const display = fmt(parsed) + " min";
+    return parsed > 1440 ? display + " · " + tr("Revisar duración") : display;
+  }
+  const range = parsed.match(/^(\d+(?:[.,]\d+)?)\s*[-–—]\s*(\d+(?:[.,]\d+)?)\s*(?:min(?:utos?|utes?)?\.?)?$/i);
+  if (range) {
+    const low = Number(range[1].replace(",", ".")), high = Number(range[2].replace(",", "."));
+    if (low <= high && high <= 1440) return fmt(low) + "–" + fmt(high) + " min";
+  }
+  return parsed + " · " + tr("Revisar duración");
 }
 
 function itinParseWorkbook(wb) {
@@ -4752,9 +4813,10 @@ function itinOrdenarManual() {
 
 function itinFmtDur(b) {
   const partes = [];
-  if (b.espera > 0) partes.push("fila ~" + b.espera + " min");
-  if (b.dur > 0) partes.push(b.dur + " min");
-  return partes.join(" · ");
+  const wait = itinDurationText(b.espera), duration = itinDurationText(b.dur);
+  if (wait) partes.push((window.I18N?.t("Fila estimada") || "Fila estimada") + ": " + wait);
+  if (duration) partes.push(duration);
+  return partes.map(escapeHtml).join(" · ");
 }
 
 function renderItinerario() {
@@ -4794,7 +4856,7 @@ function renderItinerario() {
     const hecho = itinHechos.has(b.id);
     const tipo = ITIN_TIPOS[b.tipo] || ITIN_TIPOS.otro;
     const meta = itinFmtDur(b);
-    html += `<div class="itin-block${hecho ? " done" : ""}" onclick="itinToggle('${b.id}')">\n      <div class="itin-time">${escapeHtml(b.hora || "--:--")}</div>\n      <div class="itin-check">${hecho ? "✓" : ""}</div>\n      <div class="itin-body">\n        <div class="itin-title">${escapeHtml(b.titulo || "(sin nombre)")}</div>\n        <div class="itin-meta">\n          <span class="itin-tag">${ic(tipo.icon, 11)} ${tipo.label}</span>\n          ${b.zona ? `<span>${escapeHtml(b.zona)}</span>` : ""}\n          ${meta ? `<span>${meta}</span>` : ""}\n        </div>\n        ${b.obs ? `<div class="itin-obs">${escapeHtml(b.obs)}</div>` : ""}\n      </div>\n      <div class="itin-actions">\n        <div class="itin-move-col">\n          <button class="wm-icon-btn itin-move-btn" ${i === 0 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',-1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Subir"}" aria-label="Subir ${escapeHtml(b.titulo)}">${ic("chevronUp", 13)}</button>\n          <button class="wm-icon-btn itin-move-btn" ${i === day.bloques.length - 1 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Bajar"}" aria-label="Bajar ${escapeHtml(b.titulo)}">${ic("chevronDown", 13)}</button>\n        </div>\n        <button class="wm-icon-btn" onclick="itinStartEdit('${b.id}');event.stopPropagation()" title="Editar" aria-label="Editar ${escapeHtml(b.titulo)}">${ic("pencil", 13)}</button>\n        <button class="wm-icon-btn wm-icon-del" onclick="itinDelete('${b.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(b.titulo)}">${ic("x", 14)}</button>\n      </div>\n    </div>`;
+    html += `<div class="itin-block${hecho ? " done" : ""}" onclick="itinToggle('${b.id}')">\n      <div class="itin-time" data-notr data-itin-id="${escapeHtml(b.id)}">${escapeHtml(b.hora || window.I18N?.t("Flexible") || "Flexible")}</div>\n      <div class="itin-check">${hecho ? "✓" : ""}</div>\n      <div class="itin-body">\n        <div class="itin-title">${escapeHtml(b.titulo || "(sin nombre)")}</div>\n        <div class="itin-meta">\n          <span class="itin-tag">${ic(tipo.icon, 11)} ${tipo.label}</span>\n          ${b.zona ? `<span>${escapeHtml(b.zona)}</span>` : ""}\n          ${meta ? `<span class="itin-duration" data-notr data-itin-id="${escapeHtml(b.id)}">${meta}</span>` : ""}\n        </div>\n        ${b.obs ? `<div class="itin-obs">${escapeHtml(b.obs)}</div>` : ""}\n      </div>\n      <div class="itin-actions">\n        <div class="itin-move-col">\n          <button class="wm-icon-btn itin-move-btn" ${i === 0 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',-1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Subir"}" aria-label="Subir ${escapeHtml(b.titulo)}">${ic("chevronUp", 13)}</button>\n          <button class="wm-icon-btn itin-move-btn" ${i === day.bloques.length - 1 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Bajar"}" aria-label="Bajar ${escapeHtml(b.titulo)}">${ic("chevronDown", 13)}</button>\n        </div>\n        <button class="wm-icon-btn" onclick="itinStartEdit('${b.id}');event.stopPropagation()" title="Editar" aria-label="Editar ${escapeHtml(b.titulo)}">${ic("pencil", 13)}</button>\n        <button class="wm-icon-btn wm-icon-del" onclick="itinDelete('${b.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(b.titulo)}">${ic("x", 14)}</button>\n      </div>\n    </div>`;
   });
   if (itinAdding) {
     html += itinEditForm(null);
@@ -4816,15 +4878,12 @@ function itinEditForm(b, idx) {
     obs: ""
   };
   const nuevo = !b;
-  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n    ${nuevo ? `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--green)">+ Nuevo bloque</div>` : ""}\n    <div class="wm-edit-form" style="width:100%">\n      <div style="display:grid;grid-template-columns:96px 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-hora" type="time" value="${escapeHtml(v.hora)}">\n        <input class="wm-edit-input" id="itin-f-titulo" value="${escapeHtml(v.titulo)}" placeholder="Qué hacés (ej: Test Track)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <select class="wm-edit-input" id="itin-f-tipo">\n          ${Object.entries(ITIN_TIPOS).map(([k, t]) => `<option value="${k}"${v.tipo === k ? " selected" : ""}>${t.label}</option>`).join("")}\n        </select>\n        <input class="wm-edit-input" id="itin-f-zona" value="${escapeHtml(v.zona)}" placeholder="Zona (ej: World Nature)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-espera" type="text" value="${v.espera || ""}" placeholder="Fila estimada (min)" inputmode="numeric" data-num="int">\n        <input class="wm-edit-input" id="itin-f-dur" type="text" value="${v.dur || ""}" placeholder="Duración (min)" inputmode="numeric" data-num="int">\n      </div>\n      <textarea class="wm-edit-input" id="itin-f-obs" placeholder="Notas (Lightning Lane, single rider, de agua…)" style="margin-bottom:6px;width:100%;min-height:52px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(v.obs)}</textarea>\n      <div class="wm-edit-actions">\n        <button class="mbtn" onclick="${nuevo ? "itinCancelAdd()" : "itinCancelEdit()"}">Cancelar</button>\n        <button class="mbtn msave" onclick="${nuevo ? "itinAddConfirm()" : `itinSaveEdit('${b.id}')`}">${nuevo ? "Agregar" : "Guardar"}</button>\n      </div>\n    </div>\n  </div>`;
+  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n    ${nuevo ? `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--green)">+ Nuevo bloque</div>` : ""}\n    <div class="wm-edit-form" style="width:100%">\n      <div style="display:grid;grid-template-columns:96px 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-hora" type="time" value="${escapeHtml(v.hora)}">\n        <input class="wm-edit-input" id="itin-f-titulo" value="${escapeHtml(v.titulo)}" placeholder="Qué hacés (ej: Test Track)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <select class="wm-edit-input" id="itin-f-tipo">\n          ${Object.entries(ITIN_TIPOS).map(([k, t]) => `<option value="${k}"${v.tipo === k ? " selected" : ""}>${t.label}</option>`).join("")}\n        </select>\n        <input class="wm-edit-input" id="itin-f-zona" value="${escapeHtml(v.zona)}" placeholder="Zona (ej: World Nature)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-espera" type="text" value="${escapeHtml(v.espera || "")}" placeholder="Fila estimada (min)">\n        <input class="wm-edit-input" id="itin-f-dur" type="text" value="${escapeHtml(v.dur || "")}" placeholder="Duración (min)">\n      </div>\n      <textarea class="wm-edit-input" id="itin-f-obs" placeholder="Notas (Lightning Lane, single rider, de agua…)" style="margin-bottom:6px;width:100%;min-height:52px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(v.obs)}</textarea>\n      <div class="wm-edit-actions">\n        <button class="mbtn" onclick="${nuevo ? "itinCancelAdd()" : "itinCancelEdit()"}">Cancelar</button>\n        <button class="mbtn msave" onclick="${nuevo ? "itinAddConfirm()" : `itinSaveEdit('${b.id}')`}">${nuevo ? "Agregar" : "Guardar"}</button>\n      </div>\n    </div>\n  </div>`;
 }
 
 function itinLeerForm() {
   const val = id => (document.getElementById(id) || {}).value || "";
-  const num = id => {
-    const n = parseInt(val(id), 10);
-    return isNaN(n) || n < 0 ? 0 : n;
-  };
+  const num = id => itinParseNum(val(id));
   return {
     hora: val("itin-f-hora").trim(),
     titulo: val("itin-f-titulo").trim(),
@@ -5696,3 +5755,14 @@ async function pkVerifyParkCoords(parkId) {
   renderParques();
   showMToast(`Corregidas ${found} de ${targets.length}`);
 }
+
+// Refresh only generated labels; keep forms, selected day and personal text intact.
+function refreshItineraryLabels() {
+  document.querySelectorAll(".itin-time[data-itin-id], .itin-duration[data-itin-id]").forEach(node => {
+    const block = itinBloque(node.dataset.itinId);
+    if (!block) return;
+    if (node.classList.contains("itin-time")) node.textContent = block.hora || window.I18N.t("Flexible");
+    else node.innerHTML = itinFmtDur(block);
+  });
+}
+window.I18N?.onChange(refreshItineraryLabels);
