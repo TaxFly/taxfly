@@ -4456,6 +4456,8 @@ function itinSaveDay() {
   day.nombre = (document.getElementById("itin-day-name").value || "").trim() || "Día " + (itinDay + 1);
   day.fecha = (document.getElementById("itin-day-fecha").value || "").trim();
   day.nota = (document.getElementById("itin-day-nota").value || "").trim();
+  itinDias.sort((a, b) => itinFechaOrden(a.fecha) - itinFechaOrden(b.fecha));
+  itinDay = itinDias.indexOf(day);
   itinEditDay = false;
   itinSave();
   renderParques();
