@@ -403,7 +403,8 @@ window._appInit = function() {
   try {
     const params = new URLSearchParams(location.search);
     const sec = params.get("section");
-    if (params.get("subtab") === "atracciones") parquesSubTab = "atracciones";
+    if (params.get("searchDay")) parquesSubTab = "itinerario";
+    else if (params.get("subtab") === "atracciones") parquesSubTab = "atracciones";
     const OK = [ "outlets", "comidas", "walmart", "parques", "reservas", "lugares" ];
     let back = null;
     try {
@@ -855,6 +856,12 @@ let _undoTimer = null;
 let _undoAction = null;
 
 function showUndoToast(message, undoFn) {
+  const context=JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId]);
+  if(window.tfDeleteWithUndo){
+    window.tfDeleteWithUndo({message:window.I18N?.t(message)||message,restore:()=>{
+      if(context===JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId]))undoFn();
+    }});return;
+  }
   if (_undoTimer) {
     clearTimeout(_undoTimer);
     _undoTimer = null;
@@ -2291,6 +2298,8 @@ function shopGetItem(id) {
 let _outletsFirstRender = true;
 
 function renderOutlets() {
+  const requestedDay=new URLSearchParams(location.search).get("searchOutletDay");
+  if(requestedDay!==null&&/^\d+$/.test(requestedDay)&&Number(requestedDay)<days.length){currentOutletDay=Number(requestedDay);outletSubTab="cronograma";}
   if(window.planPanelPending?.("outlets"))return;
   const panel = document.getElementById("panel-outlets");
   let html = `<div class="outlets-panel">\n    <div class="outlets-subtabs">\n      <button class="outlets-stab${outletSubTab === "cronograma" ? " active" : ""}" onclick="switchOutletTab('cronograma')">${ic("calendar", 13)} Cronograma</button>\n      <button class="outlets-stab${outletSubTab === "lista" ? " active" : ""}" onclick="switchOutletTab('lista')">${ic("shirt", 13)} Compras</button>\n    </div>`;
@@ -3709,6 +3718,7 @@ function renderParques() {
   if (parquesSubTab === "itinerario") {
     panel.innerHTML = `<div class="parques-panel">${subtabs}${itinMochilaLink()}${renderItinerario()}</div>`;
     updateParquesCounter();
+    requestAnimationFrame(revealRequestedItineraryStop);
     if (_itinNeedsReveal) {
       _itinNeedsReveal = false;
       revealSelectedDay();
@@ -4780,6 +4790,21 @@ let _itinJumpedToday = false;
 
 let _itinNeedsReveal = false;
 
+function selectRequestedItineraryDay() {
+  const params=new URLSearchParams(location.search),id=params.get("searchDay");
+  if(!id)return;
+  const index=itinDias.findIndex(day=>String(day.id)===id);
+  if(index>=0){itinDay=index;itinSoloPend=false;}
+}
+function revealRequestedItineraryStop() {
+  const params=new URLSearchParams(location.search),id=params.get("searchStop");
+  if(!id)return;
+  const node=document.getElementById("itin-result-"+id);
+  if(!node)return;
+  node.scrollIntoView({block:"center"});node.focus({preventScroll:true});
+  params.delete("searchDay");params.delete("searchStop");
+  history.replaceState(null,"",location.pathname+(params.size?"?"+params:""));
+}
 function itinLoad() {
   const d = syncedLoad(ITIN_KEY, window._itinFromFb);
   itinDias = d && d.dias ? d.dias : itinDefault();
@@ -4793,12 +4818,14 @@ function itinLoad() {
       _itinNeedsReveal = true;
     }
   }
+  selectRequestedItineraryDay();
 }
 
 window._setItinData = function(d) {
   if (d.dias !== undefined) itinDias = d.dias;
   if (d.hechos !== undefined) itinHechos = new Set(d.hechos);
   if (itinDay >= itinDias.length) itinDay = 0;
+  selectRequestedItineraryDay();
 };
 
 function itinGetDay() {
@@ -4886,7 +4913,7 @@ function renderItinerario() {
     const hecho = itinHechos.has(b.id);
     const tipo = ITIN_TIPOS[b.tipo] || ITIN_TIPOS.otro;
     const meta = itinFmtDur(b);
-    html += `<div class="itin-block${hecho ? " done" : ""}" onclick="itinToggle('${b.id}')">\n      <div class="itin-time" data-notr data-itin-id="${escapeHtml(b.id)}">${escapeHtml(b.hora || window.I18N?.t("Flexible") || "Flexible")}</div>\n      <div class="itin-check">${hecho ? "✓" : ""}</div>\n      <div class="itin-body">\n        <div class="itin-title">${escapeHtml(b.titulo || "(sin nombre)")}</div>\n        <div class="itin-meta">\n          <span class="itin-tag">${ic(tipo.icon, 11)} ${tipo.label}</span>\n          ${b.zona ? `<span>${escapeHtml(b.zona)}</span>` : ""}\n          ${meta ? `<span class="itin-duration" data-notr data-itin-id="${escapeHtml(b.id)}">${meta}</span>` : ""}\n        </div>\n        ${b.obs ? `<div class="itin-obs">${escapeHtml(b.obs)}</div>` : ""}\n      </div>\n      <div class="itin-actions">\n        <div class="itin-move-col">\n          <button class="wm-icon-btn itin-move-btn" ${i === 0 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',-1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Subir"}" aria-label="Subir ${escapeHtml(b.titulo)}">${ic("chevronUp", 13)}</button>\n          <button class="wm-icon-btn itin-move-btn" ${i === day.bloques.length - 1 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Bajar"}" aria-label="Bajar ${escapeHtml(b.titulo)}">${ic("chevronDown", 13)}</button>\n        </div>\n        <button class="wm-icon-btn" onclick="itinStartEdit('${b.id}');event.stopPropagation()" title="Editar" aria-label="Editar ${escapeHtml(b.titulo)}">${ic("pencil", 13)}</button>\n        <button class="wm-icon-btn wm-icon-del" onclick="itinDelete('${b.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(b.titulo)}">${ic("x", 14)}</button>\n      </div>\n    </div>`;
+    html += `<div id="itin-result-${escapeHtml(b.id)}" tabindex="-1" class="itin-block${hecho ? " done" : ""}" onclick="itinToggle('${b.id}')">\n      <div class="itin-time" data-notr data-itin-id="${escapeHtml(b.id)}">${escapeHtml(b.hora || window.I18N?.t("Flexible") || "Flexible")}</div>\n      <div class="itin-check">${hecho ? "✓" : ""}</div>\n      <div class="itin-body">\n        <div class="itin-title">${escapeHtml(b.titulo || "(sin nombre)")}</div>\n        <div class="itin-meta">\n          <span class="itin-tag">${ic(tipo.icon, 11)} ${tipo.label}</span>\n          ${b.zona ? `<span>${escapeHtml(b.zona)}</span>` : ""}\n          ${meta ? `<span class="itin-duration" data-notr data-itin-id="${escapeHtml(b.id)}">${meta}</span>` : ""}\n        </div>\n        ${b.documentId ? `<a class="reservation-map-link" href="tickets.html?doc=${encodeURIComponent(b.documentId)}" onclick="event.stopPropagation()">${ic("file",13)} ${escapeHtml(window.I18N?.t("Abrir documento")||"Abrir documento")}</a>` : ""}\n      ${b.obs ? `<div class="itin-obs">${escapeHtml(b.obs)}</div>` : ""}\n      </div>\n      <div class="itin-actions">\n        <div class="itin-move-col">\n          <button class="wm-icon-btn itin-move-btn" ${i === 0 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',-1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Subir"}" aria-label="Subir ${escapeHtml(b.titulo)}">${ic("chevronUp", 13)}</button>\n          <button class="wm-icon-btn itin-move-btn" ${i === day.bloques.length - 1 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Bajar"}" aria-label="Bajar ${escapeHtml(b.titulo)}">${ic("chevronDown", 13)}</button>\n        </div>\n        <button class="wm-icon-btn" onclick="itinStartEdit('${b.id}');event.stopPropagation()" title="Editar" aria-label="Editar ${escapeHtml(b.titulo)}">${ic("pencil", 13)}</button>\n        <button class="wm-icon-btn wm-icon-del" onclick="itinDelete('${b.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(b.titulo)}">${ic("x", 14)}</button>\n      </div>\n    </div>`;
   });
   if (itinAdding) {
     html += itinEditForm(null);
@@ -4897,6 +4924,18 @@ function renderItinerario() {
   return html;
 }
 
+function itineraryDocumentOptions(selected) {
+  const tr=window.I18N?.t||((s)=>s),docs=window._tripDocuments;
+  const options=[`<option value="">${escapeHtml(tr(Array.isArray(docs)?"Sin documento vinculado":"Cargando documentos…"))}</option>`];
+  const items=(docs||[]).filter(doc=>(doc.tripId||"unassigned")===window._tripId);
+  if(selected&&!items.some(doc=>doc.id===selected))options.push(`<option value="${escapeHtml(selected)}" selected>${escapeHtml(tr("Documento vinculado"))}</option>`);
+  items.forEach(doc=>options.push(`<option data-notr value="${escapeHtml(doc.id)}"${doc.id===selected?" selected":""}>${escapeHtml(doc.name||tr("Documento"))}</option>`));
+  return options.join("");
+}
+window.refreshItineraryDocumentOptions=()=>{
+  const select=document.getElementById("itin-f-document");
+  if(select){const selected=select.value;select.innerHTML=itineraryDocumentOptions(selected);select.value=selected;}
+};
 function itinEditForm(b, idx) {
   const v = b || {
     hora: "",
@@ -4908,7 +4947,7 @@ function itinEditForm(b, idx) {
     obs: ""
   };
   const nuevo = !b;
-  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n    ${nuevo ? `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--green)">+ Nuevo bloque</div>` : ""}\n    <div class="wm-edit-form" style="width:100%">\n      <div style="display:grid;grid-template-columns:96px 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-hora" type="time" value="${escapeHtml(v.hora)}">\n        <input class="wm-edit-input" id="itin-f-titulo" value="${escapeHtml(v.titulo)}" placeholder="Qué hacés (ej: Test Track)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <select class="wm-edit-input" id="itin-f-tipo">\n          ${Object.entries(ITIN_TIPOS).map(([k, t]) => `<option value="${k}"${v.tipo === k ? " selected" : ""}>${t.label}</option>`).join("")}\n        </select>\n        <input class="wm-edit-input" id="itin-f-zona" value="${escapeHtml(v.zona)}" placeholder="Zona (ej: World Nature)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-espera" type="text" value="${escapeHtml(v.espera || "")}" placeholder="Fila estimada (min)">\n        <input class="wm-edit-input" id="itin-f-dur" type="text" value="${escapeHtml(v.dur || "")}" placeholder="Duración (min)">\n      </div>\n      <textarea class="wm-edit-input" id="itin-f-obs" placeholder="Notas (Lightning Lane, single rider, de agua…)" style="margin-bottom:6px;width:100%;min-height:52px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(v.obs)}</textarea>\n      <div class="wm-edit-actions">\n        <button class="mbtn" onclick="${nuevo ? "itinCancelAdd()" : "itinCancelEdit()"}">Cancelar</button>\n        <button class="mbtn msave" onclick="${nuevo ? "itinAddConfirm()" : `itinSaveEdit('${b.id}')`}">${nuevo ? "Agregar" : "Guardar"}</button>\n      </div>\n    </div>\n  </div>`;
+  return `<div class="stop-card" onclick="event.stopPropagation()" style="cursor:default;flex-direction:column;align-items:stretch">\n    ${nuevo ? `<div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;color:var(--green)">+ Nuevo bloque</div>` : ""}\n    <div class="wm-edit-form" style="width:100%">\n      <div style="display:grid;grid-template-columns:96px 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-hora" type="time" value="${escapeHtml(v.hora)}">\n        <input class="wm-edit-input" id="itin-f-titulo" value="${escapeHtml(v.titulo)}" placeholder="Qué hacés (ej: Test Track)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <select class="wm-edit-input" id="itin-f-tipo">\n          ${Object.entries(ITIN_TIPOS).map(([k, t]) => `<option value="${k}"${v.tipo === k ? " selected" : ""}>${t.label}</option>`).join("")}\n        </select>\n        <input class="wm-edit-input" id="itin-f-zona" value="${escapeHtml(v.zona)}" placeholder="Zona (ej: World Nature)">\n      </div>\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n        <input class="wm-edit-input" id="itin-f-espera" type="text" value="${escapeHtml(v.espera || "")}" placeholder="Fila estimada (min)">\n        <input class="wm-edit-input" id="itin-f-dur" type="text" value="${escapeHtml(v.dur || "")}" placeholder="Duración (min)">\n      </div>\n      <label class="meal-tag-label" for="itin-f-document">${escapeHtml(window.I18N?.t("Documento (opcional)")||"Documento (opcional)")}</label><select class="wm-edit-input" id="itin-f-document">${itineraryDocumentOptions(v.documentId||"")}</select>\n      <textarea class="wm-edit-input" id="itin-f-obs" placeholder="Notas (Lightning Lane, single rider, de agua…)" style="margin-bottom:6px;width:100%;min-height:52px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(v.obs)}</textarea>\n      <div class="wm-edit-actions">\n        <button class="mbtn" onclick="${nuevo ? "itinCancelAdd()" : "itinCancelEdit()"}">Cancelar</button>\n        <button class="mbtn msave" onclick="${nuevo ? "itinAddConfirm()" : `itinSaveEdit('${b.id}')`}">${nuevo ? "Agregar" : "Guardar"}</button>\n      </div>\n    </div>\n  </div>`;
 }
 
 function itinLeerForm() {
@@ -4919,6 +4958,7 @@ function itinLeerForm() {
     titulo: val("itin-f-titulo").trim(),
     zona: val("itin-f-zona").trim(),
     tipo: val("itin-f-tipo") || "otro",
+    documentId: val("itin-f-document"),
     espera: num("itin-f-espera"),
     dur: num("itin-f-dur"),
     obs: val("itin-f-obs").trim()

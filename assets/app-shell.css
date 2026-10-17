@@ -34,3 +34,44 @@ body::before { background: transparent !important; }
 @media(max-width:599px){.taxfly-main-nav.nav-bar{gap:2px;padding:6px}.taxfly-main-nav.nav-bar>.btn-nav,.taxfly-main-nav.nav-bar>.btn-nav-more{font-size:7px;letter-spacing:0;min-height:55px}.taxfly-main-nav .more-lbl{font-size:7px}.taxfly-main-nav .ni>svg{width:23px;height:23px}}
 [data-theme="dark"] .taxfly-main-nav {--surface:#1a2434;--surface-2:#222e42;--border:#303f56;--text:#f1f5f9;--text-sub:#94a3b8;--primary:#2563eb;--primary-dim:rgba(37,99,235,.12);}
 [data-theme="dark"] :is(.app-header,.taxfly-wordmark) .wm-usa {color:#5b8def;}
+
+/* Trip search uses the existing surfaces, borders and typography. */
+.tf-trip-search{box-sizing:border-box;width:min(600px,calc(100vw - 28px));max-height:calc(100dvh - 40px);padding:20px;border:1px solid var(--border);border-radius:var(--radius,20px);background:var(--surface);color:var(--text);box-shadow:var(--shadow-lg);font-family:'DM Sans',sans-serif;overflow:auto;}
+.tf-trip-search::backdrop{background:rgba(11,18,32,.6)}
+.tf-search-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.tf-search-head h2{font:800 1.15rem 'DM Sans',sans-serif;margin:0;overflow-wrap:anywhere}
+.tf-trip-search button{min-height:44px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm,12px);background:var(--surface-2);color:var(--text);font:600 .85rem 'DM Sans',sans-serif;cursor:pointer}.tf-search-head button{min-width:44px;font-size:1.4rem;flex:none}.tf-trip-search button:disabled{opacity:.55;cursor:wait}
+.tf-trip-search input{box-sizing:border-box;display:block;width:100%;min-height:46px;margin:16px 0 8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm,12px);background:var(--surface-2);color:var(--text);font:inherit}
+.tf-trip-search p{font-size:.85rem;line-height:1.45;overflow-wrap:anywhere}.tf-trip-search [role=status]{color:var(--text-sub,var(--muted))}.tf-search-result{padding:14px 0;border-top:1px solid var(--border)}.tf-search-result small{display:block;color:var(--text-sub,var(--muted));margin-bottom:5px}.tf-search-result a{display:block;color:var(--primary);font-weight:700;overflow-wrap:anywhere}.tf-search-result p{white-space:pre-wrap;margin:6px 0 0}.tf-trip-search :focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+@media(max-width:599px){.tf-trip-search{padding:16px;max-height:calc(100dvh - 24px)}}
+
+.taxfly-main-nav .nav-dropdown{max-height:min(440px,55dvh);overflow-y:auto;}
+
+/* Scrollports also clip the other axis. Reserve room for pill shadows and
+   keyboard outlines, then compensate the margins to preserve row geometry. */
+:is(.chips,.scroll-control .chips,.parques-filter-bar,.outlets-day-tabs,
+    .filter-row,.cat-bar,.cat-grid,.comp-cat-strip,.day-tabs-wrap,.preview-strip){
+  --tf-rail-room:20px;
+  padding-block-start:calc(var(--tf-rail-pt,0px) + var(--tf-rail-room));
+  padding-block-end:calc(var(--tf-rail-pb,0px) + var(--tf-rail-room));
+  padding-inline:calc(var(--tf-rail-pi,0px) + var(--tf-rail-room));
+  margin-block-start:calc(var(--tf-rail-mt,0px) - var(--tf-rail-room));
+  margin-block-end:calc(var(--tf-rail-mb,12px) - var(--tf-rail-room));
+  margin-inline:calc(var(--tf-rail-mi,0px) - var(--tf-rail-room));
+  max-width:calc(100% + var(--tf-rail-room) + var(--tf-rail-room) - var(--tf-rail-mi,0px) - var(--tf-rail-mi,0px));
+}
+.chips{--tf-rail-pt:2px;--tf-rail-pb:2px;--tf-rail-pi:16px;--tf-rail-mi:-16px}
+.chips.small{--tf-rail-mt:-4px}
+.scroll-control .chips{--tf-rail-pi:0px;--tf-rail-mi:0px;--tf-rail-mb:0px}
+.parques-filter-bar{--tf-rail-pt:4px;--tf-rail-pb:4px;--tf-rail-pi:1px;--tf-rail-mb:0px}
+.outlets-day-tabs{--tf-rail-pb:2px;--tf-rail-mb:14px}
+.day-tabs-control>.outlets-day-tabs{--tf-rail-mb:0px}
+.filter-row{--tf-rail-pb:4px;--tf-rail-mb:16px}
+.cat-bar{--tf-rail-pb:2px}
+.cat-grid{--tf-rail-pb:2px;--tf-rail-mb:14px}
+.comp-cat-strip{--tf-rail-pb:4px;--tf-rail-mb:10px}
+.preview-strip{--tf-rail-pt:4px;--tf-rail-pb:8px;--tf-rail-mb:0px}
+/* Keep the visible controls above neighboring transparent shadow allowances. */
+:is(.chips,.parques-filter-bar,.outlets-day-tabs,.filter-row,.cat-bar,.cat-grid,.comp-cat-strip,.day-tabs-wrap,.preview-strip)>*{position:relative;z-index:1}
+/* Arrow surfaces remain above the transparent shadow allowance. */
+:is(.scroll-control,.park-filter-control)>.scroll-arrow,
+.day-tabs-control>.day-tabs-arrow{position:relative;z-index:2}

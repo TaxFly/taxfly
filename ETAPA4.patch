@@ -1,0 +1,716 @@
+--- a/assets/compras.js
++++ b/assets/compras.js
+@@ -79,6 +79,7 @@
+ function guardarPresupuestoEnCache(v) {
+   try {
+     localStorage.setItem(currentBudgetKey(), String(v));
++    window.TaxflyTravel.publishBudget(currentUser.uid,perfilId,window.TripContext.view(currentUser.uid,perfilId),v);
+   } catch (e) {}
+ }
+ 
+@@ -1480,7 +1481,7 @@
+ 
+ async function removeGastoRemote(g) {
+   const id = g.id;
+-  if (g.reservationId) {
++  if (g.reservationId || getPendingGastos().some(op=>op.type==='upsert'&&op.id===id)) {
+     // Remove queued creation/updates first. A delete follows any write already in flight.
+     savePendingGastos(getPendingGastos().filter(o=>o.id!==id));
+     queueGastoOp({type:'del',id});flushPendingGastos();return;
+@@ -1594,7 +1595,7 @@
+   closeEditGasto();
+   renderGastosList(allGastos);
+   showExpToast(bt("toast_updated"));
+-  if (g.reservationId && getPendingGastos().some(o=>o.type==='upsert'&&o.id===id)) {
++  if (getPendingGastos().some(o=>o.type==='upsert'&&o.id===id)) {
+     savePendingGastos(getPendingGastos().map(o=>o.type==='upsert'&&o.id===id?{...o,data:{...o.data,...patch},ts:Date.now()}:o));flushPendingGastos();return;
+   }
+   if (String(id).startsWith("local_")) {
+@@ -2909,40 +2910,18 @@
+     thumb: thumb || "",
+     tripId: currentUser && perfilId ? window.TripContext.assign(currentUser.uid, perfilId) : "orlando"
+   };
+-  const localId = "local_" + Date.now();
+-  const cached = cargarGastosDesdeCache() || [];
+-  cached.unshift({
+-    ...gastoData,
+-    id: localId
+-  });
+-  guardarGastosEnCache(cached);
+-  allGastos.unshift({
+-    ...gastoData,
+-    id: localId
+-  });
+-  renderGastosList(allGastos);
++  if(!currentUser || !perfilId)return;
++  const expenseId=doc(collection(db,"usuarios",currentUser.uid,"perfiles",perfilId,"gastos")).id;
++  // Queue before writing and keep one ID through snapshots and retries.
++  queueGastoOp({type:"upsert",id:expenseId,data:gastoData});
++  allGastos=window.TaxflyTravel.overlayExpenses(allGastos,getPendingGastos());
++  guardarGastosEnCache(allGastos);renderGastosList(allGastos);
+   document.getElementById("nombre").value = "";
+   document.getElementById("valor").value = "";
+   try { localStorage.setItem(LAST_CAT_KEY, cat); } catch (e) {}
+   showExpToast(bt("toast_saved"));
+   if (!thumb) document.getElementById("nombre").focus();
+-  if (!navigator.onLine || !currentUser) {
+-    queueGastoOp({
+-      type: "add",
+-      data: gastoData
+-    });
+-    return;
+-  }
+-  try {
+-    await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), gastoData);
+-    allGastos = allGastos.filter(g => g.id !== localId);
+-    guardarGastosEnCache(allGastos);
+-  } catch (e) {
+-    queueGastoOp({
+-      type: "add",
+-      data: gastoData
+-    });
+-  }
++  if(navigator.onLine)flushPendingGastos();
+ };
+ 
+ let _viewerGastoId = "";
+@@ -3525,6 +3504,22 @@
+   compToggleIABtn();
+ };
+ 
++
++window.addEventListener("taxfly:budget-updated",event=>{
++ const data=event.detail;
++ if(!currentUser||!financeStates||expenseScope!==expenseContext()||data?.uid!==currentUser.uid||data.pid!==perfilId||data.trip!==window.TripContext.view(currentUser.uid,perfilId))return;
++ financeStates.base.receive(data.value);presupuestoBase=data.value;updateBudgetDisplay(lastGastosTotal);
++});
++function refreshPendingExpenses() {
++  if(!financeStates || expenseScope!==expenseContext() || !financeStates.expenses.hasValue) return;
++  allGastos=window.TaxflyTravel.overlayExpenses(financeStates.expenses.value,getPendingGastos());
++  renderGastosList(allGastos);offerReservationPayment();
++}
++window.addEventListener("taxfly-pending-updated",refreshPendingExpenses);
++window.addEventListener("storage",event=>{
++  if(currentUser && event.key===pendingGastosKey()) refreshPendingExpenses();
++});
++
+ function offerReservationPayment(){
+  const q=new URLSearchParams(location.search),id=q.get('reservation'),tripId=q.get('trip');
+  if(paymentOpened||!id||!currentUser||!expenseSnapshotReady||tripId!==window.TripContext.view(currentUser.uid,perfilId))return;
+--- a/assets/index-app.js
++++ b/assets/index-app.js
+@@ -1269,3 +1269,19 @@
+ }
+ 
+ sessionStorage.setItem("taxfly_last_page", "./index.html");
++
++// Queue changes occur in the same tab too; storage events alone cannot refresh them.
++function refreshHomePendingExpenses() {
++  if(homeFinance && homeScope===homeContext()) renderBudgetUI();
++}
++window.addEventListener("taxfly-pending-updated",refreshHomePendingExpenses);
++window.addEventListener("storage",event=>{
++  const uid=currentUser?.uid;
++  if(uid && event.key==="taxusa_gastos_pending_"+perfilId+"::"+uid) refreshHomePendingExpenses();
++});
++
++window.addEventListener("taxfly:budget-updated",event=>{
++ const data=event.detail;
++ if(!currentUser||!homeFinance||homeScope!==homeContext()||data?.uid!==currentUser.uid||data.pid!==perfilId||data.trip!==window.TripContext.view(currentUser.uid,perfilId))return;
++ homeFinance.base.receive(data.value);renderBudgetUI();
++});
+--- a/assets/plan-app.js
++++ b/assets/plan-app.js
+@@ -1407,7 +1407,8 @@
+     tfx.presupuesto=financePresReady?Number(base):0;
+     const raw=localStorage.getItem('taxusa_gastos_cache_'+pid+'::'+uid);
+     financeExpensesReady=raw!==null&&Array.isArray(JSON.parse(raw));
+-    const expenses=financeExpensesReady?JSON.parse(raw).filter(g=>(g.tripId||'unassigned')===id):[];
++    const ops=JSON.parse(localStorage.getItem('taxusa_gastos_pending_'+pid+'::'+uid)||'[]');
++    const expenses=financeExpensesReady?window.TaxflyTravel.overlayExpenses(JSON.parse(raw),ops).filter(g=>(g.tripId||'unassigned')===id):[];
+     tfx.gastos=expenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0);tfx.gastosN=expenses.length;
+   }catch(_){financePresReady=false;financeExpensesReady=false;}
+   budgetRenderAll();
+@@ -4673,7 +4674,7 @@
+ function importSharedRoute() {
+   let data;
+   try { data = JSON.parse(sessionStorage.getItem("taxfly-route-import") || "null"); } catch (_) {}
+-  if (!data || data.profile !== window._perfilId || data.tripId !== window._tripId || !Array.isArray(data.days)) return;
++  if (!data || data.uid !== window._taxflyTripUid || !data.importId || data.profile !== window._perfilId || data.tripId !== window._tripId || !Array.isArray(data.days)) return;
+   data.days.forEach((sourceDay, dayIndex) => {
+     if (!Array.isArray(sourceDay.stops) || !sourceDay.stops.length) return;
+     let date = "";
+@@ -4682,9 +4683,9 @@
+       day.setDate(day.getDate() + dayIndex);
+       date = [day.getFullYear(), String(day.getMonth() + 1).padStart(2, "0"), String(day.getDate()).padStart(2, "0")].join("-");
+     }
+-    let target = date && itinDias.find(d => d.fecha === date);
++    let target = itinDias.find(d => d.routeImportId === data.importId + ":" + dayIndex) || (date && itinDias.find(d => d.fecha === date));
+     if (!target) {
+-      target = { id: itinNewId(), fecha: date, nombre: sourceDay.name || "Ruta " + (dayIndex + 1), nota: "", bloques: [] };
++      target = { id: itinNewId(), fecha: date, nombre: sourceDay.name || "Ruta " + (dayIndex + 1), nota: "", routeImportId: data.importId + ":" + dayIndex, bloques: [] };
+       itinDias.push(target);
+     }
+     sourceDay.stops.forEach(s => {
+--- a/assets/plan-firebase.js
++++ b/assets/plan-firebase.js
+@@ -192,6 +192,7 @@
+ }
+ 
+ async function fbSetPresupuesto(v) {
++  window.TaxflyTravel.publishBudget(currentUid,currentPerfilId,activeTripId,v);
+   try {
+     const ref=activeTripId==="orlando"?perfilDocRef():tripDocRef(activeTripId);
+     await setDoc(ref,{[activeTripId==="orlando"?"presupuesto":"taxflyBudget"]:v},{merge:true});
+@@ -209,11 +210,17 @@
+   const valid=()=>uid===currentUid&&pid===currentPerfilId&&trip===activeTripId;
+   if(state.hasValue)cb(state.value);
+   const ref=trip==='orlando'?perfilDocRef():tripDocRef(trip);
+-  return onSnapshot(ref,{includeMetadataChanges:true},snap=>{
++  const localChange=event=>{
++    const data=event.detail;
++    if(valid() && data?.uid===uid && data.pid===pid && data.trip===trip){state.receive(data.value);cb(data.value);}
++  };
++  window.addEventListener('taxfly:budget-updated',localChange);
++  const stop=onSnapshot(ref,{includeMetadataChanges:true},snap=>{
+     if(!valid())return;
+     const value=Number(snap.exists()?snap.data()[trip==='orlando'?'presupuesto':'taxflyBudget']:0)||0;
+     if(state.receive(value,snap,value===0)){window._planBudgetError=false;window._planFinanceError=!!window._planExpenseError;localStorage.setItem(key,String(value));cb(value);}
+   },()=>{if(valid()){window._planBudgetError=true;window._planFinanceError=true;window.budgetRefresh?.();}});
++  return ()=>{stop();window.removeEventListener('taxfly:budget-updated',localChange);};
+ }
+ function listenTaxflyGastos(cb) {
+   const uid=currentUid,pid=currentPerfilId,trip=activeTripId,key='taxusa_gastos_cache_'+pid+'::'+uid;
+@@ -226,11 +233,16 @@
+     window.renderReservations?.();cb(window._tripExpenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0),window._tripExpenses.length);
+   };
+   if(state.hasValue)publish();
+-  return onSnapshot(collection(db,'usuarios',uid,'perfiles',pid,'gastos'),{includeMetadataChanges:true},snap=>{
++  const localChange=()=>{if(valid()&&state.hasValue)publish();};
++  const storageChange=e=>{if(e.key==='taxusa_gastos_pending_'+pid+'::'+uid)localChange();};
++  window.addEventListener('taxfly-pending-updated',localChange);
++  window.addEventListener('storage',storageChange);
++  const stop=onSnapshot(collection(db,'usuarios',uid,'perfiles',pid,'gastos'),{includeMetadataChanges:true},snap=>{
+     if(!valid())return;
+     const items=snap.docs.map(d=>({...d.data(),id:d.id}));
+     if(state.receive(items,snap,!items.length)){window._planExpenseError=false;window._planFinanceError=!!window._planBudgetError;localStorage.setItem(key,JSON.stringify(items));publish();}
+   },()=>{if(valid()){window._planExpenseError=true;window._planFinanceError=true;window.budgetRefresh?.();}});
++  return ()=>{stop();window.removeEventListener('taxfly-pending-updated',localChange);window.removeEventListener('storage',storageChange);};
+ }
+ 
+ async function migrateManualExpenses() {
+@@ -254,34 +266,31 @@
+ }
+ 
+ async function addTaxflyGasto(data) {
+-  if (!currentUid || !currentPerfilId) return false;
++  const uid=currentUid,pid=currentPerfilId,trip=activeTripId;
++  if (!uid || !pid) return false;
+   const gasto = {
+-    nombre: String(data.nombre || "Gasto"),
+-    valor: Number(data.valor) || 0,
+-    cat: data.cat || "📦 Otros",
+-    fecha: Date.now(),
+-    thumb: "",
+-    tripId: activeTripId,
+-    source: data.source || "trip-planning"
++    nombre: String(data.nombre || "Gasto"), valor: Number(data.valor) || 0,
++    cat: data.cat || "📦 Otros", fecha: Date.now(), thumb: "",
++    tripId: trip, source: data.source || "trip-planning"
+   };
+   if (!(gasto.valor > 0)) return false;
+-  try {
+-    if (navigator.onLine) {
+-      await addDoc(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "gastos"), gasto);
+-      return true;
+-    }
+-  } catch (e) {
+-    devError("addTaxflyGasto error", e);
+-  }
+-  try {
+-    const key = "taxusa_gastos_pending_" + currentPerfilId + "::" + currentUid;
+-    const ops = JSON.parse(localStorage.getItem(key) || "[]");
+-    ops.push({ type: "add", data: gasto, ts: Date.now() });
+-    localStorage.setItem(key, JSON.stringify(ops));
+-    return true;
+-  } catch (e) {
+-    return false;
+-  }
++  const ref=doc(collection(db,"usuarios",uid,"perfiles",pid,"gastos"));
++  const key="taxusa_gastos_pending_"+pid+"::"+uid;
++  const op={type:"upsert",id:ref.id,data:gasto,ts:Date.now()};
++  try {
++    const ops=JSON.parse(localStorage.getItem(key)||"[]");
++    ops.push(op);localStorage.setItem(key,JSON.stringify(ops));
++  } catch (_) { return false; }
++  window.dispatchEvent(new Event("taxfly-pending-updated"));
++  if (navigator.onLine) {
++    // The same document ID is reused by every retry, including reconnect sync.
++    setDoc(ref,gasto,{merge:true}).then(()=>{
++      const latest=JSON.parse(localStorage.getItem(key)||"[]");
++      localStorage.setItem(key,JSON.stringify(latest.filter(item=>JSON.stringify(item)!==JSON.stringify(op))));
++      window.dispatchEvent(new Event("taxfly-pending-updated"));
++    }).catch(error=>devError("addTaxflyGasto queued",error));
++  }
++  return true;
+ }
+ 
+ window._fb = {
+--- a/assets/reconnect-sync.js
++++ b/assets/reconnect-sync.js
+@@ -45,7 +45,7 @@
+           // Remove only this operation; another tab may have appended a new one.
+           const now = JSON.parse(localStorage.getItem(key) || '[]');
+           const i = now.findIndex(x => JSON.stringify(x) === JSON.stringify(op));
+-          if (i >= 0) { now.splice(i,1); localStorage.setItem(key,JSON.stringify(now)); }
++          if (i >= 0) { now.splice(i,1); localStorage.setItem(key,JSON.stringify(now)); window.dispatchEvent(new Event('taxfly-pending-updated')); }
+         } catch (_) { break; }
+       }
+     };
+@@ -53,6 +53,8 @@
+       () => true, op => {
+         const col = fs.collection(db,'usuarios',uid,'perfiles',profile,'gastos');
+         if (op.type === 'add') return fs.setDoc(fs.doc(col,queuedId(op)),op.data);
++        if (op.type === 'upsert') return fs.setDoc(fs.doc(col,op.id),op.data,{merge:true});
++        if (op.type === 'upd') return fs.updateDoc(fs.doc(col,op.id),op.data);
+         if (op.type === 'del') return fs.deleteDoc(fs.doc(col,op.id));
+         throw Error('Operación desconocida');
+       });
+--- a/assets/rutas-app.js
++++ b/assets/rutas-app.js
+@@ -1,5 +1,18 @@
+ const i18n = {
+   es: {
++    planning_title: "Usar datos de Planificación",
++    planning_hotel: "Usar alojamiento guardado",
++    planning_import: "Agregar paradas del día",
++    planning_reload: "Actualizar",
++    planning_loading: "Cargando Planificación…",
++    planning_empty: "No hay paradas guardadas para este viaje.",
++    planning_error: "No se pudo actualizar Planificación.",
++    planning_local: "Datos guardados en este dispositivo",
++    planning_choose: "Elegí un día",
++    planning_itinerary: "Itinerario",
++    planning_places: "Lugares",
++    planning_none_added: "Estas paradas ya están en la lista.",
++
+     nav_home: "INICIO",
+     nav_tax: "TAXES",
+     nav_shopping: "GASTOS",
+@@ -59,6 +72,19 @@
+     ac_no_results: "Sin resultados para esta búsqueda"
+   },
+   en: {
++    planning_title: "Use Planning data",
++    planning_hotel: "Use saved accommodation",
++    planning_import: "Add stops from this day",
++    planning_reload: "Refresh",
++    planning_loading: "Loading Planning…",
++    planning_empty: "No saved stops for this trip.",
++    planning_error: "Could not refresh Planning.",
++    planning_local: "Data saved on this device",
++    planning_choose: "Choose a day",
++    planning_itinerary: "Itinerary",
++    planning_places: "Places",
++    planning_none_added: "These stops are already in the list.",
++
+     nav_home: "HOME",
+     nav_tax: "TAXES",
+     nav_shopping: "EXPENSES",
+@@ -118,6 +144,19 @@
+     ac_no_results: "No results found"
+   },
+   pt: {
++    planning_title: "Usar dados do Planejamento",
++    planning_hotel: "Usar hospedagem salva",
++    planning_import: "Adicionar paradas do dia",
++    planning_reload: "Atualizar",
++    planning_loading: "Carregando Planejamento…",
++    planning_empty: "Não há paradas salvas para esta viagem.",
++    planning_error: "Não foi possível atualizar o Planejamento.",
++    planning_local: "Dados salvos neste dispositivo",
++    planning_choose: "Escolha um dia",
++    planning_itinerary: "Itinerário",
++    planning_places: "Lugares",
++    planning_none_added: "Estas paradas já estão na lista.",
++
+     nav_home: "INÍCIO",
+     nav_tax: "TAXES",
+     nav_shopping: "GASTOS",
+@@ -194,6 +233,7 @@
+     const k = el.getAttribute("data-i18n-ph");
+     if (t[k]) el.placeholder = t[k];
+   });
++  renderRoutePlanning();
+   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
+ };
+ 
+@@ -551,7 +591,7 @@
+   const uid = window._routeUid;
+   const profile = localStorage.getItem("perfilActivoId") || "default";
+   const tripId = uid ? window.TripContext.active(uid, profile) : "orlando";
+-  return `taxusa_hotel_addr::${profile}::${tripId}`;
++  return `taxusa_hotel_addr::${uid || "sin-usuario"}::${profile}::${tripId}`;
+ }
+ 
+ function onHotelInput(val) {
+@@ -566,8 +606,11 @@
+     return;
+   }
+   spinner.style.display = "block";
++  const requestScope=routePlanningScope();
+   hotelAcTimer = setTimeout(async () => {
+-    hotelAcItems = await searchAddress(val);
++    const found=await searchAddress(val);
++    if(requestScope!==routePlanningScope()||document.getElementById("hotel-input").value!==val)return;
++    hotelAcItems=found;
+     spinner.style.display = "none";
+     renderAcList(listEl, hotelAcItems, item => {
+       document.getElementById("hotel-input").value = item.address;
+@@ -951,7 +994,7 @@
+   const profile = localStorage.getItem("perfilActivoId");
+   const tripId = window.TripContext.active(window._routeUid, profile);
+   sessionStorage.setItem("taxfly-route-import", JSON.stringify({
+-    tripId, profile, startDate: document.getElementById("start-date").value,
++    uid:window._routeUid, importId:routeData.importId || (routeData.importId=crypto.randomUUID()), tripId, profile, startDate: document.getElementById("start-date").value,
+     days: routeData.dayData.map(d => ({ name: d.label, stops: d.stops.map(s => ({
+       name: s.name, note: s.desc || "", url: s.url || ""
+     })) }))
+@@ -1168,3 +1211,60 @@
+     inp.placeholder = HOTEL_PLACEHOLDERS[_phIdx];
+   }
+ });
++
++function routePlanningScope() {
++  const uid=window._routeUid, profile=localStorage.getItem("perfilActivoId");
++  return uid && profile ? JSON.stringify([uid,profile,window.TripContext.active(uid,profile)]) : "";
++}
++function routePlanningGroups(daysData,itinerary) {
++  const groups=[];
++  const add=(kind,day,index,items)=>{
++    const stops=items.filter(item=>item?.name).map(item=>({name:String(item.name),desc:String(item.note||""),url:String(item.url||"")}));
++    if(stops.length) groups.push({key:kind+":"+(day.id??index),kind,label:day.nombre||day.dayName||day.date||day.fecha||String(index+1),stops});
++  };
++  (daysData?.days||[]).forEach((day,i)=>add("places",day,i,day.stops||[]));
++  (itinerary?.dias||[]).forEach((day,i)=>add("itinerary",day,i,(day.bloques||[]).map(block=>({name:block.titulo,note:block.obs,url:block.url}))));
++  return groups;
++}
++function routeStopIdentity(stop) {
++  const norm=value=>String(value||"").trim().replace(/\s+/g," ").toLowerCase();
++  return JSON.stringify([norm(stop.name),norm(stop.url)]);
++}
++function publishRoutePlanning(data) {
++  if(data.scope!==routePlanningScope()) return;
++  const previous=window._routePlanning;
++  if(previous && previous.scope!==data.scope) {stops=[];routeData=null;visited={};renderStops();}
++  window._routePlanning=data;renderRoutePlanning();
++}
++function renderRoutePlanning() {
++  const data=window._routePlanning,select=document.getElementById("planning-day"),status=document.getElementById("planning-status");
++  if(!select||!status)return;
++  const lang=localStorage.getItem("appLang")||"es",t=i18n[lang]||i18n.es;
++  const groups=data?.scope===routePlanningScope()?data.groups||[]:[];
++  const selected=select.value;
++  select.replaceChildren();
++  const option=(value,label)=>{const el=document.createElement("option");el.value=value;el.textContent=label;select.appendChild(el);};
++  option("",t.planning_choose);
++  groups.forEach(group=>option(group.key,t[group.kind==="places"?"planning_places":"planning_itinerary"]+" · "+group.label));
++  if(groups.some(group=>group.key===selected))select.value=selected;
++  select.disabled=!groups.length;
++  document.getElementById("planning-import").disabled=!select.value;
++  document.getElementById("planning-hotel").disabled=!data?.hotel?.addr||data.scope!==routePlanningScope();
++  status.textContent=!data||data.scope!==routePlanningScope()?t.planning_loading:data.error?t.planning_error:data.loading?t.planning_loading:data.local?t.planning_local:!groups.length?t.planning_empty:"";
++}
++function usePlanningHotel() {
++  const data=window._routePlanning;
++  if(!data||data.scope!==routePlanningScope()||!data.hotel?.addr)return;
++  document.getElementById("hotel-input").value=data.hotel.addr;
++  localStorage.setItem(routeHotelOverrideKey(),data.hotel.addr);
++}
++function importPlanningStops() {
++  const data=window._routePlanning;
++  if(!data||data.scope!==routePlanningScope())return;
++  const group=data.groups.find(group=>group.key===document.getElementById("planning-day").value);
++  if(!group)return;
++  const known=new Set(stops.map(routeStopIdentity));let added=0;
++  for(const stop of group.stops){const key=routeStopIdentity(stop);if(known.has(key))continue;known.add(key);stops.push({...stop});added++;}
++  renderStops();
++  showToast(added?addedToastMsg(added):(i18n[localStorage.getItem("appLang")]||i18n.es).planning_none_added);
++}
+--- a/assets/rutas.js
++++ b/assets/rutas.js
+@@ -108,34 +108,44 @@
+   window.changeLanguage(lang);
+ });
+ 
++let routePlanningGeneration=0;
+ async function loadTripStartingPoint(uid) {
+-  const profile = localStorage.getItem("perfilActivoId");
+-  if (!profile) return;
+-  const tripId = window.TripContext.active(uid, profile);
+-  const overrideKey = `taxusa_hotel_addr::${profile}::${tripId}`;
+-  if (tripId === "orlando" && !localStorage.getItem(overrideKey)) {
+-    const legacy = localStorage.getItem("taxusa_hotel_addr");
+-    if (legacy) localStorage.setItem(overrideKey, legacy);
+-  }
+-  const input = document.getElementById("hotel-input");
+-  if (!input) return;
+-  const override = localStorage.getItem(overrideKey);
+-  if (override) { input.value = override; return; }
+-  const localKey = `orlando-hotel-v1::${profile}${tripId === "orlando" ? "" : "::" + tripId}`;
+-  let hotel = null;
+-  try { hotel = JSON.parse(localStorage.getItem(localKey) || "null"); } catch (_) {}
+-  try {
+-    const path = tripId === "orlando"
+-      ? ["usuarios", uid, "perfiles", profile, "orlando", "hotel"]
+-      : ["usuarios", uid, "perfiles", profile, "tripPlanning", tripId, "data", "hotel"];
+-    const snap = await getDoc(doc(db, ...path));
+-    if (snap.exists()) hotel = snap.data();
+-  } catch (_) {}
+-  const trip = window.TripContext.readTrips(uid, profile).find(t => t.id === tripId);
+-  const destination = trip?.destinations?.[trip.activeDestination || 0];
+-  const location = destination && hotel?.locations?.[destination.city + "::" + destination.state];
+-  if (!localStorage.getItem(overrideKey) && (location?.addr || hotel?.addr)) input.value = location?.addr || hotel.addr;
++  const profile=localStorage.getItem("perfilActivoId");
++  if(!uid||!profile)return;
++  const tripId=window.TripContext.active(uid,profile),scope=JSON.stringify([uid,profile,tripId]);
++  const generation=++routePlanningGeneration;
++  const valid=()=>generation===routePlanningGeneration&&window._routeUid===uid&&localStorage.getItem("perfilActivoId")===profile&&window.TripContext.active(uid,profile)===tripId;
++  const input=document.getElementById("hotel-input"),initial=input?.value;
++  const overrideKey=`taxusa_hotel_addr::${uid}::${profile}::${tripId}`;
++  const override=localStorage.getItem(overrideKey);
++  if(input && !input.value && override)input.value=override;
++  const cacheKey="taxfly-route-planning::"+scope;
++  let cached;try{cached=JSON.parse(localStorage.getItem(cacheKey)||"null");}catch(_){}
++  const previous=window._routePlanning?.scope===scope?window._routePlanning:cached?.scope===scope?cached:{scope,groups:[],hotel:null};
++  window.publishRoutePlanning({...previous,loading:true,local:!!cached});
++  const path=tripId==="orlando"?["usuarios",uid,"perfiles",profile,"orlando"]:["usuarios",uid,"perfiles",profile,"tripPlanning",tripId,"data"];
++  const results=await Promise.allSettled(["hotel","days","itinerario"].map(name=>getDoc(doc(db,...path,name))));
++  if(!valid())return;
++  if(results.some(result=>result.status!=="fulfilled")) {
++    window.publishRoutePlanning({...previous,loading:false,local:!!cached,error:true});return;
++  }
++  // An offline empty cache is not a confirmed empty trip.
++  if(results.some(result=>result.value.metadata?.fromCache)) {
++    window.publishRoutePlanning({...previous,loading:false,local:!!cached,error:!cached});return;
++  }
++  const [hotel,days,itinerary]=results.map(result=>result.value.exists()?result.value.data():null);
++  const trip=window.TripContext.readTrips(uid,profile).find(trip=>trip.id===tripId);
++  const destination=trip?.destinations?.[trip.activeDestination||0];
++  const location=destination&&hotel?.locations?.[destination.city+"::"+destination.state];
++  const selectedHotel=location||hotel;
++  const data={scope,hotel:selectedHotel,groups:window.routePlanningGroups(days,itinerary),loading:false,local:false};
++  try{localStorage.setItem(cacheKey,JSON.stringify(data));}catch(_){}
++  window.publishRoutePlanning(data);
++  // Preserve typing and explicit manual overrides while requests are in flight.
++  if(input && input.value===initial && localStorage.getItem(overrideKey)===null && selectedHotel?.addr) input.value=selectedHotel.addr;
+ }
++window.loadRoutePlanning=()=>currentUser&&loadTripStartingPoint(currentUser.uid);
++window.addEventListener("taxfly:tripchange",()=>window.loadRoutePlanning());
+ 
+ window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
+ 
+--- a/assets/travel-core.js
++++ b/assets/travel-core.js
+@@ -59,6 +59,13 @@
+  },()=>{if(active){state.fail();publish();}});
+  return ()=>{active=false;stop();};
+ }
++function publishBudget(uid,pid,trip,value) {
++ if(!uid||!pid||!trip||!Number.isFinite(value)||value<0)return false;
++ const key='taxusa_budget_cache_'+pid+'::'+uid+(trip==='orlando'?'':'::'+trip);
++ try{localStorage.setItem(key,String(value));}catch(_){}
++ root.dispatchEvent(new CustomEvent('taxfly:budget-updated',{detail:{uid,pid,trip,value}}));
++ return true;
++}
+ function overlayExpenses(expenses,ops){const map=new Map((expenses||[]).map(g=>[g.id,g]));for(const op of ops||[]){if(op.type==='upsert')map.set(op.id,{...map.get(op.id),...op.data,id:op.id,_pending:true});else if(op.type==='upd'&&map.has(op.id))map.set(op.id,{...map.get(op.id),...op.data});else if(op.type==='del')map.delete(op.id);}return [...map.values()];}
+-const api={cities,scope,alertKey,paymentId,validZone,destination,instant,localDate,zoneFields,paid,outstanding,budget,budgetText,readReservations,writeReservations,planningKey,watchReservations,loadState,overlayExpenses};root.TaxflyTravel=api;if(typeof module!=='undefined')module.exports=api;
++const api={cities,scope,alertKey,paymentId,validZone,destination,instant,localDate,zoneFields,paid,outstanding,budget,budgetText,readReservations,writeReservations,planningKey,watchReservations,loadState,overlayExpenses,publishBudget};root.TaxflyTravel=api;if(typeof module!=='undefined')module.exports=api;
+ })(typeof window!=='undefined'?window:globalThis);
+--- a/rutas.html
++++ b/rutas.html
+@@ -222,6 +222,10 @@
+ #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+ 
+ @keyframes pinBoxIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
++/* Reuse route method buttons and palette for saved planning data. */
++.route-planning-action{flex:1 1 160px;min-width:0;white-space:normal;text-align:center;}
++#planning-import{width:100%;margin-top:8px;}
++.route-planning-action:disabled{opacity:.5;cursor:default;}
+ </style>
+ <script>
+ if ("serviceWorker" in navigator) {
+@@ -289,6 +293,18 @@
+     </div>
+ 
+     
++    <div class="input-group">
++      <span class="slabel" data-i18n="planning_title">Usar datos de Planificación</span>
++      <div class="days-row route-planning-actions" style="flex-wrap:wrap">
++        <button type="button" class="method-btn route-planning-action" id="planning-hotel" onclick="usePlanningHotel()" disabled data-i18n="planning_hotel">Usar alojamiento guardado</button>
++        <button type="button" class="method-btn route-planning-action" onclick="window.loadRoutePlanning?.()" data-i18n="planning_reload">Actualizar</button>
++      </div>
++      <label class="slabel" for="planning-day" data-i18n="planning_choose">Elegí un día</label>
++      <select id="planning-day" disabled style="width:100%;min-width:0" onchange="document.getElementById('planning-import').disabled=!this.value"></select>
++      <button type="button" class="method-btn route-planning-action" id="planning-import" onclick="importPlanningStops()" disabled data-i18n="planning_import">Agregar paradas del día</button>
++      <p id="planning-status" class="slabel" role="status" data-i18n="planning_loading">Cargando Planificación…</p>
++    </div>
++
+     <span class="slabel" data-i18n="label_days">📅 Cantidad de días</span>
+     <div class="days-row">
+       <button class="days-btn" onclick="changeDays(-1)">−</button>
+--- a/sw.js
++++ b/sw.js
+@@ -1,4 +1,4 @@
+-const CACHE = "taxfly-21857c3e7d37";
++const CACHE = "taxfly-a04afa22d5ee";
+ 
+ const TILES_CACHE = "taxfly-tiles-v1";
+ 
+--- a/tests/flow.test.cjs
++++ b/tests/flow.test.cjs
+@@ -382,11 +382,11 @@
+ 
+ test('route import merges by date and stop name without replacing existing itinerary blocks', () => {
+   const src=between(read('assets/plan-app.js'),'function importSharedRoute()','let itinDias =');
+-  const pending={tripId:'orlando',profile:'p',startDate:'2027-01-10',days:[{name:'Día 1',stops:[
++  const pending={uid:'u',importId:'transfer',tripId:'orlando',profile:'p',startDate:'2027-01-10',days:[{name:'Día 1',stops:[
+     {name:'Museo',note:'Entrada',url:'https://maps.example/museo'}, {name:'Parque',note:'',url:''}]}]};
+   const store=storage({'taxfly-route-import':JSON.stringify(pending)});
+   const days=[{fecha:'2027-01-10',nombre:'Día existente',bloques:[{id:'old',titulo:'Museo'}]}];let saves=0;
+-  const c=context(src,{sessionStorage:store,window:{_perfilId:'p',_tripId:'orlando'},itinDias:days,
++  const c=context(src,{sessionStorage:store,window:{_taxflyTripUid:'u',_perfilId:'p',_tripId:'orlando'},itinDias:days,
+     itinNewId:()=>String(Math.random()),itinNorm:s=>s.toLowerCase(),itinSave:()=>saves++,showMToast:()=>{},Date,JSON});
+   c.importSharedRoute();
+   assert.equal(days.length,1);
+--- a/tests/loading-state.test.cjs
++++ b/tests/loading-state.test.cjs
+@@ -97,7 +97,7 @@
+ 
+ test('planning budget ignores cached missing fields, retains refresh errors and rejects another account',()=>{
+  const ls=storage(),callbacks=[],values=[];ls.setItem('taxusa_budget_cache_p::u','500');
+- const c=vm.createContext({window:{TaxflyTravel:T,budgetRefresh(){}},currentUid:'u',currentPerfilId:'p',activeTripId:'orlando',localStorage:ls,perfilDocRef:()=> 'profile',tripDocRef:()=> 'trip',onSnapshot:(ref,options,cb,error)=>{callbacks.push({cb,error});return ()=>{};}});
++ const c=vm.createContext({window:{TaxflyTravel:T,budgetRefresh(){},addEventListener(){},removeEventListener(){}},currentUid:'u',currentPerfilId:'p',activeTripId:'orlando',localStorage:ls,perfilDocRef:()=> 'profile',tripDocRef:()=> 'trip',onSnapshot:(ref,options,cb,error)=>{callbacks.push({cb,error});return ()=>{};}});
+  vm.runInContext(between(read('assets/plan-firebase.js'),'function listenTaxflyPresupuesto(cb)','function listenTaxflyGastos(cb)'),c);
+  c.listenTaxflyPresupuesto(x=>values.push(x));assert.deepEqual(values,[500]);
+  callbacks[0].cb(docSnap({},true));assert.deepEqual(values,[500]);callbacks[0].error();assert.equal(c.window._planFinanceError,true);assert.equal(ls.getItem('taxusa_budget_cache_p::u'),'500');
+--- a/tests/section-connections.test.cjs
++++ b/tests/section-connections.test.cjs
+@@ -0,0 +1,117 @@
++const {test}=require('node:test'),assert=require('node:assert/strict');
++const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
++const root=path.resolve(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
++const between=(s,a,b)=>s.slice(s.indexOf(a),s.indexOf(b,s.indexOf(a)));
++const T=require('../assets/travel-core.js');
++function storage(){const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,String(v)),removeItem:k=>map.delete(k)};}
++const routeApp=read('assets/rutas-app.js'),routeModule=read('assets/rutas.js'),plan=read('assets/plan-firebase.js');
++function routeHarness(){
++ const ls=storage();ls.setItem('perfilActivoId','p');const input={value:''},pending=[],published=[];
++ const window={_routeUid:'u',TripContext:{active:()=> 'a',readTrips:()=>[{id:'a',destinations:[{city:'Orlando',state:'FL'}]}]},publishRoutePlanning:data=>{published.push(data);window._routePlanning=data;},addEventListener(){}};
++ const c=vm.createContext({window,localStorage:ls,document:{getElementById:()=>input},currentUser:{uid:'u'},db:{},doc:(_,...parts)=>parts.join('/'),getDoc:ref=>new Promise((resolve,reject)=>pending.push({ref,resolve,reject})),Promise,JSON});
++ vm.runInContext(between(routeApp,'function routePlanningGroups(','function routeStopIdentity('),c);window.routePlanningGroups=c.routePlanningGroups;
++ vm.runInContext(between(routeModule,'let routePlanningGeneration=0;','window.doLogout'),c);
++ const finish=(offset=0,data=[{addr:'Saved',locations:{'Orlando::FL':{addr:'Scoped hotel'}}},{days:[{id:'shops',dayName:'Original name',stops:[{name:'Outlet',note:'Personal note',url:'https://maps/a'}]}]},{dias:[{id:'park',nombre:'EPCOT',bloques:[{titulo:'Test Track',obs:'My note'}]}]}])=>{for(let i=0;i<3;i++)pending[offset+i].resolve({metadata:{fromCache:false},exists:()=>data[i]!==null,data:()=>data[i]});};
++ return {c,ls,input,pending,published,window,finish};
++}
++test('routes reuse the destination hotel and expose both planning day types without mutating content',async()=>{
++ const h=routeHarness(),request=h.c.loadTripStartingPoint('u');h.finish();await request;
++ assert.equal(h.input.value,'Scoped hotel');const data=h.published.at(-1);
++ assert.equal(data.groups.length,2);assert.equal(data.groups[0].label,'Original name');assert.equal(data.groups[0].stops[0].desc,'Personal note');
++});
++test('late accommodation responses preserve typing, including an explicit blank override',async()=>{
++ const h=routeHarness();let request=h.c.loadTripStartingPoint('u');h.input.value='My manual address';h.finish();await request;assert.equal(h.input.value,'My manual address');
++ h.input.value='';h.ls.setItem('taxusa_hotel_addr::u::p::a','');request=h.c.loadTripStartingPoint('u');h.finish(3);await request;assert.equal(h.input.value,'');
++});
++test('late route planning responses cannot publish into a different profile or replace a newer refresh',async()=>{
++ const h=routeHarness(),old=h.c.loadTripStartingPoint('u'),latest=h.c.loadTripStartingPoint('u');h.finish(3);await latest;const count=h.published.length;h.finish();await old;assert.equal(h.published.length,count);
++ const other=h.c.loadTripStartingPoint('u');h.ls.setItem('perfilActivoId','q');h.finish(6);await other;assert.equal(h.published.at(-1).loading,true); // no old completion published
++});
++test('failed refresh preserves known same-context planning; cached-empty responses are not confirmed emptiness',async()=>{
++ const h=routeHarness();let req=h.c.loadTripStartingPoint('u');h.finish();await req;
++ req=h.c.loadTripStartingPoint('u');h.pending[3].reject(Error('network'));h.pending[4].resolve({});h.pending[5].resolve({});await req;assert.equal(h.published.at(-1).groups.length,2);assert.equal(h.published.at(-1).error,true);
++ const fresh=routeHarness();req=fresh.c.loadTripStartingPoint('u');for(const p of fresh.pending)p.resolve({metadata:{fromCache:true},exists:()=>false});await req;assert.equal(fresh.published.at(-1).error,true);
++});
++test('reimporting stops avoids duplicates while preserving manual entries and saved source content',()=>{
++ const ls=storage();ls.setItem('perfilActivoId','p');const original={name:'Store',desc:'Note',url:'https://maps/a'};
++ const window={_routeUid:'u',TripContext:{active:()=> 'a'},_routePlanning:{scope:JSON.stringify(['u','p','a']),groups:[{key:'g',stops:[original]}]}};
++ const c=vm.createContext({window,localStorage:ls,document:{getElementById:()=>({value:'g'})},i18n:{es:{planning_none_added:"Already added"}},stops:[{name:'Manual',url:''}],renderStops(){},showToast(){},addedToastMsg:n=>n,Set,JSON});
++ vm.runInContext(between(routeApp,'function routePlanningScope()','function routePlanningGroups(')+between(routeApp,'function routeStopIdentity(','function publishRoutePlanning(')+routeApp.slice(routeApp.indexOf('function importPlanningStops()')),c);
++ c.importPlanningStops();c.importPlanningStops();assert.equal(c.stops.length,2);assert.equal(c.stops[0].name,'Manual');c.stops[1].desc='Changed';assert.equal(original.desc,'Note');
++ window._routeUid='other';c.importPlanningStops();assert.equal(c.stops.length,2);
++});
++test('new route UI strings are present in ES, EN and PT in the existing translation dictionary',()=>{
++ const c=vm.createContext({});vm.runInContext(between(routeApp,'const i18n =','window.changeLanguage')+';globalThis.dict=i18n;',c);
++ for(const key of Object.keys(c.dict.es).filter(key=>key.startsWith('planning_')))for(const lang of ['es','en','pt'])assert.ok(c.dict[lang][key],lang+key);
++});
++function expenseHarness(){
++ const ls=storage(),events=new Map(),writes=[],snapshots=[],totals=[];ls.setItem('taxusa_gastos_cache_p::u','[]');
++ const window={TaxflyTravel:T,addEventListener:(name,fn)=>{if(!events.has(name))events.set(name,new Set());events.get(name).add(fn);},removeEventListener:(name,fn)=>events.get(name)?.delete(fn),dispatchEvent:e=>{for(const fn of events.get(e.type)||[])fn(e);}};
++ const c=vm.createContext({window,localStorage:ls,currentUid:'u',currentPerfilId:'p',activeTripId:'a',navigator:{onLine:true},db:{},collection:(_,...parts)=>parts.join('/'),doc:(collection,id)=>({collection,id:id||'fixed-id'}),setDoc:(ref,data)=>new Promise((resolve,reject)=>writes.push({ref,data,resolve,reject})),onSnapshot:(_,options,next)=>{snapshots.push(next);return ()=>{};},devError(){},Event,JSON,Date});
++ vm.runInContext(between(plan,'function listenTaxflyGastos(cb) {','async function migrateManualExpenses()')+between(plan,'async function addTaxflyGasto(data) {','window._fb ='),c);
++ const stop=c.listenTaxflyGastos((total,n)=>totals.push([total,n]));return {c,ls,window,events,writes,snapshots,totals,stop};
++}
++test('a queued planning expense immediately refreshes totals, matches its server row once, and removes its listeners',async()=>{
++ const h=expenseHarness();assert.equal(await h.c.addTaxflyGasto({nombre:'Food',valor:25}),true);
++ assert.deepEqual(h.totals.at(-1),[25,1]);const op=JSON.parse(h.ls.getItem('taxusa_gastos_pending_p::u'))[0];assert.equal(op.type,'upsert');assert.equal(op.id,h.writes[0].ref.id);
++ h.snapshots[0]({metadata:{fromCache:false},docs:[{id:op.id,data:()=>op.data}]});assert.deepEqual(h.totals.at(-1),[25,1]);
++ h.writes[0].resolve();await new Promise(setImmediate);assert.equal(JSON.parse(h.ls.getItem('taxusa_gastos_pending_p::u')).length,0);assert.deepEqual(h.totals.at(-1),[25,1]);
++ h.stop();assert.equal(h.events.get('taxfly-pending-updated').size,0);
++});
++test('failed expense writes retain the fixed ID for retry and ignore another trip',async()=>{
++ const h=expenseHarness();await h.c.addTaxflyGasto({valor:10});h.writes[0].reject(Error('uncertain result'));await new Promise(setImmediate);
++ const key='taxusa_gastos_pending_p::u',ops=JSON.parse(h.ls.getItem(key));assert.equal(ops.length,1);
++ const actual=new Map();const purchases=read('assets/compras.js');
++ const c=vm.createContext({currentUser:{uid:'u'},perfilId:'p',db:{},localStorage:h.ls,pendingGastosKey:()=>key,getPendingGastos:()=>JSON.parse(h.ls.getItem(key)),flushingExpenses:false,doc:(_,...parts)=>parts.at(-1),setDoc:async(id,data)=>actual.set(id,data),window:{dispatchEvent(){}},navigator:{onLine:true},Event,JSON,Set});
++ vm.runInContext(between(purchases,'async function flushPendingGastos() {','window.addEventListener("online"'),c);
++ await c.flushPendingGastos();h.ls.setItem(key,JSON.stringify(ops));await c.flushPendingGastos();assert.equal(actual.size,1);assert.equal(actual.get(ops[0].id).valor,10);
++ h.c.activeTripId='b';const count=h.totals.length;h.window.dispatchEvent(new Event('taxfly-pending-updated'));assert.equal(h.totals.length,count);
++});
++test('repeated route transfer uses its stable import ID without creating another undated day; another account is ignored',()=>{
++ const ls=storage(),data={uid:'u',profile:'p',tripId:'a',importId:'transfer',days:[{name:'Original day',stops:[{name:'Outlet'}]}]};ls.setItem('taxfly-route-import',JSON.stringify(data));
++ let id=0;const c=vm.createContext({sessionStorage:ls,window:{_taxflyTripUid:'u',_perfilId:'p',_tripId:'a'},itinDias:[],itinNorm:s=>s.toLowerCase(),itinNewId:()=>String(++id),itinSave(){},showMToast(){},JSON,Date,Array});
++ const app=read('assets/plan-app.js');vm.runInContext(between(app,'function importSharedRoute() {','let itinDias ='),c);
++ c.importSharedRoute();ls.setItem('taxfly-route-import',JSON.stringify(data));c.importSharedRoute();assert.equal(c.itinDias.length,1);assert.equal(c.itinDias[0].bloques.length,1);
++ data.uid='other';ls.setItem('taxfly-route-import',JSON.stringify(data));c.importSharedRoute();assert.equal(c.itinDias.length,1);
++});
++test('a saved budget updates Home, Expenses and Planning immediately only for the matching account and trip',()=>{
++ for(const page of ['assets/index-app.js','assets/compras.js']){
++  let handler,renders=0;const state=T.loadState(100);
++  const window={addEventListener:(name,fn)=>{if(name==='taxfly:budget-updated')handler=fn;},TripContext:{view:()=> 'a'}};
++  const c=vm.createContext({window,currentUser:{uid:'u'},perfilId:'p',homeFinance:{base:state},homeScope:'s',homeContext:()=> 's',financeStates:{base:state},expenseScope:'s',expenseContext:()=> 's',presupuestoBase:100,lastGastosTotal:0,renderBudgetUI:()=>renders++,updateBudgetDisplay:()=>renders++});
++  const source=read(page),start=source.indexOf('window.addEventListener("taxfly:budget-updated"');
++  vm.runInContext(source.slice(start,source.indexOf('\n});',start)+4),c);
++  for(const detail of [{uid:'other',pid:'p',trip:'a',value:2},{uid:'u',pid:'other',trip:'a',value:2},{uid:'u',pid:'p',trip:'b',value:2}])handler({detail});assert.equal(renders,0);
++  handler({detail:{uid:'u',pid:'p',trip:'a',value:250}});assert.equal(state.value,250);assert.equal(renders,1);
++ }
++ const h=expenseHarness();let handler,total;
++ h.c.window.addEventListener=(name,fn)=>{if(name==='taxfly:budget-updated')handler=fn;};
++ h.c.perfilDocRef=()=>({});h.c.tripDocRef=()=>({});
++ vm.runInContext(between(plan,'function listenTaxflyPresupuesto(cb) {','function listenTaxflyGastos(cb) {'),h.c);
++ h.c.listenTaxflyPresupuesto(value=>total=value);handler({detail:{uid:'u',pid:'p',trip:'a',value:250}});assert.equal(total,250);
++ h.c.activeTripId='b';handler({detail:{uid:'u',pid:'p',trip:'a',value:400}});assert.equal(total,250);
++});
++test('budget publisher uses the canonical scoped cache key and rejects invalid values',()=>{
++ const ls=storage(),events=[];const window={dispatchEvent:e=>events.push(e)};
++ vm.runInNewContext(read('assets/travel-core.js'),{window,localStorage:ls,CustomEvent:class{constructor(type,options){this.type=type;this.detail=options.detail;}}});
++ assert.equal(window.TaxflyTravel.publishBudget('u','p','a',250),true);assert.equal(ls.getItem('taxusa_budget_cache_p::u::a'),'250');assert.equal(events[0].detail.trip,'a');
++ assert.equal(window.TaxflyTravel.publishBudget('u','p','a',NaN),false);assert.equal(events.length,1);
++});
++test('creating an expense offline queues one stable row that the Home/Planning overlay can count',async()=>{
++ const ops=[],ls=storage(),fields={nombre:{value:'Lunch',focus(){}},valor:{value:'18'}};
++ const window={TaxflyTravel:T,TripContext:{assign:()=> 'a'}};
++ const c=vm.createContext({window,localStorage:ls,currentUser:{uid:'u'},perfilId:'p',navigator:{onLine:false},allGastos:[],LAST_CAT_KEY:'cat',document:{getElementById:id=>fields[id],querySelector:()=>null},db:{},collection:()=>({}),doc:()=>({id:'new-fixed'}),queueGastoOp:op=>ops.push(op),getPendingGastos:()=>ops,guardarGastosEnCache(){},renderGastosList(){},showExpToast(){},bt:t=>t,Date});
++ vm.runInContext(between(read('assets/compras.js'),'window.addGastoWithThumb =','let _viewerGastoId'),c);await c.window.addGastoWithThumb('');
++ assert.equal(ops.length,1);assert.equal(ops[0].type,'upsert');assert.equal(ops[0].id,'new-fixed');assert.equal(c.allGastos.length,1);assert.equal(c.allGastos[0].valor,18);
++});
++
++test('the route connector never announces no saved stops before authentication and planning loading complete',()=>{
++ const ls=storage();ls.setItem('perfilActivoId','p');const nodes={'planning-day':{value:'',replaceChildren(){},appendChild(){}},'planning-status':{},'planning-import':{},'planning-hotel':{}};
++ const window={_routeUid:'u',TripContext:{active:()=> 'a'}};
++ const c=vm.createContext({window,localStorage:ls,document:{getElementById:id=>nodes[id],createElement:()=>({})},JSON});
++ vm.runInContext(between(routeApp,'const i18n =','window.changeLanguage')+between(routeApp,'function routePlanningScope()','function routePlanningGroups(')+between(routeApp,'function renderRoutePlanning()','function usePlanningHotel()'),c);
++ c.renderRoutePlanning();assert.equal(nodes['planning-status'].textContent,'Cargando Planificación…');
++ const scope=JSON.stringify(['u','p','a']);window._routePlanning={scope,groups:[],loading:true};c.renderRoutePlanning();assert.equal(nodes['planning-status'].textContent,'Cargando Planificación…');
++ window._routePlanning={scope,groups:[],error:true};c.renderRoutePlanning();assert.equal(nodes['planning-status'].textContent,'No se pudo actualizar Planificación.');
++ window._routePlanning={scope,groups:[]};c.renderRoutePlanning();assert.equal(nodes['planning-status'].textContent,'No hay paradas guardadas para este viaje.');
++});

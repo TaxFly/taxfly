@@ -911,7 +911,7 @@ function renderNotes(notes) {
   }
   notesList.innerHTML = notes.map(d => {
     const ts = d.createdAt ? new Date(d.createdAt).toLocaleDateString(lang === "en" ? "en-US" : lang === "pt" ? "pt-BR" : "es-AR") : "";
-    return `\n            <div class="note-item" style="${d._pending ? "opacity:.7;" : ""}">\n                <div>\n                    <div class="note-text">${d.text}${window.tfSyncBadge ? tfSyncBadge(d._pending ? "pending" : "ok", true) : ""}</div>\n                    ${ts ? `<div class="note-meta">${ts}</div>` : ""}\n                </div>\n                <button class="note-del" onclick="window.deleteNote('${d.id}')" aria-label="Eliminar nota">✕</button>\n            </div>`;
+    return `\n            <div class="note-item" data-search-note="${String(d.id).replace(/[^a-zA-Z0-9_-]/g, "")}" style="${d._pending ? "opacity:.7;" : ""}">\n                <div>\n                    <div class="note-text">${d.text}${window.tfSyncBadge ? tfSyncBadge(d._pending ? "pending" : "ok", true) : ""}</div>\n                    ${ts ? `<div class="note-meta">${ts}</div>` : ""}\n                </div>\n                <button class="note-del" onclick="window.deleteNote('${d.id}')" aria-label="Eliminar nota">✕</button>\n            </div>`;
   }).join("");
 }
 

@@ -1,0 +1,335 @@
+--- a/assets/plan-app.js
++++ b/assets/plan-app.js
+@@ -2555,11 +2555,59 @@
+   }
+ }
+ 
++// Maps are optional: load their existing vendor and stylesheet only for a visible map.
++let leafletPromise=null;
++function ensureLeaflet() {
++  if(leafletPromise)return leafletPromise;
++  const added=[];
++  let timer;
++  const ready=new Promise((resolve,reject)=>{
++    timer=setTimeout(()=>reject(new Error('Map resources timed out')),12000);
++    const resource=(tag,attributes)=>new Promise((done,fail)=>{
++      const node=document.createElement(tag);
++      Object.assign(node,attributes);
++      node.onload=()=>done();node.onerror=()=>fail(new Error('Map resource unavailable'));
++      added.push(node);document.head.appendChild(node);
++    });
++    const css=document.querySelector('link[data-taxfly-leaflet]');
++    const styleReady=css?.sheet?Promise.resolve():resource('link',{rel:'stylesheet',href:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'});
++    if(!css&&added.length)added[0].setAttribute('data-taxfly-leaflet','');
++    const scriptReady=window.L?Promise.resolve():resource('script',{src:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',async:true});
++    Promise.all([styleReady,scriptReady]).then(()=>window.L?resolve(window.L):reject(new Error('Map library unavailable')),reject);
++  });
++  leafletPromise=ready.then(value=>{clearTimeout(timer);return value;},error=>{
++    clearTimeout(timer);added.forEach(node=>{node.onload=null;node.onerror=null;node.remove();});leafletPromise=null;throw error;
++  });
++  return leafletPromise;
++}
++function mapIsCurrent(container,id,panelId) {
++  return container.isConnected!==false&&document.getElementById(id)===container&&document.getElementById(panelId)?.classList.contains('active');
++}
++function mapLoading(container){container.setAttribute('aria-busy','true');container.textContent=window.tr?window.tr('Cargando mapa…'):'Cargando mapa…';}
++function mapLoadError(container,retry){
++  container.setAttribute('aria-busy','false');container.replaceChildren();
++  const note=document.createElement('p');note.className='budget-note';
++  note.textContent=window.tr?window.tr('No se pudo cargar el mapa.'):'No se pudo cargar el mapa.';
++  const button=document.createElement('button');button.type='button';button.className='mbtn';
++  button.textContent=window.tr?window.tr('Reintentar'):'Reintentar';button.addEventListener('click',retry);
++  container.append(note,button);
++}
++let dayMapRequest=0;
++const parkMapRequests=new Map();
++
+ let _leafletMap = null;
+ 
+-function initDayMap(d) {
+-  const container = document.getElementById(`day-map-container-${d}`);
+-  if (!container) return;
++async function initDayMap(d) {
++  const request=++dayMapRequest,id=`day-map-container-${d}`;
++  const container = document.getElementById(id);
++  if (!container || !mapIsCurrent(container,id,'panel-outlets') || !days[d]) return;
++  mapLoading(container);
++  try {await ensureLeaflet();}catch(_){
++    if(request===dayMapRequest&&mapIsCurrent(container,id,'panel-outlets'))mapLoadError(container,()=>initDayMap(d));
++    return;
++  }
++  if(request!==dayMapRequest||!mapIsCurrent(container,id,'panel-outlets'))return;
++  container.setAttribute('aria-busy','false');
+   if (_leafletMap) {
+     _leafletMap.remove();
+     _leafletMap = null;
+@@ -3508,9 +3556,18 @@
+   }
+ }
+ 
+-function initParkMap(parkId) {
+-  const container = document.getElementById(`pkmap-container-${parkId}`);
+-  if (!container || container.style.display === "none") return;
++async function initParkMap(parkId) {
++  const id=`pkmap-container-${parkId}`,request=(parkMapRequests.get(parkId)||0)+1;
++  parkMapRequests.set(parkId,request);
++  const container = document.getElementById(id);
++  if (!container || container.style.display === "none" || !mapIsCurrent(container,id,'panel-parques')) return;
++  mapLoading(container);
++  try {await ensureLeaflet();}catch(_){
++    if(parkMapRequests.get(parkId)===request&&container.style.display!=='none'&&mapIsCurrent(container,id,'panel-parques'))mapLoadError(container,()=>initParkMap(parkId));
++    return;
++  }
++  if(parkMapRequests.get(parkId)!==request||container.style.display==='none'||!mapIsCurrent(container,id,'panel-parques'))return;
++  container.setAttribute('aria-busy','false');
+   if (_parkMaps[parkId]) {
+     _parkMaps[parkId].remove();
+     delete _parkMaps[parkId];
+--- a/assets/plan-firebase.js
++++ b/assets/plan-firebase.js
+@@ -72,9 +72,13 @@
+   // y la sincronizacion con el servidor sigue en segundo plano.
+   publishTrip();
+   const startedWith = activeTripId;
+-  const hydrating = window.TripContext.hydrate(db,currentUid,currentPerfilId,getDocs,collection,publishTrip)
+-    .catch(() => {}).then(() => publishTrip());
+-  if (!trips.length) { await hydrating; return; }
++  let resolveReady;
++  const ready = new Promise(resolve => { resolveReady=resolve; });
++  const hydrating = window.TripContext.hydrate(db,currentUid,currentPerfilId,getDocs,collection,()=>{
++    publishTrip();
++    if(trips.length || window.TripContext.status(currentUid,currentPerfilId).phase!=='loading')resolveReady();
++  }).catch(() => {}).then(() => {publishTrip();resolveReady();});
++  if (!trips.length) { await ready; return; }
+   hydrating.then(() => { if (activeTripId !== startedWith) location.reload(); });
+ }
+ function listenTripDocuments() {
+@@ -304,7 +308,10 @@
+   if(generation!==planGeneration)return;
+   if (!trips.length) { location.replace("index.html#viajes"); return; }
+   listenTripDocuments();
+-  const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
++  const withTimeout = (p, ms) => new Promise((resolve,reject) => {
++    const timer=setTimeout(()=>resolve(null),ms);
++    Promise.resolve(p).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
++  });
+   const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 6e3), withTimeout(fbGet("days"), 6e3), withTimeout(fbGet("visited"), 6e3), withTimeout(fbGet("meals"), 6e3), withTimeout(fbGet("walmart"), 6e3), withTimeout(fbGet("wmChecked"), 6e3), withTimeout(fbGet("shopping"), 6e3), withTimeout(fbGet("customParks"), 6e3), withTimeout(fbGet("parquesExtra"), 6e3), withTimeout(fbGet("coordOverrides"), 6e3), withTimeout(fbGet("parques"), 6e3), withTimeout(fbGet("budget"), 6e3), withTimeout(fbGet("itinerario"), 6e3), withTimeout(fbGet("tips"), 6e3), withTimeout(fbGet("parquesExcel"), 6e3), withTimeout(fbGet("reservations"), 6e3) ]);
+   if(generation!==planGeneration)return;
+   const val = r => r.status === "fulfilled" ? r.value : null;
+--- a/assets/plan-i18n.js
++++ b/assets/plan-i18n.js
+@@ -327,6 +327,9 @@
+   };
+   window.tr = t;
+   add({
++    "Cargando mapa…": ["Loading map…", "Carregando mapa…"],
++    "No se pudo cargar el mapa.": ["Could not load the map.", "Não foi possível carregar o mapa."],
++    "Reintentar": ["Retry", "Tentar novamente"],
+     "Cargando…": ["Loading…", "Carregando…"],
+     "No se pudo actualizar.": ["Could not refresh.", "Não foi possível atualizar."],
+     "Sin conexión · datos no disponibles": ["Offline · data unavailable", "Sem conexão · dados indisponíveis"],
+--- a/assets/trip-context.js
++++ b/assets/trip-context.js
+@@ -3,6 +3,7 @@
+   const legacy = {id:'orlando', name:'Mi viaje a Orlando', destinations:[{city:'Orlando',state:'Florida'}]};
+   let sdk = null;
+   const hydration = new Map();
++  const hydrationJobs = new Map();
+   const hydrationKey=(uid,profile)=>JSON.stringify([uid,profile]);
+   function status(uid,profile) {
+     return {...(hydration.get(hydrationKey(uid,profile))||{phase:'loading'}),hasData:safeGet(keys(uid,profile).list)!==null};
+@@ -97,7 +98,24 @@
+     }
+     emit(uid,profile); return success;
+   }
+-  async function hydrate(db,uid,profile,getDocs,collection,onChange) {
++  // Settings and the page can request the same trip list concurrently.
++  // Share only in-flight work for the exact account/profile and Firestore instance.
++  function hydrate(db,uid,profile,getDocs,collection,onChange) {
++    const key=hydrationKey(uid,profile),existing=hydrationJobs.get(key);
++    if(existing&&existing.db===db){
++      if(onChange){existing.listeners.add(onChange);try{onChange();}catch(_){}}
++      return existing.promise;
++    }
++    const job={db,listeners:new Set(onChange?[onChange]:[]),promise:null};
++    hydrationJobs.set(key,job);
++    const notify=()=>{for(const listener of job.listeners){try{listener();}catch(_){}}};
++    job.promise=Promise.resolve().then(()=>hydrateOnce(db,uid,profile,getDocs,collection,notify)).finally(()=>{
++      if(hydrationJobs.get(key)===job)hydrationJobs.delete(key);
++      job.listeners.clear();
++    });
++    return job.promise;
++  }
++  async function hydrateOnce(db,uid,profile,getDocs,collection,onChange) {
+     configure({...sdk,db,getDocs,collection});
+     setStatus(uid,profile,navigator.onLine?'loading':'offline');
+     onChange?.();
+@@ -115,7 +133,7 @@
+               if (safeGet(`${key}::${profile}`)) {byId.set('orlando',legacy);break;}
+             }
+           }
+-          if (legacyData.empty) {
++          if (legacyData.empty && !byId.has('orlando')) {
+             for (const group of ['gastos','actividades','notas']) {
+               const records=await within(getDocs(collection(db,'usuarios',uid,'perfiles',profile,group)),5000);
+               if (records.docs.some(d=>d.data().tripId==='orlando')) {byId.set('orlando',legacy);break;}
+@@ -138,6 +156,7 @@
+         setStatus(uid,profile,'ready');
+       } catch(e) { setStatus(uid,profile,'error'); }
+     }
++    onChange?.(); // Data is ready even if queued writes are still synchronizing.
+     await flush(uid,profile);
+     onChange?.();
+   }
+--- a/planificacion.html
++++ b/planificacion.html
+@@ -44,8 +44,6 @@
+ <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
+ <link rel="stylesheet" href="assets/plan-styles.css">
+ <link rel="stylesheet" href="assets/app-settings.css">
+-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+ <script src="config.js"></script>
+ <script src="assets/trip-context.js"></script>
+ <script src="assets/travel-core.js"></script>
+--- a/scripts/benchmark-loading.cjs
++++ b/scripts/benchmark-loading.cjs
+@@ -0,0 +1,47 @@
++// Controlled startup measurements: no browser, production network or private data.
++const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{performance}=require('node:perf_hooks');
++const sleep=ms=>new Promise(r=>setTimeout(r,ms));
++function storage(){const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k)};}
++const slice=(s,a,b)=>s.slice(s.indexOf(a),s.indexOf(b,s.indexOf(a)));
++function harness(root,{legacy=false,pending=false,readMs=20,writeMs=200}={}){
++ const localStorage=storage(),window={dispatchEvent(){},addEventListener(){}},db={},counts={reads:0,writes:0};
++ const trip={id:'orlando',name:'Orlando',destinations:[{city:'Orlando',state:'Florida'}]};
++ if(legacy)localStorage.setItem('orlando-hotel-v1::p',JSON.stringify({addr:'QA hotel'}));
++ if(pending)localStorage.setItem('trip-planning-pending::u::p',JSON.stringify({orlando:trip}));
++ const collection=(_,...p)=>p.join('/');
++ const getDocs=async ref=>{counts.reads++;await sleep(readMs);const docs=!legacy&&ref.endsWith('/tripPlanning')?[{id:'orlando',data:()=>trip}]:[];return {docs,empty:!docs.length,metadata:{fromCache:false},forEach:cb=>docs.forEach(cb)};};
++ const setDoc=async()=>{counts.writes++;await sleep(writeMs);};
++ vm.runInNewContext(fs.readFileSync(path.join(root,'assets/trip-context.js'),'utf8'),{window,localStorage,navigator:{onLine:true},setTimeout,clearTimeout,CustomEvent:class{},console});
++ const tc=window.TripContext;tc.configure({db,collection,getDocs,setDoc,doc:()=>({})});
++ return {tc,window,db,localStorage,getDocs,collection,setDoc,counts};
++}
++async function sample(root,scenario){
++ const h=harness(root,{legacy:scenario==='legacy',pending:scenario==='pending'}),start=performance.now();let elapsed;
++ if(scenario==='duplicate')await Promise.all([h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection),h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection)]);
++ if(scenario==='legacy')await h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection);
++ if(scenario==='pending'){
++  let finished;const hydrate=h.tc.hydrate;h.tc.hydrate=(...args)=>(finished=hydrate(...args));
++  const c=vm.createContext({...h,window:h.window,currentUid:'u',currentPerfilId:'p',activeTripId:'unassigned',trips:[],doc:()=>({}),updateDoc(){},deleteDoc(){},location:{reload(){}},console});
++  vm.runInContext(`function publishTrip(){trips=window.TripContext.readTrips('u','p');activeTripId=window.TripContext.active('u','p');}\n`+slice(fs.readFileSync(path.join(root,'assets/plan-firebase.js'),'utf8'),'async function loadTrips()','function listenTripDocuments()'),c);
++  await c.loadTrips();elapsed=performance.now()-start;await finished;
++ }
++ return {ms:Number((elapsed??performance.now()-start).toFixed(2)),...h.counts};
++}
++async function measure(root){
++ const result={};for(const scenario of ['duplicate','legacy','pending']){
++  const samples=[];for(let i=0;i<3;i++)samples.push(await sample(root,scenario));
++  const ordered=samples.map(x=>x.ms).sort((a,b)=>a-b);
++  result[scenario]={medianMs:ordered[1],minMs:ordered[0],maxMs:ordered[2],reads:samples[0].reads,writes:samples[0].writes};
++ }
++ const html=fs.readFileSync(path.join(root,'planificacion.html'),'utf8');
++ result.initialLeaflet={blockingScripts:(html.match(/<script\s+src="https:\/\/[^\"]*leaflet[^\"]*"\s*>/g)||[]).length,blockingStylesheets:(html.match(/<link[^>]+href="https:\/\/[^\"]*leaflet[^\"]*"/g)||[]).length};
++ return result;
++}
++async function main(){
++ const args=process.argv.slice(2),arg=name=>{const i=args.indexOf(name);return i<0?null:args[i+1];};
++ const result={conditions:{readLatencyMs:20,pendingWriteLatencyMs:200,samplesPerScenario:3,scope:'Controlled Node simulation, not browser LCP or production Firebase latency'},current:await measure(path.resolve(__dirname,'..'))};
++ if(arg('--baseline'))result.baseline=await measure(path.resolve(arg('--baseline')));
++ const text=JSON.stringify(result,null,2);if(arg('--output'))fs.writeFileSync(arg('--output'),text+'\n');console.log(text);
++}
++if(require.main===module)main().catch(e=>{console.error(e);process.exitCode=1});
++module.exports={harness,sample,measure};
+--- a/sw.js
++++ b/sw.js
+@@ -1,4 +1,4 @@
+-const CACHE = "taxfly-8f631337fe38";
++const CACHE = "taxfly-55de50d5e111";
+ 
+ const TILES_CACHE = "taxfly-tiles-v1";
+ 
+--- a/tests/performance-loading.test.cjs
++++ b/tests/performance-loading.test.cjs
+@@ -0,0 +1,80 @@
++const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
++const {harness}=require('../scripts/benchmark-loading.cjs');
++const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
++const between=(s,a,b)=>s.slice(s.indexOf(a),s.indexOf(b,s.indexOf(a)));
++
++test('concurrent trip hydration shares one read but not accounts, profiles or database instances',async()=>{
++ const h=harness(root,{readMs:0});let a=0,b=0;
++ const first=h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection,()=>a++);
++ const second=h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection,()=>b++);
++ assert.equal(first,second);await first;assert.equal(h.counts.reads,1);assert.ok(a>=2&&b>=2);
++ await Promise.all([h.tc.hydrate(h.db,'other','p',h.getDocs,h.collection),h.tc.hydrate(h.db,'u','other',h.getDocs,h.collection),h.tc.hydrate({},'u','p',h.getDocs,h.collection)]);
++ assert.equal(h.counts.reads,4);
++ await h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection);assert.equal(h.counts.reads,5); // no stale permanent cache
++});
++test('one hydration consumer throwing does not prevent the others from receiving the trip',async()=>{
++ const h=harness(root,{readMs:0});let delivered=false;
++ await Promise.all([h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection,()=>{throw Error('UI failed')}),h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection,()=>{if(h.tc.readTrips('u','p').length)delivered=true;})]);
++ assert.equal(delivered,true);assert.equal(h.counts.reads,1);
++});
++test('legacy local trip evidence skips unrelated scans without inventing an empty default',async()=>{
++ const h=harness(root,{legacy:true,readMs:0});await h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection);
++ assert.equal(h.counts.reads,2);assert.equal(h.tc.readTrips('u','p')[0].id,'orlando');
++});
++test('cold planning proceeds with known trips while an existing queued write remains pending',async()=>{
++ const h=harness(root,{pending:true,readMs:0});let releaseWrite,hydration;
++ h.tc.configure({db:h.db,collection:h.collection,getDocs:h.getDocs,doc:()=>({}),setDoc:()=>new Promise(r=>releaseWrite=r)});
++ const hydrate=h.tc.hydrate;h.tc.hydrate=(...args)=>(hydration=hydrate(...args));
++ const c=vm.createContext({...h,window:h.window,currentUid:'u',currentPerfilId:'p',activeTripId:'unassigned',trips:[],doc:()=>({}),updateDoc(){},deleteDoc(){},location:{reload(){}}});
++ // loadTrips supplies this adapter; preserve the blocked write during configure.
++ const originalConfigure=h.tc.configure;h.tc.configure=adapter=>originalConfigure({...adapter,setDoc:()=>new Promise(r=>releaseWrite=r)});
++ vm.runInContext("function publishTrip(){trips=window.TripContext.readTrips('u','p');activeTripId=window.TripContext.active('u','p');}\n"+between(read('assets/plan-firebase.js'),'async function loadTrips()','function listenTripDocuments()'),c);
++ await c.loadTrips();assert.equal(c.trips[0].id,'orlando');assert.ok(h.tc.pending('u','p').orlando);assert.equal(typeof releaseWrite,'function');
++ releaseWrite();await hydration;assert.equal(h.tc.pending('u','p').orlando,undefined);
++});
++test('a failed shared hydration can retry and never becomes a confirmed empty list',async()=>{
++ const h=harness(root,{readMs:0});let count=0;
++ await h.tc.hydrate(h.db,'u','p',()=>{count++;return Promise.reject(Error('network'))},h.collection);
++ assert.equal(h.tc.status('u','p').phase,'error');assert.equal(h.tc.status('u','p').hasData,false);
++ await h.tc.hydrate(h.db,'u','p',h.getDocs,h.collection);assert.equal(h.tc.status('u','p').phase,'ready');assert.equal(count,1);
++});
++
++function mapHarness(){
++ const added=[];let css=null;
++ const document={querySelector:()=>css,createElement:tag=>({tag,setAttribute(){},remove(){this.removed=true;if(this===css)css=null;}}),head:{appendChild(node){added.push(node);if(node.tag==='link')css=node;}}};
++ const window={};const c=vm.createContext({window,document,setTimeout,clearTimeout,Promise,Map,Error});
++ vm.runInContext(between(read('assets/plan-app.js'),'let leafletPromise=null;','let _leafletMap = null;'),c);
++ const finish=()=>{window.L={};for(const node of added.filter(n=>!n.removed)){if(node.tag==='link')node.sheet={};node.onload?.();}};
++ return {c,document,window,added,finish};
++}
++test('map dependencies are not render-blocking HTML resources',()=>{
++ const html=read('planificacion.html');assert.doesNotMatch(html,/<script[^>]+src="https:[^"]*leaflet/);assert.doesNotMatch(html,/<link[^>]+href="https:[^"]*leaflet/);
++});
++test('map loader is lazy, shares concurrent requests and loads the unchanged CDN resources once',async()=>{
++ const h=mapHarness();assert.equal(h.added.length,0);
++ const a=h.c.ensureLeaflet(),b=h.c.ensureLeaflet();assert.equal(a,b);assert.equal(h.added.length,2);
++ assert.match(h.added[0].href,/leaflet\/1\.9\.4\/leaflet.min.css$/);assert.match(h.added[1].src,/leaflet\/1\.9\.4\/leaflet.min.js$/);
++ h.finish();await a;await h.c.ensureLeaflet();assert.equal(h.added.length,2);
++});
++test('a map resource failure releases shared state so a later explicit attempt can retry',async()=>{
++ const h=mapHarness(),first=h.c.ensureLeaflet();h.added[1].onerror();await assert.rejects(first);
++ assert.ok(h.added.every(n=>n.removed));const retry=h.c.ensureLeaflet();assert.equal(h.added.length,4);h.finish();await retry;
++});
++test('hidden outlet maps do not request the map SDK',async()=>{
++ const h=mapHarness();const container={isConnected:true};h.document.getElementById=id=>id==='panel-outlets'?{classList:{contains:()=>false}}:container;
++ h.c.days=[{stops:[]}];
++ vm.runInContext(between(read('assets/plan-app.js'),'let _leafletMap = null;','function stopStartEdit('),h.c);
++ await h.c.initDayMap(0);assert.equal(h.added.length,0);
++});
++test('navigating away during map loading does not initialize a stale container',async()=>{
++ const h=mapHarness();let visible=true;
++ const container={isConnected:true,setAttribute(){},style:{},innerHTML:''};
++ h.document.getElementById=id=>id==='panel-outlets'?{classList:{contains:()=>visible}}:container;
++ h.c.days=[{stops:[{lat:1,lng:1}]}];
++ vm.runInContext(between(read('assets/plan-app.js'),'let _leafletMap = null;','function stopStartEdit('),h.c);
++ const work=h.c.initDayMap(0);visible=false;h.finish();await work; // window.L has no .map(): stale initialization would throw.
++ assert.equal(h.added.length,2);
++});
++test('new map states use the existing ES/EN/PT translation dictionary',()=>{
++ const src=read('assets/plan-i18n.js');for(const text of ['Cargando mapa…','No se pudo cargar el mapa.','Reintentar'])assert.match(src,new RegExp('"'+text.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'": \\["[^"\\n]+", "[^"\\n]+"\\]'));
++});

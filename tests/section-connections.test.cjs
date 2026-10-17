@@ -109,7 +109,7 @@ test('the route connector never announces no saved stops before authentication a
  const ls=storage();ls.setItem('perfilActivoId','p');const nodes={'planning-day':{value:'',replaceChildren(){},appendChild(){}},'planning-status':{},'planning-import':{},'planning-hotel':{}};
  const window={_routeUid:'u',TripContext:{active:()=> 'a'}};
  const c=vm.createContext({window,localStorage:ls,document:{getElementById:id=>nodes[id],createElement:()=>({})},JSON});
- vm.runInContext(between(routeApp,'const i18n =','window.changeLanguage')+between(routeApp,'function routePlanningScope()','function routePlanningGroups(')+between(routeApp,'function renderRoutePlanning()','function usePlanningHotel()'),c);
+ vm.runInContext(between(routeApp,'const i18n =','window.changeLanguage')+between(routeApp,'function routePlanningScope()','function routePlanningGroups(')+between(routeApp,'function renderRoutePlanning()','function usePlanningHotel()')+between(routeApp,'function renderPlanningStopChoices()','function saveRouteDraft()'),c);
  c.renderRoutePlanning();assert.equal(nodes['planning-status'].textContent,'Cargando Planificación…');
  const scope=JSON.stringify(['u','p','a']);window._routePlanning={scope,groups:[],loading:true};c.renderRoutePlanning();assert.equal(nodes['planning-status'].textContent,'Cargando Planificación…');
  window._routePlanning={scope,groups:[],error:true};c.renderRoutePlanning();assert.equal(nodes['planning-status'].textContent,'No se pudo actualizar Planificación.');

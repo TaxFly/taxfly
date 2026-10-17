@@ -186,7 +186,7 @@ function reservationForm(type, item) {
     <label>${flight?'Hora de salida':'Hora local del evento'}<input name="departureTime" type="time" value="${escapeHtml(item?.departureTime||'')}"></label>
     ${flight?`<label>Fecha de llegada<input name="arrivalDate" type="date" value="${escapeHtml(item?.arrivalDate||'')}"></label><label>Hora de llegada<input name="arrivalTime" type="time" value="${escapeHtml(item?.arrivalTime||'')}"></label>${window.TaxflyTravel.zoneFields('arrival',item?.arrivalCity||dest.city,item?.arrivalZone||dest.timeZone)}`:''}
     <label>Código de reserva (opcional)<input name="reference" maxlength="50" autocomplete="off" placeholder="Localizador o número de confirmación" value="${escapeHtml(item?.reference || "")}"></label>
-    ${stay ? `<label>Dirección del alojamiento (opcional)<input name="lodgingLocation" autocomplete="new-password" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
+    ${stay ? `${stay&&!item&&hotel.addr?`<button type="button" class="mbtn" data-res-action="reuse-stay">Usar alojamiento guardado</button>`:""}<label>Dirección del alojamiento (opcional)<input name="lodgingLocation" autocomplete="new-password" maxlength="180" placeholder="Calle, ciudad y estado" value="${escapeHtml(item?.address || "")}"></label>` : ""}
     <label>Enlace a mi reserva (opcional)<input name="url" type="url" inputmode="url" placeholder="https://…" value="${escapeHtml(item?.url || "")}"><small>Puede ser el enlace de la aerolínea, Airbnb o el sitio del alojamiento.</small></label>
     <label>Notas (opcional)<textarea name="notes" maxlength="400" rows="2" placeholder="Check-in, horario o dato útil">${escapeHtml(item?.notes || "")}</textarea></label>
     <label>Documento existente (opcional)<select name="documentId"><option value="">Sin documento vinculado</option>${(window._tripDocuments || []).map(d => `<option value="${escapeHtml(d.id)}"${item?.documentId === d.id ? " selected" : ""}>${escapeHtml(d.name || "Documento")}</option>`).join("")}</select><small>Elegí uno existente o adjuntá un archivo nuevo.</small></label>
@@ -265,6 +265,11 @@ async function onReservationAction(event) {
     document.querySelector("#reservation-form input[name=reservationTitle]")?.focus();
     return;
   }
+  if(action==="reuse-stay"){
+    const field=document.querySelector('#reservation-form [name="lodgingLocation"]');
+    if(field&&hotel.addr)field.value=hotel.addr;
+    return;
+  }
   if (!item) return;
   if (action === "payment") { location.href="compras.html?reservation="+encodeURIComponent(item.id)+"&trip="+encodeURIComponent(window._tripId);return; }
   if (action === "attach") {
@@ -280,12 +285,19 @@ async function onReservationAction(event) {
     return;
   }
   if (action === "delete") {
+    const context=JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId]);
     const ok = await showConfirm("Se va a eliminar esta reserva del viaje.", "¿Eliminar reserva?", "Eliminar");
-    if (!ok) return;
+    if (!ok||context!==JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId])) return;
+    const index=reservations.indexOf(item);if(index<0)return;
+    const removed=structuredClone(item);
     reservations = reservations.filter(r => r.id !== item.id);
     syncedSave(RESERVATIONS_KEY, { items: reservations }, "reservations");
     renderReservations();
-    showMToast("Reserva eliminada");
+    showUndoToast("Reserva eliminada",()=>{
+      if(context!==JSON.stringify([window._taxflyTripUid,window._perfilId,window._tripId])||reservations.some(r=>r.id===removed.id))return;
+      reservations.splice(Math.min(index,reservations.length),0,removed);
+      syncedSave(RESERVATIONS_KEY,{items:reservations},"reservations");renderReservations();
+    });
   }
 }
 

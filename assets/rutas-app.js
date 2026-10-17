@@ -1,5 +1,13 @@
 const i18n = {
   es: {
+    planning_pick: "Elegí las paradas que querés agregar",
+    planning_all: "Seleccionar todas",
+    planning_none: "Ninguna",
+    route_return: "Ofrecer regreso al alojamiento al terminar cada día",
+    route_return_link: "Ver regreso al alojamiento",
+    route_removed: "Parada eliminada",
+    route_cleared: "Lista de paradas vaciada",
+
     planning_title: "Usar datos de Planificación",
     planning_hotel: "Usar alojamiento guardado",
     planning_import: "Agregar paradas del día",
@@ -72,6 +80,14 @@ const i18n = {
     ac_no_results: "Sin resultados para esta búsqueda"
   },
   en: {
+    planning_pick: "Choose the stops to add",
+    planning_all: "Select all",
+    planning_none: "None",
+    route_return: "Offer a return to accommodation at the end of each day",
+    route_return_link: "View return to accommodation",
+    route_removed: "Stop deleted",
+    route_cleared: "Stop list cleared",
+
     planning_title: "Use Planning data",
     planning_hotel: "Use saved accommodation",
     planning_import: "Add stops from this day",
@@ -144,6 +160,14 @@ const i18n = {
     ac_no_results: "No results found"
   },
   pt: {
+    planning_pick: "Escolha as paradas para adicionar",
+    planning_all: "Selecionar todas",
+    planning_none: "Nenhuma",
+    route_return: "Oferecer volta à hospedagem ao terminar cada dia",
+    route_return_link: "Ver volta à hospedagem",
+    route_removed: "Parada excluída",
+    route_cleared: "Lista de paradas esvaziada",
+
     planning_title: "Usar dados do Planejamento",
     planning_hotel: "Usar hospedagem salva",
     planning_import: "Adicionar paradas do dia",
@@ -238,6 +262,11 @@ window.changeLanguage = lang => {
 };
 
 let stops = [];
+let routeChoiceKey="";
+let activeRouteDraftScope=null;
+const routeDraftDirty=new Set();
+const routeDraftFields=["hotel-input","start-date","manual-name","manual-desc","manual-url","links-input","csv-text"];
+
 
 let days = 3;
 
@@ -349,6 +378,7 @@ window.gestionarPIN = () => {
 };
 
 function changeDays(d) {
+  routeDraftDirty.add("days");
   days = Math.max(1, Math.min(20, days + d));
   document.getElementById("days-count").textContent = days;
 }
@@ -356,6 +386,7 @@ function changeDays(d) {
 let activeMethod = null;
 
 function setMethod(m) {
+  routeDraftDirty.add("method");
   activeMethod = m;
   document.querySelectorAll(".method-btn").forEach(b => b.classList.remove("active"));
   document.querySelectorAll(".input-area").forEach(a => a.classList.remove("show"));
@@ -783,6 +814,7 @@ function addManual() {
 }
 
 function renderStops() {
+  if(!activeRouteDraftScope&&stops.length)routeDraftDirty.add("stops");
   const list = document.getElementById("stops-list");
   const empty = document.getElementById("stops-empty");
   const acts = document.getElementById("stops-actions");
@@ -797,16 +829,25 @@ function renderStops() {
     row.innerHTML = `\n      <div class="stop-row-num">${i + 1}</div>\n      <div class="stop-row-body">\n        <div class="stop-row-name">${esc(s.name)}</div>\n        ${s.desc ? `<div class="stop-row-addr">${esc(s.desc)}</div>` : ""}\n        ${s.url ? `<div class="stop-row-addr" style="color:var(--primary)">${s.url.slice(0, 45)}…</div>` : ""}\n      </div>\n      <button class="stop-row-del" onclick="removeStop(${i})" aria-label="Eliminar parada">✕</button>`;
     list.appendChild(row);
   });
+  saveRouteDraft();
 }
 
 function removeStop(i) {
-  stops.splice(i, 1);
-  renderStops();
+  const context=routePlanningScope(), removed=stops[i];if(!removed)return;
+  stops.splice(i,1);renderStops();
+  window.tfDeleteWithUndo({message:(i18n[localStorage.getItem("appLang")]||i18n.es).route_removed,restore:()=>{
+    if(context!==routePlanningScope()||stops.includes(removed))return;
+    stops.splice(Math.min(i,stops.length),0,removed);renderStops();
+  }});
 }
 
 function clearStops() {
-  stops = [];
-  renderStops();
+  if(!stops.length)return;
+  const context=routePlanningScope(),removed=stops.slice();stops=[];renderStops();
+  window.tfDeleteWithUndo({message:(i18n[localStorage.getItem("appLang")]||i18n.es).route_cleared,restore:()=>{
+    if(context!==routePlanningScope())return;
+    const newer=stops.filter(stop=>!removed.includes(stop));stops=removed.concat(newer);renderStops();
+  }});
 }
 
 const dz = document.getElementById("drop-zone");
@@ -910,6 +951,7 @@ async function generateRoute() {
           });
           routeData = {
             hotel: hotel,
+            returnToHotel: !!document.getElementById("return-hotel")?.checked,
             dayData: dayData
           };
           visited = {};
@@ -968,6 +1010,7 @@ async function generateRoute() {
   }
   routeData = {
     hotel: hotel,
+    returnToHotel: !!document.getElementById("return-hotel")?.checked,
     dayData: dayDataFallback
   };
   visited = {};
@@ -1062,6 +1105,11 @@ function renderResult() {
       const mapsIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`;
       html += `\n        <div class="ruta-stop${isV ? " visited" : ""}" onclick="toggleVisit(${di},${si})" style="animation-delay:${si * .03}s">\n          <div class="rs-num">${isV ? "✓" : si + 1}</div>\n          <div class="rs-body">\n            <div class="rs-name">${escHtml(s.name)}</div>\n            ${s.desc ? `<div class="rs-desc">${escHtml(s.desc)}</div>` : ""}\n            <div class="rs-footer">\n              <span></span>\n              ${s.url ? `<a class="rs-maps" href="${s.url}" onclick="event.stopPropagation()" target="_blank">${mapsIcon} Maps</a>` : ""}\n            </div>\n          </div>\n        </div>`;
     });
+    if(routeData.returnToHotel&&day.stops.length&&routeData.hotel){
+      const last=day.stops.at(-1),origin=last.address||last.name;
+      const link="https://www.google.com/maps/dir/?api=1&origin="+encodeURIComponent(origin)+"&destination="+encodeURIComponent(routeData.hotel);
+      html+=`<a class="hotel-bar-result" href="${escHtml(link)}" target="_blank" rel="noopener noreferrer"><span class="hotel-bar-icon">↩</span><span class="hotel-bar-info"><span class="hotel-bar-label" data-i18n="route_return_link">${(i18n[localStorage.getItem("appLang")]||i18n.es).route_return_link}</span><span class="hotel-bar-addr">${escHtml(routeData.hotel)}</span></span></a>`;
+    }
     panel.innerHTML = html;
     out.appendChild(panel);
   });
@@ -1146,9 +1194,13 @@ function routeMapBootstrap() {
 
 function downloadHTML() {
   if (!routeData) return;
+  for(const day of routeData.dayData){
+    day.returnLink=routeData.returnToHotel&&day.stops.length?"https://www.google.com/maps/dir/?api=1&origin="+encodeURIComponent(day.stops.at(-1).address||day.stops.at(-1).name)+"&destination="+encodeURIComponent(routeData.hotel):"";
+    day.returnLabel=(i18n[localStorage.getItem("appLang")]||i18n.es).route_return_link;
+  }
   const H = JSON.stringify(routeData.hotel);
   const D = JSON.stringify(routeData.dayData);
-  const html = `<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<title>Mi Ruta TaxUSA</title>\n<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">\n<style>\n:root{--bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;--text:#0f172a;--sub:#64748b;--dim:#94a3b8;--primary:#2563eb;--success:#10b981;--accent:#7c3aed;--radius:14px;}\n@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--surface:#1e293b;--surface2:#273549;--border:#334155;--text:#f1f5f9;--sub:#94a3b8;--dim:#64748b;}}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}\nbody{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px 16px 100px;}\n.wrap{max-width:460px;margin:0 auto;}\n.title{font-size:1.2rem;font-weight:900;color:var(--primary);margin-bottom:2px;}\n.subtitle{font-size:.72rem;color:var(--sub);margin-bottom:14px;}\n.prog-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}\n.gp-stat{text-align:center;flex:1;}.gp-val{font-size:1.4rem;font-weight:900;color:var(--primary);}.gp-lbl{font-size:.55rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}\n.gp-bw{flex:2;}.gp-row{display:flex;justify-content:space-between;margin-bottom:4px;}.gp-lbl2{font-size:.6rem;font-weight:700;color:var(--dim);}.reset-btn{background:none;border:none;color:var(--dim);font-size:.65rem;cursor:pointer;font-family:inherit;padding:0;}\n.gp-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}.gp-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width .4s;}\n.tabs-wrap{overflow-x:auto;scrollbar-width:none;margin-bottom:12px;}.tabs-wrap::-webkit-scrollbar{display:none;}\n.tabs{display:flex;gap:6px;padding-bottom:2px;}\n.tab{flex-shrink:0;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}\n.tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}\n.panel{display:none;}.panel.active{display:block;}\n.hotel-bar{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-decoration:none;}\n.h-icon{width:30px;height:30px;background:rgba(37,99,235,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}\n.h-info{flex:1;min-width:0;}.h-lbl{font-size:.55rem;color:var(--primary);font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;}.h-addr{font-size:.72rem;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.h-arr{color:var(--dim);font-size:.8rem;}\n.dp-wrap{margin-bottom:12px;}.dp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}.dp-stats{display:flex;gap:12px;}.dp-s{text-align:center;}.dp-v{font-size:1rem;font-weight:900;color:var(--text);}.dp-v.ac{color:var(--primary);}.dp-l{font-size:.55rem;color:var(--dim);font-weight:600;text-transform:uppercase;}\n.dp-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}.dp-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:2px;transition:width .4s;}\n.stop{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}\n.stop::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .2s;}\n.stop.v{background:var(--surface2);}.stop.v::before{background:var(--success);}\n.stop:active{transform:scale(.98);}\n.s-num{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--sub);flex-shrink:0;transition:all .15s;}\n.stop.v .s-num{background:rgba(16,185,129,.12);border-color:var(--success);color:var(--success);}\n.s-body{flex:1;min-width:0;}.s-name{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;}.stop.v .s-name{text-decoration:line-through;color:var(--dim);}\n.s-desc{font-size:.72rem;color:var(--sub);line-height:1.5;margin-bottom:8px;}.stop.v .s-desc{opacity:.5;}\n.s-foot{display:flex;align-items:center;justify-content:flex-end;}\na{text-decoration:none !important;}\n.s-maps{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:5px 10px;color:var(--sub);font-size:.68rem;font-weight:600;text-decoration:none;}\n.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:6px;}\n.bn{flex:1;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:.65rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n.bn.active{background:var(--primary);color:#fff;border-color:var(--primary);}\n.bn-date{font-size:.55rem;font-weight:500;display:block;margin-top:2px;opacity:.7;}\n.cw{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}\n.cp{position:absolute;top:-20px;animation:cf linear forwards;}\n@keyframes cf{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}\n.all-done{text-align:center;padding:28px 0;display:none;}\n.all-done.show{display:block;}\n.ad-emoji{font-size:2.5rem;margin-bottom:8px;}.ad-title{font-size:1rem;font-weight:900;color:var(--primary);margin-bottom:4px;}.ad-sub{font-size:.78rem;color:var(--sub);}\n</style>\n</head>\n<body>\n<div class="cw" id="cw"></div>\n<div class="wrap">\n  <div class="title">🗺️ Mi Ruta TaxUSA</div>\n  <div class="subtitle">Tocá cada parada para marcarla como visitada</div>\n  <div class="prog-card">\n    <div class="gp-stat"><div class="gp-val" id="gd">0</div><div class="gp-lbl">visitadas</div></div>\n    <div class="gp-bw">\n      <div class="gp-row"><span class="gp-lbl2">PROGRESO TOTAL</span><button class="reset-btn" onclick="resetAll()">reiniciar</button></div>\n      <div class="gp-bg"><div class="gp-fill" id="gb" style="width:0%"></div></div>\n    </div>\n    <div class="gp-stat"><div class="gp-val" id="gt">0</div><div class="gp-lbl">paradas</div></div>\n  </div>\n  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>\n  <div id="panels"></div>\n</div>\n<nav class="bnav" id="bnav"></nav>\n<script>\nvar H=${H};\nvar D=${D};\nvar AD=0;\nvar V={};try{V=JSON.parse(localStorage.getItem('rt_v')||'{}')}catch(e){}\nfunction save(){try{localStorage.setItem('rt_v',JSON.stringify(V))}catch(e){}}\nfunction esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nfunction confetti(){var w=document.getElementById('cw');var c=['#2563eb','#f59e0b','#10b981','#f1f5f9','#ef4444','#7c3aed'];for(var i=0;i<60;i++){var el=document.createElement('div');el.className='cp';el.style.cssText='left:'+Math.random()*100+'%;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px;background:'+c[Math.floor(Math.random()*c.length)]+';border-radius:'+(Math.random()>.5?'50%':'2px')+';animation-duration:'+(1.5+Math.random()*2)+'s;animation-delay:'+(Math.random()*.5)+'s';w.appendChild(el);setTimeout((function(x){return function(){x.remove()}})(el),4000)}}\nfunction toggle(di,si){var k=di+'-'+si;if(V[k])delete V[k];else V[k]=1;save();render();var day=D[di];if(day.stops.every(function(_,s){return V[di+'-'+s]})){setTimeout(confetti,200)}}\nfunction resetDay(di){D[di].stops.forEach(function(_,si){delete V[di+'-'+si]});save();render();}\nfunction resetAll(){V={};save();render();}\nfunction switchDay(d){AD=d;document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',i===d)});document.querySelectorAll('.panel').forEach(function(p,i){p.classList.toggle('active',i===d)});document.querySelectorAll('.bn').forEach(function(b,i){b.classList.toggle('active',i===d)});window.scrollTo({top:0,behavior:'smooth'});}\nfunction render(){\n  var tabs=document.getElementById('tabs');var panels=document.getElementById('panels');var bnav=document.getElementById('bnav');\n  tabs.innerHTML='';panels.innerHTML='';bnav.innerHTML='';\n  var total=0,done=0;\n  D.forEach(function(day,di){\n    total+=day.stops.length;\n    var dd=day.stops.filter(function(_,si){return V[di+'-'+si]}).length;done+=dd;\n    var pct=day.stops.length?Math.round(dd/day.stops.length*100):0;\n    var allDone=dd===day.stops.length&&day.stops.length>0;\n    // Tab\n    var tab=document.createElement('button');tab.className='tab'+(di===AD?' active':'');tab.textContent=day.shortLabel||day.label;tab.onclick=(function(i){return function(){switchDay(i)}})(di);tabs.appendChild(tab);\n    // Nav\n    var bn=document.createElement('button');bn.className='bn'+(di===AD?' active':'');\n    var dot=dd>0&&dd<day.stops.length?'<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#10b981;margin-left:3px;vertical-align:middle;"></span>':allDone?' ✓':'';\n    bn.innerHTML=(day.shortLabel||('Día '+(di+1)))+dot+(day.dateLabel?'<span class="bn-date">'+day.dateLabel+'</span>':'');\n    bn.onclick=(function(i){return function(){switchDay(i)}})(di);bnav.appendChild(bn);\n    // Panel\n    var panel=document.createElement('div');panel.className='panel'+(di===AD?' active':'');\n    var html='<a class="hotel-bar" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(H)+'" target="_blank"><div class="h-icon">🏠</div><div class="h-info"><div class="h-lbl">Punto de partida</div><div class="h-addr">'+esc(H)+'</div></div><div class="h-arr">↗</div></a>';\n    html+='<div class="dp-wrap"><div class="dp-row"><div class="dp-stats"><div class="dp-s"><div class="dp-v'+(dd>0?' ac':'')+'">'+dd+'</div><div class="dp-l">visit.</div></div><div class="dp-s"><div class="dp-v">'+day.stops.length+'</div><div class="dp-l">paradas</div></div><div class="dp-s"><div class="dp-v'+(pct===100?' ac':'')+'">'+pct+'%</div><div class="dp-l">hecho</div></div></div><button class="reset-btn" onclick="resetDay('+di+')">↺ reiniciar</button></div><div class="dp-bg"><div class="dp-fill" id="dpf-'+di+'" style="width:'+pct+'%"></div></div></div>';\n    if(allDone){html+='<div class="all-done show"><div class="ad-emoji">🎉</div><div class="ad-title">¡Día completado!</div><div class="ad-sub">Visitaste las '+day.stops.length+' paradas del día.</div></div>';}\n    day.stops.forEach(function(s,si){var v=!!V[di+'-'+si];html+='<div class="stop'+(v?' v':'')+'" onclick="toggle('+di+','+si+')" style="animation-delay:'+(si*.03)+'s"><div class="s-num">'+(v?'✓':si+1)+'</div><div class="s-body"><div class="s-name">'+esc(s.name)+'</div>'+(s.desc?'<div class="s-desc">'+esc(s.desc)+'</div>':'')+'<div class="s-foot">'+(s.url?'<a class="s-maps" href="'+s.url+'" onclick="event.stopPropagation()" target="_blank">📍 Maps</a>':'')+'</div></div></div>';});\n    panel.innerHTML=html;panels.appendChild(panel);\n  });\n  var gPct=total?Math.round(done/total*100):0;\n  document.getElementById('gd').textContent=done;document.getElementById('gt').textContent=total;document.getElementById('gb').style.width=gPct+'%';\n}\nrender();\n<\/script>\n<script>(${routeMapBootstrap.toString()})()<\/script>
+  const html = `<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<title>Mi Ruta TaxUSA</title>\n<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">\n<style>\n:root{--bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;--text:#0f172a;--sub:#64748b;--dim:#94a3b8;--primary:#2563eb;--success:#10b981;--accent:#7c3aed;--radius:14px;}\n@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--surface:#1e293b;--surface2:#273549;--border:#334155;--text:#f1f5f9;--sub:#94a3b8;--dim:#64748b;}}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}\nbody{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px 16px 100px;}\n.wrap{max-width:460px;margin:0 auto;}\n.title{font-size:1.2rem;font-weight:900;color:var(--primary);margin-bottom:2px;}\n.subtitle{font-size:.72rem;color:var(--sub);margin-bottom:14px;}\n.prog-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}\n.gp-stat{text-align:center;flex:1;}.gp-val{font-size:1.4rem;font-weight:900;color:var(--primary);}.gp-lbl{font-size:.55rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}\n.gp-bw{flex:2;}.gp-row{display:flex;justify-content:space-between;margin-bottom:4px;}.gp-lbl2{font-size:.6rem;font-weight:700;color:var(--dim);}.reset-btn{background:none;border:none;color:var(--dim);font-size:.65rem;cursor:pointer;font-family:inherit;padding:0;}\n.gp-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}.gp-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width .4s;}\n.tabs-wrap{overflow-x:auto;scrollbar-width:none;margin-bottom:12px;}.tabs-wrap::-webkit-scrollbar{display:none;}\n.tabs{display:flex;gap:6px;padding-bottom:2px;}\n.tab{flex-shrink:0;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}\n.tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}\n.panel{display:none;}.panel.active{display:block;}\n.hotel-bar{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-decoration:none;}\n.h-icon{width:30px;height:30px;background:rgba(37,99,235,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}\n.h-info{flex:1;min-width:0;}.h-lbl{font-size:.55rem;color:var(--primary);font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;}.h-addr{font-size:.72rem;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.h-arr{color:var(--dim);font-size:.8rem;}\n.dp-wrap{margin-bottom:12px;}.dp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}.dp-stats{display:flex;gap:12px;}.dp-s{text-align:center;}.dp-v{font-size:1rem;font-weight:900;color:var(--text);}.dp-v.ac{color:var(--primary);}.dp-l{font-size:.55rem;color:var(--dim);font-weight:600;text-transform:uppercase;}\n.dp-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}.dp-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:2px;transition:width .4s;}\n.stop{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}\n.stop::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .2s;}\n.stop.v{background:var(--surface2);}.stop.v::before{background:var(--success);}\n.stop:active{transform:scale(.98);}\n.s-num{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--sub);flex-shrink:0;transition:all .15s;}\n.stop.v .s-num{background:rgba(16,185,129,.12);border-color:var(--success);color:var(--success);}\n.s-body{flex:1;min-width:0;}.s-name{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;}.stop.v .s-name{text-decoration:line-through;color:var(--dim);}\n.s-desc{font-size:.72rem;color:var(--sub);line-height:1.5;margin-bottom:8px;}.stop.v .s-desc{opacity:.5;}\n.s-foot{display:flex;align-items:center;justify-content:flex-end;}\na{text-decoration:none !important;}\n.s-maps{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:5px 10px;color:var(--sub);font-size:.68rem;font-weight:600;text-decoration:none;}\n.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:6px;}\n.bn{flex:1;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:.65rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n.bn.active{background:var(--primary);color:#fff;border-color:var(--primary);}\n.bn-date{font-size:.55rem;font-weight:500;display:block;margin-top:2px;opacity:.7;}\n.cw{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}\n.cp{position:absolute;top:-20px;animation:cf linear forwards;}\n@keyframes cf{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}\n.all-done{text-align:center;padding:28px 0;display:none;}\n.all-done.show{display:block;}\n.ad-emoji{font-size:2.5rem;margin-bottom:8px;}.ad-title{font-size:1rem;font-weight:900;color:var(--primary);margin-bottom:4px;}.ad-sub{font-size:.78rem;color:var(--sub);}\n</style>\n</head>\n<body>\n<div class="cw" id="cw"></div>\n<div class="wrap">\n  <div class="title">🗺️ Mi Ruta TaxUSA</div>\n  <div class="subtitle">Tocá cada parada para marcarla como visitada</div>\n  <div class="prog-card">\n    <div class="gp-stat"><div class="gp-val" id="gd">0</div><div class="gp-lbl">visitadas</div></div>\n    <div class="gp-bw">\n      <div class="gp-row"><span class="gp-lbl2">PROGRESO TOTAL</span><button class="reset-btn" onclick="resetAll()">reiniciar</button></div>\n      <div class="gp-bg"><div class="gp-fill" id="gb" style="width:0%"></div></div>\n    </div>\n    <div class="gp-stat"><div class="gp-val" id="gt">0</div><div class="gp-lbl">paradas</div></div>\n  </div>\n  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>\n  <div id="panels"></div>\n</div>\n<nav class="bnav" id="bnav"></nav>\n<script>\nvar H=${H};\nvar D=${D};\nvar AD=0;\nvar V={};try{V=JSON.parse(localStorage.getItem('rt_v')||'{}')}catch(e){}\nfunction save(){try{localStorage.setItem('rt_v',JSON.stringify(V))}catch(e){}}\nfunction esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nfunction confetti(){var w=document.getElementById('cw');var c=['#2563eb','#f59e0b','#10b981','#f1f5f9','#ef4444','#7c3aed'];for(var i=0;i<60;i++){var el=document.createElement('div');el.className='cp';el.style.cssText='left:'+Math.random()*100+'%;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px;background:'+c[Math.floor(Math.random()*c.length)]+';border-radius:'+(Math.random()>.5?'50%':'2px')+';animation-duration:'+(1.5+Math.random()*2)+'s;animation-delay:'+(Math.random()*.5)+'s';w.appendChild(el);setTimeout((function(x){return function(){x.remove()}})(el),4000)}}\nfunction toggle(di,si){var k=di+'-'+si;if(V[k])delete V[k];else V[k]=1;save();render();var day=D[di];if(day.stops.every(function(_,s){return V[di+'-'+s]})){setTimeout(confetti,200)}}\nfunction resetDay(di){D[di].stops.forEach(function(_,si){delete V[di+'-'+si]});save();render();}\nfunction resetAll(){V={};save();render();}\nfunction switchDay(d){AD=d;document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',i===d)});document.querySelectorAll('.panel').forEach(function(p,i){p.classList.toggle('active',i===d)});document.querySelectorAll('.bn').forEach(function(b,i){b.classList.toggle('active',i===d)});window.scrollTo({top:0,behavior:'smooth'});}\nfunction render(){\n  var tabs=document.getElementById('tabs');var panels=document.getElementById('panels');var bnav=document.getElementById('bnav');\n  tabs.innerHTML='';panels.innerHTML='';bnav.innerHTML='';\n  var total=0,done=0;\n  D.forEach(function(day,di){\n    total+=day.stops.length;\n    var dd=day.stops.filter(function(_,si){return V[di+'-'+si]}).length;done+=dd;\n    var pct=day.stops.length?Math.round(dd/day.stops.length*100):0;\n    var allDone=dd===day.stops.length&&day.stops.length>0;\n    // Tab\n    var tab=document.createElement('button');tab.className='tab'+(di===AD?' active':'');tab.textContent=day.shortLabel||day.label;tab.onclick=(function(i){return function(){switchDay(i)}})(di);tabs.appendChild(tab);\n    // Nav\n    var bn=document.createElement('button');bn.className='bn'+(di===AD?' active':'');\n    var dot=dd>0&&dd<day.stops.length?'<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#10b981;margin-left:3px;vertical-align:middle;"></span>':allDone?' ✓':'';\n    bn.innerHTML=(day.shortLabel||('Día '+(di+1)))+dot+(day.dateLabel?'<span class="bn-date">'+day.dateLabel+'</span>':'');\n    bn.onclick=(function(i){return function(){switchDay(i)}})(di);bnav.appendChild(bn);\n    // Panel\n    var panel=document.createElement('div');panel.className='panel'+(di===AD?' active':'');\n    var html='<a class="hotel-bar" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(H)+'" target="_blank"><div class="h-icon">🏠</div><div class="h-info"><div class="h-lbl">Punto de partida</div><div class="h-addr">'+esc(H)+'</div></div><div class="h-arr">↗</div></a>';\n    html+='<div class="dp-wrap"><div class="dp-row"><div class="dp-stats"><div class="dp-s"><div class="dp-v'+(dd>0?' ac':'')+'">'+dd+'</div><div class="dp-l">visit.</div></div><div class="dp-s"><div class="dp-v">'+day.stops.length+'</div><div class="dp-l">paradas</div></div><div class="dp-s"><div class="dp-v'+(pct===100?' ac':'')+'">'+pct+'%</div><div class="dp-l">hecho</div></div></div><button class="reset-btn" onclick="resetDay('+di+')">↺ reiniciar</button></div><div class="dp-bg"><div class="dp-fill" id="dpf-'+di+'" style="width:'+pct+'%"></div></div></div>';\n    if(allDone){html+='<div class="all-done show"><div class="ad-emoji">🎉</div><div class="ad-title">¡Día completado!</div><div class="ad-sub">Visitaste las '+day.stops.length+' paradas del día.</div></div>';}\n    day.stops.forEach(function(s,si){var v=!!V[di+'-'+si];html+='<div class="stop'+(v?' v':'')+'" onclick="toggle('+di+','+si+')" style="animation-delay:'+(si*.03)+'s"><div class="s-num">'+(v?'✓':si+1)+'</div><div class="s-body"><div class="s-name">'+esc(s.name)+'</div>'+(s.desc?'<div class="s-desc">'+esc(s.desc)+'</div>':'')+'<div class="s-foot">'+(s.url?'<a class="s-maps" href="'+s.url+'" onclick="event.stopPropagation()" target="_blank">📍 Maps</a>':'')+'</div></div></div>';});\n    if(day.returnLink)html+='<a class="hotel-bar" href="'+esc(day.returnLink)+'" target="_blank" rel="noopener noreferrer"><div class="h-icon">↩</div><div class="h-info"><div class="h-lbl">'+esc(day.returnLabel)+'</div><div class="h-addr">'+esc(H)+'</div></div></a>';\n    panel.innerHTML=html;panels.appendChild(panel);\n  });\n  var gPct=total?Math.round(done/total*100):0;\n  document.getElementById('gd').textContent=done;document.getElementById('gt').textContent=total;document.getElementById('gb').style.width=gPct+'%';\n}\nrender();\n<\/script>\n<script>(${routeMapBootstrap.toString()})()<\/script>
 </body>\n</html>`;
   const blob = new Blob([ html ], {
     type: "text/html"
@@ -1191,6 +1243,8 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove("show"), 2500);
 }
 
+watchRouteDraft();
+
 renderStops();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1207,7 +1261,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const inp = document.getElementById("hotel-input");
   if (inp) {
     const saved = localStorage.getItem(routeHotelOverrideKey());
-    if (saved) inp.value = saved;
+    if (saved&&!routeDraftDirty.has("hotel-input")) inp.value = saved;
     inp.placeholder = HOTEL_PLACEHOLDERS[_phIdx];
   }
 });
@@ -1234,7 +1288,7 @@ function publishRoutePlanning(data) {
   if(data.scope!==routePlanningScope()) return;
   const previous=window._routePlanning;
   if(previous && previous.scope!==data.scope) {stops=[];routeData=null;visited={};renderStops();}
-  window._routePlanning=data;renderRoutePlanning();
+  window._routePlanning=data;restoreRouteDraft();renderRoutePlanning();
 }
 function renderRoutePlanning() {
   const data=window._routePlanning,select=document.getElementById("planning-day"),status=document.getElementById("planning-status");
@@ -1250,21 +1304,80 @@ function renderRoutePlanning() {
   select.disabled=!groups.length;
   document.getElementById("planning-import").disabled=!select.value;
   document.getElementById("planning-hotel").disabled=!data?.hotel?.addr||data.scope!==routePlanningScope();
+  renderPlanningStopChoices();
   status.textContent=!data||data.scope!==routePlanningScope()?t.planning_loading:data.error?t.planning_error:data.loading?t.planning_loading:data.local?t.planning_local:!groups.length?t.planning_empty:"";
 }
 function usePlanningHotel() {
   const data=window._routePlanning;
   if(!data||data.scope!==routePlanningScope()||!data.hotel?.addr)return;
   document.getElementById("hotel-input").value=data.hotel.addr;
-  localStorage.setItem(routeHotelOverrideKey(),data.hotel.addr);
+  localStorage.setItem(routeHotelOverrideKey(),data.hotel.addr);saveRouteDraft();
 }
+
+function renderPlanningStopChoices() {
+  const box=document.getElementById("planning-choices"),select=document.getElementById("planning-day");if(!box||!select)return;
+  const data=window._routePlanning,group=data?.scope===routePlanningScope()?data.groups?.find(group=>group.key===select.value):null;
+  const signature=JSON.stringify([routePlanningScope(),group?.key,group?.stops?.map(routeStopIdentity)]);
+  const selected=signature===routeChoiceKey?new Set([...box.querySelectorAll("input[data-planning-stop]:checked")].map(input=>Number(input.value))):null;
+  routeChoiceKey=signature;box.replaceChildren();box.hidden=!group;
+  if(!group){document.getElementById("planning-import").disabled=true;return;}
+  const t=i18n[localStorage.getItem("appLang")]||i18n.es;
+  const legend=document.createElement("legend");legend.textContent=t.planning_pick;box.appendChild(legend);
+  for(const [index,stop] of group.stops.entries()){
+    const label=document.createElement("label"),input=document.createElement("input"),name=document.createElement("span");
+    input.type="checkbox";input.dataset.planningStop="true";input.value=String(index);input.checked=!selected||selected.has(index);
+    name.setAttribute("data-notr","");name.textContent=stop.name;label.append(input,name);box.appendChild(label);
+    input.onchange=()=>{document.getElementById("planning-import").disabled=!box.querySelector("input[data-planning-stop]:checked");};
+  }
+  const actions=document.createElement("div");actions.className="days-row";
+  for(const [text,checked] of [[t.planning_all,true],[t.planning_none,false]]){
+    const button=document.createElement("button");button.type="button";button.className="btn-reset";button.textContent=text;
+    button.onclick=()=>{box.querySelectorAll("input[data-planning-stop]").forEach(input=>input.checked=checked);document.getElementById("planning-import").disabled=!checked;};actions.appendChild(button);
+  }
+  box.appendChild(actions);document.getElementById("planning-import").disabled=!box.querySelector("input[data-planning-stop]:checked");
+}
+function saveRouteDraft(){
+  const scope=routePlanningScope();if(!scope||scope!==activeRouteDraftScope)return false;
+  const values={};for(const id of routeDraftFields){const input=document.getElementById(id);if(input)values[id]=input.value;}
+  try{localStorage.setItem("taxfly-route-draft::"+scope,JSON.stringify({values,days,method:activeMethod,returnToHotel:!!document.getElementById("return-hotel")?.checked,stops}));return true;}catch(_){return false;}
+}
+function restoreRouteDraft(){
+  const scope=routePlanningScope();if(!scope||scope===activeRouteDraftScope)return;
+  const switching=activeRouteDraftScope!==null;activeRouteDraftScope=scope;
+  if(switching)routeDraftDirty.clear();
+  let draft;try{draft=JSON.parse(localStorage.getItem("taxfly-route-draft::"+scope)||"null");}catch(_){}
+  for(const id of routeDraftFields){const input=document.getElementById(id);if(input&&!routeDraftDirty.has(id)&&typeof draft?.values?.[id]==="string")input.value=draft.values[id];else if(input&&switching)input.value="";}
+  if(!routeDraftDirty.has("days")){
+    if(Number.isInteger(draft?.days)&&draft.days>=1&&draft.days<=20)days=draft.days;
+    else if(switching)days=3;
+    document.getElementById("days-count").textContent=days;
+  }
+  if(!routeDraftDirty.has("method")){
+    if(["links","csv","manual"].includes(draft?.method))setMethod(draft.method);
+    else if(switching)setMethod("manual");
+  }
+  const back=document.getElementById("return-hotel");if(back&&!routeDraftDirty.has("return-hotel"))back.checked=!!draft?.returnToHotel;
+  if(Array.isArray(draft?.stops)&&!routeDraftDirty.has("stops"))stops=draft.stops.filter(stop=>stop&&typeof stop.name==="string").map(stop=>({name:stop.name,desc:String(stop.desc||""),url:String(stop.url||"")}));
+  renderStops();
+}
+function watchRouteDraft(){
+  const builder=document.getElementById("builder-card");if(!builder)return;
+  builder.addEventListener("input",event=>{if(event.target.id)routeDraftDirty.add(event.target.id);saveRouteDraft();});
+  builder.addEventListener("change",saveRouteDraft);
+  builder.addEventListener("click",()=>setTimeout(saveRouteDraft,0));
+  window.addEventListener("pagehide",saveRouteDraft);
+}
+
 function importPlanningStops() {
   const data=window._routePlanning;
   if(!data||data.scope!==routePlanningScope())return;
   const group=data.groups.find(group=>group.key===document.getElementById("planning-day").value);
   if(!group)return;
   const known=new Set(stops.map(routeStopIdentity));let added=0;
-  for(const stop of group.stops){const key=routeStopIdentity(stop);if(known.has(key))continue;known.add(key);stops.push({...stop});added++;}
+  const choices=document.getElementById("planning-choices");
+  const selected=choices?.querySelectorAll?new Set([...choices.querySelectorAll("input[data-planning-stop]:checked")].map(input=>Number(input.value))):null;
+  for(const [index,stop] of group.stops.entries()){
+    if(selected&&!selected.has(index))continue;const key=routeStopIdentity(stop);if(known.has(key))continue;known.add(key);stops.push({...stop});added++;}
   renderStops();
   showToast(added?addedToastMsg(added):(i18n[localStorage.getItem("appLang")]||i18n.es).planning_none_added);
 }

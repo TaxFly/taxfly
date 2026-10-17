@@ -6,6 +6,7 @@
     try { l = localStorage.getItem("appLang") || "es"; } catch (_) {}
     return l === "en" ? en : l === "pt" ? pt : es;
   };
+  if(document.currentScript?.hasAttribute("data-messages-only"))return;
   const words = {
     "Cancelar": ["Cancel", "Cancelar"],
     "Cerrar": ["Close", "Fechar"],
@@ -141,7 +142,7 @@
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
     let node = root;
     do {
-      if (node.nodeType === 3 && node.parentElement && !node.parentElement.closest("[data-i18n],script,style,textarea,[contenteditable]")) {
+      if (node.nodeType === 3 && node.parentElement && !node.parentElement.closest("[data-i18n],[data-notr],script,style,textarea,[contenteditable]")) {
         const stored = original.get(node);
         const current = node.nodeValue;
         const source = stored && current === stored.output ? stored.source : current;
@@ -152,7 +153,7 @@
           original.set(node, { source, output });
           if (current !== output) node.nodeValue = output;
         }
-      } else if (node.nodeType === 1 && !node.closest("[data-i18n],script,style,textarea,[contenteditable]")) {
+      } else if (node.nodeType === 1 && !node.closest("[data-i18n],[data-notr],script,style,textarea,[contenteditable]")) {
         attrs.forEach(attr => {
           if (!node.hasAttribute(attr)) return;
           const key = attr + ":source", old = original.get(node) || {};

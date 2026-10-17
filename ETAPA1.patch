@@ -1,0 +1,1239 @@
+--- a/assets/compras.js
++++ b/assets/compras.js
+@@ -69,7 +69,8 @@
+ function cargarGastosDesdeCache() {
+   try {
+     const raw = localStorage.getItem(gastosCacheKey());
+-    return raw ? JSON.parse(raw) : null;
++    const parsed=raw?JSON.parse(raw):null;
++    return Array.isArray(parsed)?parsed:null;
+   } catch (e) {
+     return null;
+   }
+@@ -83,7 +84,8 @@
+ 
+ function cargarPresupuestoDesdeCache() {
+   const v = localStorage.getItem(currentBudgetKey());
+-  return v !== null ? parseFloat(v) : null;
++  const parsed=v!==null?Number(v):NaN;
++  return Number.isFinite(parsed)?parsed:null;
+ }
+ 
+ function getPendingGastos() {
+@@ -157,33 +159,59 @@
+ function filteredGastos() {
+   return currentUser && perfilId ? window.TripContext.filter(allGastos, currentUser.uid, perfilId) : allGastos;
+ }
++let expenseGeneration=0, expenseScope='', expenseStops=[];
++let financeStates={base:window.TaxflyTravel.loadState(),expenses:window.TaxflyTravel.loadState(),maps:window.TaxflyTravel.loadState(),reservations:window.TaxflyTravel.loadState()};
++function expenseContext(){return currentUser&&perfilId?JSON.stringify([currentUser.uid,perfilId,window.TripContext.view(currentUser.uid,perfilId)]):'';}
++function expenseContextReady(){const state=window.TripContext.status(currentUser?.uid,perfilId);return state.hasData||state.phase==='ready';}
++function expenseValid(generation,scope){return generation===expenseGeneration&&scope===expenseContext();}
++function financeMessage(states){
++ if(currentUser&&!expenseContextReady()&&window.TripContext.status(currentUser.uid,perfilId).phase==='error')return bt('load_error');
++ if(states.some(s=>s.error))return bt('load_error');
++ if(!navigator.onLine)return states.every(s=>s.hasValue)?bt('saved_offline'):bt('no_local_data');
++ return bt('loading_data');
++}
+ function refreshGastosTrip() {
+-  if (!currentUser || !perfilId) return;
+-  window.TripContext.render(document.getElementById("trip-filter-expenses"), currentUser.uid, perfilId);
+-  renderGastosList(allGastos);
+-  listenTripPlanningSpent();
+-}
++ if(!currentUser||!perfilId)return;
++ window.TripContext.render(document.getElementById('trip-filter-expenses'),currentUser.uid,perfilId);
++ if(!expenseContextReady()){renderBudgetCard();return;}
++ if(expenseScope===expenseContext()){renderBudgetCard();return;}
++ expenseStops.forEach(stop=>stop());expenseStops=[];
++ tripBudgetUnsubs.forEach(stop=>stop());tripBudgetUnsubs=[];
++ expenseScope=expenseContext();expenseGeneration++;
++ const cached=cargarGastosDesdeCache(),base=cargarPresupuestoDesdeCache();
++ financeStates={base:window.TaxflyTravel.loadState(Number.isFinite(base)?base:undefined),expenses:window.TaxflyTravel.loadState(Array.isArray(cached)?cached:undefined),maps:window.TaxflyTravel.loadState(),reservations:window.TaxflyTravel.loadState()};
++ allGastos=window.TaxflyTravel.overlayExpenses(cached||[],getPendingGastos());
++ if(getPendingGastos().length&&!financeStates.expenses.hasValue)financeStates.expenses=window.TaxflyTravel.loadState(allGastos);
++ presupuestoBase=base??0;mapsSpent=0;financeReservations=[];expenseSnapshotReady=false;
++ document.getElementById('budget-set-row')._editing=false;
++ renderGastosList(allGastos);renderBudgetCard();
++ listenGastos();listenPresupuestoYOrlando();
++}
++window.addEventListener('taxfly:tripchange',refreshGastosTrip);
++window.addEventListener('taxfly:tripstatus',refreshGastosTrip);
++window.addEventListener('offline',()=>{renderGastosList(allGastos);renderBudgetCard();});
++window.addEventListener('online',()=>{renderGastosList(allGastos);renderBudgetCard();});
+ function listenTripPlanningSpent() {
+-  tripBudgetUnsubs.forEach(stop => stop());
+-  tripBudgetUnsubs = [];
+-  const tc = window.TripContext;
+-  const selection = tc.view(currentUser.uid, perfilId);
+-  const trips = tc.readTrips(currentUser.uid, perfilId);
+-  const ids = selection === "all" ? ["orlando", ...trips.filter(t => t.id !== "orlando" && t.status !== "deleted").map(t => t.id)] : selection === "unassigned" ? [] : [selection];
+-  const totals = new Map();
+-  mapsSpent = 0;
+-  financeReservations=[];
+-  tripBudgetUnsubs.push(window.TaxflyTravel.watchReservations({uid:currentUser.uid,pid:perfilId,trip:selection,db,doc,onSnapshot,onChange:items=>{financeReservations=items;renderBudgetCard();offerReservationPayment();}}));
+-  updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
+-  ids.forEach(id => {
+-    const path = id === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", id, "data", "budget"];
+-    tripBudgetUnsubs.push(onSnapshot(doc(db, ...path), snap => {
+-      const d = snap.exists() ? snap.data() : null;
+-      totals.set(id, (d?.gastos || []).reduce((s, g) => s + (Number(g.monto) || 0), 0));
+-      mapsSpent = [...totals.values()].reduce((a, b) => a + b, 0);
+-      updateBudgetDisplay(filteredGastos().reduce((sum, g) => sum + (Number(g.valor) || 0), 0));
+-    }, () => {}));
+-  });
++ tripBudgetUnsubs.forEach(stop=>stop());tripBudgetUnsubs=[];
++ const generation=expenseGeneration,scope=expenseScope;
++ const selection=window.TripContext.view(currentUser.uid,perfilId);
++ const key='taxusa_maps_budget_cache_'+perfilId+'::'+currentUser.uid+'_'+selection;
++ const cached=localStorage.getItem(key);
++ financeStates.maps=window.TaxflyTravel.loadState(cached!==null&&Number.isFinite(Number(cached))?Number(cached):undefined);
++ if(selection==='unassigned')financeStates.maps.receive(0);
++ mapsSpent=financeStates.maps.value||0;
++ tripBudgetUnsubs.push(window.TaxflyTravel.watchReservations({uid:currentUser.uid,pid:perfilId,trip:selection,db,doc,onSnapshot,
++  onChange:items=>{if(expenseValid(generation,scope))financeReservations=items;},
++  onState:state=>{if(expenseValid(generation,scope)){financeStates.reservations=state;renderBudgetCard();offerReservationPayment();}}}));
++ if(selection!=='unassigned'){
++  const path=selection==='orlando'?['usuarios',currentUser.uid,'perfiles',perfilId,'orlando','budget']:['usuarios',currentUser.uid,'perfiles',perfilId,'tripPlanning',selection,'data','budget'];
++  tripBudgetUnsubs.push(onSnapshot(doc(db,...path),{includeMetadataChanges:true},snap=>{
++   if(!expenseValid(generation,scope))return;
++   const d=snap.exists()?snap.data():null,value=(d?.gastos||[]).reduce((sum,g)=>sum+(Number(g.monto)||0),0);
++   if(financeStates.maps.receive(value,snap,value===0)){mapsSpent=value;localStorage.setItem(key,String(value));updateBudgetDisplay(lastGastosTotal);}
++  },()=>{if(expenseValid(generation,scope)){financeStates.maps.fail();renderBudgetCard();}}));
++ }
++ updateBudgetDisplay(filteredGastos().reduce((sum,g)=>sum+(Number(g.valor)||0),0));
+ }
+ 
+ let lastGastosTotal = 0;
+@@ -215,6 +243,7 @@
+ 
+ const i18n = {
+   es: {
++    loading_data: "Cargando…", load_error: "No se pudo actualizar.", saved_offline: "Sin conexión · datos guardados", no_local_data: "Sin conexión · datos no disponibles",
+     nav_home: "INICIO",
+     nav_taxes: "TAXES",
+     nav_itinerary: "PLANIFICACIÓN",
+@@ -393,6 +422,7 @@
+     sz_us_num: "US (núm.)"
+   },
+   en: {
++    loading_data: "Loading…", load_error: "Could not refresh.", saved_offline: "Offline · saved data", no_local_data: "Offline · data unavailable",
+     nav_home: "HOME",
+     nav_taxes: "TAXES",
+     nav_itinerary: "PLANNING",
+@@ -571,6 +601,7 @@
+     sz_us_num: "US (num)"
+   },
+   pt: {
++    loading_data: "Carregando…", load_error: "Não foi possível atualizar.", saved_offline: "Sem conexão · dados salvos", no_local_data: "Sem conexão · dados indisponíveis",
+     nav_home: "INÍCIO",
+     nav_taxes: "TAXES",
+     nav_itinerary: "PLANEJAMENTO",
+@@ -851,7 +882,7 @@
+   if (window.szReRender) window.szReRender();
+   if (typeof allGastos !== "undefined" && allGastos.length) renderDashboard(allGastos);
+   try { renderBudgetCard(); renderCapsEditor(); } catch (e) {}
+-  try { if (typeof allGastos !== "undefined" && allGastos.length) renderGastosList(allGastos); } catch (e) {}
++  try { if (typeof allGastos !== "undefined") renderGastosList(allGastos); } catch (e) {}
+ };
+ 
+ (function() {
+@@ -1183,6 +1214,16 @@
+   const card = document.getElementById("budget-card");
+   const row = document.getElementById("budget-set-row");
+   if (!card || !row) return;
++  const states=[financeStates.base,financeStates.expenses,financeStates.maps];
++  const ready=currentUser&&expenseContextReady()&&expenseScope===expenseContext()&&states.every(x=>x.hasValue);
++  const loading=document.getElementById('bc-loading');
++  card.setAttribute('aria-busy',String(!ready&&navigator.onLine&&!states.some(x=>x.error)));
++  if(loading){loading.style.display=ready?'none':'block';loading.textContent=financeMessage(states);}
++  if(!ready){
++    for(const id of ['bc-empty','bc-main','budget-set-row'])document.getElementById(id).style.display='none';
++    document.getElementById('bc-hint').textContent=bt('label_budget');
++    return;
++  }
+   const has = presupuestoBase > 0;
+   const editing = row._editing === true;
+   // Lo registrado desde Supermercado ("Registrar como gasto") se muestra en el chip Planificación, no en Gastos.
+@@ -1216,7 +1257,7 @@
+   if (has) {
+     const rest = presupuestoBase - eff;
+     const trip=currentUser?window.TripContext.readTrips(currentUser.uid,perfilId).find(t=>t.id===window.TripContext.view(currentUser.uid,perfilId)):null;
+-    const daily=document.getElementById("budget-daily");if(daily)daily.textContent=window.TaxflyTravel.budgetText(window.TaxflyTravel.budget(presupuestoBase,eff,financeReservations,filteredGastos().filter(g=>!pendingDeletes.has(g.id)),trip));
++    const daily=document.getElementById("budget-daily");if(daily)daily.textContent=!financeStates.reservations.hasValue?financeMessage([financeStates.reservations]):window.TaxflyTravel.budgetText(window.TaxflyTravel.budget(presupuestoBase,eff,financeReservations,filteredGastos().filter(g=>!pendingDeletes.has(g.id)),trip));
+     const disp = document.getElementById("disp-fondo");
+     if (disp) disp.textContent = "USD " + fmt(rest);
+     const fill = document.getElementById("bc-fill");
+@@ -1239,7 +1280,7 @@
+   const hint = document.getElementById("bc-hint");
+   if (hint) {
+     const unassigned = currentUser && perfilId && window.TripContext.view(currentUser.uid, perfilId) === "unassigned";
+-    hint.textContent = unassigned ? bt("bc_hint_unassigned") : bt("bc_hint");
++    hint.textContent = [...states,financeStates.reservations].some(x=>x.error)||!navigator.onLine?financeMessage([...states,financeStates.reservations]):unassigned ? bt("bc_hint_unassigned") : bt("bc_hint");
+   }
+ }
+ 
+@@ -1295,6 +1336,7 @@
+     return;
+   }
+   presupuestoBase = v;
++  financeStates.base.receive(v);
+   guardarPresupuestoEnCache(v);
+   const row = document.getElementById("budget-set-row");
+   if (row) row._editing = false;
+@@ -1900,6 +1942,11 @@
+   if (currentUser && perfilId) gastos = window.TripContext.filter(gastos, currentUser.uid, perfilId);
+   gastos = (gastos || []).filter(g => !pendingDeletes.has(g.id));
+   const c = document.getElementById("listaGastos");
++  const ready=currentUser&&expenseContextReady()&&expenseScope===expenseContext()&&financeStates.expenses.hasValue;
++  c.setAttribute('aria-busy',String(!ready&&navigator.onLine&&!financeStates.expenses.error));
++  const notice=document.getElementById('expense-load-status');
++  if(notice)notice.textContent=financeStates.expenses.error||!navigator.onLine?financeMessage([financeStates.expenses]):'';
++  if(!ready){c.innerHTML='<p style="text-align:center;color:var(--text-dim);font-size:.85rem;">'+esc(financeMessage([financeStates.expenses]))+'</p>';renderDashboard([]);return;}
+   if (!gastos.length) {
+     c.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:.85rem;" data-i18n="empty_expenses">' + esc(bt("empty_expenses")) + '</p>';
+     updateBudgetDisplay(0);
+@@ -1926,59 +1973,35 @@
+ }
+ 
+ function listenGastos() {
+-  if (!currentUser || !perfilId) return;
+-  const cached = cargarGastosDesdeCache();
+-  if (cached && cached.length) {
+-    allGastos = window.TaxflyTravel.overlayExpenses(cached,getPendingGastos());
+-    if(!navigator.onLine)expenseSnapshotReady=true;
+-    renderGastosList(allGastos);
+-  }
+-  const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), orderBy("fecha", "desc"));
+-  onSnapshot(q, snap => {
+-    if (!snap.metadata?.fromCache) window.taxflyOfflineStatus?.mark("expenses", currentUser.uid, perfilId);
+-    expenseSnapshotReady=!navigator.onLine || !snap.metadata?.fromCache;
+-    if (snap.empty) {
+-      const pending = getPendingGastos();
+-      const hayLocales = allGastos.some(g => String(g.id).startsWith("local_"));
+-      if (pending.length > 0 || hayLocales) {allGastos=window.TaxflyTravel.overlayExpenses(allGastos,pending);renderGastosList(allGastos);offerReservationPayment();return;}
+-      allGastos = window.TaxflyTravel.overlayExpenses([],getPendingGastos());
+-      guardarGastosEnCache(allGastos);
+-      renderGastosList(allGastos);offerReservationPayment();
+-      return;
+-    }
+-    const gastosFirestore = snap.docs.map(d => {
+-      const data = d.data(), val = parseFloat(data.valor) || 0;
+-      return {
+-        ...data,
+-        id: d.id,
+-        valor: val
+-      };
+-    });
+-    allGastos = window.TaxflyTravel.overlayExpenses(gastosFirestore,getPendingGastos());
+-    guardarGastosEnCache(allGastos);
+-    renderGastosList(allGastos);offerReservationPayment();
+-  });
+-}
+-
++ if(!currentUser||!perfilId)return;
++ const generation=expenseGeneration,scope=expenseScope,key=gastosCacheKey(),uid=currentUser.uid;
++ const q=query(collection(db,'usuarios',uid,'perfiles',perfilId,'gastos'),orderBy('fecha','desc'));
++ expenseStops.push(onSnapshot(q,{includeMetadataChanges:true},snap=>{
++  if(!expenseValid(generation,scope))return;
++  const items=snap.docs.map(d=>({...d.data(),id:d.id,valor:parseFloat(d.data().valor)||0}));
++  if(!financeStates.expenses.receive(items,snap,!items.length))return;
++  expenseSnapshotReady=!snap.metadata?.fromCache;
++  if(expenseSnapshotReady)window.taxflyOfflineStatus?.mark('expenses',uid,perfilId);
++  allGastos=window.TaxflyTravel.overlayExpenses(items,getPendingGastos());
++  localStorage.setItem(key,JSON.stringify(allGastos));
++  renderGastosList(allGastos);offerReservationPayment();
++ },()=>{if(expenseValid(generation,scope)){financeStates.expenses.fail();renderGastosList(allGastos);renderBudgetCard();}}));
++}
+ function listenPresupuestoYOrlando() {
+-  if (!currentUser || !perfilId) return;
+-  const ref=currentBudgetRef(), field=currentBudgetField();
+-  if (ref) onSnapshot(ref,snap=>{
+-    if (!snap.exists()) return;
+-    const cats=snap.data().presupuestoCats;
+-    if (cats && typeof cats==="object") {
+-      catBudgets=normalizeCatBudgets(cats);
+-      guardarTopesEnCache(catBudgets);
+-      if (!document.getElementById("caps-box")?.open) renderCapsEditor();
+-      if (typeof allGastos!=="undefined") renderDashboard(allGastos);
+-    }
+-    if (snap.data()[field]===undefined) return;
+-    presupuestoBase=Number(snap.data()[field])||0;
+-    guardarPresupuestoEnCache(presupuestoBase);
+-    updateBudgetDisplay(lastGastosTotal);
+-    refreshBudgetInfoRow();
+-  },()=>{});
+-  listenTripPlanningSpent();
++ if(!currentUser||!perfilId)return;
++ const generation=expenseGeneration,scope=expenseScope,ref=currentBudgetRef(),field=currentBudgetField(),key=currentBudgetKey();
++ if(!ref)financeStates.base.receive(0);
++ if(ref)expenseStops.push(onSnapshot(ref,{includeMetadataChanges:true},snap=>{
++  if(!expenseValid(generation,scope))return;
++  const data=snap.exists()?snap.data():{},value=Number(data[field])||0;
++  if(!financeStates.base.receive(value,snap,value===0))return;
++  if(data.presupuestoCats&&typeof data.presupuestoCats==='object'){
++   catBudgets=normalizeCatBudgets(data.presupuestoCats);guardarTopesEnCache(catBudgets);
++   if(!document.getElementById('caps-box')?.open)renderCapsEditor();
++  }
++  presupuestoBase=value;localStorage.setItem(key,String(value));updateBudgetDisplay(lastGastosTotal);
++ },()=>{if(expenseValid(generation,scope)){financeStates.base.fail();renderBudgetCard();}}));
++ listenTripPlanningSpent();
+ }
+ 
+ function updateBudgetDisplay(spent) {
+@@ -2214,6 +2237,7 @@
+   const empty = document.getElementById("dash-empty");
+   const content = document.getElementById("dash-content");
+   if (!empty || !content) return;
++  if(!currentUser||!expenseContextReady()||expenseScope!==expenseContext()||!financeStates.expenses.hasValue){empty.style.display='none';content.style.display='none';return;}
+   if (!gastos || !gastos.length) {
+     empty.style.display = "block";
+     content.style.display = "none";
+@@ -3107,25 +3131,20 @@
+ 
+ onAuthStateChanged(auth, async user => {
+   if (!user) {
++    currentUser=null;expenseGeneration++;expenseStops.forEach(stop=>stop());tripBudgetUnsubs.forEach(stop=>stop());
+     window.location.replace("login.html");
+     return;
+   }
++  if(currentUser&&currentUser.uid!==user.uid){
++    expenseGeneration++;expenseStops.forEach(stop=>stop());tripBudgetUnsubs.forEach(stop=>stop());
++    expenseStops=[];tripBudgetUnsubs=[];expenseScope='';allGastos=[];
++    financeStates={base:window.TaxflyTravel.loadState(),expenses:window.TaxflyTravel.loadState(),maps:window.TaxflyTravel.loadState(),reservations:window.TaxflyTravel.loadState()};
++  }
+   currentUser = user;
++  renderGastosList(allGastos);renderBudgetCard();
+   const requestedTrip=new URLSearchParams(location.search).get("trip");
+   if(requestedTrip && window.TripContext.readTrips(user.uid,perfilId).some(t=>t.id===requestedTrip))window.TripContext.select(user.uid,perfilId,requestedTrip);
+-  const cachedBudget = cargarPresupuestoDesdeCache();
+-  presupuestoBase = cachedBudget ?? 0;
+   catBudgets = cargarTopesDesdeCache();
+-  if (cachedBudget !== null) {
+-    presupuestoBase = cachedBudget;
+-    const inputFondo = document.getElementById("input-fondo");
+-    if (inputFondo) {
+-      inputFondo.value = "";
+-      inputFondo.placeholder = "USD 0";
+-    }
+-    refreshBudgetInfoRow();
+-  }
+-
+   const perfilNombre = localStorage.getItem("perfilActivoNombre");
+   document.getElementById("userEmail").innerText = perfilNombre || user.email;
+   if (!perfilId) {
+@@ -3139,27 +3158,6 @@
+     b.innerText = "";
+   }
+   loadCustomCats();
+-  try {
+-    const ref=currentBudgetRef();
+-    const snap=ref ? await getDoc(ref) : null;
+-    const field=currentBudgetField();
+-    if (snap?.exists() && snap.data().presupuestoCats && typeof snap.data().presupuestoCats === "object") {
+-      catBudgets = normalizeCatBudgets(snap.data().presupuestoCats);
+-      guardarTopesEnCache(catBudgets);
+-    }
+-    if (snap?.exists() && snap.data()[field] !== undefined) {
+-      presupuestoBase = Number(snap.data()[field]);
+-      guardarPresupuestoEnCache(presupuestoBase);
+-      const inputF = document.getElementById("input-fondo");
+-      if (inputF) {
+-        inputF.value = "";
+-        inputF.placeholder = "USD 0";
+-      }
+-      refreshBudgetInfoRow();
+-    }
+-  } catch (e) {
+-    console.error(e);
+-  }
+   fetchRates();
+   const tripSelect = document.getElementById("trip-filter-expenses");
+   tripSelect.addEventListener("change", () => {
+@@ -3167,9 +3165,7 @@
+     location.reload();
+   });
+   window.TripContext.hydrate(db, user.uid, perfilId, getDocs, collection, refreshGastosTrip);
+-  listenGastos();
+-  listenPresupuestoYOrlando();
+-  setTimeout(refreshBudgetInfoRow, 500);
++  refreshGastosTrip();
+   flushPendingGastos();
+   initPushNotifications();
+   const lang = localStorage.getItem("appLang") || "es";
+--- a/assets/index-app.js
++++ b/assets/index-app.js
+@@ -38,7 +38,7 @@
+ }
+ 
+ function mapsBudgetCacheKey() {
+-  return "taxusa_maps_budget_cache_" + perfilId + "::" + currentUser.uid + "_" + (localStorage.getItem("trip-planning-active::" + currentUser.uid + "::" + perfilId) || "orlando");
++  return "taxusa_maps_budget_cache_" + perfilId + "::" + currentUser.uid + "_" + window.TripContext.view(currentUser.uid,perfilId);
+ }
+ 
+ let mapsSpentCache = 0, homeReservations=[], homeReservationUnsub=()=>{}, renderUpcoming=()=>{};
+@@ -51,28 +51,33 @@
+   return (data.gastos || []).reduce((s, g) => s + (parseFloat(g.monto) || 0), 0);
+ }
+ 
++let homeGeneration=0, homeStops=[], homeScope='', homeFinance=null, homeEventStop=()=>{};
++function readHomeCache(key) { try {const raw=localStorage.getItem(key);return raw===null?undefined:JSON.parse(raw);}catch(_){return undefined;} }
++function homeContext() {return currentUser&&perfilId?JSON.stringify([currentUser.uid,perfilId,window.TripContext.view(currentUser.uid,perfilId)]):'';}
++function homeContextReady(){const state=window.TripContext.status(currentUser?.uid,perfilId);return state.hasData||state.phase==='ready';}
++function homeValid(generation,scope){return generation===homeGeneration&&scope===homeContext();}
++function homeMessage(states) {
++ if(states.some(s=>s.error))return t.load_error;
++ if(!navigator.onLine)return states.length&&states.every(s=>s.hasValue)?t.saved_offline:t.no_local_data;
++ return t.loading;
++}
+ function listenMapsBudget() {
+   if (!currentUser || !perfilId) return;
+-  mapsSpentCache = parseFloat(localStorage.getItem(mapsBudgetCacheKey())) || 0;
+-  const tripId = window.TripContext.view(currentUser.uid, perfilId);
+-  if (tripId === "unassigned") { mapsSpentCache=0; return; }
+-  const path = tripId === "orlando" ? ["usuarios", currentUser.uid, "perfiles", perfilId, "orlando", "budget"] : ["usuarios", currentUser.uid, "perfiles", perfilId, "tripPlanning", tripId, "data", "budget"];
+-  onSnapshot(doc(db, ...path), snap => {
+-    mapsSpentCache = computeMapsSpent(snap.exists() ? snap.data() : null);
+-    try {
+-      localStorage.setItem(mapsBudgetCacheKey(), String(mapsSpentCache));
+-    } catch (e) {}
+-    const base = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
+-    let g = [];
+-    try {
+-      g = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
+-    } catch (e) {}
+-    renderBudgetUI(base, g);
+-  }, () => {});
++  const generation=homeGeneration,scope=homeScope,key=mapsBudgetCacheKey();
++  const state=homeFinance.maps;
++  const tripId=window.TripContext.view(currentUser.uid,perfilId);
++  if(tripId==='unassigned'){state.receive(0);renderBudgetUI();return;}
++  const path=tripId==='orlando'?['usuarios',currentUser.uid,'perfiles',perfilId,'orlando','budget']:['usuarios',currentUser.uid,'perfiles',perfilId,'tripPlanning',tripId,'data','budget'];
++  homeStops.push(onSnapshot(doc(db,...path),{includeMetadataChanges:true},snap=>{
++    if(!homeValid(generation,scope))return;
++    const value=computeMapsSpent(snap.exists()?snap.data():null);
++    if(state.receive(value,snap,value===0)){localStorage.setItem(key,String(value));renderBudgetUI();}
++  },()=>{if(homeValid(generation,scope)){state.fail();renderBudgetUI();}}));
+ }
+ 
+ const I18N = {
+   es: {
++    load_error: "No se pudo actualizar.", saved_offline: "Sin conexión · datos guardados", no_local_data: "Sin conexión · datos no disponibles",
+     nav_home: "INICIO",
+     nav_expenses: "GASTOS",
+     nav_itinerary: "PLANIFICACIÓN",
+@@ -196,6 +201,7 @@
+     } ]
+   },
+   en: {
++    load_error: "Could not refresh.", saved_offline: "Offline · saved data", no_local_data: "Offline · data unavailable",
+     nav_home: "HOME",
+     nav_expenses: "EXPENSES",
+     nav_itinerary: "PLANNING",
+@@ -319,6 +325,7 @@
+     } ]
+   },
+   pt: {
++    load_error: "Não foi possível atualizar.", saved_offline: "Sem conexão · dados salvos", no_local_data: "Sem conexão · dados indisponíveis",
+     nav_home: "INÍCIO",
+     nav_expenses: "GASTOS",
+     nav_itinerary: "PLANEJAMENTO",
+@@ -457,13 +464,14 @@
+   t = I18N[lang] || I18N.es;
+   document.querySelectorAll("[data-i18n]").forEach(el => {
+     const k = el.getAttribute("data-i18n");
+-    if (el.id === "ne-title" && el.getAttribute("data-has-event") === "true") return;
++    if (el.id === "ne-title") return;
+     if (t[k]) el.textContent = t[k];
+   });
+   [ "es", "en", "pt" ].forEach(l => document.getElementById("lang-" + l)?.classList.toggle("active", l === lang));
+   renderSections();
+   renderTip();
+-  if (window._lastBudgetArgs) { try { renderBudgetUI(...window._lastBudgetArgs); } catch (e) {} }
++  renderBudgetUI();
++  renderUpcoming();
+   if (document.getElementById("fx-content")?.style.display !== "none") fxRender();
+ }
+ 
+@@ -498,18 +506,41 @@
+   });
+ }
+ 
+-function renderBudgetUI(base, gastos) {
++function renderBudgetUI() {
++ const f=homeFinance, ready=currentUser&&homeContextReady()&&homeScope===homeContext();
++ const states=f?[f.base,f.expenses,f.maps]:[];
++ const complete=ready&&states.every(x=>x.hasValue);
++ const budget=document.querySelector('.widget-budget');
++ budget?.setAttribute('aria-busy',String(!complete&&navigator.onLine&&!states.some(x=>x.error)));
++ if(complete){mapsSpentCache=f.maps.value;renderBudgetValues(f.base.value,f.expenses.value);}
++ else {
++  document.getElementById('wb-value').textContent='—';
++  document.getElementById('wb-pct').textContent='—';
++  document.getElementById('wb-bar').style.width='0%';
++  document.getElementById('wb-daily').textContent='';
++  document.getElementById('last-gasto-val').textContent='—';
++  document.getElementById('last-gasto-name').textContent=homeMessage(states);
++  document.getElementById('total-gasto-val').textContent='—';
++  document.getElementById('last-gasto-cat').style.display='none';
++ }
++ const unavailable=!ready&&currentUser&&['error','offline'].includes(window.TripContext.status(currentUser.uid,perfilId).phase);
++ const hint=document.querySelector('.widget-budget .wb-hint');
++ if(hint)hint.textContent=unavailable?(!navigator.onLine?t.no_local_data:t.load_error):!complete||states.some(x=>x.error)||!navigator.onLine?homeMessage(states):t.budget_hint;
++ if(f&&complete&&(!f.reservations.hasValue||f.reservations.error))document.getElementById('wb-daily').textContent=homeMessage([f.reservations]);
++}
++function renderBudgetValues(base, gastos) {
+   gastos=window.TaxflyTravel.overlayExpenses(gastos,homePending());
+   window._lastBudgetArgs = [ base, gastos ];
+   if (currentUser && perfilId) {
+     const tripId=window.TripContext.view(currentUser.uid,perfilId);
+-    base=tripId==="unassigned"?0:Number(localStorage.getItem(homeBudgetKey()))||0;
++    base=tripId==="unassigned"?0:base;
+     gastos = gastos.filter(g => (g.tripId || "unassigned") === window.TripContext.view(currentUser.uid, perfilId));
+   }
+   const gastadoPropio = gastos.reduce((s, g) => s + (parseFloat(g.valor || g.monto) || 0), 0);
+   const gastado = gastadoPropio + (mapsSpentCache || 0);
+   const totalEl = document.getElementById("total-gasto-val");
+   const mapsNoteEl = document.getElementById("total-gasto-maps-note");
++  document.getElementById("last-gasto-cat").style.display = "none";
+   if (!gastos || gastos.length === 0) {
+     document.getElementById("last-gasto-val").textContent = "—";
+     document.getElementById("last-gasto-name").textContent = t.no_gastos || "Sin gastos";
+@@ -570,44 +601,40 @@
+ }
+ 
+ function loadBudget() {
+-  homeReservationUnsub();homeReservations=[];
+-  if(currentUser&&perfilId)homeReservationUnsub=window.TaxflyTravel.watchReservations({uid:currentUser.uid,pid:perfilId,trip:window.TripContext.view(currentUser.uid,perfilId),db,doc,onSnapshot,onChange:items=>{homeReservations=items;if(window._lastBudgetArgs)renderBudgetUI(...window._lastBudgetArgs);renderUpcoming();}});
+-  const cachedBase = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
+-  let cachedGastos = [];
+-  try {
+-    cachedGastos = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
+-  } catch (e) {}
+-  renderBudgetUI(cachedBase, cachedGastos);
++  homeStops.forEach(stop=>stop());homeStops=[];homeReservationUnsub();
++  homeGeneration++;homeScope=homeContext();homeReservations=[];window._lastBudgetArgs=null;
++  if(!currentUser||!homeContextReady()){homeFinance=null;renderBudgetUI();return;}
++  const generation=homeGeneration,scope=homeScope,uid=currentUser.uid,tripId=window.TripContext.view(uid,perfilId);
++  const baseKey=homeBudgetKey(),expensesKey=homeExpensesKey();
++  const cachedBase=readHomeCache(baseKey),cachedExpenses=readHomeCache(expensesKey),cachedMaps=readHomeCache(mapsBudgetCacheKey());
++  homeFinance={base:window.TaxflyTravel.loadState(Number.isFinite(cachedBase)?cachedBase:undefined),expenses:window.TaxflyTravel.loadState(Array.isArray(cachedExpenses)?cachedExpenses:undefined),maps:window.TaxflyTravel.loadState(Number.isFinite(cachedMaps)?cachedMaps:undefined),reservations:window.TaxflyTravel.loadState()};
++  if(tripId==='unassigned'){homeFinance.base.receive(0);homeFinance.maps.receive(0);}
++  renderBudgetUI();
++  homeReservationUnsub=window.TaxflyTravel.watchReservations({uid,pid:perfilId,trip:tripId,db,doc,onSnapshot,
++   onChange:items=>{if(homeValid(generation,scope))homeReservations=items;},
++   onState:state=>{if(homeValid(generation,scope)){homeFinance.reservations=state;renderBudgetUI();renderUpcoming();}}});
+   listenMapsBudget();
+-  if (!currentUser || !perfilId) return;
+-  const tripId=window.TripContext.view(currentUser.uid,perfilId);
+-  const budgetRef=tripId==="orlando"?doc(db,"usuarios",currentUser.uid,"perfiles",perfilId):tripId==="unassigned"?null:doc(db,"usuarios",currentUser.uid,"perfiles",perfilId,"tripPlanning",tripId);
+-  if (budgetRef) onSnapshot(budgetRef, snap => {
+-    const field=tripId==="orlando"?"presupuesto":"taxflyBudget";
+-    if (snap.exists() && snap.data()[field] !== undefined) {
+-      const base = parseFloat(snap.data()[field]) || 0;
+-      const key=homeBudgetKey();
+-      localStorage.setItem(key, String(base));
+-      let g = [];
+-      try {
+-        g = JSON.parse(localStorage.getItem(homeExpensesKey()) || "[]");
+-      } catch (e) {}
+-      renderBudgetUI(base, g);
+-    }
+-  }, () => {});
+-  const q = query(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), orderBy("fecha", "desc"));
+-  onSnapshot(q, snap => {
+-    const gastos = snap.docs.map(d => ({
+-      id: d.id,
+-      ...d.data()
+-    }));
+-    try {
+-      localStorage.setItem(homeExpensesKey(), JSON.stringify(gastos));
+-    } catch (e) {}
+-    const base = parseFloat(localStorage.getItem(homeBudgetKey())) || 0;
+-    renderBudgetUI(base, gastos);
+-  }, () => {});
+-}
++  const budgetRef=tripId==='orlando'?doc(db,'usuarios',uid,'perfiles',perfilId):tripId==='unassigned'?null:doc(db,'usuarios',uid,'perfiles',perfilId,'tripPlanning',tripId);
++  const field=tripId==='orlando'?'presupuesto':'taxflyBudget';
++  if(budgetRef)homeStops.push(onSnapshot(budgetRef,{includeMetadataChanges:true},snap=>{
++   if(!homeValid(generation,scope))return;
++   const value=Number(snap.exists()?snap.data()[field]:0)||0;
++   if(homeFinance.base.receive(value,snap,value===0)){localStorage.setItem(baseKey,String(value));renderBudgetUI();}
++  },()=>{if(homeValid(generation,scope)){homeFinance.base.fail();renderBudgetUI();}}));
++  const q=query(collection(db,'usuarios',uid,'perfiles',perfilId,'gastos'),orderBy('fecha','desc'));
++  homeStops.push(onSnapshot(q,{includeMetadataChanges:true},snap=>{
++   if(!homeValid(generation,scope))return;
++   const items=snap.docs.map(d=>({id:d.id,...d.data()}));
++   if(homeFinance.expenses.receive(items,snap,!items.length)){localStorage.setItem(expensesKey,JSON.stringify(items));renderBudgetUI();}
++  },()=>{if(homeValid(generation,scope)){homeFinance.expenses.fail();renderBudgetUI();}}));
++}
++function syncHomeContext() {
++ if(!currentUser)return;
++ if(homeContextReady()&&(!homeFinance||homeScope!==homeContext())){loadBudget();loadNextEvent();}
++ else {renderBudgetUI();renderUpcoming();}
++}
++window.addEventListener('taxfly:tripchange',syncHomeContext);
++window.addEventListener('taxfly:tripstatus',syncHomeContext);
+ 
+ let fxData = {
+   ars: {},
+@@ -986,9 +1013,17 @@
+ };
+ 
+ function loadNextEvent(){
+- let activities=[];
++ homeEventStop();
++ const generation=homeGeneration,scope=homeScope;
++ if(!currentUser||!homeContextReady()){renderUpcoming=()=>{document.getElementById('ne-title').textContent=t.loading;};renderUpcoming();return;}
++ const key='taxfly-home-activities::'+window.TaxflyTravel.scope(currentUser.uid,perfilId,'all');
++ const cachedActivities=readHomeCache(key);
++ const state=window.TaxflyTravel.loadState(Array.isArray(cachedActivities)?cachedActivities:undefined);
+  renderUpcoming=()=>{
+-  if(!currentUser||!perfilId)return;
++  if(!homeValid(generation,scope))return;
++  const reservations=homeFinance.reservations,title=document.getElementById('ne-title'),time=document.getElementById('ne-time');
++  if(!state.hasValue||!reservations.hasValue){title.textContent=homeMessage([state,reservations]);time.textContent='';return;}
++  const activities=state.value;
+   const tripId=window.TripContext.view(currentUser.uid,perfilId),trip=window.TripContext.readTrips(currentUser.uid,perfilId).find(t=>t.id===tripId),dest=window.TaxflyTravel.destination(trip);
+   const flights=homeReservations.filter(r=>r.type==='flight').flatMap(r=>[
+    {name:r.name,date:r.startDate,time:r.departureTime,timeZone:r.departureZone,city:r.departureCity,type:'vuelo',tripId,label:'Salida'},
+@@ -996,16 +1031,21 @@
+   ].filter(e=>e.date&&e.time));
+   const activityEvents=activities.flatMap(e=>[e,...(e.arrivalDate&&e.arrivalTime?[{...e,date:e.arrivalDate,time:e.arrivalTime,timeZone:e.arrivalZone,city:e.arrivalCity,label:'Llegada'}]:[])]);
+   const upcoming=[...activityEvents,...flights].filter(e=>(e.tripId||'unassigned')===tripId&&!e.done).map(e=>({...e,instant:window.TaxflyTravel.instant(e.date,e.time||'00:00',e.timeZone||dest.timeZone)})).filter(e=>e.instant>=Date.now()).sort((a,b)=>a.instant-b.instant);
+-  const ev=upcoming[0],title=document.getElementById('ne-title'),time=document.getElementById('ne-time');
+-  if(!ev){title.textContent=t.next_event_empty||'Sin eventos próximos';time.textContent=t.next_event_add||'＋ Agregar actividad';document.getElementById('ne-dot').textContent='📅';return;}
++  const ev=upcoming[0];
++  if(!ev){title.textContent=t.next_event_empty;time.textContent=t.next_event_add+((state.error||reservations.error)?' · '+t.load_error:!navigator.onLine?' · '+t.saved_offline:'');document.getElementById('ne-dot').textContent='📅';return;}
+   title.textContent=ev.name||'—';
+   const zone=ev.timeZone||dest.timeZone,locale={es:'es-AR',en:'en-US',pt:'pt-BR'}[lang]||'es-AR';
+   const date=new Intl.DateTimeFormat(locale,{timeZone:zone,weekday:'short',day:'numeric',month:'short'}).format(ev.instant);
+   time.textContent=date+(ev.time?' · '+(ev.label?ev.label+' ':'')+ev.time+' · '+tfL3('hora de ','local time in ','hora de ')+(ev.city||zone):'');
+   document.getElementById('ne-dot').textContent={vuelo:'✈️',hotel:'🏨',parque:'🎡',comida:'🍔',otro:'📍'}[ev.type]||'📍';
++  if(state.error||reservations.error)time.textContent+=' · '+t.load_error;
++  else if(!navigator.onLine)time.textContent+=' · '+t.saved_offline;
+  };
+- if(!currentUser||!perfilId)return;
+- onSnapshot(query(collection(db,'usuarios',currentUser.uid,'perfiles',perfilId,'actividades'),orderBy('date','asc')),snap=>{activities=snap.docs.map(d=>({...d.data(),id:d.id}));renderUpcoming();},()=>renderUpcoming());
++ homeEventStop=onSnapshot(query(collection(db,'usuarios',currentUser.uid,'perfiles',perfilId,'actividades'),orderBy('date','asc')),{includeMetadataChanges:true},snap=>{
++  if(!homeValid(generation,scope))return;
++  const activities=snap.docs.map(d=>({...d.data(),id:d.id}));
++  if(state.receive(activities,snap,!activities.length)){localStorage.setItem(key,JSON.stringify(activities));renderUpcoming();}
++ },()=>{if(homeValid(generation,scope)){state.fail();renderUpcoming();}});
+  renderUpcoming();
+ }
+ 
+@@ -1173,14 +1213,17 @@
+       b.textContent = "";
+     }
+   }
++  currentUser={uid:localStorage.getItem("taxusa_offline_uid")};
+   loadBudget();
+   loadNextEvent();
+   window.taxflyOfflineStatus?.render(localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId"));
+ }
+ 
+ onAuthStateChanged(auth, user => {
++  if(!user){currentUser=null;homeGeneration++;homeStops.forEach(stop=>stop());homeReservationUnsub();homeEventStop();homeFinance=null;renderBudgetUI();}
+   guardOfflineAuth(user, u => {
+     currentUser = u;
++    if(!localStorage.getItem("perfilActivoId")){window.location.replace("profiles.html");return;}
+     window.taxflyOfflineStatus?.render(u.uid, localStorage.getItem("perfilActivoId"));
+     const perfilNombre = localStorage.getItem("perfilActivoNombre");
+     document.getElementById("userEmail").textContent = perfilNombre || u.email || "";
+@@ -1200,14 +1243,15 @@
+   function upd() {
+     toast.classList.toggle("show", !navigator.onLine);
+   }
+-  window.addEventListener("online", upd);
+-  window.addEventListener("offline", upd);
++  window.addEventListener("online", () => {upd();renderBudgetUI();renderUpcoming();});
++  window.addEventListener("offline", () => {upd();renderBudgetUI();renderUpcoming();});
+   window.addEventListener("taxfly:tripchange", () => window.taxflyOfflineStatus?.render(currentUser?.uid || localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId")));
+   window.addEventListener("taxfly:offline-status", () => window.taxflyOfflineStatus?.render(currentUser?.uid || localStorage.getItem("taxusa_offline_uid"), localStorage.getItem("perfilActivoId")));
+   upd();
+ })();
+ 
+ applyI18n();
++document.getElementById("ne-title").textContent=t.loading;
+ 
+ updateGreeting();
+ 
+--- a/assets/plan-app.js
++++ b/assets/plan-app.js
+@@ -1378,8 +1378,14 @@
+ }, localLoad(TFX_KEY) || {});
+ 
+ let _tfxPresLoaded = false;
++let financePresReady=false, financeExpensesReady=false;
+ 
+ let budgetEditingTotal = false;
++window._resetTaxflyFinance=()=>{
++ financePresReady=false;financeExpensesReady=false;_tfxPresLoaded=false;
++ window._planFinanceError=false;window._planBudgetError=false;window._planExpenseError=false;
++ tfx={presupuesto:0,gastos:0,gastosN:0};budgetRenderAll();
++};
+ 
+ 
+ function budgetLoad() {
+@@ -1392,6 +1398,17 @@
+     gastosN: 0
+   }, t);
+   if (!Array.isArray(budgetData.gastos)) budgetData.gastos = [];
++  // Only reuse financial caches belonging to this account, profile and trip.
++  const uid=window._taxflyTripUid,pid=window._perfilId,id=window._tripId;
++  try {
++    const base=localStorage.getItem('taxusa_budget_cache_'+pid+'::'+uid+(id==='orlando'?'':'::'+id));
++    financePresReady=base!==null&&Number.isFinite(Number(base));
++    tfx.presupuesto=financePresReady?Number(base):0;
++    const raw=localStorage.getItem('taxusa_gastos_cache_'+pid+'::'+uid);
++    financeExpensesReady=raw!==null&&Array.isArray(JSON.parse(raw));
++    const expenses=financeExpensesReady?JSON.parse(raw).filter(g=>(g.tripId||'unassigned')===id):[];
++    tfx.gastos=expenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0);tfx.gastosN=expenses.length;
++  }catch(_){financePresReady=false;financeExpensesReady=false;}
+   budgetRenderAll();
+ }
+ 
+@@ -1413,6 +1430,8 @@
+ };
+ 
+ window._setTaxflyBudget = function(p) {
++  if("presupuesto" in p)financePresReady=true;
++  if("gastos" in p)financeExpensesReady=true;
+   Object.assign(tfx, p);
+   try {
+     localStorage.setItem(scopedKey(TFX_KEY), JSON.stringify(tfx));
+@@ -1497,6 +1516,7 @@
+     return;
+   }
+   tfx.presupuesto = v;
++  financePresReady=true;
+   try {
+     localStorage.setItem(scopedKey(TFX_KEY), JSON.stringify(tfx));
+   } catch (e) {}
+@@ -1511,9 +1531,14 @@
+   budgetRenderAll();
+ }
+ 
++function planFinanceMessage(){const text=window._planFinanceError?'No se pudo actualizar.':!navigator.onLine?'Sin conexión · datos no disponibles':'Cargando…';return window.tr?window.tr(text):text;}
++
+ function renderBudgetPill() {
+   const slot = document.getElementById("budget-pill-slot");
+   if (!slot) return;
++  if(!financePresReady||!financeExpensesReady){
++    slot.innerHTML=`<button type="button" class="budget-pill empty" disabled aria-busy="${!window._planFinanceError}"><span class="budget-pill-label">${planFinanceMessage()}</span></button>`;return;
++  }
+   const base = tfx.presupuesto || 0;
+   let cls = "budget-pill", label, val = "";
+   if (base <= 0) {
+@@ -1530,7 +1555,7 @@
+     }
+     val = budgetUsd(Math.abs(rem));
+   }
+-  slot.innerHTML = `<button type="button" class="${cls}" onclick="openBudgetFromPill()" title="Ver detalle del presupuesto">\n    <span class="budget-pill-icon">${ic("wallet", 15)}</span>\n    ${cls.includes("over") ? `<span class="budget-pill-label">${label}</span><span class="budget-pill-val">${val}</span>` : `${val ? `<span class="budget-pill-val">${val}</span>` : ""}<span class="budget-pill-label">${label}</span>`}\n  </button>`;
++  slot.innerHTML = `<button type="button" class="${cls}" onclick="openBudgetFromPill()" title="${window._planFinanceError?planFinanceMessage():'Ver detalle del presupuesto'}">\n    <span class="budget-pill-icon">${ic("wallet", 15)}</span>\n    ${cls.includes("over") ? `<span class="budget-pill-label">${label}</span><span class="budget-pill-val">${val}</span>` : `${val ? `<span class="budget-pill-val">${val}</span>` : ""}<span class="budget-pill-label">${label}</span>`}\n  </button>`;
+ }
+ 
+ function openBudgetFromPill() {
+@@ -1542,6 +1567,7 @@
+ function renderBudgetBox() {
+   const box = document.getElementById("budget-box");
+   if (!box) return;
++  if(!financePresReady||!financeExpensesReady){box.innerHTML=`<div class="budget-note" role="status">${planFinanceMessage()}</div>`;return;}
+   const base = tfx.presupuesto || 0;
+   const hasTotal = base > 0 && !budgetEditingTotal;
+   if (!hasTotal) {
+@@ -1558,7 +1584,7 @@
+     gastosHtml += `\n      <div class="budget-gasto-row">\n        <span class="budget-gasto-cat">${ic(meta.icon, 13)} ${meta.label}${g.nota ? " · " + escapeHtml(g.nota) : ""}</span>\n        <span class="budget-gasto-monto">${budgetUsd(g.monto)}\n          <button class="wm-icon-btn wm-icon-del" onclick="budgetDeleteGasto('${g.id}')" title="Eliminar" aria-label="Eliminar gasto">${ic("x", 14)}</button>\n        </span>\n      </div>`;
+   });
+   const addForm = `<a class="budget-add-cat-btn" href="compras.html">${ic("wallet", 15)} <span>Registrar gasto en TaxFly</span></a>`;
+-  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. Todo en USD.</div>`;
++  box.innerHTML = `\n    <div class="budget-summary">\n      <div class="budget-summary-row">\n        <span>Presupuesto</span>\n        <span class="budget-summary-val">${budgetUsd(base)} <button class="wm-icon-btn" onclick="budgetEditTotal()" title="Editar" aria-label="Editar presupuesto">${ic("pencil", 12)}</button></span>\n      </div>\n      <div class="budget-summary-row budget-summary-sub">\n        <span>Gastado en TaxFly${tfx.gastosN ? " (" + tfx.gastosN + ")" : ""}</span>\n        <span class="budget-summary-val">${budgetUsd(tfx.gastos)}</span>\n      </div>\n      ${manual ? `<div class="budget-summary-row budget-summary-sub"><span>Gastos anteriores por trasladar</span><span class="budget-summary-val">${budgetUsd(manual)}</span></div>` : ""}\n      <div class="budget-summary-row budget-summary-remaining${remaining < 0 ? " negative" : ""}">\n        <span>${remaining >= 0 ? "Restante" : "Excedido"}</span>\n        <span class="budget-summary-val">${budgetUsd(Math.abs(remaining))}</span>\n      </div>\n      <div class="wm-progress-bar-bg"><div class="wm-progress-bar-fill" style="width:${pct}%;${pct >= 100 ? "background:#ef4444" : ""}"></div></div>\n    </div>\n    ${gastosHtml ? `<div class="budget-gastos-list">${gastosHtml}</div>` : ""}\n    ${addForm}\n    <div class="budget-note">El presupuesto y los gastos reales se consultan en TaxFly. Todo en USD.${window._planFinanceError?' '+planFinanceMessage():''}</div>`;
+ }
+ 
+ window.renderBudgetBox = renderBudgetBox;
+--- a/assets/plan-firebase.js
++++ b/assets/plan-firebase.js
+@@ -47,6 +47,7 @@
+ const PENDING_REDIRECT_KEY = "taxusa_pending_redirect";
+ 
+ let currentUid = null;
++let planGeneration=0;
+ 
+ let currentPerfilId = null;
+ 
+@@ -161,7 +162,9 @@
+ const CONFLICT_WINDOW_MS = 6e3;
+ 
+ function fbListen(docId, callback) {
++  const generation=planGeneration;
+   return onSnapshot(orlandoDocRef(docId), snap => {
++    if(generation!==planGeneration)return;
+     if (!snap.exists()) return;
+     const data = snap.data();
+     const pending = window._planPendingPayload?.(docId);
+@@ -177,6 +180,8 @@
+     callback(data);
+   });
+ }
++
++function tripDocRef(id){return doc(db,'usuarios',currentUid,'perfiles',currentPerfilId,'tripPlanning',id);}
+ 
+ function perfilDocRef() {
+   return doc(db, "usuarios", currentUid, "perfiles", currentPerfilId);
+@@ -194,30 +199,34 @@
+ }
+ 
+ function listenTaxflyPresupuesto(cb) {
+-  const ref=activeTripId==="orlando"?perfilDocRef():tripDocRef(activeTripId);
+-  return onSnapshot(ref, snap => {
+-    const p = snap.exists() ? snap.data()[activeTripId==="orlando"?"presupuesto":"taxflyBudget"] : undefined;
+-    cb(p === undefined || p === null ? 0 : parseFloat(p) || 0);
+-  }, () => {});
+-}
+-
++  const uid=currentUid,pid=currentPerfilId,trip=activeTripId;
++  const key='taxusa_budget_cache_'+pid+'::'+uid+(trip==='orlando'?'':'::'+trip);
++  const cached=localStorage.getItem(key),state=window.TaxflyTravel.loadState(cached!==null&&Number.isFinite(Number(cached))?Number(cached):undefined);
++  const valid=()=>uid===currentUid&&pid===currentPerfilId&&trip===activeTripId;
++  if(state.hasValue)cb(state.value);
++  const ref=trip==='orlando'?perfilDocRef():tripDocRef(trip);
++  return onSnapshot(ref,{includeMetadataChanges:true},snap=>{
++    if(!valid())return;
++    const value=Number(snap.exists()?snap.data()[trip==='orlando'?'presupuesto':'taxflyBudget']:0)||0;
++    if(state.receive(value,snap,value===0)){window._planBudgetError=false;window._planFinanceError=!!window._planExpenseError;localStorage.setItem(key,String(value));cb(value);}
++  },()=>{if(valid()){window._planBudgetError=true;window._planFinanceError=true;window.budgetRefresh?.();}});
++}
+ function listenTaxflyGastos(cb) {
+-  try{const expenses=JSON.parse(localStorage.getItem("taxusa_gastos_cache_"+currentPerfilId+"::"+currentUid)||'[]'),ops=JSON.parse(localStorage.getItem("taxusa_gastos_pending_"+currentPerfilId+"::"+currentUid)||'[]');window._tripExpenses=window.TaxflyTravel.overlayExpenses(expenses,ops).filter(g=>g.tripId===activeTripId);window.renderReservations?.();}catch(_){}
+-  return onSnapshot(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "gastos"), snap => {
+-    let total = 0, n = 0;
+-    window._tripExpenses=[];
+-    snap.forEach(d => {
+-      const x = d.data() || {};
+-      if ((x.tripId || "unassigned") !== activeTripId) return;
+-      window._tripExpenses.push({...x,id:d.id});
+-      total += parseFloat(x.valor || x.monto) || 0;
+-      n++;
+-    });
+-    try { const pending=JSON.parse(localStorage.getItem("taxusa_gastos_pending_"+currentPerfilId+"::"+currentUid)||'[]');window._tripExpenses=window.TaxflyTravel.overlayExpenses(window._tripExpenses,pending).filter(g=>g.tripId===activeTripId); } catch(_){}
+-    window.renderReservations?.();
+-    total=window._tripExpenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0);n=window._tripExpenses.length;
+-    cb(total, n);
+-  }, () => {});
++  const uid=currentUid,pid=currentPerfilId,trip=activeTripId,key='taxusa_gastos_cache_'+pid+'::'+uid;
++  let cached;try{const raw=localStorage.getItem(key);if(raw!==null)cached=JSON.parse(raw);}catch(_){}
++  const state=window.TaxflyTravel.loadState(Array.isArray(cached)?cached:undefined);
++  const valid=()=>uid===currentUid&&pid===currentPerfilId&&trip===activeTripId;
++  const publish=()=>{
++    const ops=JSON.parse(localStorage.getItem('taxusa_gastos_pending_'+pid+'::'+uid)||'[]');
++    window._tripExpenses=window.TaxflyTravel.overlayExpenses(state.value||[],ops).filter(g=>(g.tripId||'unassigned')===trip);
++    window.renderReservations?.();cb(window._tripExpenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0),window._tripExpenses.length);
++  };
++  if(state.hasValue)publish();
++  return onSnapshot(collection(db,'usuarios',uid,'perfiles',pid,'gastos'),{includeMetadataChanges:true},snap=>{
++    if(!valid())return;
++    const items=snap.docs.map(d=>({...d.data(),id:d.id}));
++    if(state.receive(items,snap,!items.length)){window._planExpenseError=false;window._planFinanceError=!!window._planBudgetError;localStorage.setItem(key,JSON.stringify(items));publish();}
++  },()=>{if(valid()){window._planExpenseError=true;window._planFinanceError=true;window.budgetRefresh?.();}});
+ }
+ 
+ async function migrateManualExpenses() {
+@@ -290,11 +299,14 @@
+ };
+ 
+ async function startApp() {
++  const generation=planGeneration;
+   await loadTrips();
++  if(generation!==planGeneration)return;
+   if (!trips.length) { location.replace("index.html#viajes"); return; }
+   listenTripDocuments();
+   const withTimeout = (p, ms) => Promise.race([ p, new Promise(resolve => setTimeout(() => resolve(null), ms)) ]);
+   const results = await Promise.allSettled([ withTimeout(fbGet("hotel"), 6e3), withTimeout(fbGet("days"), 6e3), withTimeout(fbGet("visited"), 6e3), withTimeout(fbGet("meals"), 6e3), withTimeout(fbGet("walmart"), 6e3), withTimeout(fbGet("wmChecked"), 6e3), withTimeout(fbGet("shopping"), 6e3), withTimeout(fbGet("customParks"), 6e3), withTimeout(fbGet("parquesExtra"), 6e3), withTimeout(fbGet("coordOverrides"), 6e3), withTimeout(fbGet("parques"), 6e3), withTimeout(fbGet("budget"), 6e3), withTimeout(fbGet("itinerario"), 6e3), withTimeout(fbGet("tips"), 6e3), withTimeout(fbGet("parquesExcel"), 6e3), withTimeout(fbGet("reservations"), 6e3) ]);
++  if(generation!==planGeneration)return;
+   const val = r => r.status === "fulfilled" ? r.value : null;
+   const [hotelData, daysData, visitedData, mealDataFb, wmDataFb, wmCheckedFb, shopDataFb, customParksDataFb, parquesExtraDataFb, coordOverridesDataFb, parquesDataFb, budgetDataFb, itinDataFb, tipsDataFb, parquesExcelDataFb, reservationsDataFb] = results.map(val);
+   if (hotelData) window._hotelFromFb = hotelData;
+@@ -435,7 +447,9 @@
+ }
+ 
+ onAuthStateChanged(auth, user => {
++  planGeneration++;
+   if (!user) {
++    currentUid=null;currentPerfilId=null;window._resetTaxflyFinance?.();
+     try {
+       localStorage.setItem(PENDING_REDIRECT_KEY, location.href);
+     } catch (e) {}
+@@ -453,6 +467,7 @@
+     window.location.replace(TAXFLY_PROFILES_URL);
+     return;
+   }
++  if(currentUid!==user.uid||currentPerfilId!==perfilId)window._resetTaxflyFinance?.();
+   currentUid = user.uid;
+   currentPerfilId = perfilId;
+   window._perfilId = perfilId;
+--- a/assets/plan-i18n.js
++++ b/assets/plan-i18n.js
+@@ -327,6 +327,9 @@
+   };
+   window.tr = t;
+   add({
++    "Cargando…": ["Loading…", "Carregando…"],
++    "No se pudo actualizar.": ["Could not refresh.", "Não foi possível atualizar."],
++    "Sin conexión · datos no disponibles": ["Offline · data unavailable", "Sem conexão · dados indisponíveis"],
+     Cancelar: [ "Cancel", "Cancelar" ],
+     Guardar: [ "Save", "Salvar" ],
+     Eliminar: [ "Delete", "Excluir" ],
+--- a/assets/travel-core.js
++++ b/assets/travel-core.js
+@@ -32,11 +32,33 @@
+ function readReservations(uid,pid,trip){try{return JSON.parse(localStorage.getItem(reservationKey(uid,pid,trip))||'[]');}catch(_){return [];}}
+ function writeReservations(uid,pid,trip,items){try{localStorage.setItem(reservationKey(uid,pid,trip),JSON.stringify(items));}catch(_){}}
+ function planningKey(uid,pid,trip){return 'trip-reservations-v1::'+pid+(trip==='orlando'?'':'::'+trip)+'::'+uid;}
+-function watchReservations({uid,pid,trip,db,doc,onSnapshot,onChange}){
+- onChange(readReservations(uid,pid,trip));if(['all','unassigned'].includes(trip))return ()=>{};
++// A cached empty snapshot is not proof that the server has no data.
++function loadState(value) {
++ const state={value,hasValue:value!==undefined,source:value===undefined?'loading':'local',error:false};
++ state.receive=(next,snapshot,empty=false)=>{
++  if(snapshot?.metadata?.fromCache && !snapshot.metadata.hasPendingWrites && (empty || state.hasValue))return false;
++  state.value=next;state.hasValue=true;state.error=false;
++  state.source=snapshot?.metadata?.fromCache?'cache':'server';return true;
++ };
++ state.fail=()=>{state.error=true;};
++ return state;
++}
++function watchReservations({uid,pid,trip,db,doc,onSnapshot,onChange,onState}){
++ let raw=null;try{raw=localStorage.getItem(reservationKey(uid,pid,trip));}catch(_){}
++ let cached;try{const parsed=JSON.parse(raw);if(Array.isArray(parsed))cached=parsed;const pending=localStorage.getItem(planningKey(uid,pid,trip)+'::pending');if(pending){const items=JSON.parse(pending).items;if(Array.isArray(items))cached=items;}}catch(_){}
++ const state=loadState(cached);
++ const publish=()=>{if(state.hasValue)onChange(state.value);onState?.(state);};
++ publish();if(['all','unassigned'].includes(trip)){state.receive([],null);publish();return ()=>{};}
+  const path=['usuarios',uid,'perfiles',pid,...(trip==='orlando'?['orlando','reservations']:['tripPlanning',trip,'data','reservations'])];
+- return onSnapshot(doc(db,...path),snap=>{let items=snap.exists()?snap.data().items||[]:[];try{const p=localStorage.getItem(planningKey(uid,pid,trip)+'::pending');if(p)items=JSON.parse(p).items||[];}catch(_){}writeReservations(uid,pid,trip,items);onChange(items);},()=>{});
++ let active=true;
++ const stop=onSnapshot(doc(db,...path),{includeMetadataChanges:true},snap=>{
++  if(!active)return;
++  let items=snap.exists()?snap.data().items||[]:[];
++  try{const p=localStorage.getItem(planningKey(uid,pid,trip)+'::pending');if(p)items=JSON.parse(p).items||[];}catch(_){}
++  if(state.receive(items,snap,!items.length)){writeReservations(uid,pid,trip,items);publish();}
++ },()=>{if(active){state.fail();publish();}});
++ return ()=>{active=false;stop();};
+ }
+ function overlayExpenses(expenses,ops){const map=new Map((expenses||[]).map(g=>[g.id,g]));for(const op of ops||[]){if(op.type==='upsert')map.set(op.id,{...map.get(op.id),...op.data,id:op.id,_pending:true});else if(op.type==='upd'&&map.has(op.id))map.set(op.id,{...map.get(op.id),...op.data});else if(op.type==='del')map.delete(op.id);}return [...map.values()];}
+-const api={cities,scope,alertKey,paymentId,validZone,destination,instant,localDate,zoneFields,paid,outstanding,budget,budgetText,readReservations,writeReservations,planningKey,watchReservations,overlayExpenses};root.TaxflyTravel=api;if(typeof module!=='undefined')module.exports=api;
++const api={cities,scope,alertKey,paymentId,validZone,destination,instant,localDate,zoneFields,paid,outstanding,budget,budgetText,readReservations,writeReservations,planningKey,watchReservations,loadState,overlayExpenses};root.TaxflyTravel=api;if(typeof module!=='undefined')module.exports=api;
+ })(typeof window!=='undefined'?window:globalThis);
+--- a/assets/trip-context.js
++++ b/assets/trip-context.js
+@@ -2,6 +2,15 @@
+   const region=()=>'usa';
+   const legacy = {id:'orlando', name:'Mi viaje a Orlando', destinations:[{city:'Orlando',state:'Florida'}]};
+   let sdk = null;
++  const hydration = new Map();
++  const hydrationKey=(uid,profile)=>JSON.stringify([uid,profile]);
++  function status(uid,profile) {
++    return {...(hydration.get(hydrationKey(uid,profile))||{phase:'loading'}),hasData:safeGet(keys(uid,profile).list)!==null};
++  }
++  function setStatus(uid,profile,phase) {
++    hydration.set(hydrationKey(uid,profile),{phase,hasData:safeGet(keys(uid,profile).list)!==null});
++    window.dispatchEvent?.(new CustomEvent('taxfly:tripstatus',{detail:{uid,profile}}));
++  }
+   function keys(uid, profile) {
+     return {active:`trip-planning-active::${uid}::${profile}`,
+       list:`trip-planning-trips::${uid}::${profile}`,
+@@ -90,10 +99,12 @@
+   }
+   async function hydrate(db,uid,profile,getDocs,collection,onChange) {
+     configure({...sdk,db,getDocs,collection});
++    setStatus(uid,profile,navigator.onLine?'loading':'offline');
+     onChange?.();
+     if (navigator.onLine) {
+       try {
+         const snap=await within(getDocs(collection(db,'usuarios',uid,'perfiles',profile,'tripPlanning')),5000);
++        if(snap.metadata?.fromCache)throw new Error('Trips not confirmed by server');
+         const byId=new Map(readAllTrips(uid,profile).map(t=>[t.id,t]));
+         snap.forEach(d=>byId.set(d.id,{...d.data(),id:d.id}));
+         if (!byId.has('orlando')) {
+@@ -124,7 +135,8 @@
+         }
+         Object.values(pending(uid,profile)).forEach(t=>byId.set(t.id,t));
+         cache(uid,profile,[...byId.values()].filter(t=>t.status!=='deleted'));
+-      } catch(e) {  }
++        setStatus(uid,profile,'ready');
++      } catch(e) { setStatus(uid,profile,'error'); }
+     }
+     await flush(uid,profile);
+     onChange?.();
+@@ -266,8 +278,11 @@
+   }
+   window.addEventListener?.('online',()=>{
+     const uid=window._taxflyTripUid, profile=window._taxflyTripProfile;
+-    if (uid&&profile) flush(uid,profile);
++    if(uid&&profile){
++      if(sdk?.getDocs&&sdk?.collection&&['error','offline'].includes(status(uid,profile).phase))hydrate(sdk.db,uid,profile,sdk.getDocs,sdk.collection);
++      else flush(uid,profile);
++    }
+   });
+   window.TripContext={region,keys,readTrips,active,view,matches,filter,assign,render,select,
+-    hydrate,configure,flush,save,create,archive,remove,removeOrphans,orphanCount,pending,legacy};
++    hydrate,status,configure,flush,save,create,archive,remove,removeOrphans,orphanCount,pending,legacy};
+ })();
+--- a/assets/trips-ui.js
++++ b/assets/trips-ui.js
+@@ -37,9 +37,9 @@
+ const home=location.pathname.endsWith('/index.html')||location.pathname.endsWith('/');
+ if (home) { const top=document.querySelector('header'); if(top) { const c=card.cloneNode(); c.id='tf-trip-home';top.insertAdjacentElement('afterend',c); } }
+ const words={
+- es:{orphan:"Registros sin viaje",activeTrip:"Viaje activo",orphanView:"Viendo registros sin viaje",destination:"Elegí un destino",pending:"pendiente de Firebase",trips:"Mis viajes",openTrips:"Abrir mis viajes",close:"Cerrar viajes",completed:"Finalizado",suspended:"Suspendido",active:"Activo",choose:"Elegir",edit:"Editar",restore:"Restaurar",finish:"Finalizar",suspend:"Suspender",delete:"Eliminar",none:"Sin viaje",see:"Ver registros",editTrip:"Editar viaje",newTrip:"Nuevo viaje",name:"Nombre",from:"Desde",until:"Hasta",addCity:"+ Agregar ciudad",save:"Guardar cambios",create:"Crear viaje",cancel:"Cancelar",city:"Ciudad",state:"Estado",removeCity:"Quitar ciudad",required:"Completá ciudad y estado.",local:"Guardado en este dispositivo; pendiente de sincronización con Firebase.",saved:"Viaje guardado en Firebase.",confirm:"Se eliminarán definitivamente este viaje y todos sus datos: reservas, gastos, actividades, listas y documentos. ¿Continuar?",clearOrphans:"Eliminar Sin viaje",confirmOrphans:"Se eliminarán definitivamente todos los gastos, actividades, notas y documentos guardados en Sin viaje. ¿Continuar?",empty:"Todavía no hay viajes. Creá el primero para empezar.",failed:"No se pudo eliminar. Revisá tu conexión.",changed:"Cambio guardado en Firebase.",changePending:"Cambio pendiente de sincronización."},
+- en:{orphan:"Records without a trip",activeTrip:"Active trip",orphanView:"Viewing records without a trip",destination:"Choose a destination",pending:"pending Firebase sync",trips:"My trips",openTrips:"Open my trips",close:"Close trips",completed:"Completed",suspended:"Paused",active:"Active",choose:"Select",edit:"Edit",restore:"Restore",finish:"Finish",suspend:"Pause",delete:"Delete",none:"No trip",see:"View records",editTrip:"Edit trip",newTrip:"New trip",name:"Name",from:"From",until:"Until",addCity:"+ Add city",save:"Save changes",create:"Create trip",cancel:"Cancel",city:"City",state:"State",removeCity:"Remove city",required:"Enter a city and state.",local:"Saved on this device; Firebase sync pending.",saved:"Trip saved to Firebase.",confirm:"Permanently delete this trip and all its reservations, expenses, activities, lists and documents?",clearOrphans:"Delete No trip",confirmOrphans:"Permanently delete all expenses, activities, notes and documents without a trip?",empty:"No trips yet. Create your first trip to begin.",failed:"Could not delete. Check your connection.",changed:"Change saved to Firebase.",changePending:"Change pending sync."},
+- pt:{orphan:"Registros sem viagem",activeTrip:"Viagem ativa",orphanView:"Exibindo registros sem viagem",destination:"Escolha um destino",pending:"sincronização pendente",trips:"Minhas viagens",openTrips:"Abrir minhas viagens",close:"Fechar viagens",completed:"Concluída",suspended:"Pausada",active:"Ativa",choose:"Selecionar",edit:"Editar",restore:"Restaurar",finish:"Concluir",suspend:"Pausar",delete:"Excluir",none:"Sem viagem",see:"Ver registros",editTrip:"Editar viagem",newTrip:"Nova viagem",name:"Nome",from:"De",until:"Até",addCity:"+ Adicionar cidade",save:"Salvar alterações",create:"Criar viagem",cancel:"Cancelar",city:"Cidade",state:"Estado",removeCity:"Remover cidade",required:"Informe cidade e estado.",local:"Salvo neste dispositivo; sincronização com Firebase pendente.",saved:"Viagem salva no Firebase.",confirm:"Excluir esta viagem e todos os seus dados, reservas, despesas, listas e documentos permanentemente?",clearOrphans:"Excluir Sem viagem",confirmOrphans:"Excluir permanentemente todas as despesas, atividades, notas e documentos sem viagem?",empty:"Ainda não há viagens. Crie a primeira para começar.",failed:"Não foi possível excluir. Verifique sua conexão.",changed:"Alteração salva no Firebase.",changePending:"Alteração aguardando sincronização."}
++ es:{loading:"Cargando…",loadError:"No se pudieron cargar los viajes.",noLocal:"Sin conexión · viajes no disponibles",orphan:"Registros sin viaje",activeTrip:"Viaje activo",orphanView:"Viendo registros sin viaje",destination:"Elegí un destino",pending:"pendiente de Firebase",trips:"Mis viajes",openTrips:"Abrir mis viajes",close:"Cerrar viajes",completed:"Finalizado",suspended:"Suspendido",active:"Activo",choose:"Elegir",edit:"Editar",restore:"Restaurar",finish:"Finalizar",suspend:"Suspender",delete:"Eliminar",none:"Sin viaje",see:"Ver registros",editTrip:"Editar viaje",newTrip:"Nuevo viaje",name:"Nombre",from:"Desde",until:"Hasta",addCity:"+ Agregar ciudad",save:"Guardar cambios",create:"Crear viaje",cancel:"Cancelar",city:"Ciudad",state:"Estado",removeCity:"Quitar ciudad",required:"Completá ciudad y estado.",local:"Guardado en este dispositivo; pendiente de sincronización con Firebase.",saved:"Viaje guardado en Firebase.",confirm:"Se eliminarán definitivamente este viaje y todos sus datos: reservas, gastos, actividades, listas y documentos. ¿Continuar?",clearOrphans:"Eliminar Sin viaje",confirmOrphans:"Se eliminarán definitivamente todos los gastos, actividades, notas y documentos guardados en Sin viaje. ¿Continuar?",empty:"Todavía no hay viajes. Creá el primero para empezar.",failed:"No se pudo eliminar. Revisá tu conexión.",changed:"Cambio guardado en Firebase.",changePending:"Cambio pendiente de sincronización."},
++ en:{loading:"Loading…",loadError:"Could not load trips.",noLocal:"Offline · trips unavailable",orphan:"Records without a trip",activeTrip:"Active trip",orphanView:"Viewing records without a trip",destination:"Choose a destination",pending:"pending Firebase sync",trips:"My trips",openTrips:"Open my trips",close:"Close trips",completed:"Completed",suspended:"Paused",active:"Active",choose:"Select",edit:"Edit",restore:"Restore",finish:"Finish",suspend:"Pause",delete:"Delete",none:"No trip",see:"View records",editTrip:"Edit trip",newTrip:"New trip",name:"Name",from:"From",until:"Until",addCity:"+ Add city",save:"Save changes",create:"Create trip",cancel:"Cancel",city:"City",state:"State",removeCity:"Remove city",required:"Enter a city and state.",local:"Saved on this device; Firebase sync pending.",saved:"Trip saved to Firebase.",confirm:"Permanently delete this trip and all its reservations, expenses, activities, lists and documents?",clearOrphans:"Delete No trip",confirmOrphans:"Permanently delete all expenses, activities, notes and documents without a trip?",empty:"No trips yet. Create your first trip to begin.",failed:"Could not delete. Check your connection.",changed:"Change saved to Firebase.",changePending:"Change pending sync."},
++ pt:{loading:"Carregando…",loadError:"Não foi possível carregar as viagens.",noLocal:"Sem conexão · viagens indisponíveis",orphan:"Registros sem viagem",activeTrip:"Viagem ativa",orphanView:"Exibindo registros sem viagem",destination:"Escolha um destino",pending:"sincronização pendente",trips:"Minhas viagens",openTrips:"Abrir minhas viagens",close:"Fechar viagens",completed:"Concluída",suspended:"Pausada",active:"Ativa",choose:"Selecionar",edit:"Editar",restore:"Restaurar",finish:"Concluir",suspend:"Pausar",delete:"Excluir",none:"Sem viagem",see:"Ver registros",editTrip:"Editar viagem",newTrip:"Nova viagem",name:"Nome",from:"De",until:"Até",addCity:"+ Adicionar cidade",save:"Salvar alterações",create:"Criar viagem",cancel:"Cancelar",city:"Cidade",state:"Estado",removeCity:"Remover cidade",required:"Informe cidade e estado.",local:"Salvo neste dispositivo; sincronização com Firebase pendente.",saved:"Viagem salva no Firebase.",confirm:"Excluir esta viagem e todos os seus dados, reservas, despesas, listas e documentos permanentemente?",clearOrphans:"Excluir Sem viagem",confirmOrphans:"Excluir permanentemente todas as despesas, atividades, notas e documentos sem viagem?",empty:"Ainda não há viagens. Crie a primeira para começar.",failed:"Não foi possível excluir. Verifique sua conexão.",changed:"Alteração salva no Firebase.",changePending:"Alteração aguardando sincronização."}
+ };
+ const tr=key=>(words[localStorage.getItem('appLang')]||words.es)[key]||words.es[key];
+ function activeTrip(){return tc.readTrips(uid,profile).find(t=>t.id===tc.active(uid,profile))||null;}
+@@ -50,9 +50,12 @@
+     el.hidden=false;el.replaceChildren();
+     const label=document.createElement('span'); label.className='tf-trip-copy';
+     const eyebrow=document.createElement('span');eyebrow.className='tf-trip-eyebrow';eyebrow.textContent=trip?(tc.view(uid,profile)==='unassigned'?tr('orphan'):tr('activeTrip')):tr('trips');
+-    const strong=document.createElement('strong'); strong.textContent=trip?.name||tr('newTrip');
++    const phase=tc.status(uid,profile).phase;
++    const waiting=phase!=='ready'&&!trip;
++    const loadLabel=tr(phase==='error'?'loadError':phase==='offline'?'noLocal':'loading');
++    const strong=document.createElement('strong'); strong.textContent=trip?.name||(waiting?loadLabel:tr('newTrip'));
+     const small=document.createElement('small');
+-    const locationLabel=!trip?tr('empty'):tc.view(uid,profile)==='unassigned'?tr('orphanView'):dest ? `${dest.city}, ${dest.state}` : tr('destination');
++    const locationLabel=!trip?(waiting?'':tr('empty')):tc.view(uid,profile)==='unassigned'?tr('orphanView'):dest ? `${dest.city}, ${dest.state}` : tr('destination');
+     small.textContent=locationLabel+(Object.keys(tc.pending(uid,profile)).length?' · pendiente de Firebase':'');
+     label.append(eyebrow,strong,small);
+     const btn=document.createElement('button'); btn.type='button';btn.textContent=tr('trips');btn.setAttribute('aria-label',tr('openTrips'));btn.onclick=()=>openManager();
+@@ -68,7 +71,7 @@
+     if(old)old.remove();
+     if(n>0){const row=document.createElement('div');row.className='tf-line';row.dataset.id='unassigned';
+       row.innerHTML=`<strong>${tr('none')} · ${n}</strong><button data-action="select">${tr('see')}</button><button data-action="clear-orphans">${tr('clearOrphans')}</button>`;
+-      dialog.querySelector('#tf-trip-form').before(row);
++      dialog.querySelector('#tf-trip-form')?.before(row);
+       row.querySelector('[data-action="select"]').onclick=()=>{tc.select(uid,profile,'unassigned');location.reload()};
+       row.querySelector('[data-action="clear-orphans"]').onclick=async()=>{
+         if(!confirm(tr('confirmOrphans')))return;
+@@ -79,6 +82,11 @@
+   }).catch(()=>{}); }
+ function renderDialog(){
+   const trips=tc.readTrips(uid,profile), active=tc.active(uid,profile);
++  const phase=tc.status(uid,profile).phase;
++  if(!trips.length&&phase!=='ready'){
++    dialog.innerHTML=`<div class="tf-modal-head"><h2>${tr('trips')}</h2><button type="button" class="tf-modal-close" aria-label="${tr('close')}">×</button></div><div class="tf-modal-content"><p class="tf-msg" role="status">${tr(phase==='error'?'loadError':phase==='offline'?'noLocal':'loading')}</p></div>`;
++    dialog.querySelector('button').onclick=()=>dialog.close();return;
++  }
+   dialog.innerHTML=`<div class="tf-modal-head"><h2>${tr("trips")}</h2>${trips.length?`<button type="button" class="tf-modal-close" aria-label="${tr("close")}">×</button>`:''}</div><div class="tf-modal-content"><div class="tf-msg" role="status"></div>${trips.length?'':`<p class="tf-msg">${tr('empty')}</p>`}
+     ${trips.map(t=>`<div class="tf-line" data-id="${esc(t.id)}"><strong>${esc(t.name)}${t.status?' · '+(t.status==='completed'?tr('completed'):tr('suspended')):''}</strong>
+     ${t.id===active?`<small>${tr("active")}</small>`:`<button data-action="select">${tr("choose")}</button>`}
+@@ -132,7 +140,7 @@
+     renderDialog();syncCard();notify(ok?tr('changed'):tr('changePending'));
+   });
+ }
+-dialog.addEventListener('cancel',e=>{if(uid&&profile&&!tc.readTrips(uid,profile).length)e.preventDefault()});
++dialog.addEventListener('cancel',e=>{if(uid&&profile&&!tc.readTrips(uid,profile).length&&tc.status(uid,profile).phase==='ready')e.preventDefault()});
+ window.taxflyOpenTrips=openManager;
+ window.taxflyRefreshTrips=()=>{syncCard();if(dialog.open)renderDialog()};
+ document.addEventListener('click',e=>{if(e.target.closest('.lang-opt,[data-lang]'))setTimeout(window.taxflyRefreshTrips,0)});
+@@ -146,6 +154,6 @@
+   if(!user)return;uid=user.uid;profile=localStorage.getItem('perfilActivoId');if(!profile)return;
+   window._taxflyTripUid=uid;window._taxflyTripProfile=profile;
+   tc.hydrate(db,uid,profile,getDocs,collection,()=>{syncCard();if(dialog.open)renderDialog()}).then(()=>{
+-    if(openFromHash||!tc.readTrips(uid,profile).length){openFromHash=false;openManager()}
++    if(openFromHash||(!tc.readTrips(uid,profile).length&&tc.status(uid,profile).phase==='ready')){openFromHash=false;openManager()}
+   });
+ });
+--- a/compras.html
++++ b/compras.html
+@@ -591,13 +591,14 @@
+             <div class="bc-trip" id="bc-trip" style="display:none;"></div>
+         </div>
+ 
+-        <div id="bc-empty">
++        <div id="bc-loading" class="bc-empty-title" role="status" data-i18n="loading_data">…</div>
++        <div id="bc-empty" style="display:none;">
+             <div class="bc-empty-title" data-i18n="bc_empty_title">Definí tu presupuesto</div>
+             <div class="bc-empty-sub" data-i18n="bc_empty_sub">Ingresá cuánto pensás gastar en este viaje y te mostramos cuánto te queda.</div>
+         </div>
+ 
+         <div id="bc-main" style="display:none;">
+-            <div class="budget-value" id="disp-fondo">USD 0.00</div>
++            <div class="budget-value" id="disp-fondo">—</div>
+             <div class="bc-progress"><div class="bc-progress-fill" id="bc-fill"></div></div>
+             <div class="bc-progress-txt" id="bc-progress-txt"></div>
+             <div id="budget-daily" style="white-space:pre-line;font-size:.78rem;line-height:1.6;margin:10px 0"></div>
+@@ -611,7 +612,7 @@
+             </div>
+         </div>
+ 
+-        <div class="budget-set" id="budget-set-row">
++        <div class="budget-set" id="budget-set-row" style="display:none;">
+             <span class="bc-cur">USD</span>
+             <input type="text" id="input-fondo" placeholder="0.00" inputmode="decimal" enterkeyhint="done" aria-label="Presupuesto en USD" data-num>
+             <button class="bc-cancel" id="bc-cancel-btn" onclick="cancelBudgetEdit()" aria-label="Cancelar" style="display:none;">✕</button>
+@@ -719,6 +720,7 @@
+                 <button type="button" class="cat-add" id="cat-add-btn" onclick="openCatCreator()" aria-label="Nueva categoría">＋</button>
+             </div>
+             <button class="btn btn-primary" onclick="addGasto()">💾 <span data-i18n="btn_save_expense">GUARDAR GASTO</span></button>
++            <p id="expense-load-status" role="status" style="color:var(--text-dim);font-size:.8rem;"></p>
+             <div id="listaGastos" aria-busy="true"><div class="tf-skel" style="height:56px"></div><div class="tf-skel" style="height:56px"></div><div class="tf-skel" style="height:56px"></div></div>
+                 </div>
+             </div>
+--- a/index.html
++++ b/index.html
+@@ -271,7 +271,7 @@
+         <div class="ne-dot" id="ne-dot">📅</div>
+         <div class="ne-info">
+             <div class="ne-label" data-i18n="next_event_label">Próximo evento</div>
+-            <div class="ne-title" id="ne-title" data-i18n="next_event_empty">Sin eventos próximos</div>
++            <div class="ne-title" id="ne-title" data-i18n="loading">…</div>
+             <div class="ne-time" id="ne-time"></div>
+         </div>
+         <div class="ne-arrow">›</div>
+--- a/sw.js
++++ b/sw.js
+@@ -1,4 +1,4 @@
+-const CACHE = "taxfly-29efb0fe131a";
++const CACHE = "taxfly-8f631337fe38";
+ 
+ const TILES_CACHE = "taxfly-tiles-v1";
+ 
+--- a/tests/loading-state.test.cjs
++++ b/tests/loading-state.test.cjs
+@@ -0,0 +1,112 @@
++const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
++const T=require('../assets/travel-core.js');
++const read=f=>fs.readFileSync(require('node:path').join(__dirname,'..',f),'utf8');
++const between=(s,a,b)=>s.slice(s.indexOf(a),s.indexOf(b,s.indexOf(a)));
++function storage(){const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k),data};}
++const snap=(items,fromCache=false)=>({docs:items.map((data,i)=>({id:data.id||String(i),data:()=>data})),empty:!items.length,metadata:{fromCache}});
++const docSnap=(data,fromCache=false)=>({exists:()=>data!==null,data:()=>data,metadata:{fromCache}});
++
++test('first cached emptiness is unknown; metadata-only server confirmation permits genuine emptiness',()=>{
++ const s=T.loadState();assert.equal(s.receive([],snap([],true),true),false);assert.equal(s.hasValue,false);
++ assert.equal(s.receive([],snap([]),true),true);assert.equal(s.hasValue,true);assert.deepEqual(s.value,[]);
++});
++test('refresh cache and failures preserve confirmed values; later server updates recover',()=>{
++ const s=T.loadState([{id:'saved'}]);assert.equal(s.receive([],snap([],true),true),false);
++ s.fail();assert.equal(s.value[0].id,'saved');assert.equal(s.error,true);
++ s.receive([{id:'new'}],snap([{id:'new'}]));assert.equal(s.error,false);assert.equal(s.value[0].id,'new');
++ s.receive([],snap([]),true);assert.equal(s.value.length,0);
++});
++test('zero budget is unknown from empty cache, but valid when confirmed or locally saved',()=>{
++ const s=T.loadState();assert.equal(s.receive(0,docSnap({},true),true),false);
++ s.receive(0,docSnap({presupuesto:0}),true);assert.equal(s.hasValue,true);assert.equal(s.value,0);
++ assert.equal(T.loadState(0).hasValue,true);
++});
++test('a pending local edit can be rendered before server acknowledgement',()=>{
++ const s=T.loadState();assert.equal(s.receive([], {metadata:{fromCache:true,hasPendingWrites:true}},true),true);
++});
++test('reservation cache is never erased by initial cached missing document or late callbacks after stop',()=>{
++ const ls=storage();global.localStorage=ls;let callback,fail,latest,states=[];
++ T.writeReservations('u','p','trip',[{id:'r'}]);
++ const stop=T.watchReservations({uid:'u',pid:'p',trip:'trip',db:{},doc:()=>({}),onSnapshot:(_,opts,cb,error)=>{assert.equal(opts.includeMetadataChanges,true);callback=cb;fail=error;return ()=>{}},onChange:x=>latest=x,onState:s=>states.push({has:s.hasValue,error:s.error})});
++ callback(docSnap(null,true));assert.equal(latest[0].id,'r');assert.equal(T.readReservations('u','p','trip')[0].id,'r');
++ fail();assert.equal(states.at(-1).error,true);assert.equal(latest[0].id,'r');
++ callback(docSnap({items:[]}));assert.deepEqual(latest,[]);
++ stop();callback(docSnap({items:[{id:'late'}]}));assert.deepEqual(T.readReservations('u','p','trip'),[]);
++ delete global.localStorage;
++});
++
++test('trip hydration failure never becomes a confirmed no-trips state; offline scoped cache remains available',async()=>{
++ const ls=storage(),window={dispatchEvent(){},addEventListener(){}};
++ vm.runInNewContext(read('assets/trip-context.js'),{window,localStorage:ls,navigator:{onLine:true},CustomEvent:class{},setTimeout,clearTimeout,Promise,Map,JSON});
++ await window.TripContext.hydrate({},'u','p',()=>Promise.reject(Error('offline')),()=>({}));
++ assert.equal(window.TripContext.status('u','p').phase,'error');assert.equal(window.TripContext.status('u','p').hasData,false);
++ ls.setItem(window.TripContext.keys('u','p').list,JSON.stringify([{id:'a',name:'A'}]));
++ assert.equal(window.TripContext.readTrips('u','p')[0].id,'a');assert.equal(window.TripContext.status('other','p').hasData,false);
++});
++
++test('home listeners reject late updates after trip/account change and preserve known data on error',()=>{
++ const source=read('assets/index-app.js'),ls=storage(),callbacks=[],renders=[];
++ let generation=1,scope='u/p/a';
++ const c=vm.createContext({window:{TaxflyTravel:T,TripContext:{view:()=> 'a'}},currentUser:{uid:'u'},perfilId:'p',homeGeneration:1,homeScope:scope,homeStops:[],homeReservationUnsub:()=>{},homeReservations:[],homeFinance:null,homeContext:()=>scope,homeContextReady:()=>true,homeValid:(g,k)=>g===generation&&k===scope,readHomeCache:k=>{const raw=ls.getItem(k);return raw===null?undefined:JSON.parse(raw)},homeBudgetKey:()=> 'base-a',homeExpensesKey:()=> 'expenses-u-p',mapsBudgetCacheKey:()=> 'maps-a',renderBudgetUI:()=>{},renderUpcoming:()=>{},listenMapsBudget:()=>{},localStorage:ls,doc:(_,...p)=>p.join('/'),collection:(_,...p)=>p.join('/'),query:x=>x,orderBy:()=>{},db:{},onSnapshot:(ref,options,cb,error)=>{callbacks.push({ref,cb,error});return ()=>{};}});
++ // Isolate budget loading; reservations are independently covered above.
++ c.window.TaxflyTravel={...T,watchReservations:()=>()=>{}};
++ vm.runInContext(between(source,'function loadBudget()','function syncHomeContext()'),c);c.loadBudget();generation=c.homeGeneration;
++ callbacks[0].cb(docSnap({taxflyBudget:500}));callbacks[1].cb(snap([{id:'x',tripId:'a',valor:30}]));
++ assert.equal(ls.getItem('base-a'),'500');callbacks[1].cb(snap([],true));assert.equal(JSON.parse(ls.getItem('expenses-u-p')).length,1);
++ callbacks[0].error();assert.equal(c.homeFinance.base.value,500);assert.equal(c.homeFinance.base.error,true);
++ scope='other/p/b';callbacks[0].cb(docSnap({taxflyBudget:999}));callbacks[1].cb(snap([]));
++ assert.equal(ls.getItem('base-a'),'500');assert.equal(JSON.parse(ls.getItem('expenses-u-p')).length,1);
++});
++
++test('expense listeners wait for confirmed emptiness, preserve failures, and ignore stale trip callbacks',()=>{
++ const ls=storage(),listeners=[],renders=[];let scope='u/p/a';
++ const c=vm.createContext({window:{TaxflyTravel:T,taxflyOfflineStatus:{mark(){}}},currentUser:{uid:'u'},perfilId:'p',expenseGeneration:1,expenseScope:scope,financeStates:{expenses:T.loadState(),base:T.loadState()},expenseStops:[],allGastos:[],expenseSnapshotReady:false,expenseValid:(g,s)=>g===1&&s===scope,gastosCacheKey:()=> 'expenses',getPendingGastos:()=>[],localStorage:ls,collection:(_,...p)=>p.join('/'),query:x=>x,orderBy:()=>{},db:{},onSnapshot:(ref,options,cb,error)=>{listeners.push({cb,error});return ()=>{}},renderGastosList:x=>renders.push(x),offerReservationPayment(){},renderBudgetCard(){}});
++ vm.runInContext(between(read('assets/compras.js'),'function listenGastos()','function listenPresupuestoYOrlando()'),c);c.listenGastos();
++ listeners[0].cb(snap([],true));assert.equal(renders.length,0);assert.equal(ls.getItem('expenses'),null);
++ listeners[0].cb(snap([{id:'one',valor:30}]));assert.equal(renders.at(-1).length,1);
++ listeners[0].error();assert.equal(renders.at(-1).length,1);assert.equal(c.financeStates.expenses.error,true);
++ scope='u/p/b';listeners[0].cb(snap([]));assert.equal(JSON.parse(ls.getItem('expenses')).length,1);
++ scope='u/p/a';listeners[0].cb(snap([]));assert.equal(renders.at(-1).length,0);
++});
++
++test('loading and error labels exist in the current ES/EN/PT dictionaries',()=>{
++ for(const [file,name] of [['assets/index-app.js','I18N'],['assets/compras.js','i18n']]){
++  const src=read(file),start=src.indexOf('const '+name+' = {'),end=src.indexOf('\n};',start)+3;
++  const dictionaries=vm.runInNewContext(src.slice(start,end)+'\n'+name);
++  for(const l of ['es','en','pt'])for(const key of ['load_error','saved_offline','no_local_data',file.includes('index')?'loading':'loading_data'])assert.ok(dictionaries[l][key],`${file}:${l}:${key}`);
++ }
++});
++
++function nodes(){const els=new Map();return {getElementById(id){if(!els.has(id))els.set(id,{style:{},textContent:'',_editing:false,setAttribute(k,v){this[k]=v;},classList:{toggle(){}}});return els.get(id);}};}
++function dictionaries(file,name){const src=read(file),start=src.indexOf('const '+name+' = {'),end=src.indexOf('\n};',start)+3;return vm.runInNewContext(src.slice(start,end)+'\n'+name);}
++for(const language of ['es','en','pt'])test(`expense card ${language}: loading -> confirmed empty -> cached budget -> refresh failure without lost amount`,()=>{
++ const document=nodes(),i18n=dictionaries('assets/compras.js','i18n'),states={base:T.loadState(),expenses:T.loadState(),maps:T.loadState(),reservations:T.loadState([])};
++ const c=vm.createContext({document,window:{TripContext:{view:()=> 'a',readTrips:()=>[]},TaxflyTravel:T},currentUser:{uid:'u'},perfilId:'p',expenseContextReady:()=>true,expenseScope:'scope',expenseContext:()=> 'scope',financeStates:states,navigator:{onLine:true},financeMessage:()=>i18n[language].load_error,bt:k=>i18n[language][k],i18n,localStorage:{getItem:()=>language},presupuestoBase:0,lastGastosTotal:0,mapsSpent:0,financeReservations:[],filteredGastos:()=>[],pendingDeletes:new Set(),budgetTripName:()=> 'Trip',fmt:n=>n.toFixed(2)});
++ vm.runInContext(between(read('assets/compras.js'),'function renderBudgetCard()','window.refreshBudgetInfoRow'),c);
++ c.renderBudgetCard();assert.equal(document.getElementById('bc-empty').style.display,'none');assert.equal(document.getElementById('budget-set-row').style.display,'none');
++ states.base.receive(0);states.expenses.receive([]);states.maps.receive(0);c.renderBudgetCard();assert.equal(document.getElementById('bc-empty').style.display,'block');
++ states.base.receive(500);c.presupuestoBase=500;c.renderBudgetCard();assert.equal(document.getElementById('disp-fondo').textContent,'USD 500.00');
++ states.base.fail();c.renderBudgetCard();assert.equal(document.getElementById('disp-fondo').textContent,'USD 500.00');assert.equal(document.getElementById('bc-hint').textContent,i18n[language].load_error);
++ c.expenseContext=()=> 'other-trip';c.renderBudgetCard();assert.equal(document.getElementById('bc-main').style.display,'none');
++});
++
++test('initial HTML cannot show a budget setup form or no-upcoming-events before authentication',()=>{
++ const html=read('compras.html');assert.match(html,/<div id="bc-empty" style="display:none;">/);assert.match(html,/id="budget-set-row" style="display:none;"/);
++ assert.match(read('index.html'),/id="ne-title" data-i18n="loading">/);
++});
++
++test('planning budget ignores cached missing fields, retains refresh errors and rejects another account',()=>{
++ const ls=storage(),callbacks=[],values=[];ls.setItem('taxusa_budget_cache_p::u','500');
++ const c=vm.createContext({window:{TaxflyTravel:T,budgetRefresh(){}},currentUid:'u',currentPerfilId:'p',activeTripId:'orlando',localStorage:ls,perfilDocRef:()=> 'profile',tripDocRef:()=> 'trip',onSnapshot:(ref,options,cb,error)=>{callbacks.push({cb,error});return ()=>{};}});
++ vm.runInContext(between(read('assets/plan-firebase.js'),'function listenTaxflyPresupuesto(cb)','function listenTaxflyGastos(cb)'),c);
++ c.listenTaxflyPresupuesto(x=>values.push(x));assert.deepEqual(values,[500]);
++ callbacks[0].cb(docSnap({},true));assert.deepEqual(values,[500]);callbacks[0].error();assert.equal(c.window._planFinanceError,true);assert.equal(ls.getItem('taxusa_budget_cache_p::u'),'500');
++ c.currentUid='another';callbacks[0].cb(docSnap({presupuesto:900}));assert.deepEqual(values,[500]);
++ c.currentUid='u';callbacks[0].cb(docSnap({presupuesto:700}));assert.equal(values.at(-1),700);assert.equal(c.window._planFinanceError,false);
++});
++test('planning does not offer budget setup until both financial sources are known',()=>{
++ const document=nodes();const c=vm.createContext({document,window:{tr:s=>s},navigator:{onLine:true},financePresReady:false,financeExpensesReady:false,tfx:{presupuesto:0},budgetRemaining:()=>0,budgetUsd:x=>String(x),ic:()=>''});
++ vm.runInContext(between(read('assets/plan-app.js'),'function planFinanceMessage()','function openBudgetFromPill()'),c);
++ c.renderBudgetPill();assert.match(document.getElementById('budget-pill-slot').innerHTML,/Cargando/);assert.doesNotMatch(document.getElementById('budget-pill-slot').innerHTML,/Definir presupuesto/);
++ c.financePresReady=true;c.financeExpensesReady=true;c.renderBudgetPill();assert.match(document.getElementById('budget-pill-slot').innerHTML,/Definir presupuesto/);
++});
+--- a/tests/travel-improvements.test.cjs
++++ b/tests/travel-improvements.test.cjs
+@@ -94,7 +94,7 @@
+ test('reservation watches use user/profile/trip paths and keep unsynced reservations',()=>{
+  const ls=storage(),values=[],paths=[];global.localStorage=ls;
+  ls.setItem(T.planningKey('u','p','a')+'::pending',JSON.stringify({items:[{id:'local',totalPrice:30}]}));
+- T.watchReservations({uid:'u',pid:'p',trip:'a',db:{},doc:(_,...p)=>{paths.push(p.join('/'));return {};},onSnapshot:(_,cb)=>{cb({exists:()=>true,data:()=>({items:[{id:'old'}]})});return ()=>{}},onChange:x=>values.push(x)});
++ T.watchReservations({uid:'u',pid:'p',trip:'a',db:{},doc:(_,...p)=>{paths.push(p.join('/'));return {};},onSnapshot:(_,options,cb)=>{cb({exists:()=>true,data:()=>({items:[{id:'old'}]})});return ()=>{}},onChange:x=>values.push(x)});
+  assert.equal(values.at(-1)[0].id,'local');assert.equal(paths[0],'usuarios/u/perfiles/p/tripPlanning/a/data/reservations');
+  assert.equal(T.readReservations('other','p','a').length,0);delete global.localStorage;
+ });
+@@ -138,7 +138,7 @@
+ test('Home sorts events by destination instant and labels Miami local time',()=>{
+  const els=Object.fromEntries(['ne-title','ne-time','ne-dot'].map(id=>[id,{style:{},textContent:''}]));
+  const now=Date.parse('2026-10-05T12:00:00Z'),records=[{name:'Late LA',date:'2026-10-05',time:'08:00',timeZone:'America/Los_Angeles',city:'Los Ángeles',tripId:'a'},{name:'Miami breakfast',date:'2026-10-05',time:'09:00',timeZone:'America/New_York',city:'Miami',tripId:'a'},{name:'Other trip',date:'2026-10-05',time:'08:01',timeZone:'America/New_York',tripId:'b'}];
+- const c=context(between(read('assets/index-app.js'),'function loadNextEvent(){','function renderTip()'),{window:{TaxflyTravel:T,TripContext:{view:()=> 'a',readTrips:()=>[trip]}},currentUser:{uid:'u'},perfilId:'p',homeReservations:[],renderUpcoming:()=>{},document:{getElementById:id=>els[id]},query:()=>{},collection:()=>{},orderBy:()=>{},db:{},onSnapshot:(_,cb)=>cb({docs:records.map(e=>({id:e.name,data:()=>e}))}),Date:class extends Date{static now(){return now}},lang:'es',t:{},Intl,tfL3:a=>a});
++ const c=context(between(read('assets/index-app.js'),'function loadNextEvent(){','function renderTip()'),{window:{TaxflyTravel:T,TripContext:{view:()=> 'a',readTrips:()=>[trip]}},currentUser:{uid:'u'},perfilId:'p',homeReservations:[],homeEventStop:()=>{},homeGeneration:1,homeScope:'a',homeContextReady:()=>true,homeValid:()=>true,readHomeCache:()=>undefined,homeFinance:{reservations:T.loadState([])},homeMessage:()=> 'Loading',localStorage:storage(),navigator:{onLine:true},renderUpcoming:()=>{},document:{getElementById:id=>els[id]},query:()=>{},collection:()=>{},orderBy:()=>{},db:{},onSnapshot:(_,options,cb)=>{cb({docs:records.map(e=>({id:e.name,data:()=>e}))});return ()=>{}},Date:class extends Date{static now(){return now}},lang:'es',t:{},Intl,tfL3:a=>a});
+  c.loadNextEvent();assert.equal(els['ne-title'].textContent,'Miami breakfast');assert.match(els['ne-time'].textContent,/09:00 · hora de Miami/);
+ });
+ test('Repeating Registrar pago opens the existing expense instead of rendering another payment',()=>{

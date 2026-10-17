@@ -290,6 +290,7 @@
   }
   const NAV_T = {
     es: {
+      search: "Buscar en el viaje", search_d: "Reservas, documentos, paradas y más",
       home: "INICIO",
       taxes: "CALCULADORA",
       taxes_d: "Calculadora de impuestos",
@@ -312,6 +313,7 @@
       things_d: "Lista y equipaje del viaje"
     },
     en: {
+      search: "Search this trip", search_d: "Bookings, documents, stops and more",
       home: "HOME",
       taxes: "CALCULATOR",
       taxes_d: "Sales tax calculator",
@@ -334,6 +336,7 @@
       things_d: "Trip lists and luggage"
     },
     pt: {
+      search: "Buscar nesta viagem", search_d: "Reservas, documentos, paradas e mais",
       home: "INÍCIO",
       taxes: "CALCULADORA",
       taxes_d: "Calculadora de impostos",
@@ -374,7 +377,8 @@
     const T = NAV_T[lang];
     const set = nav.querySelector("#btnSettings") || document.querySelector(".app-header #btnSettings");
     const main = NAV_MAIN.map(([href, icon, key]) => `<a href="${href}" class="btn-nav"><span class="ni">${svg(icon, 27)}</span><span>${T[key]}</span></a>`).join("");
-    const more = NAV_MORE.map(([href, icon, key, tone]) => `<a href="${href}" class="dd-item"><span class="dd-icon ui-slot" data-tone="${tone}">${svg(icon, 18)}</span><div><div class="dd-name">${T[key]}</div><div class="dd-desc">${T[key + "_d"]}</div></div></a>`).join("");
+    const search = `<a href="#buscar-viaje" class="dd-item" onclick="event.preventDefault();event.stopPropagation();window.taxflyOpenTripSearch?.()"><span class="dd-icon ui-slot" data-tone="indigo">${svg("search",18)}</span><div><div class="dd-name">${T.search}</div><div class="dd-desc">${T.search_d}</div></div></a>`;
+    const more = search + NAV_MORE.map(([href, icon, key, tone]) => `<a href="${href}" class="dd-item"><span class="dd-icon ui-slot" data-tone="${tone}">${svg(icon, 18)}</span><div><div class="dd-name">${T[key]}</div><div class="dd-desc">${T[key + "_d"]}</div></div></a>`).join("");
     nav.innerHTML = main + `<button class="btn-nav-more" id="btnMore" onclick="toggleMoreMenu(event)" aria-label="${T.more}">\n                <div class="more-dots"><div class="more-dot"></div><div class="more-dot"></div><div class="more-dot"></div></div>\n                <span class="more-lbl">${T.more}</span>\n                <div class="nav-dropdown" id="navDropdown"><div class="dd-arrow"></div>${more}</div>\n            </button>`;
     if (set) nav.appendChild(set);
     nav.querySelector("#btnMore").onclick = event => {

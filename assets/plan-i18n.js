@@ -327,6 +327,14 @@
   };
   window.tr = t;
   add({
+    "Documento": ["Document", "Documento"],
+    "Sin documento vinculado": ["No linked document", "Nenhum documento vinculado"],
+    "Cargando documentos…": ["Loading documents…", "Carregando documentos…"],
+    "Documento vinculado": ["Linked document", "Documento vinculado"],
+    "Documento (opcional)": ["Document (optional)", "Documento (opcional)"],
+    "Reserva eliminada": ["Booking deleted", "Reserva excluída"],
+    "Abrir documento": ["Open document", "Abrir documento"],
+    "Usar alojamiento guardado": ["Use saved accommodation", "Usar hospedagem salva"],
     "Flexible": ["Flexible", "Flexível"],
     "Fila estimada": ["Estimated wait", "Espera estimada"],
     "Revisar duración": ["Check duration", "Revisar duração"],

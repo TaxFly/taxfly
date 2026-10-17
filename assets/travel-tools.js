@@ -199,4 +199,70 @@
       preparing=false;await offline();
     }catch(e){status.textContent=L('Preparación incompleta: ')+e.message;status.classList.add('tf-error');preparing=false;$('#tf-prepare').disabled=false;}
   }
+  // Search is loaded only when requested. No document bytes enter its index.
+  function searchContext(){
+    const u=uid(),p=profile(),t=trip();
+    return u&&p&&t&&t!=='unassigned'?{uid:u,profile:p,trip:t}:null;
+  }
+  window.taxflyTripSearchContext=searchContext;
+  async function loadTripSearch(onLocal){
+    const core=window.TaxflyTripSearch,context=searchContext();if(!context||!core)throw Error('context');
+    const scope=core.scope(context),key='taxfly-trip-search::'+scope;
+    const assertContext=()=>{const next=searchContext();if(!next||core.scope(next)!==scope)throw Error('context');};
+    const {fs,db,user}=await firebase();assertContext();if(user.uid!==context.uid)throw Error('context');
+    let previous=[];try{const cached=JSON.parse(localStorage.getItem(key)||'null');if(cached?.schema===1&&cached.scope===scope&&Array.isArray(cached.records))previous=cached.records;}catch(_){}
+    if(previous.length)onLocal?.({context,records:previous});
+    const {uid:u,profile:p,trip:t}=context;
+    const base=t==='orlando'?['usuarios',u,'perfiles',p,'orlando']:['usuarios',u,'perfiles',p,'tripPlanning',t,'data'];
+    const bounded=promise=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('timeout')),10000);Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});});
+    let partial=false,local=false;
+    const updates=await Promise.all(core.sources.map(async source=>{
+      try{
+        let snap,value;
+        if(['reservations','itinerario','days'].includes(source)){
+          snap=await bounded(fs.getDoc(fs.doc(db,...base,source)));value=snap.exists()?snap.data():null;
+        }else{
+          let path=['usuarios',u,'perfiles',p,{activities:'actividades',notes:'notas',expenses:'gastos'}[source]];
+          if(source==='documents'){
+            if(!await bounded(window.TaxflyDocsTree.ensure(u,p)))throw Error('documents');
+            path=window.TaxflyDocsTree.base(u,p);
+          }
+          // Only this trip's metadata; files/chunks are never downloaded here.
+          const ref=fs.collection(db,...path);
+          snap=await bounded(fs.getDocs(fs.query(ref,fs.where('tripId','==',t))));
+          value=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
+          if(source==='expenses'&&window.TaxflyTravel?.overlayExpenses){
+            let pending=[];try{pending=JSON.parse(localStorage.getItem('taxusa_gastos_pending_'+p+'::'+u)||'[]');}catch(_){}
+            value=window.TaxflyTravel.overlayExpenses(value,pending);if(pending.length)local=true;
+          }
+        }
+        if(source==='activities'||source==='notes'){
+          let ops=[];try{ops=JSON.parse(localStorage.getItem('taxusa_itin_pending::'+u+'::'+p)||'[]');}catch(_){}
+          const kind=source==='activities'?'activity':'note',byId=new Map(value.map(item=>[item.id,item]));
+          for(const op of ops){
+            if(op.uid!==u||op.perfilId!==p)continue;
+            if(op.type==='add_'+kind&&op.data?.tripId===t)byId.set(op.tempId,{id:op.tempId,...op.data});
+            if(op.type==='del_'+kind)byId.delete(op.id);
+          }
+          value=[...byId.values()];if(ops.length)local=true;
+        }
+        let pendingPlanning=null;
+        if(source==='reservations'&&window.TaxflyTravel?.planningKey){
+          try{pendingPlanning=JSON.parse(localStorage.getItem(window.TaxflyTravel.planningKey(u,p,t)+'::pending')||'null');}catch(_){}
+        }else if(['itinerario','days'].includes(source)&&window._taxflyTripUid===u&&window._perfilId===p&&window._tripId===t){
+          try{pendingPlanning=JSON.parse(window._planPendingPayload?.(source)||'null');}catch(_){}
+        }
+        if(pendingPlanning){value=pendingPlanning;local=true;}
+        assertContext();const records=core.records(context,source,value),cached=!!snap.metadata?.fromCache;
+        if(cached)local=true;
+        // A cache miss is not proof of an empty collection/document.
+        const confirmed=!!pendingPlanning||!cached||records.length>0;if(!confirmed)partial=true;
+        return {source,confirmed,authoritative:!!pendingPlanning||!cached,records};
+      }catch(_){partial=true;return {source,confirmed:false,records:[]};}
+    }));
+    assertContext();const records=core.merge(previous,updates);
+    try{localStorage.setItem(key,JSON.stringify({schema:1,scope,at:Date.now(),records}));}catch(_){}
+    return {context,records,partial,local};
+  }
+  window.taxflyTripSearchLoad=loadTripSearch;
 })();

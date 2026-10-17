@@ -1768,7 +1768,7 @@ function renderCustomCatChips(selectName) {
   const tags = [...row.querySelectorAll(".cat-tag")];
   let hit = prev && tags.find(b => b.dataset.cat === prev);
   if (!hit) {
-    try { const last = localStorage.getItem("taxfly_last_expense_cat"); hit = last && tags.find(b => b.dataset.cat === last); } catch (e) {}
+    try { const last = localStorage.getItem(lastExpenseCategoryKey()); hit = last && tags.find(b => b.dataset.cat === last); } catch (e) {}
   }
   if (hit) { tags.forEach(b => b.classList.remove("sel")); hit.classList.add("sel"); }
   else if (!row.querySelector(".cat-tag.sel") && tags[0]) tags[0].classList.add("sel");
@@ -1933,7 +1933,7 @@ function gastoItemHtml(g) {
   const catDisplayLabel = customCat ? customCat.name : catLabel(cat).replace(/^\S+\s*/, "");
   const thumbHtml = g.thumb ? `<img class="h-thumb" src="${g.thumb}" alt="recibo" onclick="openReceiptViewer('${g.thumb}','${g.id}')">` : `<div class="h-thumb-placeholder">${catIconHtml}</div>`;
   const editLbl = esc(bt("aria_edit") + ": " + (g.nombre || ""));
-  return `<div class="history-item" style="border-left-color:${catColor(cat)}">
+  return `<div class="history-item" data-search-expense="${esc(g.id)}" style="border-left-color:${catColor(cat)}">
                 ${thumbHtml}
                 <div class="h-main" role="button" tabindex="0" aria-label="${editLbl}" onclick="editGasto('${g.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();editGasto('${g.id}')}">
                     <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.nombre)}${window.tfSyncBadge ? tfSyncBadge(g._pending || String(g.id).startsWith("local_") ? "pending" : "ok", true) : ""}</div>
@@ -2558,7 +2558,7 @@ onReady(() => {
     });
   });
   try {
-    const last = localStorage.getItem(LAST_CAT_KEY);
+    const last = localStorage.getItem(lastExpenseCategoryKey());
     const tags = [ ...document.querySelectorAll("#cat-tag-row .cat-tag") ];
     const hit = last && tags.find(b => b.dataset.cat === last);
     if (hit) {
@@ -2893,6 +2893,10 @@ window.confirmOcrScan = async () => {
 };
 
 const LAST_CAT_KEY = "taxfly_last_expense_cat";
+function lastExpenseCategoryKey(){
+  const uid=currentUser?.uid||localStorage.getItem("taxusa_offline_uid"),trip=uid&&perfilId?window.TripContext.assign(uid,perfilId):"unassigned";
+  return LAST_CAT_KEY+"::"+JSON.stringify([uid,perfilId,trip]);
+}
 
 window.addGastoWithThumb = async thumb => {
   const n = document.getElementById("nombre").value;
@@ -2925,7 +2929,7 @@ window.addGastoWithThumb = async thumb => {
   guardarGastosEnCache(allGastos);renderGastosList(allGastos);
   document.getElementById("nombre").value = "";
   document.getElementById("valor").value = "";
-  try { localStorage.setItem(LAST_CAT_KEY, cat); } catch (e) {}
+  try { localStorage.setItem(lastExpenseCategoryKey(), cat); } catch (e) {}
   showExpToast(bt("toast_saved"));
   if (!thumb) document.getElementById("nombre").focus();
   if(navigator.onLine)flushPendingGastos();

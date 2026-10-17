@@ -161,7 +161,7 @@
   var undoBatch = [], undoTimer;
   function finishDeletes(restore, unloading) {
     var batch=undoBatch; undoBatch=[]; clearTimeout(undoTimer);
-    batch.forEach(function(o){ if (restore) { if(o.restore)o.restore(); } else if(o.commit) Promise.resolve(o.commit(!!unloading)).catch(function(e){console.error("No se pudo confirmar el borrado",e);if(o.restore)o.restore();}); });
+    (restore?batch.slice().reverse():batch).forEach(function(o){ if (restore) { if(o.restore)o.restore(); } else if(o.commit) Promise.resolve(o.commit(!!unloading)).catch(function(e){console.error("No se pudo confirmar el borrado",e);if(o.restore)o.restore();}); });
   }
   window.tfDeleteWithUndo = function(o){
     if(o.remove)o.remove(); undoBatch.push(o); clearTimeout(undoTimer);

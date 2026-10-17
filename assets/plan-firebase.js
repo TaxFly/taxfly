@@ -89,6 +89,7 @@ function listenTripDocuments() {
       window._tripDocuments = snap.docs.map(d => ({ id: d.id, ...d.data() }))
         .filter(d => (d.tripId || "unassigned") === activeTripId);
       window.renderReservations?.();
+      window.refreshItineraryDocumentOptions?.();
     }, () => {});
   });
   return () => { cancelled = true; unsubscribe(); };

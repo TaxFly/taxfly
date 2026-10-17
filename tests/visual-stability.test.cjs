@@ -31,7 +31,7 @@ test('duration labels are immediately translated and numbers use the selected lo
 });
 test('editing duration ranges preserves separators and safely escapes input values',()=>{
  const c=durations();c.ic=()=>'';c.ITIN_TIPOS={otro:{label:'Otro'}};
- vm.runInContext(slice('function itinEditForm(','function itinSwitchDay'),c);
+ vm.runInContext(slice('function itineraryDocumentOptions(','function itinSwitchDay'),c);
  const html=c.itinEditForm({id:'test',hora:'',titulo:'',zona:'',tipo:'otro',espera:'45–60',dur:'" onfocus="bad',obs:''});
  assert.match(html,/value="45–60"/);assert.doesNotMatch(html,/value="" onfocus/);
  assert.doesNotMatch(html,/placeholder="Fila estimada \(min\)"[^>]*data-num/);

@@ -226,6 +226,12 @@ textarea{resize:none;line-height:1.5;}
 .route-planning-action{flex:1 1 160px;min-width:0;white-space:normal;text-align:center;}
 #planning-import{width:100%;margin-top:8px;}
 .route-planning-action:disabled{opacity:.5;cursor:default;}
+#planning-choices{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-top:8px;max-height:260px;overflow:auto;}
+#planning-choices legend{font-size:.75rem;font-weight:700;padding:0 4px;}
+#planning-choices label,.route-return-option{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:.8rem;line-height:1.4;}
+#planning-choices input,.route-return-option input{appearance:auto;-webkit-appearance:checkbox;width:18px;height:18px;padding:0;flex:none;}
+#planning-choices .days-row{justify-content:space-between;margin:6px 0 0;}
+.route-return-option{margin-bottom:12px;}
 </style>
 <script>
 if ("serviceWorker" in navigator) {
@@ -301,11 +307,13 @@ if ("serviceWorker" in navigator) {
         <button type="button" class="method-btn route-planning-action" onclick="window.loadRoutePlanning?.()" data-i18n="planning_reload">Actualizar</button>
       </div>
       <label class="slabel" for="planning-day" data-i18n="planning_choose">Elegí un día</label>
-      <select id="planning-day" disabled style="width:100%;min-width:0" onchange="document.getElementById('planning-import').disabled=!this.value"></select>
+      <select id="planning-day" disabled style="width:100%;min-width:0" onchange="renderPlanningStopChoices()"></select>
+      <fieldset id="planning-choices" hidden></fieldset>
       <button type="button" class="method-btn route-planning-action" id="planning-import" onclick="importPlanningStops()" disabled data-i18n="planning_import">Agregar paradas del día</button>
       <p id="planning-status" class="slabel" role="status" data-i18n="planning_loading">Cargando Planificación…</p>
     </div>
 
+    <label class="route-return-option"><input id="return-hotel" type="checkbox"><span data-i18n="route_return">Ofrecer regreso al alojamiento al terminar cada día</span></label>
     <span class="slabel" data-i18n="label_days">📅 Cantidad de días</span>
     <div class="days-row">
       <button class="days-btn" onclick="changeDays(-1)">−</button>
@@ -559,7 +567,10 @@ if ("serviceWorker" in navigator) {
 <script src="assets/reconnect-sync.js" defer></script>
 <link rel="stylesheet" href="assets/travel-tools.css">
 <script src="assets/offline-status.js" defer></script>
+<script src="assets/travel-core.js" defer></script>
 <script src="assets/travel-tools.js" defer></script>
+<script src="assets/trip-search-core.js" defer></script>
+<script src="assets/trip-search.js" defer></script>
 <script src="assets/profile-access.js"></script>
 </body>
 </html>
