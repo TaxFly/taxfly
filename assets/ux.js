@@ -6,7 +6,7 @@
 
   /* ---------- 1) Scroll horizontal con mouse ---------- */
   var HS_SELECTOR = [
-    ".filter-row", ".comp-cat-strip", ".cat-bar", ".chips",
+    ".filter-row", ".comp-cat-strip", ".cat-bar", ".chips", ".parques-filter-bar",
     ".day-tabs-wrap", ".tab-bar", ".preview-strip", "[data-hscroll]"
   ].join(",");
 
