@@ -1,5 +1,18 @@
 const i18n = {
   es: {
+    planning_title: "Usar datos de Planificación",
+    planning_hotel: "Usar alojamiento guardado",
+    planning_import: "Agregar paradas del día",
+    planning_reload: "Actualizar",
+    planning_loading: "Cargando Planificación…",
+    planning_empty: "No hay paradas guardadas para este viaje.",
+    planning_error: "No se pudo actualizar Planificación.",
+    planning_local: "Datos guardados en este dispositivo",
+    planning_choose: "Elegí un día",
+    planning_itinerary: "Itinerario",
+    planning_places: "Lugares",
+    planning_none_added: "Estas paradas ya están en la lista.",
+
     nav_home: "INICIO",
     nav_tax: "TAXES",
     nav_shopping: "GASTOS",
@@ -59,6 +72,19 @@ const i18n = {
     ac_no_results: "Sin resultados para esta búsqueda"
   },
   en: {
+    planning_title: "Use Planning data",
+    planning_hotel: "Use saved accommodation",
+    planning_import: "Add stops from this day",
+    planning_reload: "Refresh",
+    planning_loading: "Loading Planning…",
+    planning_empty: "No saved stops for this trip.",
+    planning_error: "Could not refresh Planning.",
+    planning_local: "Data saved on this device",
+    planning_choose: "Choose a day",
+    planning_itinerary: "Itinerary",
+    planning_places: "Places",
+    planning_none_added: "These stops are already in the list.",
+
     nav_home: "HOME",
     nav_tax: "TAXES",
     nav_shopping: "EXPENSES",
@@ -118,6 +144,19 @@ const i18n = {
     ac_no_results: "No results found"
   },
   pt: {
+    planning_title: "Usar dados do Planejamento",
+    planning_hotel: "Usar hospedagem salva",
+    planning_import: "Adicionar paradas do dia",
+    planning_reload: "Atualizar",
+    planning_loading: "Carregando Planejamento…",
+    planning_empty: "Não há paradas salvas para esta viagem.",
+    planning_error: "Não foi possível atualizar o Planejamento.",
+    planning_local: "Dados salvos neste dispositivo",
+    planning_choose: "Escolha um dia",
+    planning_itinerary: "Itinerário",
+    planning_places: "Lugares",
+    planning_none_added: "Estas paradas já estão na lista.",
+
     nav_home: "INÍCIO",
     nav_tax: "TAXES",
     nav_shopping: "GASTOS",
@@ -194,6 +233,7 @@ window.changeLanguage = lang => {
     const k = el.getAttribute("data-i18n-ph");
     if (t[k]) el.placeholder = t[k];
   });
+  renderRoutePlanning();
   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
 };
 
@@ -551,7 +591,7 @@ function routeHotelOverrideKey() {
   const uid = window._routeUid;
   const profile = localStorage.getItem("perfilActivoId") || "default";
   const tripId = uid ? window.TripContext.active(uid, profile) : "orlando";
-  return `taxusa_hotel_addr::${profile}::${tripId}`;
+  return `taxusa_hotel_addr::${uid || "sin-usuario"}::${profile}::${tripId}`;
 }
 
 function onHotelInput(val) {
@@ -566,8 +606,11 @@ function onHotelInput(val) {
     return;
   }
   spinner.style.display = "block";
+  const requestScope=routePlanningScope();
   hotelAcTimer = setTimeout(async () => {
-    hotelAcItems = await searchAddress(val);
+    const found=await searchAddress(val);
+    if(requestScope!==routePlanningScope()||document.getElementById("hotel-input").value!==val)return;
+    hotelAcItems=found;
     spinner.style.display = "none";
     renderAcList(listEl, hotelAcItems, item => {
       document.getElementById("hotel-input").value = item.address;
@@ -951,7 +994,7 @@ function saveRouteToTrip() {
   const profile = localStorage.getItem("perfilActivoId");
   const tripId = window.TripContext.active(window._routeUid, profile);
   sessionStorage.setItem("taxfly-route-import", JSON.stringify({
-    tripId, profile, startDate: document.getElementById("start-date").value,
+    uid:window._routeUid, importId:routeData.importId || (routeData.importId=crypto.randomUUID()), tripId, profile, startDate: document.getElementById("start-date").value,
     days: routeData.dayData.map(d => ({ name: d.label, stops: d.stops.map(s => ({
       name: s.name, note: s.desc || "", url: s.url || ""
     })) }))
@@ -1168,3 +1211,60 @@ document.addEventListener("DOMContentLoaded", () => {
     inp.placeholder = HOTEL_PLACEHOLDERS[_phIdx];
   }
 });
+
+function routePlanningScope() {
+  const uid=window._routeUid, profile=localStorage.getItem("perfilActivoId");
+  return uid && profile ? JSON.stringify([uid,profile,window.TripContext.active(uid,profile)]) : "";
+}
+function routePlanningGroups(daysData,itinerary) {
+  const groups=[];
+  const add=(kind,day,index,items)=>{
+    const stops=items.filter(item=>item?.name).map(item=>({name:String(item.name),desc:String(item.note||""),url:String(item.url||"")}));
+    if(stops.length) groups.push({key:kind+":"+(day.id??index),kind,label:day.nombre||day.dayName||day.date||day.fecha||String(index+1),stops});
+  };
+  (daysData?.days||[]).forEach((day,i)=>add("places",day,i,day.stops||[]));
+  (itinerary?.dias||[]).forEach((day,i)=>add("itinerary",day,i,(day.bloques||[]).map(block=>({name:block.titulo,note:block.obs,url:block.url}))));
+  return groups;
+}
+function routeStopIdentity(stop) {
+  const norm=value=>String(value||"").trim().replace(/\s+/g," ").toLowerCase();
+  return JSON.stringify([norm(stop.name),norm(stop.url)]);
+}
+function publishRoutePlanning(data) {
+  if(data.scope!==routePlanningScope()) return;
+  const previous=window._routePlanning;
+  if(previous && previous.scope!==data.scope) {stops=[];routeData=null;visited={};renderStops();}
+  window._routePlanning=data;renderRoutePlanning();
+}
+function renderRoutePlanning() {
+  const data=window._routePlanning,select=document.getElementById("planning-day"),status=document.getElementById("planning-status");
+  if(!select||!status)return;
+  const lang=localStorage.getItem("appLang")||"es",t=i18n[lang]||i18n.es;
+  const groups=data?.scope===routePlanningScope()?data.groups||[]:[];
+  const selected=select.value;
+  select.replaceChildren();
+  const option=(value,label)=>{const el=document.createElement("option");el.value=value;el.textContent=label;select.appendChild(el);};
+  option("",t.planning_choose);
+  groups.forEach(group=>option(group.key,t[group.kind==="places"?"planning_places":"planning_itinerary"]+" · "+group.label));
+  if(groups.some(group=>group.key===selected))select.value=selected;
+  select.disabled=!groups.length;
+  document.getElementById("planning-import").disabled=!select.value;
+  document.getElementById("planning-hotel").disabled=!data?.hotel?.addr||data.scope!==routePlanningScope();
+  status.textContent=!data||data.scope!==routePlanningScope()?t.planning_loading:data.error?t.planning_error:data.loading?t.planning_loading:data.local?t.planning_local:!groups.length?t.planning_empty:"";
+}
+function usePlanningHotel() {
+  const data=window._routePlanning;
+  if(!data||data.scope!==routePlanningScope()||!data.hotel?.addr)return;
+  document.getElementById("hotel-input").value=data.hotel.addr;
+  localStorage.setItem(routeHotelOverrideKey(),data.hotel.addr);
+}
+function importPlanningStops() {
+  const data=window._routePlanning;
+  if(!data||data.scope!==routePlanningScope())return;
+  const group=data.groups.find(group=>group.key===document.getElementById("planning-day").value);
+  if(!group)return;
+  const known=new Set(stops.map(routeStopIdentity));let added=0;
+  for(const stop of group.stops){const key=routeStopIdentity(stop);if(known.has(key))continue;known.add(key);stops.push({...stop});added++;}
+  renderStops();
+  showToast(added?addedToastMsg(added):(i18n[localStorage.getItem("appLang")]||i18n.es).planning_none_added);
+}

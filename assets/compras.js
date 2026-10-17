@@ -79,6 +79,7 @@ function cargarGastosDesdeCache() {
 function guardarPresupuestoEnCache(v) {
   try {
     localStorage.setItem(currentBudgetKey(), String(v));
+    window.TaxflyTravel.publishBudget(currentUser.uid,perfilId,window.TripContext.view(currentUser.uid,perfilId),v);
   } catch (e) {}
 }
 
@@ -1480,7 +1481,7 @@ function dropPendingAdd(g) {
 
 async function removeGastoRemote(g) {
   const id = g.id;
-  if (g.reservationId) {
+  if (g.reservationId || getPendingGastos().some(op=>op.type==='upsert'&&op.id===id)) {
     // Remove queued creation/updates first. A delete follows any write already in flight.
     savePendingGastos(getPendingGastos().filter(o=>o.id!==id));
     queueGastoOp({type:'del',id});flushPendingGastos();return;
@@ -1594,7 +1595,7 @@ window.saveEditGasto = async () => {
   closeEditGasto();
   renderGastosList(allGastos);
   showExpToast(bt("toast_updated"));
-  if (g.reservationId && getPendingGastos().some(o=>o.type==='upsert'&&o.id===id)) {
+  if (getPendingGastos().some(o=>o.type==='upsert'&&o.id===id)) {
     savePendingGastos(getPendingGastos().map(o=>o.type==='upsert'&&o.id===id?{...o,data:{...o.data,...patch},ts:Date.now()}:o));flushPendingGastos();return;
   }
   if (String(id).startsWith("local_")) {
@@ -2909,40 +2910,18 @@ window.addGastoWithThumb = async thumb => {
     thumb: thumb || "",
     tripId: currentUser && perfilId ? window.TripContext.assign(currentUser.uid, perfilId) : "orlando"
   };
-  const localId = "local_" + Date.now();
-  const cached = cargarGastosDesdeCache() || [];
-  cached.unshift({
-    ...gastoData,
-    id: localId
-  });
-  guardarGastosEnCache(cached);
-  allGastos.unshift({
-    ...gastoData,
-    id: localId
-  });
-  renderGastosList(allGastos);
+  if(!currentUser || !perfilId)return;
+  const expenseId=doc(collection(db,"usuarios",currentUser.uid,"perfiles",perfilId,"gastos")).id;
+  // Queue before writing and keep one ID through snapshots and retries.
+  queueGastoOp({type:"upsert",id:expenseId,data:gastoData});
+  allGastos=window.TaxflyTravel.overlayExpenses(allGastos,getPendingGastos());
+  guardarGastosEnCache(allGastos);renderGastosList(allGastos);
   document.getElementById("nombre").value = "";
   document.getElementById("valor").value = "";
   try { localStorage.setItem(LAST_CAT_KEY, cat); } catch (e) {}
   showExpToast(bt("toast_saved"));
   if (!thumb) document.getElementById("nombre").focus();
-  if (!navigator.onLine || !currentUser) {
-    queueGastoOp({
-      type: "add",
-      data: gastoData
-    });
-    return;
-  }
-  try {
-    await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), gastoData);
-    allGastos = allGastos.filter(g => g.id !== localId);
-    guardarGastosEnCache(allGastos);
-  } catch (e) {
-    queueGastoOp({
-      type: "add",
-      data: gastoData
-    });
-  }
+  if(navigator.onLine)flushPendingGastos();
 };
 
 let _viewerGastoId = "";
@@ -3524,6 +3503,22 @@ window.compInit = function() {
   compRenderGrid(q);
   compToggleIABtn();
 };
+
+
+window.addEventListener("taxfly:budget-updated",event=>{
+ const data=event.detail;
+ if(!currentUser||!financeStates||expenseScope!==expenseContext()||data?.uid!==currentUser.uid||data.pid!==perfilId||data.trip!==window.TripContext.view(currentUser.uid,perfilId))return;
+ financeStates.base.receive(data.value);presupuestoBase=data.value;updateBudgetDisplay(lastGastosTotal);
+});
+function refreshPendingExpenses() {
+  if(!financeStates || expenseScope!==expenseContext() || !financeStates.expenses.hasValue) return;
+  allGastos=window.TaxflyTravel.overlayExpenses(financeStates.expenses.value,getPendingGastos());
+  renderGastosList(allGastos);offerReservationPayment();
+}
+window.addEventListener("taxfly-pending-updated",refreshPendingExpenses);
+window.addEventListener("storage",event=>{
+  if(currentUser && event.key===pendingGastosKey()) refreshPendingExpenses();
+});
 
 function offerReservationPayment(){
  const q=new URLSearchParams(location.search),id=q.get('reservation'),tripId=q.get('trip');

@@ -97,7 +97,7 @@ test('initial HTML cannot show a budget setup form or no-upcoming-events before 
 
 test('planning budget ignores cached missing fields, retains refresh errors and rejects another account',()=>{
  const ls=storage(),callbacks=[],values=[];ls.setItem('taxusa_budget_cache_p::u','500');
- const c=vm.createContext({window:{TaxflyTravel:T,budgetRefresh(){}},currentUid:'u',currentPerfilId:'p',activeTripId:'orlando',localStorage:ls,perfilDocRef:()=> 'profile',tripDocRef:()=> 'trip',onSnapshot:(ref,options,cb,error)=>{callbacks.push({cb,error});return ()=>{};}});
+ const c=vm.createContext({window:{TaxflyTravel:T,budgetRefresh(){},addEventListener(){},removeEventListener(){}},currentUid:'u',currentPerfilId:'p',activeTripId:'orlando',localStorage:ls,perfilDocRef:()=> 'profile',tripDocRef:()=> 'trip',onSnapshot:(ref,options,cb,error)=>{callbacks.push({cb,error});return ()=>{};}});
  vm.runInContext(between(read('assets/plan-firebase.js'),'function listenTaxflyPresupuesto(cb)','function listenTaxflyGastos(cb)'),c);
  c.listenTaxflyPresupuesto(x=>values.push(x));assert.deepEqual(values,[500]);
  callbacks[0].cb(docSnap({},true));assert.deepEqual(values,[500]);callbacks[0].error();assert.equal(c.window._planFinanceError,true);assert.equal(ls.getItem('taxusa_budget_cache_p::u'),'500');

@@ -192,6 +192,7 @@ function perfilDocRef() {
 }
 
 async function fbSetPresupuesto(v) {
+  window.TaxflyTravel.publishBudget(currentUid,currentPerfilId,activeTripId,v);
   try {
     const ref=activeTripId==="orlando"?perfilDocRef():tripDocRef(activeTripId);
     await setDoc(ref,{[activeTripId==="orlando"?"presupuesto":"taxflyBudget"]:v},{merge:true});
@@ -209,11 +210,17 @@ function listenTaxflyPresupuesto(cb) {
   const valid=()=>uid===currentUid&&pid===currentPerfilId&&trip===activeTripId;
   if(state.hasValue)cb(state.value);
   const ref=trip==='orlando'?perfilDocRef():tripDocRef(trip);
-  return onSnapshot(ref,{includeMetadataChanges:true},snap=>{
+  const localChange=event=>{
+    const data=event.detail;
+    if(valid() && data?.uid===uid && data.pid===pid && data.trip===trip){state.receive(data.value);cb(data.value);}
+  };
+  window.addEventListener('taxfly:budget-updated',localChange);
+  const stop=onSnapshot(ref,{includeMetadataChanges:true},snap=>{
     if(!valid())return;
     const value=Number(snap.exists()?snap.data()[trip==='orlando'?'presupuesto':'taxflyBudget']:0)||0;
     if(state.receive(value,snap,value===0)){window._planBudgetError=false;window._planFinanceError=!!window._planExpenseError;localStorage.setItem(key,String(value));cb(value);}
   },()=>{if(valid()){window._planBudgetError=true;window._planFinanceError=true;window.budgetRefresh?.();}});
+  return ()=>{stop();window.removeEventListener('taxfly:budget-updated',localChange);};
 }
 function listenTaxflyGastos(cb) {
   const uid=currentUid,pid=currentPerfilId,trip=activeTripId,key='taxusa_gastos_cache_'+pid+'::'+uid;
@@ -226,11 +233,16 @@ function listenTaxflyGastos(cb) {
     window.renderReservations?.();cb(window._tripExpenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0),window._tripExpenses.length);
   };
   if(state.hasValue)publish();
-  return onSnapshot(collection(db,'usuarios',uid,'perfiles',pid,'gastos'),{includeMetadataChanges:true},snap=>{
+  const localChange=()=>{if(valid()&&state.hasValue)publish();};
+  const storageChange=e=>{if(e.key==='taxusa_gastos_pending_'+pid+'::'+uid)localChange();};
+  window.addEventListener('taxfly-pending-updated',localChange);
+  window.addEventListener('storage',storageChange);
+  const stop=onSnapshot(collection(db,'usuarios',uid,'perfiles',pid,'gastos'),{includeMetadataChanges:true},snap=>{
     if(!valid())return;
     const items=snap.docs.map(d=>({...d.data(),id:d.id}));
     if(state.receive(items,snap,!items.length)){window._planExpenseError=false;window._planFinanceError=!!window._planBudgetError;localStorage.setItem(key,JSON.stringify(items));publish();}
   },()=>{if(valid()){window._planExpenseError=true;window._planFinanceError=true;window.budgetRefresh?.();}});
+  return ()=>{stop();window.removeEventListener('taxfly-pending-updated',localChange);window.removeEventListener('storage',storageChange);};
 }
 
 async function migrateManualExpenses() {
@@ -254,34 +266,31 @@ async function migrateManualExpenses() {
 }
 
 async function addTaxflyGasto(data) {
-  if (!currentUid || !currentPerfilId) return false;
+  const uid=currentUid,pid=currentPerfilId,trip=activeTripId;
+  if (!uid || !pid) return false;
   const gasto = {
-    nombre: String(data.nombre || "Gasto"),
-    valor: Number(data.valor) || 0,
-    cat: data.cat || "📦 Otros",
-    fecha: Date.now(),
-    thumb: "",
-    tripId: activeTripId,
-    source: data.source || "trip-planning"
+    nombre: String(data.nombre || "Gasto"), valor: Number(data.valor) || 0,
+    cat: data.cat || "📦 Otros", fecha: Date.now(), thumb: "",
+    tripId: trip, source: data.source || "trip-planning"
   };
   if (!(gasto.valor > 0)) return false;
+  const ref=doc(collection(db,"usuarios",uid,"perfiles",pid,"gastos"));
+  const key="taxusa_gastos_pending_"+pid+"::"+uid;
+  const op={type:"upsert",id:ref.id,data:gasto,ts:Date.now()};
   try {
-    if (navigator.onLine) {
-      await addDoc(collection(db, "usuarios", currentUid, "perfiles", currentPerfilId, "gastos"), gasto);
-      return true;
-    }
-  } catch (e) {
-    devError("addTaxflyGasto error", e);
+    const ops=JSON.parse(localStorage.getItem(key)||"[]");
+    ops.push(op);localStorage.setItem(key,JSON.stringify(ops));
+  } catch (_) { return false; }
+  window.dispatchEvent(new Event("taxfly-pending-updated"));
+  if (navigator.onLine) {
+    // The same document ID is reused by every retry, including reconnect sync.
+    setDoc(ref,gasto,{merge:true}).then(()=>{
+      const latest=JSON.parse(localStorage.getItem(key)||"[]");
+      localStorage.setItem(key,JSON.stringify(latest.filter(item=>JSON.stringify(item)!==JSON.stringify(op))));
+      window.dispatchEvent(new Event("taxfly-pending-updated"));
+    }).catch(error=>devError("addTaxflyGasto queued",error));
   }
-  try {
-    const key = "taxusa_gastos_pending_" + currentPerfilId + "::" + currentUid;
-    const ops = JSON.parse(localStorage.getItem(key) || "[]");
-    ops.push({ type: "add", data: gasto, ts: Date.now() });
-    localStorage.setItem(key, JSON.stringify(ops));
-    return true;
-  } catch (e) {
-    return false;
-  }
+  return true;
 }
 
 window._fb = {

@@ -382,11 +382,11 @@ test('legacy Trip Planning expenses move once to the personal ledger before clea
 
 test('route import merges by date and stop name without replacing existing itinerary blocks', () => {
   const src=between(read('assets/plan-app.js'),'function importSharedRoute()','let itinDias =');
-  const pending={tripId:'orlando',profile:'p',startDate:'2027-01-10',days:[{name:'Día 1',stops:[
+  const pending={uid:'u',importId:'transfer',tripId:'orlando',profile:'p',startDate:'2027-01-10',days:[{name:'Día 1',stops:[
     {name:'Museo',note:'Entrada',url:'https://maps.example/museo'}, {name:'Parque',note:'',url:''}]}]};
   const store=storage({'taxfly-route-import':JSON.stringify(pending)});
   const days=[{fecha:'2027-01-10',nombre:'Día existente',bloques:[{id:'old',titulo:'Museo'}]}];let saves=0;
-  const c=context(src,{sessionStorage:store,window:{_perfilId:'p',_tripId:'orlando'},itinDias:days,
+  const c=context(src,{sessionStorage:store,window:{_taxflyTripUid:'u',_perfilId:'p',_tripId:'orlando'},itinDias:days,
     itinNewId:()=>String(Math.random()),itinNorm:s=>s.toLowerCase(),itinSave:()=>saves++,showMToast:()=>{},Date,JSON});
   c.importSharedRoute();
   assert.equal(days.length,1);

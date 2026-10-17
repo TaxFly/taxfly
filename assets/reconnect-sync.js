@@ -45,7 +45,7 @@ const __fsDb = async (fs, app) => { try { const { fsNet } = await import(new URL
           // Remove only this operation; another tab may have appended a new one.
           const now = JSON.parse(localStorage.getItem(key) || '[]');
           const i = now.findIndex(x => JSON.stringify(x) === JSON.stringify(op));
-          if (i >= 0) { now.splice(i,1); localStorage.setItem(key,JSON.stringify(now)); }
+          if (i >= 0) { now.splice(i,1); localStorage.setItem(key,JSON.stringify(now)); window.dispatchEvent(new Event('taxfly-pending-updated')); }
         } catch (_) { break; }
       }
     };
@@ -53,6 +53,8 @@ const __fsDb = async (fs, app) => { try { const { fsNet } = await import(new URL
       () => true, op => {
         const col = fs.collection(db,'usuarios',uid,'perfiles',profile,'gastos');
         if (op.type === 'add') return fs.setDoc(fs.doc(col,queuedId(op)),op.data);
+        if (op.type === 'upsert') return fs.setDoc(fs.doc(col,op.id),op.data,{merge:true});
+        if (op.type === 'upd') return fs.updateDoc(fs.doc(col,op.id),op.data);
         if (op.type === 'del') return fs.deleteDoc(fs.doc(col,op.id));
         throw Error('Operación desconocida');
       });

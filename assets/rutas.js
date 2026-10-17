@@ -108,34 +108,44 @@ onAuthStateChanged(auth, async user => {
   window.changeLanguage(lang);
 });
 
+let routePlanningGeneration=0;
 async function loadTripStartingPoint(uid) {
-  const profile = localStorage.getItem("perfilActivoId");
-  if (!profile) return;
-  const tripId = window.TripContext.active(uid, profile);
-  const overrideKey = `taxusa_hotel_addr::${profile}::${tripId}`;
-  if (tripId === "orlando" && !localStorage.getItem(overrideKey)) {
-    const legacy = localStorage.getItem("taxusa_hotel_addr");
-    if (legacy) localStorage.setItem(overrideKey, legacy);
+  const profile=localStorage.getItem("perfilActivoId");
+  if(!uid||!profile)return;
+  const tripId=window.TripContext.active(uid,profile),scope=JSON.stringify([uid,profile,tripId]);
+  const generation=++routePlanningGeneration;
+  const valid=()=>generation===routePlanningGeneration&&window._routeUid===uid&&localStorage.getItem("perfilActivoId")===profile&&window.TripContext.active(uid,profile)===tripId;
+  const input=document.getElementById("hotel-input"),initial=input?.value;
+  const overrideKey=`taxusa_hotel_addr::${uid}::${profile}::${tripId}`;
+  const override=localStorage.getItem(overrideKey);
+  if(input && !input.value && override)input.value=override;
+  const cacheKey="taxfly-route-planning::"+scope;
+  let cached;try{cached=JSON.parse(localStorage.getItem(cacheKey)||"null");}catch(_){}
+  const previous=window._routePlanning?.scope===scope?window._routePlanning:cached?.scope===scope?cached:{scope,groups:[],hotel:null};
+  window.publishRoutePlanning({...previous,loading:true,local:!!cached});
+  const path=tripId==="orlando"?["usuarios",uid,"perfiles",profile,"orlando"]:["usuarios",uid,"perfiles",profile,"tripPlanning",tripId,"data"];
+  const results=await Promise.allSettled(["hotel","days","itinerario"].map(name=>getDoc(doc(db,...path,name))));
+  if(!valid())return;
+  if(results.some(result=>result.status!=="fulfilled")) {
+    window.publishRoutePlanning({...previous,loading:false,local:!!cached,error:true});return;
   }
-  const input = document.getElementById("hotel-input");
-  if (!input) return;
-  const override = localStorage.getItem(overrideKey);
-  if (override) { input.value = override; return; }
-  const localKey = `orlando-hotel-v1::${profile}${tripId === "orlando" ? "" : "::" + tripId}`;
-  let hotel = null;
-  try { hotel = JSON.parse(localStorage.getItem(localKey) || "null"); } catch (_) {}
-  try {
-    const path = tripId === "orlando"
-      ? ["usuarios", uid, "perfiles", profile, "orlando", "hotel"]
-      : ["usuarios", uid, "perfiles", profile, "tripPlanning", tripId, "data", "hotel"];
-    const snap = await getDoc(doc(db, ...path));
-    if (snap.exists()) hotel = snap.data();
-  } catch (_) {}
-  const trip = window.TripContext.readTrips(uid, profile).find(t => t.id === tripId);
-  const destination = trip?.destinations?.[trip.activeDestination || 0];
-  const location = destination && hotel?.locations?.[destination.city + "::" + destination.state];
-  if (!localStorage.getItem(overrideKey) && (location?.addr || hotel?.addr)) input.value = location?.addr || hotel.addr;
+  // An offline empty cache is not a confirmed empty trip.
+  if(results.some(result=>result.value.metadata?.fromCache)) {
+    window.publishRoutePlanning({...previous,loading:false,local:!!cached,error:!cached});return;
+  }
+  const [hotel,days,itinerary]=results.map(result=>result.value.exists()?result.value.data():null);
+  const trip=window.TripContext.readTrips(uid,profile).find(trip=>trip.id===tripId);
+  const destination=trip?.destinations?.[trip.activeDestination||0];
+  const location=destination&&hotel?.locations?.[destination.city+"::"+destination.state];
+  const selectedHotel=location||hotel;
+  const data={scope,hotel:selectedHotel,groups:window.routePlanningGroups(days,itinerary),loading:false,local:false};
+  try{localStorage.setItem(cacheKey,JSON.stringify(data));}catch(_){}
+  window.publishRoutePlanning(data);
+  // Preserve typing and explicit manual overrides while requests are in flight.
+  if(input && input.value===initial && localStorage.getItem(overrideKey)===null && selectedHotel?.addr) input.value=selectedHotel.addr;
 }
+window.loadRoutePlanning=()=>currentUser&&loadTripStartingPoint(currentUser.uid);
+window.addEventListener("taxfly:tripchange",()=>window.loadRoutePlanning());
 
 window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
 

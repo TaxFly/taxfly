@@ -1269,3 +1269,19 @@ if ("serviceWorker" in navigator) {
 }
 
 sessionStorage.setItem("taxfly_last_page", "./index.html");
+
+// Queue changes occur in the same tab too; storage events alone cannot refresh them.
+function refreshHomePendingExpenses() {
+  if(homeFinance && homeScope===homeContext()) renderBudgetUI();
+}
+window.addEventListener("taxfly-pending-updated",refreshHomePendingExpenses);
+window.addEventListener("storage",event=>{
+  const uid=currentUser?.uid;
+  if(uid && event.key==="taxusa_gastos_pending_"+perfilId+"::"+uid) refreshHomePendingExpenses();
+});
+
+window.addEventListener("taxfly:budget-updated",event=>{
+ const data=event.detail;
+ if(!currentUser||!homeFinance||homeScope!==homeContext()||data?.uid!==currentUser.uid||data.pid!==perfilId||data.trip!==window.TripContext.view(currentUser.uid,perfilId))return;
+ homeFinance.base.receive(data.value);renderBudgetUI();
+});

@@ -59,6 +59,13 @@ function watchReservations({uid,pid,trip,db,doc,onSnapshot,onChange,onState}){
  },()=>{if(active){state.fail();publish();}});
  return ()=>{active=false;stop();};
 }
+function publishBudget(uid,pid,trip,value) {
+ if(!uid||!pid||!trip||!Number.isFinite(value)||value<0)return false;
+ const key='taxusa_budget_cache_'+pid+'::'+uid+(trip==='orlando'?'':'::'+trip);
+ try{localStorage.setItem(key,String(value));}catch(_){}
+ root.dispatchEvent(new CustomEvent('taxfly:budget-updated',{detail:{uid,pid,trip,value}}));
+ return true;
+}
 function overlayExpenses(expenses,ops){const map=new Map((expenses||[]).map(g=>[g.id,g]));for(const op of ops||[]){if(op.type==='upsert')map.set(op.id,{...map.get(op.id),...op.data,id:op.id,_pending:true});else if(op.type==='upd'&&map.has(op.id))map.set(op.id,{...map.get(op.id),...op.data});else if(op.type==='del')map.delete(op.id);}return [...map.values()];}
-const api={cities,scope,alertKey,paymentId,validZone,destination,instant,localDate,zoneFields,paid,outstanding,budget,budgetText,readReservations,writeReservations,planningKey,watchReservations,loadState,overlayExpenses};root.TaxflyTravel=api;if(typeof module!=='undefined')module.exports=api;
+const api={cities,scope,alertKey,paymentId,validZone,destination,instant,localDate,zoneFields,paid,outstanding,budget,budgetText,readReservations,writeReservations,planningKey,watchReservations,loadState,overlayExpenses,publishBudget};root.TaxflyTravel=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

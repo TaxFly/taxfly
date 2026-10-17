@@ -1407,7 +1407,8 @@ function budgetLoad() {
     tfx.presupuesto=financePresReady?Number(base):0;
     const raw=localStorage.getItem('taxusa_gastos_cache_'+pid+'::'+uid);
     financeExpensesReady=raw!==null&&Array.isArray(JSON.parse(raw));
-    const expenses=financeExpensesReady?JSON.parse(raw).filter(g=>(g.tripId||'unassigned')===id):[];
+    const ops=JSON.parse(localStorage.getItem('taxusa_gastos_pending_'+pid+'::'+uid)||'[]');
+    const expenses=financeExpensesReady?window.TaxflyTravel.overlayExpenses(JSON.parse(raw),ops).filter(g=>(g.tripId||'unassigned')===id):[];
     tfx.gastos=expenses.reduce((sum,g)=>sum+(Number(g.valor)||0),0);tfx.gastosN=expenses.length;
   }catch(_){financePresReady=false;financeExpensesReady=false;}
   budgetRenderAll();
@@ -4673,7 +4674,7 @@ const ITIN_KEY = "orlando-itinerario-v1";
 function importSharedRoute() {
   let data;
   try { data = JSON.parse(sessionStorage.getItem("taxfly-route-import") || "null"); } catch (_) {}
-  if (!data || data.profile !== window._perfilId || data.tripId !== window._tripId || !Array.isArray(data.days)) return;
+  if (!data || data.uid !== window._taxflyTripUid || !data.importId || data.profile !== window._perfilId || data.tripId !== window._tripId || !Array.isArray(data.days)) return;
   data.days.forEach((sourceDay, dayIndex) => {
     if (!Array.isArray(sourceDay.stops) || !sourceDay.stops.length) return;
     let date = "";
@@ -4682,9 +4683,9 @@ function importSharedRoute() {
       day.setDate(day.getDate() + dayIndex);
       date = [day.getFullYear(), String(day.getMonth() + 1).padStart(2, "0"), String(day.getDate()).padStart(2, "0")].join("-");
     }
-    let target = date && itinDias.find(d => d.fecha === date);
+    let target = itinDias.find(d => d.routeImportId === data.importId + ":" + dayIndex) || (date && itinDias.find(d => d.fecha === date));
     if (!target) {
-      target = { id: itinNewId(), fecha: date, nombre: sourceDay.name || "Ruta " + (dayIndex + 1), nota: "", bloques: [] };
+      target = { id: itinNewId(), fecha: date, nombre: sourceDay.name || "Ruta " + (dayIndex + 1), nota: "", routeImportId: data.importId + ":" + dayIndex, bloques: [] };
       itinDias.push(target);
     }
     sourceDay.stops.forEach(s => {
