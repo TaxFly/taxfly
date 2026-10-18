@@ -71,3 +71,13 @@ MP_USD_ARS_RATE = "1000"
 PAYPAL_WEBHOOK_ID = ""
 # "sandbox" mientras probás, "live" (o directamente vacío) cuando ya cobrás de verdad.
 PAYPAL_ENV = "sandbox"
+
+# --- Traducción automática de texto libre (categorías propias, etc.) -------
+# Gratis hasta 500.000 caracteres/mes (Cloud Translation API - Basic).
+# 1) Creá un proyecto en https://console.cloud.google.com/, activá "Cloud Translation API".
+# 2) Generá una API key (Credentials → Create credentials → API key) y restringila
+#    a "Cloud Translation API" para que no sirva para otra cosa si se filtra.
+# 3) Cargala como secret (nunca en texto plano acá):
+#    npx wrangler secret put GOOGLE_TRANSLATE_API_KEY
+# Si no está configurada, el endpoint "translate_text" responde 500 y el cliente
+# debe mostrar el texto original sin traducir (ver assets/compras.js).

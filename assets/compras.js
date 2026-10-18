@@ -1734,14 +1734,51 @@ function normalizeCustomCats(arr) {
     if (!name || seen.has(name) || BUILTIN_CATS.has(name)) return;
     const color = /^#[0-9a-f]{6}$/i.test(c.color || "") ? c.color : "#94a3b8";
     const icon = CAT_ICON_SVGS[c.icon] ? c.icon : "tag";
+    // i18n: {es,en,pt} traducidas por el Worker (ver translateCustomCat). Si falta
+    // alguno de los 3 idiomas se descarta entero y queda pendiente de re-traducir.
+    let catI18n = null;
+    if (c.i18n && typeof c.i18n === "object") {
+      const es = typeof c.i18n.es === "string" ? c.i18n.es.trim().slice(0, 60) : "";
+      const en = typeof c.i18n.en === "string" ? c.i18n.en.trim().slice(0, 60) : "";
+      const pt = typeof c.i18n.pt === "string" ? c.i18n.pt.trim().slice(0, 60) : "";
+      if (es && en && pt) catI18n = { es, en, pt };
+    }
     seen.add(name);
-    out.push({ name, color, icon });
+    out.push(catI18n ? { name, color, icon, i18n: catI18n } : { name, color, icon });
   });
   return out.slice(0, 30);
 }
 function applyCustomCats() {
   Object.keys(CAT_I18N_KEY).forEach(k => { if (!BUILTIN_CATS.has(k)) { delete CAT_I18N_KEY[k]; delete CAT_COLORS[k]; } });
-  customCats.forEach(c => { CAT_COLORS[c.name] = c.color; CAT_I18N_KEY[c.name] = customCatKey(c.name); });
+  // Limpiamos traducciones de categorías propias que ya no existen (ej. se borraron).
+  ["es", "en", "pt"].forEach(l => { Object.keys(i18n[l] || {}).forEach(k => { if (k.startsWith("cc_")) delete i18n[l][k]; }); });
+  customCats.forEach(c => {
+    CAT_COLORS[c.name] = c.color;
+    const key = customCatKey(c.name);
+    CAT_I18N_KEY[c.name] = key;
+    // Sin traducción todavía (recién creada / falló Google Translate): catLabel()
+    // muestra el nombre tal cual lo escribió el usuario, en los 3 idiomas, como antes.
+    ["es", "en", "pt"].forEach(l => { i18n[l][key] = (c.i18n && c.i18n[l]) || c.name; });
+  });
+}
+
+// Traduce en segundo plano el nombre de una categoría propia (nueva o ya existente
+// sin traducir) y la cachea junto a la categoría, para que catLabel() la muestre
+// en el idioma activo. No bloquea la UI: si falla (sin conexión, sin cuota, etc.)
+// la categoría se sigue viendo con el texto original, como antes de este feature.
+async function translateCustomCat(name) {
+  try {
+    const res = await window.taxflyWorker({ type: "translate_text", text: name });
+    if (!res.ok) return;
+    const data = await res.json().catch(() => null);
+    if (!data || !data.es || !data.en || !data.pt) return;
+    const cat = customCats.find(c => c.name === name);
+    if (!cat) return; // se borró o se renombró mientras tanto
+    cat.i18n = { es: data.es, en: data.en, pt: data.pt };
+    applyCustomCats();
+    refreshAfterCatsChange();
+    await saveCustomCats();
+  } catch (e) { console.warn("Custom category translation failed", e); }
 }
 function bindCatTag(btn) {
   btn.addEventListener("click", () => {
@@ -1761,7 +1798,7 @@ function renderCustomCatChips(selectName) {
     b.className = "cat-tag";
     b.dataset.cat = c.name;
     b.dataset.custom = "1";
-    b.innerHTML = `<span class="cat-tag-icon">${catIconSvg(c.icon)}</span>${esc(c.name)}`;
+    b.innerHTML = `<span class="cat-tag-icon">${catIconSvg(c.icon)}</span>${esc(catLabel(c.name))}`;
     bindCatTag(b);
     row.insertBefore(b, addBtn);
   });
@@ -1803,6 +1840,9 @@ async function loadCustomCats() {
       saveCustomCats();   // había categorías locales y la nube estaba vacía: las subimos
     }
   } catch (e) { console.warn("Custom cats load failed", e); }
+  // Categorías viejas creadas antes de este feature (o que quedaron sin traducir
+  // por falta de conexión en su momento) se traducen ahora, una sola vez cada una.
+  customCats.filter(c => !c.i18n).forEach(c => translateCustomCat(c.name));
 }
 
 function renderCatIcons() {
@@ -1821,7 +1861,7 @@ function renderMyCats() {
   const wrap = document.getElementById("cat-mine"), list = document.getElementById("cat-mine-list");
   if (!wrap || !list) return;
   wrap.style.display = customCats.length ? "" : "none";
-  list.innerHTML = customCats.map((c, i) => `<div class="cat-mine-row"><span class="cat-mine-dot" style="background:${c.color}"></span><span class="cat-mine-icon">${catIconSvg(c.icon)}</span><span class="n">${esc(c.name)}</span><button type="button" class="cat-mine-del" data-i="${i}" aria-label="✕">✕</button></div>`).join("");
+  list.innerHTML = customCats.map((c, i) => `<div class="cat-mine-row"><span class="cat-mine-dot" style="background:${c.color}"></span><span class="cat-mine-icon">${catIconSvg(c.icon)}</span><span class="n">${esc(catLabel(c.name))}</span><button type="button" class="cat-mine-del" data-i="${i}" aria-label="✕">✕</button></div>`).join("");
   list.querySelectorAll(".cat-mine-del").forEach(b => b.addEventListener("click", async () => {
     const c = customCats[Number(b.dataset.i)];
     if (!c) return;
@@ -1857,6 +1897,7 @@ window.saveNewCat = async () => {
   await saveCustomCats();
   refreshAfterCatsChange();
   renderCustomCatChips(name);
+  translateCustomCat(name); // en segundo plano, no retrasa el guardado
 };
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeCatCreator();

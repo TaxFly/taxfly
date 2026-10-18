@@ -1,4 +1,4 @@
-import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits, getProfileLimits, setProfileLimit, getProfileControls, setProfileControl, verifySecurityPin, setPrimaryProfile, createCreditCheckout, getCheckout, confirmCheckoutPayment, listLedger } from "./worker-firestore.js";
+import { firestoreConfigured, getOrCreateWallet, reserveCredits, finalizeReservation, getBudgetCounters, addBudgetUsage, grantCredits, getProfileLimits, setProfileLimit, getProfileControls, setProfileControl, verifySecurityPin, setPrimaryProfile, createCreditCheckout, getCheckout, confirmCheckoutPayment, listLedger, getDocument, patchDocument } from "./worker-firestore.js";
 import { createStripeCheckoutSession, verifyStripeSignature, createPaypalOrder, capturePaypalOrder, getPaypalOrder, findCompletedCapture, verifyPaypalWebhookSignature } from "./worker-payments.js";
 
 const FIREBASE_PROJECT_ID = "viajes-db538";
@@ -208,6 +208,7 @@ async function handle(request, env) {
     if (!success) return json({ error: "Too many requests, try again in a bit" }, 429);
   }
   if (body.type === "verify_recaptcha") return handleRecaptcha(body, env);
+  if (body.type === "translate_text") return handleTranslateText(body, env);
   return json({ error: 'Unknown or missing "type"' }, 400);
 }
 
@@ -916,6 +917,85 @@ async function handleInsurance(body, apiKey, ctx) {
     phone: parsed.phone || null,
     name: docName
   });
+}
+
+// ═══════════ Traducción automática de texto libre (categorías propias, etc.) ═══════════
+// No usa créditos de IA ni requiere login — es gratis para el usuario, pasa por
+// GENERAL_LIMITER (rate limit por IP) y por un cache en Firestore (translations_cache/{hash})
+// para no volver a traducir el mismo texto dos veces (ni gastar cuota de Google de nuevo
+// si dos usuarios distintos crean la misma categoría, ej. "Comida" / "Mascotas").
+const TRANSLATE_MAX_CHARS = 120;
+
+function translateTextHash(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  return "t_" + h.toString(36);
+}
+
+async function handleTranslateText(body, env) {
+  const raw = typeof body.text === "string" ? body.text.trim().replace(/\s+/g, " ") : "";
+  if (!raw) return json({ error: "Missing text" }, 400);
+  if (raw.length > TRANSLATE_MAX_CHARS) return json({ error: "Text too long" }, 413);
+  const apiKey = env.GOOGLE_TRANSLATE_API_KEY;
+  if (!apiKey) return json({ error: "Translation not configured" }, 500);
+
+  const cachePath = `translations_cache/${translateTextHash(raw)}`;
+  if (firestoreConfigured(env)) {
+    try {
+      const cached = await getDocument(env, cachePath);
+      if (cached && cached.source === raw && cached.es && cached.en && cached.pt) {
+        return json({ es: cached.es, en: cached.en, pt: cached.pt });
+      }
+    } catch (e) { console.warn("translation cache read failed", e); }
+  }
+
+  let result;
+  try {
+    result = await translateViaGoogle(raw, apiKey);
+  } catch (e) {
+    console.error("Google Translate failed", e);
+    return json({ error: "Translation service unavailable" }, 502);
+  }
+
+  if (firestoreConfigured(env)) {
+    try { await patchDocument(env, cachePath, { source: raw, ...result, updatedAt: new Date() }); }
+    catch (e) { console.warn("translation cache write failed", e); }
+  }
+
+  return json(result);
+}
+
+// Pide a Google Translate la versión "en" (que de paso detecta el idioma de origen),
+// guarda el texto original tal cual para su propio idioma, y solo llama a Google de
+// nuevo para los idiomas que todavía faltan (como mucho 3 llamadas, típicamente 2).
+async function translateViaGoogle(text, apiKey) {
+  const first = await callGoogleTranslate(text, "en", apiKey);
+  const detected = (first.detected || "es").toLowerCase().slice(0, 2);
+  const out = { es: null, en: null, pt: null };
+  if (detected in out) out[detected] = text;
+  if (out.en === null) out.en = first.text;
+  for (const lang of ["es", "pt"]) {
+    if (out[lang] !== null) continue;
+    const r = await callGoogleTranslate(text, lang, apiKey);
+    out[lang] = r.text;
+  }
+  return out;
+}
+
+async function callGoogleTranslate(text, target, apiKey) {
+  const res = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ q: text, target, format: "text" })
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Google Translate HTTP ${res.status}: ${detail.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const t = data?.data?.translations?.[0];
+  if (!t) throw new Error("Empty Google Translate response");
+  return { text: t.translatedText, detected: t.detectedSourceLanguage || null };
 }
 
 async function handleRecaptcha(body, env) {
