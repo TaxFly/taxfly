@@ -100,6 +100,7 @@ const i18n = {
     primary_pick_desc: "Este perfil podrá administrar permisos, límites de IA y otros perfiles. Para confirmar, ingresá tu PIN de seguridad.",
     pin_prompt: "PIN de seguridad (4 o 6 dígitos)",
     pin_wrong: "PIN incorrecto.",
+    primary_only: "Solo el perfil principal (%s) puede editar perfiles. Entrá con ese perfil y volvé a intentar.",
     pin_required: "Configurá primero tu PIN de seguridad desde Ajustes.",
     primary_delete: "El perfil principal no se puede eliminar. Transferí primero el control a otro perfil desde Ajustes.",
     confirm: "¿Eliminar este perfil?",
@@ -136,6 +137,7 @@ const i18n = {
     primary_pick_desc: "This profile can manage permissions, AI limits, and other profiles. Enter your security PIN to confirm.",
     pin_prompt: "Security PIN (4 or 6 digits)",
     pin_wrong: "Incorrect PIN.",
+    primary_only: "Only the primary profile (%s) can edit profiles. Sign in with that profile and try again.",
     pin_required: "Set up your security PIN in Settings first.",
     primary_delete: "The primary profile cannot be deleted. Transfer control to another profile in Settings first.",
     confirm: "Delete this profile?",
@@ -172,6 +174,7 @@ const i18n = {
     primary_pick_desc: "Este perfil poderá gerenciar permissões, limites de IA e outros perfis. Digite seu PIN de segurança para confirmar.",
     pin_prompt: "PIN de segurança (4 ou 6 dígitos)",
     pin_wrong: "PIN incorreto.",
+    primary_only: "Somente o perfil principal (%s) pode editar perfis. Entre com esse perfil e tente novamente.",
     pin_required: "Configure primeiro seu PIN de segurança em Ajustes.",
     primary_delete: "O perfil principal não pode ser excluído. Transfira primeiro o controle para outro perfil em Ajustes.",
     confirm: "Excluir este perfil?",
@@ -432,7 +435,8 @@ window.toggleEditMode = async () => {
   if (!isEditing) {
     if (!primaryProfileId && profiles.length > 1) { await showPrimaryChooser(); if (!primaryProfileId) return; }
     const active = localStorage.getItem("perfilActivoId") || "";
-    if (primaryProfileId && active !== primaryProfileId) { await showAlert(t.primary_pick_desc); return; }
+    const primary = profiles.find(p => p.id === primaryProfileId);
+    if (primary && active && active !== primaryProfileId) { await showAlert(t.primary_only.replace("%s", primary.nombre)); return; }
     if (!(await requestLocalSecurityPin())) return;
   }
   isEditing = !isEditing;
