@@ -414,7 +414,10 @@ async function requestLocalSecurityPin() {
   if (!stored) { await showAlert(t.pin_required); return null; }
   const pin = window.prompt(t.pin_prompt);
   if (pin == null) return null;
-  if (!/^\d{4,6}$/.test(pin) || !(await window.verifyPin(pin, stored))) { await showAlert(t.pin_wrong); return null; }
+  let ok = false;
+  try { ok = /^\d{4,6}$/.test(pin) && typeof window.verifyPin === "function" && await window.verifyPin(pin, stored); }
+  catch (e) { console.error("verifyPin failed:", e); }
+  if (!ok) { await showAlert(t.pin_wrong); return null; }
   return pin;
 }
 async function showPrimaryChooser() {
