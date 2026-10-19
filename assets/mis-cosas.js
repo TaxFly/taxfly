@@ -2,6 +2,13 @@ if ("serviceWorker" in navigator) window.addEventListener("load", () => navigato
 
 const tr = window.tr || (x => x);
 
+// Este script NO tiene "defer", así que corre antes que assets/ux.js (que sí lo
+// tiene) y el render() inicial de más abajo llamaría a trLabel/trTranslate antes
+// de que existan. Placeholder temporal: ux.js los pisa (sin ||) apenas carga, así
+// que de acá en más cualquier llamada nueva ya usa la traducción real.
+window.trLabel = window.trLabel || ((obj, field) => (obj && obj[field]) || "");
+window.trTranslate = window.trTranslate || Object.assign(async () => null, { _tfPlaceholder: true });
+
 if (window.I18N) I18N.onChange(() => {
   try {
     render();
@@ -502,6 +509,42 @@ function reemplazarEnLista(s, item) {
   if (i >= 0) L[i] = item; else L.push(item);
 }
 
+// ═══════════ Traducción automática de nombre/notas de cada cosa ═══════════
+// Usa window.trTranslate / window.trLabel (assets/ux.js), que pegan contra el
+// mismo endpoint "translate_text" del Worker que las categorías propias de
+// Gastos. item.i18n = { nombre: {es,en,pt}, notas: {es,en,pt} }.
+const _trAttempted = new Set(); // ids ya intentados en esta sesión (evita repetir llamadas en cada render)
+
+function backfillTranslations() {
+  if (window.trTranslate._tfPlaceholder) return; // ux.js todavía no cargó: reintenta en el próximo render
+  for (const s of SECS) {
+    (data[s] || []).forEach(it => {
+      const key = s + "/" + it.id;
+      if (_trAttempted.has(key)) return;
+      const faltaNombre = it.nombre && !(it.i18n && it.i18n.nombre);
+      const faltaNotas = it.notas && !(it.i18n && it.i18n.notas);
+      if (!faltaNombre && !faltaNotas) return;
+      _trAttempted.add(key);
+      translateItemNow(s, it.id, faltaNombre ? it.nombre : null, faltaNotas ? it.notas : null);
+    });
+  }
+}
+
+async function translateItemNow(s, id, nombre, notas) {
+  const [i18nNombre, i18nNotas] = await Promise.all([
+    nombre ? window.trTranslate(nombre) : null,
+    notas ? window.trTranslate(notas) : null
+  ]);
+  if (!i18nNombre && !i18nNotas) return;
+  const it = (data[s] || []).find(x => x.id === id);
+  if (!it) return; // se borró o cambió de sección mientras se traducía
+  it.i18n = it.i18n || {};
+  if (i18nNombre) it.i18n.nombre = i18nNombre;
+  if (i18nNotas) it.i18n.notas = i18nNotas;
+  guardarItem(s, it);
+  render();
+}
+
 function guardarItem(s, item, demora = 0) {
   reemplazarEnLista(s, item);
   if (modo === "local") {
@@ -539,6 +582,7 @@ function pintarTitulo(t) {
 }
 
 function render() {
+  backfillTranslations();
   document.body.dataset.sec = sec;
   $("#secTabs").innerHTML = TABS.map(s => `<button role="tab" data-sec="${s}" aria-selected="${s === sec}">${ic(s === "dia" ? "backpack" : SEC[s].icon, 18)}<span>${s === "dia" ? "Mochila" : SEC[s].corto || SEC[s].tab}</span></button>`).join("");
   $("#syncDot").className = "sync-dot " + (modo || "");
@@ -652,8 +696,8 @@ function renderDia() {
     if (!lst.length) return "";
     return `<h2 class="group">${ic(SEC[s].icon, 14)}${SEC[s].tab} <small>${lst.length}</small></h2><ul class="list">${lst.map(({s: s, i: i, k: k}) => {
       const hh = mochila.hotel.includes(k), pp = mochila.parque.includes(k);
-      const th = i.fotos.length ? `<img src="${esc(srcFoto(i.fotos[0]))}" alt="${esc(i.nombre)}" data-lb="${i.id}" data-s="${s}" data-n="0" loading="lazy">` : `<div class="nophoto" title="Sin foto">${ic("image", 24)}</div>`;
-      return `<li class="row${hh && (pp || !p) ? " done" : ""}" style="cursor:default">\n        <div class="thumbs">${th}</div>\n        <div class="info"><h3>${esc(i.nombre)}${i.cantidad > 1 ? `<span class="qty">×${i.cantidad}</span>` : ""}</h3></div>\n        <div class="dchecks">\n          <button data-dk="hotel|${k}" aria-pressed="${hh}">${hh ? ic("check", 14) : ""}Hotel</button>\n          <button data-dk="parque|${k}" aria-pressed="${pp}">${pp ? ic("check", 14) : ""}Parque</button>\n        </div></li>`;
+      const th = i.fotos.length ? `<img src="${esc(srcFoto(i.fotos[0]))}" alt="${esc(trLabel(i, "nombre"))}" data-lb="${i.id}" data-s="${s}" data-n="0" loading="lazy">` : `<div class="nophoto" title="Sin foto">${ic("image", 24)}</div>`;
+      return `<li class="row${hh && (pp || !p) ? " done" : ""}" style="cursor:default">\n        <div class="thumbs">${th}</div>\n        <div class="info"><h3>${esc(trLabel(i, "nombre"))}${i.cantidad > 1 ? `<span class="qty">×${i.cantidad}</span>` : ""}</h3></div>\n        <div class="dchecks">\n          <button data-dk="hotel|${k}" aria-pressed="${hh}">${hh ? ic("check", 14) : ""}Hotel</button>\n          <button data-dk="parque|${k}" aria-pressed="${pp}">${pp ? ic("check", 14) : ""}Parque</button>\n        </div></li>`;
     }).join("")}</ul>`;
   }).join("");
 }
@@ -662,7 +706,7 @@ function abrirPicker() {
   const html = SECS.map(s => {
     if (!data[s].length) return "";
     const lst = [ ...data[s] ].sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
-    return `<div class="pkh">${SEC[s].tab}</div><ul class="pk">${lst.map(i => `<li><label>\n      <input type="checkbox" data-pk="${s}/${i.id}" ${i.diaria ? "checked" : ""}>\n      ${i.fotos[0] ? `<img src="${esc(srcFoto(i.fotos[0]))}" alt="">` : ""}\n      <span>${esc(i.nombre)}</span></label></li>`).join("")}</ul>`;
+    return `<div class="pkh">${SEC[s].tab}</div><ul class="pk">${lst.map(i => `<li><label>\n      <input type="checkbox" data-pk="${s}/${i.id}" ${i.diaria ? "checked" : ""}>\n      ${i.fotos[0] ? `<img src="${esc(srcFoto(i.fotos[0]))}" alt="">` : ""}\n      <span>${esc(trLabel(i, "nombre"))}</span></label></li>`).join("")}</ul>`;
   }).join("");
   $("#pickList").innerHTML = html || '<p class="notes">Primero cargá cosas en las otras pestañas.</p>';
   $("#pickDlg").showModal();
@@ -722,12 +766,12 @@ function filaHTML(i) {
   const max = control ? 1 : 2;
   let th;
   if (!i.fotos.length) th = `<div class="nophoto" title="Sin foto">${ic("image", 24)}</div>`; else {
-    th = i.fotos.slice(0, max).map((f, n) => `<img src="${esc(srcFoto(f))}" alt="${esc(i.nombre)}" data-lb="${i.id}" data-n="${n}" loading="lazy">`).join("");
+    th = i.fotos.slice(0, max).map((f, n) => `<img src="${esc(srcFoto(f))}" alt="${esc(trLabel(i, "nombre"))}" data-lb="${i.id}" data-n="${n}" loading="lazy">`).join("");
     if (i.fotos.length > max && !control) th += `<div class="more" data-lb="${i.id}" data-n="${max}">+${i.fotos.length - max}</div>`;
   }
   const done = i.vuelta >= i.cantidad;
   const cnt = control ? `<div class="counter">\n      <button data-dec="${i.id}" aria-label="Restar uno">${ic("minus", 16)}</button>\n      <button class="val" data-full="${i.id}" aria-label="Volvieron ${i.vuelta} de ${i.cantidad}. Tocar para marcar todo">${i.vuelta}/${i.cantidad}</button>\n      <button data-inc="${i.id}" aria-label="Sumar uno">${ic("plus", 16)}</button></div>` : "";
-  return `<li class="row${control && done ? " done" : ""}" data-id="${i.id}" tabindex="0">\n    <div class="thumbs">${th}</div>\n    <div class="info">\n      ${etiquetas(i)}\n      <h3>${esc(i.nombre)}${i.cantidad > 1 && !control ? `<span class="qty">×${i.cantidad}</span>` : ""}${i.bolso ? `<span class="chip">${bolsoNombre(i.bolso)}</span>` : ""}</h3>\n      ${i.notas ? `<p class="notes">${esc(i.notas)}</p>` : ""}\n    </div>\n    ${cnt}\n  </li>`;
+  return `<li class="row${control && done ? " done" : ""}" data-id="${i.id}" tabindex="0">\n    <div class="thumbs">${th}</div>\n    <div class="info">\n      ${etiquetas(i)}\n      <h3>${esc(trLabel(i, "nombre"))}${i.cantidad > 1 && !control ? `<span class="qty">×${i.cantidad}</span>` : ""}${i.bolso ? `<span class="chip">${bolsoNombre(i.bolso)}</span>` : ""}</h3>\n      ${i.notas ? `<p class="notes">${esc(trLabel(i, "notas"))}</p>` : ""}\n    </div>\n    ${cnt}\n  </li>`;
 }
 
 function abrirDrawer() {

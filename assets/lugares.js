@@ -770,6 +770,22 @@ window.deleteActivity = id => {
   });
 };
 
+// ═══════════ Traducción automática del nombre de cada actividad ═══════════
+// Mismo mecanismo que las categorías propias de Gastos y las cosas de valija:
+// window.trTranslate / window.trLabel (assets/ux.js) contra "translate_text".
+const _trActAttempted = new Set(); // ids ya intentados en esta sesión
+function backfillActivityTranslations(acts) {
+  if (!currentUser || !perfilId) return;
+  acts.forEach(act => {
+    if (!act.name || act._pending || (act.i18n && act.i18n.name) || _trActAttempted.has(act.id)) return;
+    _trActAttempted.add(act.id);
+    window.trTranslate(act.name).then(i18nName => {
+      if (!i18nName) return;
+      updateDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "actividades", act.id), { "i18n.name": i18nName }).catch(() => {});
+    });
+  });
+}
+
 function renderActivities(acts) {
   if (window._tfHidden && window._tfHidden.size) acts = acts.filter(a => !window._tfHidden.has(a.id));
   if (currentUser && perfilId) acts = window.TripContext.filter(acts, currentUser.uid, perfilId);
@@ -799,8 +815,9 @@ function renderActivities(acts) {
     const dayActs = grouped[dateKey];
     const dateLabel = dateKey === "sin-fecha" ? "📌" : formatDate(dateKey, lang);
     const dayDone = dayActs.filter(a => a.done).length;
-    return `\n                <div>\n                    <div class="act-group-header">\n                        <span class="act-group-date">${dateLabel}</span>\n                        <span class="act-group-count">${dayDone}/${dayActs.length}</span>\n                    </div>\n                    ${dayActs.sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99")).map(act => `\n                        <div class="act-item ${act.done ? "done" : ""}" id="act-item-${act.id}" data-type="${act.type}">\n                            <div class="act-check ${act.done ? "checked" : ""}" onclick="toggleActivity('${act.id}', ${act.done})"></div>\n                            <div class="act-info">\n                                <div class="act-name">${typeIconMap[act.type] || "📌"} ${esc(act.name)}${window.tfSyncBadge ? tfSyncBadge(act._pending ? "pending" : "ok", true) : ""}</div>\n                                <div class="act-meta">\n                                    ${activityTimeMeta(act, lang)}\n                                    <span class="act-badge badge-${act.type}">${getBadgeLabel(act.type, lang)}</span>\n                                </div>\n                            </div>\n                            <button class="act-bell ${isReminderOn(act.id) ? "on" : ""}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g, "\\'")}','${act.date}','${act.time || ""}')" title="Recordatorio">🔔</button>\n                            <button class="act-del" onclick="deleteActivity('${act.id}')" aria-label="Eliminar actividad">✕</button>\n                        </div>\n                    `).join("")}\n                </div>\n            `;
+    return `\n                <div>\n                    <div class="act-group-header">\n                        <span class="act-group-date">${dateLabel}</span>\n                        <span class="act-group-count">${dayDone}/${dayActs.length}</span>\n                    </div>\n                    ${dayActs.sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99")).map(act => `\n                        <div class="act-item ${act.done ? "done" : ""}" id="act-item-${act.id}" data-type="${act.type}">\n                            <div class="act-check ${act.done ? "checked" : ""}" onclick="toggleActivity('${act.id}', ${act.done})"></div>\n                            <div class="act-info">\n                                <div class="act-name">${typeIconMap[act.type] || "📌"} ${esc(trLabel(act, "name"))}${window.tfSyncBadge ? tfSyncBadge(act._pending ? "pending" : "ok", true) : ""}</div>\n                                <div class="act-meta">\n                                    ${activityTimeMeta(act, lang)}\n                                    <span class="act-badge badge-${act.type}">${getBadgeLabel(act.type, lang)}</span>\n                                </div>\n                            </div>\n                            <button class="act-bell ${isReminderOn(act.id) ? "on" : ""}" onclick="toggleReminder('${act.id}','${act.name.replace(/'/g, "\\'")}','${act.date}','${act.time || ""}')" title="Recordatorio">🔔</button>\n                            <button class="act-del" onclick="deleteActivity('${act.id}')" aria-label="Eliminar actividad">✕</button>\n                        </div>\n                    `).join("")}\n                </div>\n            `;
   }).join("");
+  backfillActivityTranslations(acts);
 }
 
 function formatDate(dateStr, lang) {

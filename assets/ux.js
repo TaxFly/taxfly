@@ -258,3 +258,45 @@
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initModals); else initModals();
 })();
+
+/* ---------- 3) Traducción automática de texto libre del usuario ----------
+   Mismo endpoint "translate_text" del Worker que ya usan las categorías
+   propias de Gastos (ver assets/compras.js y claude-worker.js). La idea se
+   repite igual en cualquier pantalla: el usuario escribe algo propio (nombre
+   de una cosa, de una actividad, una nota...), se traduce una sola vez en
+   segundo plano y se guarda junto al objeto original como
+   obj.i18n = { <campo>: { es, en, pt } }. Si falla (sin conexión, sin cuota,
+   Worker caído) no rompe nada: se sigue mostrando el texto tal cual lo
+   escribió el usuario, como si este archivo no existiera. */
+(function () {
+  "use strict";
+
+  function curLang() {
+    try { return localStorage.getItem("appLang") || "es"; } catch (e) { return "es"; }
+  }
+
+  // Texto de obj[field] en el idioma activo (o el pasado por parámetro),
+  // usando la traducción cacheada en obj.i18n[field] si ya existe.
+  window.trLabel = function (obj, field, lang) {
+    if (!obj) return "";
+    lang = lang || curLang();
+    const original = obj[field] || "";
+    const store = obj.i18n && obj.i18n[field];
+    return (store && store[lang]) || original;
+  };
+
+  // Traduce `text` contra el Worker y devuelve una Promise<{es,en,pt}|null>.
+  // Pensado para usarse "fire and forget" (sin await) justo después de
+  // guardar el objeto, y volver a guardarlo una vez resuelta la traducción.
+  window.trTranslate = async function (text) {
+    const clean = String(text == null ? "" : text).trim();
+    if (!clean || typeof window.taxflyWorker !== "function") return null;
+    try {
+      const res = await window.taxflyWorker({ type: "translate_text", text: clean });
+      if (!res.ok) return null;
+      const data = await res.json().catch(() => null);
+      if (!data || !data.es || !data.en || !data.pt) return null;
+      return { es: data.es, en: data.en, pt: data.pt };
+    } catch (e) { console.warn("Translation failed", e); return null; }
+  };
+})();
