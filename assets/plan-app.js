@@ -48,6 +48,13 @@ const ICON_PATHS = {
   upload: '<path d="M12 21V9m0 0-4 4m4-4 4 4"/><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/>'
 };
 
+// Este script NO tiene "defer", así que corre antes que assets/ux.js (que sí lo
+// tiene) y los primeros render() llamarían a trLabel/trTranslate antes de que
+// existan. Placeholder temporal: ux.js los pisa (sin ||) apenas carga, así que
+// de acá en más cualquier llamada nueva ya usa la traducción real.
+window.trLabel = window.trLabel || ((obj, field) => (obj && obj[field]) || "");
+window.trTranslate = window.trTranslate || Object.assign(async () => null, { _tfPlaceholder: true });
+
 function ic(name, size) {
   const s = size || 16;
   return `<svg class="icon" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name] || ""}</svg>`;
@@ -3045,7 +3052,25 @@ function closeSizeGuide() {
   document.getElementById("sizeGuideModal").classList.remove("open");
 }
 
+// ═══════════ Traducción automática del nombre de cada prenda ═══════════
+const _trShopAttempted = new WeakSet();
+function backfillShopTranslations() {
+  if (window.trTranslate._tfPlaceholder) return; // ux.js todavía no cargó: reintenta en el próximo render
+  shopItems.forEach(item => {
+    if (_trShopAttempted.has(item) || !item.name || (item.i18n && item.i18n.name)) return;
+    _trShopAttempted.add(item);
+    window.trTranslate(item.name).then(r => {
+      if (!r) return;
+      item.i18n = item.i18n || {};
+      item.i18n.name = r;
+      shopSave();
+      renderOutlets();
+    });
+  });
+}
+
 function renderShopList() {
+  backfillShopTranslations();
   const prioColor = {
     alta: "#ef4444",
     media: "var(--accent)",
@@ -3069,7 +3094,7 @@ function renderShopList() {
       if (isEditingThis) {
         html += `<div class="wm-item wm-item-editing" onclick="event.stopPropagation()">\n          <div class="wm-edit-form">\n            <input class="wm-edit-input" id="shop-edit-name" placeholder="Qué querés comprar" value="${escapeHtml(item.name)}">\n            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">\n              <input class="wm-edit-input" id="shop-edit-size" placeholder="Talle (M, 42, 32x30…)" value="${escapeHtml(item.size || "")}">\n              <input class="wm-edit-input" id="shop-edit-store" placeholder="Tienda sugerida" value="${escapeHtml(item.store || "")}">\n            </div>\n            <select class="wm-edit-input" id="shop-edit-prio" style="margin-bottom:6px">\n              <option value="alta"${item.priority === "alta" ? " selected" : ""}>🔴 Alta prioridad</option>\n              <option value="media"${item.priority === "media" ? " selected" : ""}>🟡 Media prioridad</option>\n              <option value="baja"${item.priority === "baja" ? " selected" : ""}>🟢 Baja prioridad</option>\n            </select>\n            <div class="wm-edit-actions">\n              <button class="mbtn" onclick="shopCancelEdit()">Cancelar</button>\n              <button class="mbtn msave" onclick="shopSaveEdit('${item.id}')">Guardar</button>\n            </div>\n          </div>\n        </div>`;
       } else {
-        html += `<div class="wm-item${isChecked ? " checked" : ""}" onclick="shopToggle('${item.id}',event)">\n          <div class="wm-check">${isChecked ? "✓" : ""}</div>\n          <div class="wm-item-body">\n            <div class="wm-item-name">${escapeHtml(item.name)}</div>\n            <div class="wm-item-detail">${item.size ? "Talle: " + escapeHtml(item.size) : ""} ${item.store ? "· " + escapeHtml(item.store) : ""}</div>\n          </div>\n          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">\n            <span style="width:8px;height:8px;border-radius:50%;background:${pColor};display:inline-block;flex-shrink:0" title="Prioridad ${item.priority}"></span>\n            <button class="wm-icon-btn" onclick="shopMoveItem('${item.id}',event)" title="${moveTitle}" aria-label="${moveTitle}">${moveLabel}</button>\n            <button class="wm-icon-btn" onclick="shopStartEdit('${item.id}',event)" title="Editar" aria-label="Editar ${escapeHtml(item.name)}">${ic("pencil", 13)}</button>\n            <button class="wm-icon-btn wm-icon-del" onclick="shopDeleteItem('${item.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(item.name)}">${ic("x", 14)}</button>\n          </div>\n        </div>`;
+        html += `<div class="wm-item${isChecked ? " checked" : ""}" onclick="shopToggle('${item.id}',event)">\n          <div class="wm-check">${isChecked ? "✓" : ""}</div>\n          <div class="wm-item-body">\n            <div class="wm-item-name">${escapeHtml(trLabel(item, "name"))}</div>\n            <div class="wm-item-detail">${item.size ? "Talle: " + escapeHtml(item.size) : ""} ${item.store ? "· " + escapeHtml(item.store) : ""}</div>\n          </div>\n          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">\n            <span style="width:8px;height:8px;border-radius:50%;background:${pColor};display:inline-block;flex-shrink:0" title="Prioridad ${item.priority}"></span>\n            <button class="wm-icon-btn" onclick="shopMoveItem('${item.id}',event)" title="${moveTitle}" aria-label="${moveTitle}">${moveLabel}</button>\n            <button class="wm-icon-btn" onclick="shopStartEdit('${item.id}',event)" title="Editar" aria-label="Editar ${escapeHtml(item.name)}">${ic("pencil", 13)}</button>\n            <button class="wm-icon-btn wm-icon-del" onclick="shopDeleteItem('${item.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(item.name)}">${ic("x", 14)}</button>\n          </div>\n        </div>`;
       }
     });
     html += `</div></div>`;
@@ -3121,6 +3146,7 @@ function shopSaveEdit(id) {
   if (!item) return;
   const name = document.getElementById("shop-edit-name").value.trim();
   if (!name) return;
+  if (name !== item.name) { if (item.i18n) delete item.i18n.name; _trShopAttempted.delete(item); } // cambió el texto: se re-traduce solo
   item.name = name;
   item.size = document.getElementById("shop-edit-size").value.trim();
   item.store = document.getElementById("shop-edit-store").value.trim();
@@ -4877,6 +4903,47 @@ function itinFmtDur(b) {
   return partes.map(escapeHtml).join(" · ");
 }
 
+// ═══════════ Traducción automática de notas del día y de cada bloque ═══════════
+// Mismo mecanismo que el resto de la app: window.trTranslate / window.trLabel
+// (assets/ux.js) contra "translate_text". day.i18n = {nota:{es,en,pt}}, b.i18n =
+// {titulo:{...}, obs:{...}}. itinSave() guarda todo itinDias de una, así que un
+// solo guardado al final alcanza aunque se traduzcan varios campos.
+const _trItinAttempted = new WeakSet(); // días/bloques ya intentados en esta sesión
+function backfillItinTranslations() {
+  if (window.trTranslate._tfPlaceholder) return; // ux.js todavía no cargó: reintenta en el próximo render
+  let pending = false;
+  const jobs = [];
+  itinDias.forEach(day => {
+    if (!_trItinAttempted.has(day) && day.nota && !(day.i18n && day.i18n.nota)) {
+      _trItinAttempted.add(day);
+      jobs.push(window.trTranslate(day.nota).then(r => { if (r) { day.i18n = day.i18n || {}; day.i18n.nota = r; pending = true; } }));
+    }
+    (day.bloques || []).forEach(b => {
+      if (_trItinAttempted.has(b)) return;
+      const faltaTitulo = b.titulo && !(b.i18n && b.i18n.titulo);
+      const faltaObs = b.obs && !(b.i18n && b.i18n.obs);
+      if (!faltaTitulo && !faltaObs) return;
+      _trItinAttempted.add(b);
+      jobs.push(Promise.all([
+        faltaTitulo ? window.trTranslate(b.titulo) : null,
+        faltaObs ? window.trTranslate(b.obs) : null
+      ]).then(([i18nTitulo, i18nObs]) => {
+        if (!i18nTitulo && !i18nObs) return;
+        b.i18n = b.i18n || {};
+        if (i18nTitulo) b.i18n.titulo = i18nTitulo;
+        if (i18nObs) b.i18n.obs = i18nObs;
+        pending = true;
+      }));
+    });
+  });
+  if (!jobs.length) return;
+  Promise.all(jobs).then(() => {
+    if (!pending) return;
+    itinSave();
+    renderParques();
+  });
+}
+
 function renderItinerario() {
   if (!itinDias.length) {
     return `<div class="all-done" style="display:block">\n        <div class="all-done-emoji">${ic("calendar", 44)}</div>\n        <div class="all-done-title">Sin días cargados</div>\n        <div class="all-done-sub">Agregá el primer día del itinerario para empezar.</div>\n      </div>\n      <div style="display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">\n        <button class="wm-reset-btn" onclick="itinOpenImport()">${ic("file", 12)} Importar desde Excel</button>\n        <button class="wm-reset-btn" onclick="itinAddDay()">+ Agregar día</button>\n      </div>`;
@@ -4898,7 +4965,7 @@ function renderItinerario() {
     html += `<div class="stop-card" style="cursor:default;flex-direction:column;align-items:stretch">\n      <div class="wm-edit-form" style="width:100%">\n        <input class="wm-edit-input" id="itin-day-name" value="${escapeHtml(day.nombre || "")}" placeholder="Nombre del día (ej: EPCOT)" style="margin-bottom:6px;width:100%">\n        <input class="wm-edit-input" id="itin-day-fecha" value="${escapeHtml(day.fecha || "")}" placeholder="Fecha (ej: 19 ene)" style="margin-bottom:6px;width:100%">\n        <textarea class="wm-edit-input" id="itin-day-nota" placeholder="Nota del día (ej: cierra 22hs, llevar poncho)" style="margin-bottom:6px;width:100%;min-height:48px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(day.nota || "")}</textarea>\n        <div class="del-day-row" style="margin:0 0 8px">\n          <button class="mbtn" onclick="itinMoveDay(-1)" ${itinDay === 0 ? "disabled" : ""} title="Mover el día hacia la izquierda">${ic("chevronLeft", 13)} Mover</button>\n          <button class="mbtn" onclick="itinMoveDay(1)" ${itinDay === itinDias.length - 1 ? "disabled" : ""} title="Mover el día hacia la derecha">Mover ${ic("chevronRight", 13)}</button>\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn mdel" onclick="itinDeleteDay()">Eliminar día</button>\n          <button class="mbtn" onclick="itinCancelDay()">Cancelar</button>\n          <button class="mbtn msave" onclick="itinSaveDay()">Guardar</button>\n        </div>\n      </div>\n    </div>`;
   } else {
     html += `<div class="itin-daybar">\n      <div class="itin-daybar-main">\n        <div class="itin-daybar-title">${escapeHtml(day.nombre || "Día")} <span class="itin-daybar-date">${escapeHtml(day.fecha || "")}</span></div>\n        <div class="wm-progress-bar-bg" style="margin-top:6px"><div class="wm-progress-bar-fill" style="width:${pct}%"></div></div>\n      </div>\n      <div class="itin-daybar-num">${done}<small>/${total}</small></div>\n      <button class="wm-icon-btn" onclick="itinStartEditDay()" title="Editar día" aria-label="Editar día">${ic("pencil", 14)}</button>\n    </div>`;
-    if (day.nota) html += `<div class="itin-daynote">${escapeHtml(day.nota)}</div>`;
+    if (day.nota) html += `<div class="itin-daynote">${escapeHtml(trLabel(day, "nota"))}</div>`;
   }
   html += `<div class="itin-tools">\n    ${total > 0 ? `<label class="itin-chk"><input type="checkbox" ${itinSoloPend ? "checked" : ""} onchange="itinTogglePend(this.checked)"> Ver solo lo que falta</label>` : "<span></span>"}\n    <span style="display:flex;gap:6px;flex-wrap:wrap">\n      ${total > 1 ? `<button class="wm-reset-btn" onclick="itinOrdenarManual()" title="Reordena todos los bloques del día por hora">${ic("calendar", 12)} Ordenar por hora</button>` : ""}\n      <button class="wm-reset-btn" onclick="itinOpenImport()">${ic("file", 12)} Actualizar desde Excel</button>\n      ${total > 0 ? `<button class="wm-reset-btn" onclick="itinResetDay()">↺ Destildar día</button>` : ""}\n    </span>\n  </div>`;
   const visibles = day.bloques.filter(b => !itinSoloPend || !itinHechos.has(b.id));
@@ -4914,7 +4981,7 @@ function renderItinerario() {
     const hecho = itinHechos.has(b.id);
     const tipo = ITIN_TIPOS[b.tipo] || ITIN_TIPOS.otro;
     const meta = itinFmtDur(b);
-    html += `<div id="itin-result-${escapeHtml(b.id)}" tabindex="-1" class="itin-block${hecho ? " done" : ""}" onclick="itinToggle('${b.id}')">\n      <div class="itin-time" data-notr data-itin-id="${escapeHtml(b.id)}">${escapeHtml(b.hora || window.I18N?.t("Flexible") || "Flexible")}</div>\n      <div class="itin-check">${hecho ? "✓" : ""}</div>\n      <div class="itin-body">\n        <div class="itin-title">${escapeHtml(b.titulo || "(sin nombre)")}</div>\n        <div class="itin-meta">\n          <span class="itin-tag">${ic(tipo.icon, 11)} ${tipo.label}</span>\n          ${b.zona ? `<span>${escapeHtml(b.zona)}</span>` : ""}\n          ${meta ? `<span class="itin-duration" data-notr data-itin-id="${escapeHtml(b.id)}">${meta}</span>` : ""}\n        </div>\n        ${b.documentId ? `<a class="reservation-map-link" href="tickets.html?doc=${encodeURIComponent(b.documentId)}" onclick="event.stopPropagation()">${ic("file",13)} ${escapeHtml(window.I18N?.t("Abrir documento")||"Abrir documento")}</a>` : ""}\n      ${b.obs ? `<div class="itin-obs">${escapeHtml(b.obs)}</div>` : ""}\n      </div>\n      <div class="itin-actions">\n        <div class="itin-move-col">\n          <button class="wm-icon-btn itin-move-btn" ${i === 0 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',-1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Subir"}" aria-label="Subir ${escapeHtml(b.titulo)}">${ic("chevronUp", 13)}</button>\n          <button class="wm-icon-btn itin-move-btn" ${i === day.bloques.length - 1 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Bajar"}" aria-label="Bajar ${escapeHtml(b.titulo)}">${ic("chevronDown", 13)}</button>\n        </div>\n        <button class="wm-icon-btn" onclick="itinStartEdit('${b.id}');event.stopPropagation()" title="Editar" aria-label="Editar ${escapeHtml(b.titulo)}">${ic("pencil", 13)}</button>\n        <button class="wm-icon-btn wm-icon-del" onclick="itinDelete('${b.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(b.titulo)}">${ic("x", 14)}</button>\n      </div>\n    </div>`;
+    html += `<div id="itin-result-${escapeHtml(b.id)}" tabindex="-1" class="itin-block${hecho ? " done" : ""}" onclick="itinToggle('${b.id}')">\n      <div class="itin-time" data-notr data-itin-id="${escapeHtml(b.id)}">${escapeHtml(b.hora || window.I18N?.t("Flexible") || "Flexible")}</div>\n      <div class="itin-check">${hecho ? "✓" : ""}</div>\n      <div class="itin-body">\n        <div class="itin-title">${escapeHtml(trLabel(b, "titulo") || "(sin nombre)")}</div>\n        <div class="itin-meta">\n          <span class="itin-tag">${ic(tipo.icon, 11)} ${tipo.label}</span>\n          ${b.zona ? `<span>${escapeHtml(b.zona)}</span>` : ""}\n          ${meta ? `<span class="itin-duration" data-notr data-itin-id="${escapeHtml(b.id)}">${meta}</span>` : ""}\n        </div>\n        ${b.documentId ? `<a class="reservation-map-link" href="tickets.html?doc=${encodeURIComponent(b.documentId)}" onclick="event.stopPropagation()">${ic("file",13)} ${escapeHtml(window.I18N?.t("Abrir documento")||"Abrir documento")}</a>` : ""}\n      ${b.obs ? `<div class="itin-obs">${escapeHtml(trLabel(b, "obs"))}</div>` : ""}\n      </div>\n      <div class="itin-actions">\n        <div class="itin-move-col">\n          <button class="wm-icon-btn itin-move-btn" ${i === 0 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',-1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Subir"}" aria-label="Subir ${escapeHtml(b.titulo)}">${ic("chevronUp", 13)}</button>\n          <button class="wm-icon-btn itin-move-btn" ${i === day.bloques.length - 1 || itinSoloPend ? "disabled" : ""} onclick="itinMoveBlock('${b.id}',1);event.stopPropagation()" title="${itinSoloPend ? "Desactivá 'Ver solo lo que falta' para reordenar" : "Bajar"}" aria-label="Bajar ${escapeHtml(b.titulo)}">${ic("chevronDown", 13)}</button>\n        </div>\n        <button class="wm-icon-btn" onclick="itinStartEdit('${b.id}');event.stopPropagation()" title="Editar" aria-label="Editar ${escapeHtml(b.titulo)}">${ic("pencil", 13)}</button>\n        <button class="wm-icon-btn wm-icon-del" onclick="itinDelete('${b.id}',event)" title="Eliminar" aria-label="Eliminar ${escapeHtml(b.titulo)}">${ic("x", 14)}</button>\n      </div>\n    </div>`;
   });
   if (itinAdding) {
     html += itinEditForm(null);
@@ -4922,6 +4989,7 @@ function renderItinerario() {
     html += `<button onclick="itinStartAdd()" class="itin-add-btn">+ Agregar bloque</button>`;
   }
   html += `</div>`;
+  backfillItinTranslations();
   return html;
 }
 
@@ -5009,6 +5077,11 @@ function itinSaveEdit(id) {
     return;
   }
   window.TaxflyDrafts?.complete(document.getElementById("itin-f-titulo")?.closest(".stop-card"));
+  if (b.i18n) { // si cambió el texto, se re-traduce solo
+    if (f.titulo !== b.titulo) delete b.i18n.titulo;
+    if (f.obs !== b.obs) delete b.i18n.obs;
+  }
+  _trItinAttempted.delete(b);
   Object.assign(b, f);
   itinEditing = null;
   itinSave();
@@ -5108,7 +5181,9 @@ function itinSaveDay() {
   const day = itinGetDay();
   day.nombre = (document.getElementById("itin-day-name").value || "").trim() || "Día " + (itinDay + 1);
   day.fecha = (document.getElementById("itin-day-fecha").value || "").trim();
-  day.nota = (document.getElementById("itin-day-nota").value || "").trim();
+  const nuevaNota = (document.getElementById("itin-day-nota").value || "").trim();
+  if (nuevaNota !== day.nota) { if (day.i18n) delete day.i18n.nota; _trItinAttempted.delete(day); } // cambió el texto: se re-traduce solo
+  day.nota = nuevaNota;
   if (day.fecha && !parseTripDayDate(day.fecha)) {
     showMToast(`No reconozco "${day.fecha}" como fecha (probá "19 ene") — puede no ordenarse bien`);
   } else if (day.fecha) {
