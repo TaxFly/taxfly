@@ -338,8 +338,9 @@ async function startApp() {
     if(data)window[name]=field?data[field]:data;
     if(id==="days"&&data)window._daysVersionFromFb=data.v||1;
     if(window._appInited&&data)initialPlanningCallbacks.get(id)?.(data);
-  },id=>{if(generation===planGeneration){window.refreshPlanningLoadState?.();if(id==="budget")window.budgetRefresh?.();if(id==="meals")window.renderTodayCard?.();}});
+  },id=>{if(generation===planGeneration){window.refreshPlanningLoadState?.();if(id==="hotel"&&window._appInited)window.renderOutlets?.();if(id==="budget")window.budgetRefresh?.();if(id==="meals")window.renderTodayCard?.();}});
   window._planInitialState=loading.states;
+  window.retryPlanningLoads=()=>generation===planGeneration?loading.retry():Promise.resolve();
   const params=new URLSearchParams(location.search);
   let section=params.get("section");
   try{section=section||sessionStorage.getItem("orl_section");}catch(_){}

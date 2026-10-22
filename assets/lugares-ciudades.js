@@ -25,28 +25,40 @@ const CITIES = [
       "🚌 LYNX: pasaje regular US$2; el pase de todo el día cuesta US$4,50.",
       "🎫 Si necesitas combinar buses LYNX, pide el transbordo al subir: vale 90 minutos, sin vuelta ni repetición de la misma línea.",
       "🚎 I-RIDE Trolley: US$2 por viaje de adulto, con importe exacto; el conductor no da cambio.",
-      "🗺️ El I-RIDE recorre el área de International Drive. Revisa su mapa antes de usarlo para ir a un parque fuera de ese corredor.",
       "🚂 SunRail opera habitualmente de lunes a viernes; no cuentes con trenes regulares de fin de semana. Revisa servicios especiales.",
       "🚄 La estación Brightline de Orlando está en MCO, junto a la Terminal C. Reserva tiempo para llegar desde tu hotel o parque.",
-      "🕒 Antes de elegir bus para volver de los parques, comprueba la última salida y la parada exacta; guarda una alternativa para después del cierre."
+      "🎢 En Magic Kingdom, el estacionamiento y la bajada habitual de Uber/Lyft están en el TTC. Desde allí todavía debes tomar monorriel o ferry hasta la entrada; añade ese tramo al tiempo de llegada.",
+      "🚗 Si retiras y devuelves un auto de una rentadora participante en MCO, evalúa Visitor Toll Pass. Se reserva sin cargo adicional al peaje; para evitar cobro doble debes rechazar el programa de peajes de la rentadora.",
+      "🛍️ Disney Springs tiene estacionamiento estándar gratuito, pero no es un atajo garantizado a los parques. Para sus buses a hoteles pueden pedir prueba de hospedaje o reserva válida de comida/experiencia.",
+      "Disney World tiene cuatro parques temáticos: Magic Kingdom, EPCOT, Hollywood Studios y Animal Kingdom. Antes de comprar, arma el calendario por parque y confirma qué días y accesos cubre tu entrada.",
+      "Universal Orlando: compara entradas según los parques que quieras visitar: Universal Studios Florida, Islands of Adventure, Epic Universe y el acuático Volcano Bay. Comprueba que tu producto incluya Epic Universe y las fechas elegidas; el nombre “Universal” por sí solo no alcanza.",
+      "Hogwarts Express une Diagon Alley en Universal Studios Florida con Hogsmeade en Islands of Adventure. Necesitas una entrada con acceso Park-to-Park entre esos dos parques; revisa también los cierres de la atracción antes de organizar el día."
     ],
     "tips_en": [
       "🚌 LYNX regular fare is $2; an all-day pass costs $4.50.",
       "🎫 Ask for a LYNX transfer when boarding: valid 90 minutes, excluding return trips and the same route.",
       "🚎 I-RIDE Trolley adult fare is $2 per ride; have exact cash, as drivers give no change.",
-      "🗺️ I-RIDE serves the International Drive area; check its route map before planning trips to parks outside that corridor.",
       "🚂 SunRail normally runs Monday–Friday; do not assume regular weekend trains. Check for special services.",
       "🚄 Orlando’s Brightline station is at MCO beside Terminal C; allow time to get there from your hotel or park.",
-      "🕒 Before taking a bus back from a park, check the last departure and exact stop; save an alternative for after closing."
+      "🎢 Magic Kingdom parking and the usual Uber/Lyft drop-off are at the TTC. You still need the monorail or ferry to the park entrance; allow for that extra leg.",
+      "🚗 If collecting and returning a participating rental car at MCO, consider Visitor Toll Pass. There is no added toll-program fee; decline the rental firm’s toll programme to avoid double billing.",
+      "🛍️ Disney Springs has free standard parking, but is not a guaranteed park-access shortcut. Resort buses may require proof of a hotel stay or valid dining/experience reservation.",
+      "Disney World has four theme parks: Magic Kingdom, EPCOT, Hollywood Studios and Animal Kingdom. Plan your days by park before buying, then check which dates and park access your ticket covers.",
+      "Universal Orlando: compare tickets for the parks you want—Universal Studios Florida, Islands of Adventure, Epic Universe and the Volcano Bay water park. Check that your product includes Epic Universe and your chosen dates; the Universal name alone is not enough.",
+      "Hogwarts Express links Diagon Alley in Universal Studios Florida with Hogsmeade in Islands of Adventure. You need Park-to-Park access between those two parks; check attraction closures before planning your day around the train."
     ],
     "tips_pt": [
       "🚌 LYNX: tarifa regular US$2; passe diário US$4,50.",
       "🎫 Peça a integração LYNX ao embarcar: vale 90 minutos, sem volta nem repetição da mesma linha.",
       "🚎 I-RIDE Trolley: US$2 por viagem de adulto; leve o valor exato, pois o motorista não dá troco.",
-      "🗺️ O I-RIDE atende a região da International Drive; confira o mapa antes de planejar ir a parques fora desse corredor.",
       "🚂 O SunRail opera normalmente de segunda a sexta; não conte com trens regulares no fim de semana. Confira serviços especiais.",
       "🚄 A estação Brightline de Orlando fica no MCO, junto ao Terminal C. Reserve tempo para sair do hotel ou parque.",
-      "🕒 Antes de voltar de ônibus dos parques, confira a última saída e o ponto exato; deixe uma alternativa para depois do fechamento."
+      "🎢 O estacionamento e o desembarque habitual de Uber/Lyft para Magic Kingdom ficam no TTC. Ainda é preciso pegar monorail ou ferry até a entrada; inclua esse trecho no tempo de chegada.",
+      "🚗 Se retirar e devolver carro de locadora participante no MCO, avalie o Visitor Toll Pass. Não há tarifa adicional do programa; recuse o programa de pedágio da locadora para evitar cobrança dupla.",
+      "🛍️ O estacionamento padrão de Disney Springs é gratuito, mas não é um atalho garantido aos parques. Ônibus aos hotéis podem exigir comprovação de hospedagem ou reserva válida de refeição/experiência.",
+      "O Disney World tem quatro parques temáticos: Magic Kingdom, EPCOT, Hollywood Studios e Animal Kingdom. Organize os dias por parque antes de comprar e confira as datas e os acessos incluídos no ingresso.",
+      "Universal Orlando: compare ingressos para os parques desejados — Universal Studios Florida, Islands of Adventure, Epic Universe e o aquático Volcano Bay. Confira se o produto inclui Epic Universe e as datas escolhidas; só o nome Universal não basta.",
+      "O Hogwarts Express liga Diagon Alley no Universal Studios Florida a Hogsmeade no Islands of Adventure. É preciso acesso Park-to-Park entre esses dois parques; confira também os fechamentos da atração antes de organizar o dia."
     ]
   },
   {
@@ -72,31 +84,31 @@ const CITIES = [
     "mapLabel_pt": "Mapa Metrô MTA",
     "gmaps": "https://maps.app.goo.gl/FeB1po85VtZ4ktJo6",
     "tips_es": [
-      "🚇 Metro y buses locales: tarifa regular US$3; buses express y AirTrain tienen tarifas distintas.",
-      "💳 OMNY limita el gasto de metro y buses locales a US$35 en 7 días con el mismo medio de pago.",
-      "📱 Tarjeta física y la misma tarjeta en el celular pueden sumar por separado: no alternes si quieres alcanzar el tope.",
-      "👥 Si pagas por acompañantes, sus viajes no se suman al tope de tu primer pasaje. Revisa las reglas de OMNY para grupos.",
       "✈️ AirTrain JFK se paga aparte del metro o LIRR. Compara el viaje completo, no solo la tarifa del tren urbano.",
       "⛴️ El Staten Island Ferry de NYC DOT es gratuito entre Lower Manhattan y Staten Island. No es un desembarco en Liberty Island.",
-      "💳 Para pagar OMNY, acerca solo la tarjeta o el dispositivo que elegiste; no apoyes una billetera con varias tarjetas."
+      "🚇 OMNY: metro y buses locales cuestan US$3, con tope de US$35 en 7 días. Usa siempre la misma tarjeta o dispositivo: la tarjeta física y su versión en el celular acumulan por separado.",
+      "👥 Puedes pagar hasta 3 acompañantes con OMNY, pero solo tu primer toque suma a tu tope. Para que cada viajero acumule el suyo, debe usar su propio medio de pago.",
+      "🖼️ The Met no ofrece “paga lo que quieras” a todo turista. Esa modalidad tiene requisitos de residencia o estudios; la entrada general incluye ambas sedes el mismo día, no varios días.",
+      "🗽 Para desembarcar en Liberty Island, compra el ferry autorizado de Statue City Cruises. Acceso general, pedestal y corona son modalidades distintas; la corona requiere reserva anticipada y no tiene ascensor.",
+      "🏙️ El Memorial del 11-S al aire libre es gratuito y no exige comprar la entrada del museo. El museo interior es otra visita y requiere boleto."
     ],
     "tips_en": [
-      "🚇 Regular subway/local-bus fare is $3; express buses and AirTrain have separate fares.",
-      "💳 OMNY caps subway/local-bus spending at $35 over seven days with the same payment method.",
-      "📱 A physical card and its phone-wallet version can count separately; do not switch if you want the cap.",
-      "👥 Companion fares paid with your card do not build the cap for your first fare. Check OMNY’s group-payment rules.",
       "✈️ JFK AirTrain costs extra on top of subway or LIRR fares; compare the full journey.",
       "⛴️ NYC DOT’s Staten Island Ferry is free between Lower Manhattan and Staten Island; it does not stop on Liberty Island.",
-      "💳 Tap only your chosen OMNY card or device, as on London’s Tube; keep other contactless cards away from the reader."
+      "🚇 OMNY: subway/local buses cost $3, capped at $35 over seven days. Keep the same card or device: plastic and its mobile-wallet version build separate caps.",
+      "👥 OMNY lets you pay for up to 3 companions, but only the first tap builds your cap. Each traveller needs a separate payment method to build their own.",
+      "🖼️ The Met’s pay-what-you-wish admission is limited by residence/student eligibility, not available to every tourist. General admission covers both locations on the same day, not multiple days.",
+      "🗽 To land on Liberty Island, use authorised Statue City Cruises. General admission, pedestal and crown are different options; the crown needs advance booking and has no lift.",
+      "🏙️ The outdoor 9/11 Memorial is free without a Museum ticket. The indoor Museum is a separate, ticketed visit."
     ],
     "tips_pt": [
-      "🚇 Metrô e ônibus locais: tarifa regular US$3; ônibus expressos e AirTrain têm tarifas diferentes.",
-      "💳 O OMNY limita metrô e ônibus locais a US$35 em 7 dias com o mesmo meio de pagamento.",
-      "📱 Cartão físico e o mesmo cartão no celular podem contar separadamente; não alterne se quiser atingir o teto.",
-      "👥 Viagens dos acompanhantes pagas com seu cartão não somam ao teto da sua primeira passagem. Confira as regras de grupo do OMNY.",
       "✈️ O AirTrain JFK é pago separadamente do metrô ou LIRR; compare o trajeto completo.",
       "⛴️ O Staten Island Ferry da NYC DOT é gratuito entre Lower Manhattan e Staten Island; não desembarca na Liberty Island.",
-      "💳 Encoste só o cartão ou dispositivo escolhido no OMNY; não aproxime uma carteira com vários cartões."
+      "🚇 OMNY: metrô e ônibus locais custam US$3, com teto de US$35 em 7 dias. Use o mesmo cartão ou dispositivo: o físico e a versão no celular acumulam separadamente.",
+      "👥 O OMNY permite pagar até 3 acompanhantes, mas só o primeiro toque soma ao seu teto. Para cada pessoa acumular o próprio, use meios de pagamento separados.",
+      "🖼️ O “pague quanto quiser” do Met exige residência ou condição estudantil elegível; não vale para todo turista. O ingresso geral inclui as duas unidades no mesmo dia, não em vários dias.",
+      "🗽 Para desembarcar na Liberty Island, use o ferry autorizado Statue City Cruises. Acesso geral, pedestal e coroa são modalidades diferentes; a coroa exige reserva antecipada e não tem elevador.",
+      "🏙️ O Memorial do 11 de Setembro ao ar livre é gratuito, sem ingresso do museu. O museu interno é uma visita separada e exige bilhete."
     ],
     "tips_es_AR": [
       "💳 Como el gesto de usar la SUBE, pero con tu tarjeta bancaria o celular: OMNY no exige comprar y recargar una tarjeta de transporte."
@@ -125,31 +137,31 @@ const CITIES = [
     "mapLabel_pt": "Mapa MDT",
     "gmaps": "https://maps.app.goo.gl/4LkZcz1Mwfmr5C56A",
     "tips_es": [
-      "🎫 La tarifa regular de Metrorail y Metrobus es US$2,25. Metromover es gratuito.",
-      "💳 Puedes usar tarjeta bancaria sin contacto o billetera digital en Metrorail y Metrobus; no necesitas comprar una EASY Card para el pasaje regular.",
-      "📱 Con pago bancario sin contacto, el tope diario es US$5,65; usa siempre la misma tarjeta o dispositivo.",
-      "✈️ Desde las terminales de MIA, el MIA Mover gratuito conecta con el centro de transporte; no lo confundas con el Metromover del centro.",
-      "🚆 La línea Orange de Metrorail sirve la estación del aeropuerto MIA. Verifica la dirección del tren antes de subir.",
-      "🏖️ Para Miami Beach, consulta un trayecto que cruce a la isla: el Metrorail no te deja directamente en South Beach.",
-      "🔁 Para conservar beneficios de transbordo, usa el mismo medio electrónico; pagar cada bus en efectivo puede cambiar el costo del recorrido."
+      "💳 Metrorail/Metrobus regular: US$2,25. Con tarjeta bancaria sin contacto, el tope diario es US$5,65 usando siempre el mismo medio; Metromover es gratuito.",
+      "✈️ Desde MIA, toma el MIA Mover gratuito hasta el centro de transporte y allí la Orange Line de Metrorail. No confundas ese primer traslado con el Metromover del centro.",
+      "🏖️ Dentro de Miami Beach, el trolley municipal es gratuito y funciona normalmente de 8:00 a 23:00. Revisa la ruta de South Beach, Mid Beach o North Beach que te corresponda.",
+      "🚎 El trolley de Coral Gables es gratuito y tiene rutas Ponce de Leon y Grand Avenue. Es otra red: no lo confundas con el trolley de Miami Beach.",
+      "🎨 Wynwood Walls es un museo con política de entradas propia. La gratuidad anunciada para residentes de Miami-Dade exige identificación local y no se extiende automáticamente a visitantes extranjeros.",
+      "🔁 Conserva el mismo medio electrónico al combinar Metrorail y Metrobus para aplicar beneficios de transbordo. Pagar cada bus en efectivo puede hacerte perder esa integración.",
+      "📍 Miami Beach está al otro lado de la bahía: un hotel en Downtown o junto a MIA no es un hotel en South Beach. Comprueba el trayecto real antes de elegir alojamiento por precio."
     ],
     "tips_en": [
-      "🎫 Regular Metrorail/Metrobus fare is $2.25; Metromover is free.",
-      "💳 Tap a contactless bank card or mobile wallet on Metrorail/Metrobus; an EASY Card is not required for regular fares.",
-      "📱 Contactless bank-card payment caps daily fares at $5.65; keep using the same card or device.",
-      "✈️ The free MIA Mover links airport terminals with the transport centre; it is different from downtown Metromover.",
-      "🚆 Metrorail’s Orange Line serves MIA airport station; check the train’s destination before boarding.",
-      "🏖️ Plan a connection across to Miami Beach; Metrorail does not take you directly to South Beach.",
-      "🔁 Keep the same electronic payment method for transfer benefits; separate cash bus fares can change the trip cost."
+      "💳 Regular Metrorail/Metrobus fare is $2.25. The daily contactless bank-card cap is $5.65 with the same payment method; Metromover is free.",
+      "✈️ From MIA, take the free MIA Mover to the transport centre, then Metrorail’s Orange Line. That airport shuttle is different from downtown Metromover.",
+      "🏖️ Within Miami Beach, the city trolley is free and normally runs 8 am–11 pm. Choose the appropriate South Beach, Mid Beach or North Beach route.",
+      "🚎 Coral Gables’ free trolley has Ponce de Leon and Grand Avenue routes. It is a separate network from Miami Beach’s trolley.",
+      "🎨 Wynwood Walls is a museum with its own admission policy. Miami-Dade resident free entry requires local photo ID and does not automatically include overseas visitors.",
+      "🔁 Keep the same electronic payment method for Metrorail/Metrobus transfer benefits; paying each bus in cash can lose those benefits.",
+      "📍 Miami Beach is across the bay: a Downtown or MIA-area hotel is not in South Beach. Check the actual journey before choosing a hotel on price."
     ],
     "tips_pt": [
-      "🎫 A tarifa regular de Metrorail e Metrobus é US$2,25; o Metromover é gratuito.",
-      "💳 Use cartão bancário por aproximação ou carteira digital no Metrorail/Metrobus, sem comprar EASY Card para a tarifa regular.",
-      "📱 Com cartão bancário por aproximação, o teto diário é US$5,65; use sempre o mesmo cartão ou dispositivo.",
-      "✈️ O MIA Mover gratuito liga os terminais ao centro de transporte; é diferente do Metromover do centro da cidade.",
-      "🚆 A linha Orange do Metrorail atende a estação do aeroporto MIA; confira o destino do trem antes de embarcar.",
-      "🏖️ Para Miami Beach, planeje a conexão até a ilha; o Metrorail não deixa você diretamente em South Beach.",
-      "🔁 Use o mesmo meio eletrônico para aproveitar a integração; pagar cada ônibus em dinheiro pode mudar o custo do trajeto."
+      "💳 Metrorail/Metrobus regular: US$2,25. Com o mesmo cartão bancário por aproximação, o teto diário é US$5,65; Metromover é gratuito.",
+      "✈️ No MIA, pegue o MIA Mover gratuito até o centro de transporte e depois a Orange Line do Metrorail. Não confunda com o Metromover do centro.",
+      "🏖️ Dentro de Miami Beach, o trolley municipal é gratuito e funciona normalmente das 8h às 23h. Escolha a rota adequada a South Beach, Mid Beach ou North Beach.",
+      "🚎 O trolley gratuito de Coral Gables tem rotas Ponce de Leon e Grand Avenue. É outra rede, diferente do trolley de Miami Beach.",
+      "🎨 Wynwood Walls é um museu com política própria de ingresso. A gratuidade para residentes de Miami-Dade exige documento local e não vale automaticamente para turistas brasileiros.",
+      "🔁 Use o mesmo meio eletrônico para integração entre Metrorail e Metrobus; pagar cada ônibus em dinheiro pode perder o benefício.",
+      "📍 Miami Beach fica do outro lado da baía: hotel em Downtown ou perto do MIA não é em South Beach. Confira o trajeto real antes de escolher só pelo preço."
     ]
   },
   {
@@ -179,27 +191,24 @@ const CITIES = [
       "🚌 Para recorrer el Strip, elige la tarifa Strip & All Access: no presupuestes automáticamente la tarifa residencial.",
       "✈️ El aeropuerto tiene rutas RTC específicas. Consulta la ruta según tu terminal y destino; no supongas que el Deuce pasa por la terminal.",
       "🚝 El Monorail vende boletos propios: no presupongas que tu pase de bus RTC lo incluye. Compara ambos trayectos.",
-      "🚶 Antes de elegir una estación del Monorail, calcula también la caminata entre la calle, el casino y el andén.",
-      "🗺️ En RTC, revisa sentido y parada del bus de regreso: el recorrido opuesto puede usar otra calle.",
-      "🕒 Consulta los desvíos RTC del día antes de salir al Strip; no dependas solo de un mapa guardado de otro viaje."
+      "⛲ Ver las fuentes de Bellagio desde el exterior es gratuito. El espectáculo puede cancelarse por clima; no compres una entrada solo para ver las fuentes públicas.",
+      "💡 The Neon Museum vende modalidades diurnas y nocturnas diferentes. Si tu objetivo es fotografiar los carteles iluminados, elige la sesión correspondiente antes de pagar."
     ],
     "tips_en": [
       "🎫 Deuce/Strip & All Access passes: $6 for 2 hours, $8 for 24 hours, $20 for 3 days.",
       "🚌 For the Strip, choose the Strip & All Access fare rather than automatically budgeting a residential fare.",
       "✈️ Airport RTC routes depend on terminal and destination; do not assume the Deuce stops at your terminal.",
       "🚝 The Monorail sells its own tickets; do not assume your RTC bus pass includes it. Compare routes.",
-      "🚶 When choosing a Monorail station, include the walk from the street through the resort to the platform.",
-      "🗺️ Check RTC’s return direction and stop; the opposite journey may use a different street.",
-      "🕒 Check RTC’s current detours before heading to the Strip instead of relying only on an old saved map."
+      "⛲ Watching the Bellagio fountains from outside is free. Shows may be cancelled for weather; no attraction ticket is needed for the public fountain display.",
+      "💡 The Neon Museum sells different daytime and evening admissions. If you want illuminated-sign photos, choose the corresponding session before buying."
     ],
     "tips_pt": [
       "🎫 Deuce/Strip & All Access: US$6 por 2 h, US$8 por 24 h e US$20 por 3 dias.",
       "🚌 Para o Strip, escolha a tarifa Strip & All Access; não conte automaticamente com a tarifa residencial.",
       "✈️ As rotas RTC do aeroporto dependem do terminal e do destino; não presuma que o Deuce passe no terminal.",
       "🚝 O Monorail vende bilhetes próprios; não presuma que esteja incluído no passe de ônibus RTC.",
-      "🚶 Ao escolher uma estação do Monorail, inclua a caminhada da rua pelo resort até a plataforma.",
-      "🗺️ Confira o sentido e o ponto de volta na RTC; o trajeto contrário pode usar outra rua.",
-      "🕒 Confira os desvios atuais da RTC antes de sair para o Strip, em vez de usar só um mapa salvo de outra viagem."
+      "⛲ Assistir às fontes do Bellagio pelo lado de fora é gratuito. O show pode ser cancelado por clima; não é necessário ingresso para o espetáculo público.",
+      "💡 O Neon Museum vende ingressos diurnos e noturnos diferentes. Se quiser fotografar os letreiros iluminados, escolha a sessão correspondente antes de pagar."
     ]
   },
   {
@@ -225,31 +234,37 @@ const CITIES = [
     "mapLabel_pt": "Mapa Metrô LA",
     "gmaps": "https://maps.app.goo.gl/o5pDfwJJQpe6eLhW7",
     "tips_es": [
-      "🎫 Metro: tarifa regular US$1,75. Los servicios de otras operadoras pueden tener tarifas distintas.",
-      "💳 En Metro, el tope regular es US$5 diarios y US$18 en 7 días con el mismo medio compatible.",
-      "🔁 Con TAP o tarjeta bancaria compatible, Metro incluye transbordos durante 2 h; no incluye viajes de ida y vuelta.",
-      "📱 Ya puedes pagar Metro con tarjeta bancaria sin contacto o billetera digital; no hace falta comprar TAP para una tarifa regular.",
-      "💵 El efectivo en el bus requiere importe exacto y no acumula los topes de Metro.",
       "🚇 La línea B conecta Union Station con North Hollywood; consulta la parada de Hollywood que corresponde a tu visita.",
-      "🏖️ La línea E llega a Santa Monica. Revisa el destino y las conexiones del tren, no solo los antiguos nombres de colores."
+      "🏖️ La línea E llega a Santa Monica. Revisa el destino y las conexiones del tren, no solo los antiguos nombres de colores.",
+      "🚇 Metro regular cuesta US$1,75. Con el mismo TAP, tarjeta bancaria o dispositivo compatible, acumulas topes de US$5 al día y US$18 en 7 días; el efectivo no los acumula.",
+      "🔁 Metro incluye transbordos por 2 h al pagar con TAP o tarjeta compatible, pero no viajes de ida y vuelta. Si pagas el bus en efectivo, lleva el importe exacto.",
+      "✈️ LAX FlyAway conecta el aeropuerto con Union Station y Van Nuys. Si compras boleto móvil, actívalo al embarcar: después de activarlo tiene una validez limitada, no desde cualquier momento de tu viaje.",
+      "🖼️ El Getty Center tiene entrada gratuita con reserva de horario, pero el estacionamiento se cobra aparte. No confundas la reserva del museo con estacionamiento gratuito ni con el Getty Villa.",
+      "🔭 El edificio, los jardines y los telescopios públicos de Griffith Observatory son gratuitos. Los shows del planetario y el estacionamiento tienen cobro separado.",
+      "Disneyland Resort en California tiene Disneyland Park y Disney California Adventure. A partir de 3 años se requiere entrada válida y reserva para el mismo parque y fecha: confirma ambas antes de cerrar el traslado.",
+      "Universal Studios Hollywood: distingue el ticket Universal Express, que incluye entrada de un día, del Express Add-On, que requiere comprar la entrada aparte. Revisa las atracciones excluidas y la fecha del producto antes de pagar."
     ],
     "tips_en": [
-      "🎫 Metro’s regular fare is $1.75; other operators may charge differently.",
-      "💳 Metro’s regular caps are $5 per day and $18 over seven days using the same eligible payment method.",
-      "🔁 TAP or eligible bank-card payment includes Metro transfers for 2 hours, excluding round trips.",
-      "📱 You can now tap a bank card or mobile wallet on Metro, without buying TAP for a regular fare.",
-      "💵 Cash bus payment requires the exact fare and does not count towards Metro fare caps.",
       "🚇 The B Line connects Union Station with North Hollywood; choose the Hollywood stop for your destination.",
-      "🏖️ The E Line reaches Santa Monica; check destinations and connections rather than relying on old colour names."
+      "🏖️ The E Line reaches Santa Monica; check destinations and connections rather than relying on old colour names.",
+      "🚇 Metro’s regular fare is $1.75. The same eligible TAP, bank card or device earns caps of $5 per day and $18 over seven days; cash does not.",
+      "🔁 TAP or eligible card payment includes Metro transfers for 2 hours, excluding round trips. Cash bus payment needs the exact fare.",
+      "✈️ LAX FlyAway serves Union Station and Van Nuys. Activate a mobile ticket when boarding: activation starts a limited validity window.",
+      "🖼️ Getty Center admission is free with a timed reservation, but parking is charged separately. A museum booking is not free parking or a Getty Villa reservation.",
+      "🔭 Griffith Observatory’s building, grounds and public telescopes are free. Planetarium shows and parking are charged separately.",
+      "California’s Disneyland Resort has Disneyland Park and Disney California Adventure. Guests aged 3 and over need valid admission and a reservation for the same park and date: confirm both before booking transport.",
+      "Universal Studios Hollywood: distinguish the Universal Express ticket, which includes one-day admission, from the Express Add-On, which requires separate admission. Check excluded attractions and the product date before paying."
     ],
     "tips_pt": [
-      "🎫 Metro: tarifa regular US$1,75; outras operadoras podem cobrar valores diferentes.",
-      "💳 No Metro, os tetos regulares são US$5 por dia e US$18 em 7 dias com o mesmo meio compatível.",
-      "🔁 Com TAP ou cartão bancário compatível, o Metro inclui integração por 2 h, sem viagens de ida e volta.",
-      "📱 Já é possível pagar o Metro com cartão bancário por aproximação ou carteira digital, sem comprar TAP para a tarifa regular.",
-      "💵 O pagamento em dinheiro no ônibus exige valor exato e não acumula os tetos do Metro.",
       "🚇 A linha B liga Union Station a North Hollywood; confira a estação de Hollywood adequada ao passeio.",
-      "🏖️ A linha E chega a Santa Monica; confira destinos e conexões, em vez de depender dos antigos nomes por cor."
+      "🏖️ A linha E chega a Santa Monica; confira destinos e conexões, em vez de depender dos antigos nomes por cor.",
+      "🚇 A tarifa regular Metro é US$1,75. Com o mesmo TAP, cartão bancário ou dispositivo compatível, os tetos são US$5 por dia e US$18 em 7 dias; dinheiro não acumula.",
+      "🔁 TAP ou cartão compatível inclui integração Metro por 2 h, sem ida e volta. No pagamento em dinheiro no ônibus, leve o valor exato.",
+      "✈️ O LAX FlyAway liga o aeroporto a Union Station e Van Nuys. Ative o bilhete móvel ao embarcar: a ativação inicia um prazo limitado de validade.",
+      "🖼️ O Getty Center tem entrada gratuita com horário reservado, mas estacionamento pago à parte. A reserva não inclui estacionamento grátis nem visita ao Getty Villa.",
+      "🔭 O prédio, os jardins e os telescópios públicos do Griffith Observatory são gratuitos. Shows do planetário e estacionamento são cobrados à parte.",
+      "O Disneyland Resort na Califórnia tem Disneyland Park e Disney California Adventure. A partir de 3 anos, é preciso ingresso válido e reserva para o mesmo parque e data: confirme ambos antes de fechar o transporte.",
+      "Universal Studios Hollywood: diferencie o ingresso Universal Express, que inclui entrada de um dia, do Express Add-On, que exige ingresso de entrada separado. Confira as atrações excluídas e a data do produto antes de pagar."
     ]
   },
   {
@@ -275,31 +290,31 @@ const CITIES = [
     "mapLabel_pt": "Mapa SFMTA",
     "gmaps": "https://maps.app.goo.gl/vboTXuq8jzuEPfyB7",
     "tips_es": [
-      "🎫 Muni regular: US$2,85 con Clipper o tarjeta bancaria; US$3 en efectivo o máquina.",
-      "🔁 El pasaje regular Muni permite 120 minutos de viaje; conserva el comprobante de pago.",
       "🚋 Cable car: US$9 por viaje, sin transbordo incluido. No es la misma tarifa que un tranvía Muni regular.",
-      "🎟️ El Day Pass Muni de US$5,70 no incluye cable cars.",
-      "🎟️ El Visitor Passport de un día cuesta US$15 e incluye Muni y cable cars; no incluye BART.",
       "💳 En BART puedes pagar con tarjeta bancaria sin contacto; usa el mismo medio al entrar y salir, uno por viajero.",
-      "✈️ BART llega a SFO; su tarifa depende del trayecto y se paga aparte de los pases turísticos Muni."
+      "✈️ BART llega a SFO; su tarifa depende del trayecto y se paga aparte de los pases turísticos Muni.",
+      "🎫 Muni regular: US$2,85 con Clipper o tarjeta bancaria y US$3 en efectivo, con 120 minutos de viaje. Los cable cars tienen tarifa propia.",
+      "🎟️ Si quieres cable cars, compara el Visitor Passport de un día (US$15) con el Day Pass Muni (US$5,70): solo el primero los incluye. Ninguno sustituye el boleto BART al aeropuerto.",
+      "🏝️ Para desembarcar en Alcatraz necesitas ferry de Alcatraz City Cruises, el operador autorizado por NPS. Un crucero que solo pasa junto a la isla no permite visitar la prisión.",
+      "🚗 El Golden Gate cobra peaje solo al conducir hacia San Francisco y no acepta efectivo en el puente. Si alquilas auto, acuerda cómo pagarlo antes de cruzar para evitar comisiones inesperadas."
     ],
     "tips_en": [
-      "🎫 Regular Muni fare: $2.85 with Clipper or bank card; $3 cash or ticket machine.",
-      "🔁 A regular Muni fare allows 120 minutes of travel; keep proof of payment.",
       "🚋 Cable car: $9 per ride without transfers; this is not the regular Muni streetcar fare.",
-      "🎟️ The $5.70 Muni Day Pass excludes cable cars.",
-      "🎟️ The $15 one-day Visitor Passport includes Muni and cable cars, not BART.",
       "💳 On BART, tap the same bank card or device in and out, one per rider.",
-      "✈️ BART serves SFO; its fare depends on the journey and is separate from Muni visitor passes."
+      "✈️ BART serves SFO; its fare depends on the journey and is separate from Muni visitor passes.",
+      "🎫 Regular Muni fare is $2.85 with Clipper/bank card or $3 cash, allowing 120 minutes of travel. Cable cars have a separate fare.",
+      "🎟️ For cable cars, compare the $15 one-day Visitor Passport with the $5.70 Muni Day Pass: only the former includes them. Neither replaces your airport BART fare.",
+      "🏝️ Landing on Alcatraz requires the NPS-authorised Alcatraz City Cruises ferry. A sightseeing boat that only sails past does not include a prison visit.",
+      "🚗 Golden Gate tolls apply only when driving towards San Francisco, with no cash collection at the bridge. Agree the rental-car payment method before crossing."
     ],
     "tips_pt": [
-      "🎫 Muni regular: US$2,85 com Clipper ou cartão bancário; US$3 em dinheiro ou máquina.",
-      "🔁 A tarifa regular Muni permite 120 minutos de viagem; guarde o comprovante.",
       "🚋 Cable car: US$9 por viagem, sem integração; não é a tarifa de um bonde Muni regular.",
-      "🎟️ O Day Pass Muni de US$5,70 não inclui cable cars.",
-      "🎟️ O Visitor Passport de um dia custa US$15 e inclui Muni e cable cars, não BART.",
       "💳 No BART, use o mesmo cartão bancário ou dispositivo ao entrar e sair, um por passageiro.",
-      "✈️ O BART atende o SFO; a tarifa depende do trajeto e é separada dos passes turísticos Muni."
+      "✈️ O BART atende o SFO; a tarifa depende do trajeto e é separada dos passes turísticos Muni.",
+      "🎫 Muni regular: US$2,85 com Clipper/cartão bancário ou US$3 em dinheiro, com 120 minutos de viagem. Cable cars têm tarifa própria.",
+      "🎟️ Para cable cars, compare o Visitor Passport de um dia (US$15) com o Day Pass Muni (US$5,70): só o primeiro os inclui. Nenhum substitui o BART ao aeroporto.",
+      "🏝️ Para desembarcar em Alcatraz, é necessário o ferry Alcatraz City Cruises, autorizado pelo NPS. Um passeio de barco que só passa pela ilha não inclui visita à prisão.",
+      "🚗 A Golden Gate cobra pedágio só no sentido de San Francisco, sem pagamento em dinheiro na ponte. Combine o pagamento do carro alugado antes de atravessar."
     ]
   },
   {
@@ -325,31 +340,31 @@ const CITIES = [
     "mapLabel_pt": "Mapa CTA",
     "gmaps": "https://maps.app.goo.gl/APbs8J3KaMrMZMV29",
     "tips_es": [
-      "🎫 CTA con Ventra o pago bancario: tren US$2,50, bus US$2,25; hay tarifa especial al salir de O’Hare.",
-      "🔁 CTA permite hasta 2 viajes adicionales en 2 h sin cargo con el mismo medio electrónico; efectivo no incluye transbordos.",
       "✈️ Desde O’Hare, el pasaje regular de tren cuesta US$5. Un pase ilimitado válido evita ese cargo adicional.",
-      "🔵 La Blue Line conecta O’Hare con el centro y funciona las 24 h; revisa avisos de obras.",
-      "🟠 Para Midway, consulta la Orange Line; a diferencia de la Blue Line, no presupongas servicio toda la noche.",
       "🎟️ El pase CTA/Pace de un día vale 24 h desde el primer uso: no vence necesariamente a medianoche.",
-      "💵 En buses CTA, el efectivo requiere importe exacto; para tomar tren compra tu boleto o usa un medio sin contacto."
+      "🚇 Con Ventra o pago bancario, CTA cobra US$2,50 en tren y US$2,25 en bus, con hasta 2 viajes adicionales en 2 h. Desde O’Hare hay tarifa especial.",
+      "✈️ O’Hare usa Blue Line, con servicio las 24 h; Midway usa Orange Line, que no funciona toda la noche. No intercambies las rutas al calcular un vuelo temprano.",
+      "🫘 Millennium Park, incluido el arte público de Cloud Gate, tiene acceso gratuito. No necesitas comprar una excursión para entrar al parque.",
+      "🐠 Las horas gratuitas de Shedd Aquarium para residentes de Illinois no incluyen automáticamente a turistas extranjeros, ni por acompañar a un residente. Revisa la categoría antes de reservar.",
+      "🚤 Si buscas el crucero del Chicago Architecture Center, confirma que sea el CAC River Cruise aboard First Lady. No todo paseo en barco del río incluye ese guía ni el mismo recorrido."
     ],
     "tips_en": [
-      "🎫 With Ventra or bank-card payment: CTA train $2.50, bus $2.25; O’Hare departures have a special fare.",
-      "🔁 CTA allows up to 2 extra rides within 2 hours free with the same electronic payment; cash fares exclude transfers.",
       "✈️ A regular train fare from O’Hare is $5; a valid unlimited-ride pass avoids the extra charge.",
-      "🔵 The Blue Line links O’Hare and downtown 24 hours a day; check engineering alerts.",
-      "🟠 Use the Orange Line for Midway; unlike the Blue Line, do not assume all-night service.",
       "🎟️ A CTA/Pace one-day pass lasts 24 hours from first use, rather than necessarily ending at midnight.",
-      "💵 CTA buses require exact cash; for trains buy a ticket or use contactless payment."
+      "🚇 With Ventra or bank-card payment, CTA fares are $2.50 train/$2.25 bus, with up to 2 extra rides in 2 hours. O’Hare departures have a special fare.",
+      "✈️ O’Hare uses the 24-hour Blue Line; Midway uses the Orange Line, which is not all-night. Check the correct airport for early flights.",
+      "🫘 Millennium Park, including Cloud Gate’s public art, has free admission. A paid guided tour is not required to enter.",
+      "🐠 Shedd Aquarium’s Illinois-resident free hours do not automatically include overseas visitors, even when accompanying a resident. Check eligibility before booking.",
+      "🚤 For the Chicago Architecture Center cruise, choose CAC River Cruise aboard First Lady. Other river boats do not necessarily include the same guide or route."
     ],
     "tips_pt": [
-      "🎫 Com Ventra ou cartão bancário: trem CTA US$2,50, ônibus US$2,25; saída de O’Hare tem tarifa especial.",
-      "🔁 A CTA permite até 2 viagens extras em 2 h sem custo com o mesmo meio eletrônico; dinheiro não inclui integração.",
       "✈️ A tarifa regular de trem saindo de O’Hare é US$5; um passe ilimitado válido evita o adicional.",
-      "🔵 A Blue Line liga O’Hare ao centro 24 h por dia; confira avisos de obras.",
-      "🟠 Para Midway, consulte a Orange Line; diferente da Blue Line, não conte com serviço a noite toda.",
       "🎟️ O passe CTA/Pace de um dia vale 24 h desde o primeiro uso, não necessariamente até meia-noite.",
-      "💵 Nos ônibus CTA, leve o valor exato; para trens compre bilhete ou use pagamento por aproximação."
+      "🚇 Com Ventra ou cartão bancário, a CTA cobra US$2,50 no trem e US$2,25 no ônibus, com até 2 viagens extras em 2 h. O’Hare tem tarifa especial.",
+      "✈️ O’Hare usa a Blue Line, 24 h; Midway usa a Orange Line, que não funciona a noite toda. Confira o aeroporto certo para voos cedo.",
+      "🫘 O Millennium Park, incluindo a arte pública Cloud Gate, tem entrada gratuita. Não é preciso comprar excursão para entrar no parque.",
+      "🐠 Os horários gratuitos do Shedd Aquarium para residentes de Illinois não incluem automaticamente turistas brasileiros, mesmo acompanhando um residente. Confira a elegibilidade.",
+      "🚤 Se quiser o cruzeiro do Chicago Architecture Center, escolha CAC River Cruise aboard First Lady. Outros barcos do rio não incluem necessariamente o mesmo guia ou percurso."
     ]
   },
   {
@@ -375,31 +390,31 @@ const CITIES = [
     "mapLabel_pt": "Mapa Metrô WMATA",
     "gmaps": "https://maps.app.goo.gl/sPaFRFAidEM3jvwW7",
     "tips_es": [
-      "🎫 Metrorail regular: US$2,25–6,75 según el trayecto y el horario.",
-      "🚌 El pasaje regular de bus local Metro cuesta US$2,25; no apliques esa tarifa a todas las redes de la región.",
       "💳 Puedes pagar Metro con tarjeta bancaria sin contacto o celular. En tren, usa el mismo medio para entrar y salir.",
       "✈️ Dulles (IAD) tiene Silver Line; Reagan National (DCA), Blue y Yellow. Revisa el aeropuerto de tu boleto antes de elegir ruta.",
       "🏛️ Los museos Smithsonian de Washington son gratuitos; algunos requieren pase con horario. Reserva desde el sitio del museo.",
       "🕒 El horario general de fin de semana es sábado 6:00–2:00 y domingo 6:00–medianoche; verifica último tren y obras por estación.",
-      "📍 Revisa la sede exacta del museo: no todas las instalaciones Smithsonian están en el National Mall."
+      "🎫 Metrorail regular cuesta US$2,25–6,75 según trayecto y horario; el bus local Metro cuesta US$2,25. Usa la misma tarjeta al entrar y salir del tren.",
+      "🏛️ El tour del Capitolio es gratuito y conviene reservarlo en visitthecapitol.gov. No incluye las galerías del Senado o la Cámara: son accesos distintos.",
+      "🗼 Para subir al Washington Monument necesitas boleto. La visita no tiene entrada de pago, pero la reserva online cobra una tarifa de gestión; hay boletos del día limitados en el Lodge."
     ],
     "tips_en": [
-      "🎫 Regular Metrorail fare: $2.25–$6.75 depending on journey and time.",
-      "🚌 A regular local Metro bus fare is $2.25; other regional operators may differ.",
       "💳 Tap a bank card or phone on Metro, as on London’s Tube; on rail, use the same method in and out.",
       "✈️ Dulles (IAD) uses the Silver Line; Reagan National (DCA) uses Blue/Yellow. Check your ticket’s airport.",
       "🏛️ Washington’s Smithsonian museums are free; some require timed-entry passes. Book through the museum’s website.",
       "🕒 Usual weekend rail hours are Saturday 6 am–2 am and Sunday 6 am–midnight; check your station’s last train and works.",
-      "📍 Check the exact museum location; not all Smithsonian facilities are on the National Mall."
+      "🎫 Regular Metrorail fares are $2.25–$6.75 by journey/time; local Metro buses cost $2.25. Use the same card to enter and leave rail stations.",
+      "🏛️ Capitol tours are free; book through visitthecapitol.gov. The tour does not include Senate or House galleries, which have separate access.",
+      "🗼 Going up the Washington Monument requires a ticket. Admission is free, but online reservations have a handling fee; limited same-day tickets are available at the Lodge."
     ],
     "tips_pt": [
-      "🎫 Metrorail regular: US$2,25–6,75 conforme o trajeto e o horário.",
-      "🚌 A tarifa regular do ônibus local Metro é US$2,25; outras redes da região podem cobrar diferente.",
       "💳 Pague o Metro com cartão bancário por aproximação ou celular, sem recarga de transporte; no trem, use o mesmo meio na entrada e saída.",
       "✈️ Dulles (IAD) tem Silver Line; Reagan National (DCA), Blue e Yellow. Confira o aeroporto da passagem.",
       "🏛️ Os museus Smithsonian de Washington são gratuitos; alguns exigem horário reservado. Reserve no site do museu.",
       "🕒 O horário geral é sábado 6h–2h e domingo 6h–meia-noite; confira o último trem e obras por estação.",
-      "📍 Confira a unidade exata do museu; nem todas as instalações Smithsonian ficam no National Mall."
+      "🎫 Metrorail regular custa US$2,25–6,75 conforme trajeto/horário; ônibus local Metro custa US$2,25. Use o mesmo cartão para entrar e sair do trem.",
+      "🏛️ O tour do Capitólio é gratuito; reserve em visitthecapitol.gov. Ele não inclui as galerias do Senado ou da Câmara, que têm acesso separado.",
+      "🗼 Para subir ao Washington Monument é necessário bilhete. A visita é gratuita, mas a reserva online cobra taxa; há bilhetes limitados do dia no Lodge."
     ],
     "tips_es_AR": [
       "💳 El gesto se parece a usar la SUBE, pero Metro permite tu tarjeta bancaria sin contacto: en tren debes usarla también al salir."
@@ -430,26 +445,29 @@ const CITIES = [
     "tips_es": [
       "✈️ Silver Line SL1 sale gratis desde las terminales de Logan hacia South Station. No supongas que el regreso al aeropuerto también es gratis.",
       "🔵 La Blue Line sirve la estación Airport; un shuttle gratuito de Massport enlaza esa estación con las terminales.",
-      "🔴 La Red Line no llega directamente a las terminales de Logan: una opción es combinar en South Station con SL1.",
       "💳 Charlie permite pago bancario sin contacto en servicios compatibles de MBTA. Consulta el modo específico: Commuter Rail tiene billetes propios.",
       "🚶 Freedom Trail recorre unos 4 km entre Boston y Charlestown. La línea roja del suelo ayuda a seguirlo.",
-      "🕒 Para Freedom Trail, separa el tiempo de caminata del de visitas interiores; guarda los horarios de los lugares que más te interesan."
+      "🚶 Caminar Freedom Trail por tu cuenta es gratuito; algunas visitas interiores y los tours guiados se pagan aparte. La línea roja no representa un boleto que incluya todos los edificios.",
+      "⚓ Para subir al USS Constitution, mayores de 18 años deben presentar identificación física válida o pasaporte y pasar seguridad. El barco y el museo cercano se administran por separado.",
+      "🧳 Con valijas o cochecito, usa el planificador accesible de MBTA y sus alertas de ascensores. No elijas una conexión solo por ser la más corta en el mapa."
     ],
     "tips_en": [
       "✈️ Silver Line SL1 is free from Logan terminals to South Station; do not assume the return to the airport is also free.",
       "🔵 The Blue Line serves Airport station; a free Massport shuttle links the station with the terminals.",
-      "🔴 The Red Line does not reach Logan’s terminals directly; one option is transferring to SL1 at South Station.",
       "💳 Charlie supports bank-card tapping on eligible MBTA services. Check the mode: Commuter Rail uses its own tickets.",
       "🚶 The Freedom Trail runs about 2.5 miles/4 km through Boston and Charlestown, marked by a red line.",
-      "🕒 For the Freedom Trail, allow separate time for walking and indoor visits; save opening hours for your priority stops."
+      "🚶 Walking the Freedom Trail independently is free; some interiors and guided tours cost extra. The red trail is not an admission pass to every building.",
+      "⚓ To board USS Constitution, adults 18+ need valid physical photo ID or a passport and must clear security. The ship and nearby museum are operated separately.",
+      "🧳 With luggage or a pushchair, use MBTA’s accessible trip planner and lift alerts, rather than choosing a connection only because it is shortest on the map."
     ],
     "tips_pt": [
       "✈️ A Silver Line SL1 é gratuita dos terminais de Logan até South Station; não presuma que a volta ao aeroporto também seja grátis.",
       "🔵 A Blue Line atende a estação Airport; um shuttle gratuito da Massport liga a estação aos terminais.",
-      "🔴 A Red Line não chega diretamente aos terminais de Logan; uma opção é fazer conexão com SL1 em South Station.",
       "💳 O Charlie aceita cartão bancário por aproximação nos serviços compatíveis da MBTA. Confira a modalidade: Commuter Rail usa bilhetes próprios.",
       "🚶 A Freedom Trail tem cerca de 4 km entre Boston e Charlestown, marcada por uma linha vermelha.",
-      "🕒 Na Freedom Trail, separe o tempo de caminhada do de visitas internas; salve os horários dos locais prioritários."
+      "🚶 Percorrer a Freedom Trail por conta própria é gratuito; alguns interiores e tours guiados são pagos. A linha vermelha não é um ingresso para todos os prédios.",
+      "⚓ Para embarcar no USS Constitution, maiores de 18 anos precisam de documento físico válido ou passaporte e inspeção de segurança. O navio e o museu próximo têm gestão separada.",
+      "🧳 Com malas ou carrinho, use o planejador acessível da MBTA e os alertas de elevadores, em vez de escolher a conexão só pela distância no mapa."
     ]
   },
   {
@@ -476,27 +494,27 @@ const CITIES = [
     "gmaps": "https://maps.app.goo.gl/nWWm2XAQfqHtuyV18",
     "tips_es": [
       "🚆 Link 1 y 2: tarifa adulta regular US$3 por viaje; no depende de la distancia.",
-      "💳 ORCA permite transbordos entre servicios participantes; no confundas ORCA en el celular con cualquier tarjeta bancaria.",
       "📱 Con ORCA, valida al subir a Link. El operador indica que ya no es necesario validar al bajar de Link o bus.",
       "✈️ Para llegar a la estación SeaTac/Airport desde la terminal, sigue el recorrido peatonal por el estacionamiento; añade ese tiempo al trayecto.",
       "🎟️ El pase regional ORCA de US$6 cubre viajes participantes de hasta US$3; servicios más caros pueden requerir saldo adicional.",
-      "🕒 Antes de elegir un viaje nocturno al aeropuerto, revisa el horario de la estación y deja margen para caminar hasta la terminal."
+      "⛴️ En Seattle–Bainbridge Island, el pasaje de peatón se cobra al salir de Seattle; el regreso a pie desde Bainbridge no tiene otro cobro de pasajero. Los vehículos tienen reglas diferentes.",
+      "🐟 Entrar a Pike Place Market es gratuito. Los tours gastronómicos son opcionales y se pagan por separado; no necesitas uno para recorrer el mercado."
     ],
     "tips_en": [
       "🚆 Link 1/2 Line regular adult fare is $3 per trip, regardless of distance.",
-      "💳 ORCA supports transfers across participating services; a mobile ORCA card is different from an ordinary bank card.",
       "📱 With ORCA, tap before boarding Link; the operator says you no longer need to tap off Link or buses.",
       "✈️ Follow the walkway through the airport garage to SeaTac/Airport station; add that walk to your journey time.",
       "🎟️ The $6 regional ORCA day pass covers eligible rides up to $3; higher fares may need extra stored value.",
-      "🕒 Before choosing a late airport train, check station times and allow for the walk to the terminal."
+      "⛴️ On Seattle–Bainbridge Island, walk-on passenger fares are collected in Seattle; the walk-on return from Bainbridge has no further passenger charge. Vehicles follow different rules.",
+      "🐟 Pike Place Market has free admission. Food tours are optional paid experiences; you do not need one to explore the market."
     ],
     "tips_pt": [
       "🚆 Link linhas 1 e 2: tarifa regular de adulto US$3 por viagem, sem depender da distância.",
-      "💳 O ORCA permite integração entre serviços participantes; ORCA no celular não é o mesmo que qualquer cartão bancário.",
       "📱 Com ORCA, valide antes de embarcar no Link; a operadora informa que não é mais necessário validar ao sair do Link ou ônibus.",
       "✈️ Siga a passagem pelo estacionamento até a estação SeaTac/Airport; inclua essa caminhada no tempo de trajeto.",
       "🎟️ O passe regional ORCA de US$6 cobre viagens participantes de até US$3; serviços mais caros podem exigir saldo extra.",
-      "🕒 Antes de escolher um trem noturno ao aeroporto, confira os horários e reserve tempo para caminhar até o terminal."
+      "⛴️ Em Seattle–Bainbridge Island, o passageiro a pé paga saindo de Seattle; a volta a pé de Bainbridge não cobra outra passagem. Veículos têm regras diferentes.",
+      "🐟 A entrada no Pike Place Market é gratuita. Tours gastronômicos são opcionais e pagos à parte; não são necessários para conhecer o mercado."
     ]
   },
   {
@@ -523,30 +541,27 @@ const CITIES = [
     "gmaps": "https://maps.app.goo.gl/YLypuZTjNXZLt3Fk6",
     "tips_es": [
       "🎫 RTA: bus o streetcar regular US$1,25 por viaje; pase de un día US$3.",
-      "📱 Usa Le Pass para comprar y validar pasajes de bus, streetcar y ferry; reemplaza la antigua referencia a GoMobile.",
+      "📱 Le Pass permite comprar y validar viajes de bus, streetcar y ferry. Ten el pase activo y disponible antes de subir; no confundas comprarlo con haberlo validado.",
       "🚋 Para explorar St. Charles Avenue y el área del Garden District, revisa la ruta St. Charles y sus avisos de servicio.",
       "🌳 Las rutas Canal/Cemeteries y Canal/City Park tienen destinos distintos; revisa el cartel antes de subir.",
-      "🗺️ En Le Pass puedes consultar recorridos y ubicación del transporte; revisa el regreso antes de alejarte del centro.",
-      "🎭 Si viajas durante un desfile o evento, consulta desvíos RTA: un streetcar puede ser reemplazado temporalmente por bus.",
-      "🎟️ Compara el pase con tus viajes efectivos y transbordos; no lo justifiques contando cada cambio de vehículo como otro pasaje completo."
+      "✈️ Desde MSY, RTA opera el Airport Express 202. No confundas su boleto o pase con los de JET: para combinar ambas redes, el aeropuerto indica que se necesita Regional Ride u otro pago separado.",
+      "☕ Si vas al Café du Monde original del French Market, lleva efectivo: su carta oficial indica “Cash Only”. No supongas que podrás pagar los beignets con tarjeta."
     ],
     "tips_en": [
       "🎫 RTA regular bus/streetcar fare is $1.25; a one-day pass costs $3.",
-      "📱 Use Le Pass to buy and validate bus, streetcar and ferry tickets; it replaces the old GoMobile reference.",
+      "📱 Le Pass sells and validates bus, streetcar and ferry fares. Have the active pass ready before boarding; buying is not the same as validating.",
       "🚋 For St. Charles Avenue and the Garden District area, check the St. Charles route and its service alerts.",
       "🌳 Canal/Cemeteries and Canal/City Park have different destinations; check the sign before boarding.",
-      "🗺️ Le Pass provides route planning and live vehicle information; check the return before travelling beyond downtown.",
-      "🎭 During parades or events, check RTA detours; a streetcar may be temporarily replaced by buses.",
-      "🎟️ Compare a pass against actual paid trips and transfer rules, rather than treating every vehicle change as a full fare."
+      "✈️ RTA runs Airport Express 202 from MSY. Do not assume its ticket/pass covers JET: the airport specifies Regional Ride for both networks, or separate fares.",
+      "☕ Bring cash to the original French Market Café du Monde: its official menu says “Cash Only”. Do not rely on a card for your beignets."
     ],
     "tips_pt": [
       "🎫 RTA: ônibus ou streetcar regular US$1,25; passe de um dia US$3.",
-      "📱 Use Le Pass para comprar e validar passagens de ônibus, streetcar e ferry; ele substitui a antiga referência ao GoMobile.",
+      "📱 O Le Pass permite comprar e validar viagens de ônibus, streetcar e ferry. Tenha o passe ativo pronto ao embarcar; comprar não é o mesmo que validar.",
       "🚋 Para St. Charles Avenue e a região do Garden District, confira a rota St. Charles e os avisos de serviço.",
       "🌳 Canal/Cemeteries e Canal/City Park têm destinos diferentes; confira a placa antes de embarcar.",
-      "🗺️ O Le Pass oferece planejamento e informações em tempo real; confira a volta antes de se afastar do centro.",
-      "🎭 Durante desfiles ou eventos, confira os desvios RTA; um streetcar pode ser substituído temporariamente por ônibus.",
-      "🎟️ Compare o passe com as viagens pagas e as regras de integração, sem contar toda troca de veículo como tarifa cheia."
+      "✈️ A RTA opera o Airport Express 202 saindo do MSY. Não presuma integração com JET: o aeroporto indica Regional Ride para ambas as redes ou pagamentos separados.",
+      "☕ Leve dinheiro ao Café du Monde original do French Market: o cardápio oficial informa “Cash Only”. Não conte com cartão para os beignets."
     ]
   },
   {
@@ -576,27 +591,24 @@ const CITIES = [
       "✈️ El Airport Day Pass regular cuesta US$10 e incluye el sistema RTD durante el día de servicio, también el aeropuerto.",
       "🚆 La A Line conecta DEN con Union Station en unos 37 minutos; añade el tiempo para llegar al andén.",
       "🚌 El shuttle FreeRide de 16th Street es gratuito. Revisa sus paradas y cualquier desvío del día.",
-      "🔁 Union Station reúne conexiones de tren y bus. Calcula la caminata al siguiente andén cuando combines servicios.",
-      "🎟️ El Day Pass regular de US$5,50 no incluye el aeropuerto; no lo confundas con el Airport Day Pass.",
-      "🏔️ Para una excursión a la montaña, comprueba el servicio hasta el destino final y la vuelta: llegar a una estación no garantiza el traslado hasta el sendero."
+      "🎵 Red Rocks permite visitas por cuenta propia sin pagar entrada ni estacionamiento cuando no hay evento. En días de concierto el anfiteatro puede cerrar temprano: confirma el acceso de ese día, no la hora del show.",
+      "🏔️ Para una excursión a Rocky Mountain National Park, comprueba si tu fecha y sector requieren Timed Entry y si incluye Bear Lake Road. El permiso de horario y la entrada al parque son requisitos distintos."
     ],
     "tips_en": [
       "🎫 Standard RTD fares: $2.75 for 3 hours or $5.50 for a day; airport travel needs the appropriate fare.",
       "✈️ The standard $10 Airport Day Pass covers the RTD system for the service day, including the airport.",
       "🚆 The A Line links DEN and Union Station in about 37 minutes; add time to reach the platform.",
       "🚌 The 16th Street FreeRide shuttle is free; check its stops and current detours.",
-      "🔁 Union Station connects rail and bus services; allow for walking to your next boarding point.",
-      "🎟️ The standard $5.50 Day Pass excludes the airport; it differs from the Airport Day Pass.",
-      "🏔️ For a mountain trip, check service all the way to the destination and back; reaching a station does not guarantee a trailhead connection."
+      "🎵 Red Rocks allows free self-guided visits and parking on non-event days. On concert days the amphitheatre can close early; check daytime access, not just showtime.",
+      "🏔️ For Rocky Mountain National Park, check whether your date/area needs Timed Entry and whether it includes Bear Lake Road. A time reservation and park admission are separate requirements."
     ],
     "tips_pt": [
       "🎫 RTD regular: US$2,75 por 3 h ou US$5,50 por dia; aeroporto exige a tarifa correspondente.",
       "✈️ O Airport Day Pass regular custa US$10 e inclui o sistema RTD no dia de serviço, inclusive aeroporto.",
       "🚆 A A Line liga DEN a Union Station em cerca de 37 minutos; acrescente o tempo até a plataforma.",
       "🚌 O shuttle FreeRide da 16th Street é gratuito; confira os pontos e desvios do dia.",
-      "🔁 Union Station reúne conexões de trem e ônibus; reserve tempo para caminhar até o próximo embarque.",
-      "🎟️ O Day Pass regular de US$5,50 não inclui o aeroporto; é diferente do Airport Day Pass.",
-      "🏔️ Para um passeio na montanha, confira o trajeto completo e a volta; chegar à estação não garante conexão até a trilha."
+      "🎵 O Red Rocks permite visita por conta própria e estacionamento gratuitos em dias sem evento. Em dias de show, o anfiteatro pode fechar cedo; confira o acesso diurno, não só o horário do espetáculo.",
+      "🏔️ Para Rocky Mountain National Park, confira se a data/área exige Timed Entry e se inclui Bear Lake Road. A reserva de horário e a entrada do parque são requisitos separados."
     ]
   }
 ];
@@ -610,6 +622,14 @@ function cityTipsFor(city, lang) {
   return Array.isArray(extra) ? base.concat(extra) : base;
 }
 
+// Render editorial tips with the same outline icons as the rest of the app.
+window.renderCityTip = function(text) {
+  const match = text.match(/^\s*(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*)\s*/u);
+  const clean = match ? text.slice(match[0].length) : text;
+  const escaped = clean.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const icon = window.uiTipIcon?.(match ? match[1] : /Disney|Universal|Hogwarts/.test(clean) ? "ferris" : "bulb", 16) || "";
+  return icon + " " + escaped;
+};
 window.renderCityGrid = function renderCityGrid() {
   const grid = document.getElementById("city-grid");
   if (!grid) return;
@@ -661,7 +681,7 @@ window.showCity = function showCity(id) {
   const cityState = lang !== "es" && city["state_" + lang] ? city["state_" + lang] : city.state;
   const cityMapLabel = lang !== "es" && city["mapLabel_" + lang] ? city["mapLabel_" + lang] : city.mapLabel;
   panel.style.display = "block";
-  panel.innerHTML = `\n        <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">\n            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">\n                <div>\n                    <div style="font-size:1rem;font-weight:900;color:var(--text);">${esc(city.name)}</div>\n                    <div style="font-size:.7rem;font-weight:600;color:var(--text-dim);">${cityState}</div>\n                </div>\n            </div>\n            <div style="display:flex;flex-direction:column;gap:10px;">\n                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${sysLabel}</div>\n                    <div style="font-size:.82rem;font-weight:700;color:var(--text);">${citySystem}</div>\n                </div>\n                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">\n                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;">\n                        <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">${priceLabel}</div>\n                        <div style="font-size:.75rem;font-weight:700;color:var(--text);line-height:1.4;">${cityPrice}</div>\n                    </div>\n                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;">\n                        <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">${payLabel}</div>\n                        <div style="font-size:.75rem;font-weight:700;color:var(--text);line-height:1.4;">${cityPayment}</div>\n                    </div>\n                </div>\n                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">\n                    <a href="${city.map}" target="_blank" style="background:var(--primary);color:white;border-radius:12px;padding:12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;">\n                        <span style="font-size:1.2rem;">🗺️</span>\n                        <span style="font-size:.7rem;font-weight:800;">${cityMapLabel}</span>\n                        <span style="font-size:.6rem;opacity:.85;">${officialLabel}</span>\n                    </a>\n                    <a href="${city.gmaps}" target="_blank" style="background:var(--accent);color:white;border-radius:12px;padding:12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;">\n                        <span style="font-size:1.2rem;">📍</span>\n                        <span style="font-size:.7rem;font-weight:800;">Google Maps</span>\n                        <span style="font-size:.6rem;opacity:.85;">${realtimeLabel}</span>\n                    </a>\n                </div>\n                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${appLabel}</div>\n                    <a href="${city.appLink}" target="_blank" style="font-size:.8rem;font-weight:700;color:var(--primary);text-decoration:none;">${city.app}</a>\n                </div>\n                <div style="background:rgba(16,185,129,.08);border:1.5px solid var(--success);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--success);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${tipsLabel}</div>\n                    <div style="display:flex;flex-direction:column;gap:6px;">\n                        ${tips.map(tip => `<div style="font-size:.75rem;font-weight:600;color:var(--text);line-height:1.4;">${tip}</div>`).join("")}\n                    </div>\n                </div>\n            </div>\n        </div>\n    `;
+  panel.innerHTML = `\n        <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">\n            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">\n                <div>\n                    <div style="font-size:1rem;font-weight:900;color:var(--text);">${esc(city.name)}</div>\n                    <div style="font-size:.7rem;font-weight:600;color:var(--text-dim);">${cityState}</div>\n                </div>\n            </div>\n            <div style="display:flex;flex-direction:column;gap:10px;">\n                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${sysLabel}</div>\n                    <div style="font-size:.82rem;font-weight:700;color:var(--text);">${citySystem}</div>\n                </div>\n                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">\n                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;">\n                        <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">${priceLabel}</div>\n                        <div style="font-size:.75rem;font-weight:700;color:var(--text);line-height:1.4;">${cityPrice}</div>\n                    </div>\n                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;">\n                        <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">${payLabel}</div>\n                        <div style="font-size:.75rem;font-weight:700;color:var(--text);line-height:1.4;">${cityPayment}</div>\n                    </div>\n                </div>\n                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">\n                    <a href="${city.map}" target="_blank" style="background:var(--primary);color:white;border-radius:12px;padding:12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;">\n                        <span style="font-size:1.2rem;">🗺️</span>\n                        <span style="font-size:.7rem;font-weight:800;">${cityMapLabel}</span>\n                        <span style="font-size:.6rem;opacity:.85;">${officialLabel}</span>\n                    </a>\n                    <a href="${city.gmaps}" target="_blank" style="background:var(--accent);color:white;border-radius:12px;padding:12px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;">\n                        <span style="font-size:1.2rem;">📍</span>\n                        <span style="font-size:.7rem;font-weight:800;">Google Maps</span>\n                        <span style="font-size:.6rem;opacity:.85;">${realtimeLabel}</span>\n                    </a>\n                </div>\n                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${appLabel}</div>\n                    <a href="${city.appLink}" target="_blank" style="font-size:.8rem;font-weight:700;color:var(--primary);text-decoration:none;">${city.app}</a>\n                </div>\n                <div style="background:rgba(16,185,129,.08);border:1.5px solid var(--success);border-radius:12px;padding:12px 14px;">\n                    <div style="font-size:.6rem;font-weight:800;color:var(--success);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">${tipsLabel}</div>\n                    <div style="display:flex;flex-direction:column;gap:6px;">\n                        ${tips.map(tip => `<div style="font-size:.75rem;font-weight:600;color:var(--text);line-height:1.4;">${window.renderCityTip ? window.renderCityTip(tip) : tip}</div>`).join("")}\n                    </div>\n                </div>\n            </div>\n        </div>\n    `;
   panel.scrollIntoView({
     behavior: "smooth",
     block: "nearest"

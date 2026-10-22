@@ -10,45 +10,85 @@ Implementada el 22 de octubre de 2026. Este proyecto contiene los cambios listos
 4. Abre la app y usa su opción de actualización si todavía muestra la versión anterior.
 5. En Ajustes, con idioma español, selecciona el país en “País (tips)”. “Sin especificar” muestra únicamente los tips generales. El cambio actualiza también el transporte visible.
 
-El país reutiliza `appCountry`, que ya estaba en esta versión del proyecto. Es una preferencia local del navegador; no se añadió sincronización de país con Firebase. Los arrays originales y la rotación por pantalla se conservan. Las listas pueden tener distinta longitud.
+El país reutiliza `appCountry`, la preferencia local del navegador existente. No se añadió sincronización de país con Firebase. Al cambiar de idioma o país, los tips se actualizan sin conservar un índice fuera de la lista.
+
+## Segunda revisión de calidad
+
+Se revisaron las 12 ciudades y se reemplazaron recordatorios generales por decisiones concretas de acceso, entradas, traslados y compras. Las reglas repetidas de transporte se concentraron en menos tips. OMNY queda en Nueva York y su comparación con SUBE solo se muestra en la capa Argentina de esa ciudad.
+
+Ejemplos nuevos o ampliados:
+
+- Orlando: tramo TTC–Magic Kingdom, Visitor Toll Pass con condiciones y restricciones del transporte de Disney Springs.
+- Nueva York: categorías de la Estatua de la Libertad, elegibilidad del Met y Memorial del 11-S frente a museo.
+- Miami: trolleys gratuitos por jurisdicción y elegibilidad de Wynwood Walls.
+- Las Vegas: fuentes gratuitas de Bellagio y diferencia entre entrada diurna/nocturna del Neon Museum.
+- Los Ángeles: FlyAway, reserva gratuita del Getty con parking aparte y acceso a Griffith frente al planetario.
+- San Francisco: ferry autorizado a Alcatraz y peajes del Golden Gate en auto alquilado.
+- Chicago: Millennium Park, gratuidad del Shedd para residentes y crucero específico del CAC.
+- Washington: reservas del Capitolio y Washington Monument.
+- Boston: acceso al USS Constitution, costos de los interiores del Freedom Trail y accesibilidad MBTA.
+- Seattle: ferry a Bainbridge a pie y acceso gratuito a Pike Place Market.
+- Nueva Orleans: Airport Express 202, diferencias con JET y efectivo en el Café du Monde original.
+- Denver: visitas diurnas a Red Rocks y requisitos de Rocky Mountain según fecha y sector.
+
+En Inicio y Compras se añadieron situaciones de retención de garantía en hoteles, power banks, desbloqueo y garantía territorial de iPhone, cambio de VIP Shopper Club a Simon+ y pago en caja cuando falla el ZIP del surtidor.
+
+La nueva rotación alterna temas cuando existe otra categoría disponible, sin dejar consejos inaccesibles. Yardas, pintas y cuartos de galón aparecen con menor frecuencia que las referencias habituales. No se añadió seguimiento del usuario ni persistencia del historial de tips.
 
 ## Contenido
 
-Hay 161 entradas editoriales por ubicación y audiencia, con 423 textos localizados (158 ES, 131 EN y 134 PT). No son 423 consejos diferentes: las traducciones se cuentan por separado.
+El inventario contiene 163 entradas por ubicación/audiencia y 431 textos localizados (160 ES, 134 EN, 137 PT). Las traducciones se cuentan por separado; no son 431 consejos distintos. La segunda revisión priorizó utilidad sobre cantidad.
 
 | Ubicación | Contenido general |
 | --- | --- |
-| Inicio | 10 por idioma; PT agrega IOF y ES agrega país |
-| Lugares | 11 por idioma; ES-AR agrega comparación cultural |
-| Ciudades | 82 por idioma en 12 ciudades; dos capas culturales ES-AR |
-| Compras | 12 por idioma; PT agrega 2 de aduana brasileña y ES agrega país |
-| Unidades | 16 por idioma, con adaptación de medidas de combustible y volumen |
+| Inicio | ES 10 · EN 10 · PT 11; capas por país cuando aplica |
+| Lugares | ES 11 · EN 11 · PT 11; capas por país cuando aplica |
+| Compras | ES 11 · EN 11 · PT 13; capas por país cuando aplica |
+| Unidades | ES 16 · EN 16 · PT 16; capas por país cuando aplica |
+| Ciudades | 86 tips por idioma en 12 ciudades; dos comparaciones culturales exclusivas de AR |
 
-Argentina, México, Colombia, Chile, Perú, Costa Rica, Panamá y Guatemala tienen contenido exclusivo. Costa Rica y Guatemala tienen menos consejos que otros países porque se excluyeron montos o reglas que no pudieron confirmarse con suficiente claridad. Los consejos de comisiones generales se mantienen en la capa universal; no se inventan impuestos nacionales.
+Argentina, México, Colombia, Chile, Perú, Costa Rica, Panamá y Guatemala conservan contenido exclusivo. Costa Rica y Guatemala tienen listas menores: se excluyeron cifras o reglas que no pudieron confirmarse con claridad. Los requisitos de entrada se vinculan al pasaporte utilizado, no se infiere la ciudadanía desde el país seleccionado.
 
 ## Fuentes y alcance de la verificación
 
 `docs/travel-tips-sources-2026-10.json` registra cada texto exacto, idioma, país cuando aplica, estado y fuentes por identificador. La sección `sources` contiene URL, título y fecha o nota de consulta. `omitted` explica los datos descartados. Los consejos prácticos sin cifras se identifican como “consejo editorial”; las conversiones se identifican como comprobaciones aritméticas. La fecha de revisión es un corte de contenido, no una promesa de actualización automática futura.
 
-Se corrigieron las afirmaciones absolutas sobre tax refund, tarifas antiguas, Red Line de Boston hacia Logan, límites universales de equipaje, tallas automáticas y la identificación de 37 °C como fiebre. Se actualizaron también cuadros de transporte cuando contradecían los tips. No se modificaron `offline.html` ni los tips personales de `assets/plan-app.js`.
+Se corrigieron las afirmaciones absolutas sobre tax refund, tarifas antiguas, Red Line de Boston hacia Logan, límites universales de equipaje, tallas automáticas y la identificación de 37 °C como fiebre. Se actualizaron también cuadros de transporte cuando contradecían los tips. Se conservaron `offline.html` y los tips personales editables; la corrección de carga sí modifica `assets/plan-app.js`.
 
-## Archivos modificados
+## Archivos modificados respecto del ZIP inicial
 
-- `assets/compras.js`
 - `assets/index-app.js`
+- `assets/lugares.js`
 - `assets/lugares-ciudades.js`
 - `assets/lugares-selector.js`
-- `assets/lugares.js`
-- `assets/settings.js`
+- `assets/compras.js`
 - `assets/unidades.js`
-- `docs/travel-tips-sources-2026-10.json`
+- `assets/settings.js`
+- `assets/ui.js`
+- `assets/plan-app.js`
+- `assets/plan-loading.js`
+- `assets/plan-firebase.js`
+- `tests/outlets-recovery.test.cjs`
+- `tests/tip-icons.test.cjs`
+- `assets/travel-tip-core.js` (nuevo; debe copiarse junto con los demás scripts)
 - `sw.js`
 - `tests/travel-tips.test.cjs`
-- `docs/TIPS_VIAJE_LEEME.md` (este archivo)
+- `tests/travel-tip-rotation.test.cjs`
+- `docs/travel-tips-sources-2026-10.json`
+- `docs/TIPS_VIAJE_LEEME.md`
 
 ## Validación
 
-- Sintaxis comprobada en los siete scripts modificados y en el service worker.
-- 29 pruebas de tips y flujos relacionados: todas pasan. Incluyen país vacío/desconocido, las ocho capas, cambio de idioma durante animaciones, listas de distinto tamaño, los dos paneles de transporte y correspondencia de textos con el registro de fuentes.
-- Suite completa: 267 pruebas, 243 aprobadas y 24 fallidas. El ZIP original presenta las mismas 24 fallidas entre 261 pruebas. Todas están relacionadas con TaxEurope y archivos o rutas ausentes en el original; esta actualización no agrega fallos.
+- Sintaxis comprobada en los scripts modificados y el service worker; nueva dependencia incluida en precaché.
+- 48 pruebas de tips, iconos, carga y flujos relacionados: todas pasan. Incluyen ocho países, país vacío/desconocido, cambios de idioma durante animaciones, listas desiguales, ambos paneles de ciudades, inventario de fuentes, alternancia de temas, alcance de todos los tips y menor frecuencia de unidades secundarias.
+- Suite completa: 279 pruebas; 255 aprobadas y 24 fallidas. El ZIP original tiene las mismas 24 fallidas entre 261 pruebas: corresponden a TaxEurope y archivos/rutas ausentes en el original. No se agregaron fallos.
+- Comparación de integridad: los archivos ajenos al alcance, incluido `offline.html`, se conservaron byte a byte.
 - No se validó una sesión real autenticada de Firebase ni se publicó el proyecto.
+
+## Tercera revisión: iconos, Outlets y parques
+
+- Los tips y elementos decorativos usan el catálogo compartido de SVG de trazo. La conversión también funciona en Planificación y Mis cosas, incluidos cambios dinámicos. Los datos existentes conservan sus identificadores.
+- Outlets separa la disponibilidad del cronograma de la lista de compras y de la dirección del hotel. Las pestañas siguen accesibles ante un error. Se añadió Reintentar y recuperación de respuestas tardías sin sobreescribir snapshots más recientes. La dirección del hotel queda pendiente y sin edición hasta sincronizarse.
+- Orlando suma Disney World (sus cuatro parques), los parques de Universal incluido Epic Universe y las condiciones de Hogwarts Express.
+- Los Ángeles suma Disneyland/California Adventure y la diferencia entre Universal Express y Express Add-On de Hollywood. Los cinco tips nuevos tienen versiones ES/EN/PT y fuentes oficiales en el registro.
+- El ZIP se genera de nuevo desde el proyecto completo; se verifica su CRC y se compara cada archivo extraído con el original.

@@ -1,3 +1,4 @@
+import "./travel-tip-core.js";
 import { fsNet } from "./fs-net.js";
 const onReady = f => document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", f) : setTimeout(f, 0);
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -789,44 +790,41 @@ const shoppingTips = {
     "En NYC, la ropa y el calzado que califican y cuestan menos de US$110 por artículo o par están exentos. El límite no se calcula sobre el total del carrito.",
     "Apple Certified Refurbished anuncia ahorros de hasta 15 % y garantía limitada de un año. Compara el modelo exacto y la disponibilidad, no un descuento garantizado.",
     "En Best Buy, Open Box no significa siempre “como nuevo”. Revisa la condición publicada, accesorios incluidos y plazo de devolución de esa unidad.",
-    "Antes de pagar, pregunta si el artículo es final sale y si aceptan devoluciones después de tu fecha de salida. Guarda el recibo.",
-    "Antes de viajar a un outlet por un cupón, revisa vencimiento, marcas excluidas y compra mínima. Compara el precio final con otras tiendas.",
+    "En Best Buy, el plazo de devolución empieza cuando recibes el producto. Consulta la política de esa categoría antes de comprar: puede haber cargos de reposición y requisitos sobre estado y accesorios.",
+    "El antiguo VIP Shopper Club de Premium Outlets ahora es Simon+. Busca las ofertas del centro que visitarás; revisa si el beneficio es digital y sus condiciones antes de contar con una cuponera.",
     "Las tallas cambian según marca y corte. Compara medidas de la tabla oficial y pruébate la prenda; no conviertas automáticamente M en L.",
-    "Pesa tu equipaje y revisa piezas, dimensiones y peso incluidos en tu tarifa. No todos los vuelos permiten 23 kg ni incluyen maleta despachada.",
-    "Compara el costo completo: precio, sales tax aplicable y cargos de tu tarjeta. Un descuento de etiqueta no equivale al ahorro final.",
-    "Antes de dejar el auto estacionado, guarda las compras fuera de la vista y evita mostrar objetos de valor al abrir el baúl.",
-    "Antes de comprar aparatos, lee la etiqueta de entrada eléctrica y comprueba el enchufe y la garantía en tu país. Un adaptador de clavija no cambia el voltaje.",
-    "Fotografía recibos y etiquetas del modelo antes de quitar el embalaje: te ayudan a identificar la compra y revisar garantías o devoluciones."
+    "Antes de sumar una maleta, comprueba piezas, peso y dimensiones de tu boleto, también en vuelos internos. La franquicia depende de la aerolínea y la ruta; no basta con que la maleta pese menos de 23 kg.",
+    "Si compras un iPhone en Apple para usarlo en otro país, revisa la opción “Connect to any carrier later” y confirma que quede desbloqueado. Comprueba además que tu operadora admita el modelo y su eSIM.",
+    "No presupongas una garantía internacional de iPhone o iPad: Apple puede limitar el servicio al país donde se vendió originalmente. Consulta las condiciones del modelo antes de comprarlo en EE. UU.",
+    "Si el surtidor pide un ZIP que tu tarjeta extranjera no puede validar, ve a la caja e indica el número del surtidor. Evita probar códigos postales inventados."
   ],
   "en": [
     "In New Jersey, ordinary clothing and footwear are generally sales-tax exempt; accessories and specialist sports equipment may still be taxed.",
     "NYC exempts qualifying clothing and footwear priced below $110 per item or pair; the threshold is not the total shopping basket.",
     "Apple Certified Refurbished advertises savings up to 15% and a one-year limited warranty. Compare the exact model and stock; the maximum discount is not guaranteed.",
     "Best Buy Open Box does not always mean like new. Check the listed condition, included accessories and that unit’s return window.",
-    "Check for final-sale restrictions and whether returns will still be practical after you fly home; keep the receipt.",
-    "Before travelling to an outlet for a coupon, check expiry, excluded brands and minimum spend. Compare the final price elsewhere.",
+    "At Best Buy, the return period starts when you receive the product. Check your category’s policy before buying: restocking fees and condition/accessory requirements may apply.",
+    "Premium Outlets’ old VIP Shopper Club is now Simon+. Look up your specific centre’s offers and check digital redemption and conditions rather than assuming a paper coupon booklet.",
     "US and UK/Australian size labels can differ, and brands vary. Use the brand’s measurements and try items on rather than converting letters automatically.",
-    "Weigh your luggage and check the allowance on your actual fare; piece count, size and checked-bag inclusion vary.",
-    "Compare the complete cost: shelf price, applicable sales tax and card charges. A sticker discount is not the final saving.",
-    "Keep shopping out of sight before parking, and avoid displaying valuables when opening the boot or trunk.",
-    "Before buying appliances, check the input-voltage label, plug and warranty back home. A plug adaptor does not convert voltage.",
-    "Photograph receipts and model labels before discarding packaging; they help identify purchases for warranty or return enquiries."
+    "Before buying another suitcase, check your ticket’s piece, weight and size allowance, including domestic connections. Allowances vary by airline and route; staying below 23 kg alone is not enough.",
+    "When buying an iPhone from Apple for use abroad, check “Connect to any carrier later” and confirm it is unlocked. Also verify that your home network supports that model and its eSIM.",
+    "Do not assume an iPhone or iPad has worldwide warranty service: Apple may restrict service to the original country of sale. Check the model’s terms before buying in the US.",
+    "If a petrol pump cannot validate the billing ZIP for your foreign card, go inside and give the cashier your pump number. Do not rely on invented US ZIP codes."
   ],
   "pt": [
     "Em Nova Jersey, roupas e calçados de uso geral costumam ser isentos de sales tax; acessórios e equipamentos esportivos específicos podem ser tributados.",
     "Em Nova York, roupas e calçados elegíveis abaixo de US$110 por peça ou par são isentos; o limite não é o total do carrinho.",
     "O Apple Certified Refurbished anuncia economia de até 15% e garantia limitada de um ano. Compare o modelo exato e o estoque; o desconto máximo não é garantido.",
     "Open Box na Best Buy não significa sempre “como novo”. Confira a condição anunciada, os acessórios incluídos e o prazo de devolução da unidade.",
-    "Antes de pagar, confira se o produto é final sale e se será possível devolvê-lo depois da viagem. Guarde o recibo.",
-    "Antes de ir a um outlet por um cupom, confira validade, marcas excluídas e compra mínima. Compare o preço final em outras lojas.",
+    "Na Best Buy, o prazo de devolução começa quando você recebe o produto. Confira a política da categoria: pode haver taxa de reposição e exigências sobre estado e acessórios.",
+    "O antigo VIP Shopper Club dos Premium Outlets agora é Simon+. Procure as ofertas do centro escolhido e confira resgate digital e condições, sem presumir uma cuponera impressa.",
     "A numeração dos EUA não equivale automaticamente à brasileira. Confira as medidas da marca e experimente; não transforme M em G por regra fixa.",
-    "Pese a bagagem e confira peças, dimensões e peso da sua tarifa. Não presuma que todo voo inclui mala despachada de 23 kg.",
-    "Compare o custo completo: etiqueta, sales tax, IOF e spread do cartão. O desconto da etiqueta não é a economia final em reais.",
-    "Antes de estacionar, deixe as compras fora de vista e evite expor objetos de valor ao abrir o porta-malas.",
-    "Antes de comprar aparelhos, confira a tensão de entrada, o plugue e a garantia no Brasil. Um adaptador de tomada não transforma a tensão.",
-    "Fotografe recibos e etiquetas do modelo antes de descartar a embalagem; eles ajudam em consultas sobre garantia e devolução.",
+    "Antes de comprar outra mala, confira peças, peso e dimensões da passagem, inclusive nos voos internos. A franquia varia por companhia e rota; ficar abaixo de 23 kg não basta.",
     "Na volta ao Brasil por avião ou navio, a cota de bagagem tributável é US$1.000 por pessoa, respeitadas as condições e quantidades da Receita. Compras em duty free no exterior entram nessa conta.",
-    "Se houver bens tributáveis acima da cota, use a e-DBV e o canal Bens a Declarar. O imposto é de 50% sobre o excedente; a cota não pode ser somada entre familiares."
+    "Se houver bens tributáveis acima da cota, use a e-DBV e o canal Bens a Declarar. O imposto é de 50% sobre o excedente; a cota não pode ser somada entre familiares.",
+    "Se comprar um iPhone na Apple para usar no Brasil, confira “Connect to any carrier later” e confirme o desbloqueio. Verifique também se sua operadora aceita o modelo e seu eSIM.",
+    "Não presuma garantia internacional de iPhone ou iPad: a Apple pode limitar o atendimento ao país da venda original. Confira as condições do modelo antes de comprar nos EUA.",
+    "Se a bomba não validar o ZIP do cartão brasileiro, vá ao caixa e informe o número da bomba. Não conte com códigos postais americanos inventados."
   ]
 };
 
@@ -856,8 +854,8 @@ const shoppingTipsPais = {
     "Para regresar a Costa Rica, revisa los requisitos de la franquicia del viajero en Hacienda: no asumas que una franquicia usada en un viaje anterior se renueva con cada entrada."
   ],
   "PA": [
-    "Panamá usa el dólar estadounidense. Si tu tarjeta se liquida en US$ y pagas en US$, no hay conversión entre monedas; aun así, consulta posibles comisiones internacionales.",
-    "Antes de ingresar a Panamá, consulta la Declaración de Viajero de la Autoridad Nacional de Aduanas y verifica si tus compras deben declararse; no confundas equipaje personal con mercancía adicional."
+    "Antes de ingresar a Panamá, consulta la Declaración de Viajero de la Autoridad Nacional de Aduanas y verifica si tus compras deben declararse; no confundas equipaje personal con mercancía adicional.",
+    "Panamá usa el dólar estadounidense. Si tu tarjeta se liquida en US$ y pagas en US$, no hay conversión entre monedas; aun así, consulta posibles comisiones internacionales."
   ],
   "GT": [
     "Para viajar desde o hacia Guatemala, usa la Declaración Jurada Regional de Viajero electrónica de SAT. Accede desde portal.sat.gob.gt para evitar formularios de terceros."
@@ -917,7 +915,7 @@ function esc(s) {
 window.nextTip = () => {
   const lang = localStorage.getItem("appLang") || "es";
   const list = shoppingTipsFor(lang);
-  tipIndex = (tipIndex + 1) % list.length;
+  tipIndex = window.TaxflyTips.nextIndex(list, tipIndex, "shopping");
   const el = document.getElementById("tip-text");
   if (el) {
     el.style.opacity = 0;
@@ -930,6 +928,7 @@ window.nextTip = () => {
 };
 
 window.changeLanguage = lang => {
+  window.TaxflyTips.reset("shopping");
   tipIndex = 0;
   { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
   localStorage.setItem("appLang", lang);

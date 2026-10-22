@@ -479,6 +479,276 @@
       "title": "Presidência da República — Decreto 12.499/2025, art. 15-B",
       "url": "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/decreto/d12499.htm",
       "verification": "Consulta 2026-10-22; 3,5 % en operaciones de cambio vinculadas a compras con tarjetas internacionales"
+    },
+    "tips-custom": {
+      "title": "Visit Orlando — Propinas",
+      "url": "https://www.visitorlando.com/plan/planning-resources/fast-facts/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "hotel-hold": {
+      "title": "Hilton — Autorizaciones de tarjeta",
+      "url": "https://www.hilton.com/en/hilton-honors/payment-security/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "powerbanks": {
+      "title": "FAA — Baterías y power banks",
+      "url": "https://www.faa.gov/hazmat/packsafe/lithium-batteries",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "toll-rental": {
+      "title": "SunPass — Peajes en autos alquilados",
+      "url": "https://www.sunpass.com/en/tolls/rentalvehicles.shtml",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "visitor-toll": {
+      "title": "Central Florida Expressway Authority — Visitor Toll Pass",
+      "url": "https://visitortollpass.com/Faq",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "apple-unlock": {
+      "title": "Apple — Comprobar bloqueo de operador",
+      "url": "https://support.apple.com/en-by/109316",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "apple-buy": {
+      "title": "Apple — Compra de iPhone desbloqueado",
+      "url": "https://www.apple.com/shop/help/iphone",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "apple-warranty": {
+      "title": "Apple — Condiciones territoriales de garantía",
+      "url": "https://www.apple.com/legal/warranty/products/ios-warranty-document-us.html",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "simon": {
+      "title": "Simon Premium Outlets — Simon+",
+      "url": "https://www.premiumoutlets.com/vip",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "pump-zip": {
+      "title": "NACS — ZIP en surtidores",
+      "url": "https://www.convenience.org/stay-current/news/2013/nd0715132",
+      "verification": "Artículo de la asociación del sector de 2013-07-15; mecanismo estable. Se usa solo para explicar ZIP y alternativa de pagar en caja, sin trucos de códigos inventados."
+    },
+    "baggage-policy": {
+      "title": "FAA — Límite de equipaje por aerolínea",
+      "url": "https://www.faa.gov/faq/how-much-checked-baggage-may-i-take-board-airliner",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "bag-report": {
+      "title": "IATA — Passenger baggage rules",
+      "url": "https://www.iata.org/bags/index",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "universal-express": {
+      "title": "Universal Orlando — Express Pass",
+      "url": "https://www.universalorlando.com/web/en/us/tickets-packages/express-passes/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "hogwarts": {
+      "title": "Universal Orlando — Hogwarts Express",
+      "url": "https://www.universalorlando.com/web/en/us/things-to-do/rides-attractions/hogwarts-express-kings-cross-station",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "mta-access": {
+      "title": "MTA — Estaciones accesibles y ascensores",
+      "url": "https://intercom.help/mta-app-help-center/en/articles/14081295-view-accessible-subway-stations",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "visitor-visa": {
+      "title": "US Department of State — Visa de visitante",
+      "url": "https://travel.state.gov/content/travel/en/us-visas/tourism-visit/visitor.html",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "ttc": {
+      "title": "planDisney — Llegada por TTC",
+      "url": "https://plandisney.disney.go.com/question/guest-drop-offpickup-magic-kingdom-631830/",
+      "verification": "Respuesta oficial de planDisney de 2026, consultada el 2026-10-22; no se generalizan horarios."
+    },
+    "springs": {
+      "title": "Disney Springs — Transporte y reservas",
+      "url": "https://www.disneysprings.com/plan-your-visit/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "disneyparking": {
+      "title": "Walt Disney World — Estacionamiento",
+      "url": "https://disneyworld.disney.go.com/guest-services/parking/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "metvisit": {
+      "title": "The Met — Entrada y elegibilidad",
+      "url": "https://www.metmuseum.org/plan-your-visit",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "liberty": {
+      "title": "NPS — Visita a la Estatua de la Libertad",
+      "url": "https://www.nps.gov/stli/planyourvisit/index.htm",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "memorial911": {
+      "title": "9/11 Memorial & Museum — Visita",
+      "url": "https://www.911memorial.org/visit",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "beachtrolley": {
+      "title": "City of Miami Beach — Trolley gratuito",
+      "url": "https://www.miamibeachfl.gov/city-hall/transportation/trolley/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "coralgables": {
+      "title": "City of Coral Gables — Trolley",
+      "url": "https://www.coralgables.com/department/parking-department/trolley",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "wynwood": {
+      "title": "Wynwood Walls — Política para residentes",
+      "url": "https://thewynwoodwalls.com/media/miamidade/locals-free-press-release-final.pdf",
+      "verification": "Comunicado oficial 2026-10-13; consulta 2026-10-22. La gratuidad de residentes no se generaliza a turistas."
+    },
+    "bellagio": {
+      "title": "Bellagio — Fuentes",
+      "url": "https://bellagio.mgmresorts.com/en/entertainment/fountains-of-bellagio.html",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "neon": {
+      "title": "The Neon Museum — Modalidades de entrada",
+      "url": "https://neonmuseum.org/tickets-and-experiences/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "getty": {
+      "title": "Getty Center — Entrada",
+      "url": "https://www.getty.edu/visit/center",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "gettyparking": {
+      "title": "Getty Center — Estacionamiento",
+      "url": "https://www.getty.edu/visit/center/parking-and-transportation/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "griffith": {
+      "title": "City of Los Angeles — Griffith Observatory",
+      "url": "https://griffithobservatory.lacity.gov/visit/getting-here/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "flyaway": {
+      "title": "Los Angeles World Airports — FlyAway",
+      "url": "https://www.flylax.com/flyaway-bus",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "flyawayticket": {
+      "title": "LAWA — Compra y activación de FlyAway",
+      "url": "https://www.flylax.com/flyaway-bus/fares-tickets",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "alcatraz": {
+      "title": "NPS — Alcatraz: ferry y acceso",
+      "url": "https://www.nps.gov/alca/planyourvisit/fees.htm",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "ggbridge": {
+      "title": "Golden Gate Bridge — Peaje y pagos",
+      "url": "https://www.goldengate.org/bridge/tolls-payment/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "gg-rental": {
+      "title": "Golden Gate Bridge — Vehículos alquilados",
+      "url": "https://www.goldengate.org/bridge/tolls-payment/rental-vehicles/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "millennium": {
+      "title": "Millennium Park Foundation — Entrada",
+      "url": "https://www.millenniumparkfoundation.org/faqs",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "shedd-free": {
+      "title": "Shedd Aquarium — Gratuidad de residentes",
+      "url": "https://www.sheddaquarium.org/plan-a-visit/get-tickets/discounts-and-free-hours/illinois-resident-free-hours",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "cac-cruise": {
+      "title": "Chicago Architecture Center — Crucero fluvial",
+      "url": "https://www.architecture.org/city-tours/river-cruise",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "capitol": {
+      "title": "US Capitol Visitor Center — Reserva",
+      "url": "https://www.visitthecapitol.gov/visit/book-a-tour",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "monument": {
+      "title": "NPS — Washington Monument: entradas",
+      "url": "https://www.nps.gov/wamo/planyourvisit/fees.htm",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "freedom-fees": {
+      "title": "Freedom Trail Foundation — Tarifas de lugares",
+      "url": "https://www.thefreedomtrail.org/faqs",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "constitution": {
+      "title": "US Navy — USS Constitution: acceso",
+      "url": "https://www.navy.mil/USS-CONSTITUTION/Hours-Visitor-Info/linkId/100000046752090/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "boston-access": {
+      "title": "MBTA — Planificador accesible",
+      "url": "https://www.mbta.com/accessibility/trip-planning",
+      "verification": "Información oficial de MBTA disponible en índice; se usa para planificador y alertas de ascensor, sin tarifas ni plazos."
+    },
+    "bainbridge": {
+      "title": "Washington State Ferries — Seattle/Bainbridge",
+      "url": "https://www.wsdot.wa.gov/ferries/fares/faresdetail.aspx?arrivingterm=3&departingterm=7",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "pikefree": {
+      "title": "Pike Place Market — Acceso gratuito",
+      "url": "https://www.pikeplacemarket.org/ufaq/is-there-an-admission-fee-to-pike-place-market/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "msy": {
+      "title": "Louis Armstrong New Orleans Airport — Transporte público",
+      "url": "https://flymsy.com/public-transportation/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "cafecash": {
+      "title": "Café du Monde — Carta y efectivo",
+      "url": "https://shop.cafedumonde.com/cafe/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "redrocks": {
+      "title": "Red Rocks — Visitas sin evento",
+      "url": "https://www.redrocksonline.com/plan-your-visit/faq/",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "rocky": {
+      "title": "NPS — Rocky Mountain: entrada con horario",
+      "url": "https://www.nps.gov/romo/planyourvisit/timed-entry-permit-system.htm",
+      "verification": "Fuente primaria consultada el 2026-10-22"
+    },
+    "wdw-parks": {
+      "title": "Walt Disney World — Theme parks",
+      "url": "https://disneyworld.disney.go.com/en_CA/destinations/all-parks/",
+      "verification": "Fuente oficial consultada 2026-10-22; revisar condiciones antes de comprar."
+    },
+    "universal-parks": {
+      "title": "Universal Orlando — Park tickets",
+      "url": "https://www.universalorlando.com/web/en/us/tickets-packages/park-tickets",
+      "verification": "Fuente oficial consultada 2026-10-22; revisar condiciones antes de comprar."
+    },
+    "hogwarts-express": {
+      "title": "Universal Orlando — Hogwarts Express",
+      "url": "https://www.universalorlando.com/web/en/us/things-to-do/rides-attractions/hogwarts-express",
+      "verification": "Fuente oficial consultada 2026-10-22; revisar condiciones antes de comprar."
+    },
+    "disneyland-entry": {
+      "title": "Disneyland — Before you go",
+      "url": "https://disneyland.disney.go.com/experience-updates/",
+      "verification": "Fuente oficial consultada 2026-10-22; revisar condiciones antes de comprar."
+    },
+    "hollywood-entry": {
+      "title": "Universal Studios Hollywood — Tickets FAQ",
+      "url": "https://www.universalstudioshollywood.com/web/en/us/faqs/tickets/",
+      "verification": "Fuente oficial consultada 2026-10-22; revisar condiciones antes de comprar."
     }
   },
   "records": [
@@ -512,12 +782,15 @@
       "group": "inicio",
       "id": "tip",
       "texts": {
-        "es": "En restaurantes con servicio de mesa, revisa si la cuenta ya incluye propina o service charge antes de añadir otra.",
-        "en": "At a sit-down restaurant, check whether gratuity or a service charge is already included before adding a tip.",
-        "pt": "No restaurante com garçom, confira se já há gratuity ou service charge antes de acrescentar gorjeta; não presuma que funciona como os 10% do Brasil."
+        "es": "En restaurantes con servicio de mesa, Visit Orlando orienta una propina de 15–25 %. Es una referencia de costumbre: revisa si ya incluyeron gratuity o service charge antes de agregar otra.",
+        "en": "Visit Orlando suggests 15–25% at table-service restaurants. This is customary guidance: check for an included gratuity or service charge before adding another tip.",
+        "pt": "Em restaurantes com garçom, o Visit Orlando orienta gorjeta de 15–25%. É uma referência de costume: confira gratuity ou service charge já incluído antes de acrescentar outra."
       },
-      "sources": [],
-      "status": "consejo editorial"
+      "sources": [
+        "tips-custom"
+      ],
+      "status": "verificado",
+      "icon": "💵"
     },
     {
       "group": "inicio",
@@ -550,34 +823,43 @@
       "group": "inicio",
       "id": "roaming",
       "texts": {
-        "es": "Antes de comprar una eSIM, comprueba que tu modelo de celular sea compatible y esté desbloqueado para otras operadoras.",
-        "en": "Before buying a travel eSIM, check that your particular phone model supports it and is unlocked for other networks.",
-        "pt": "Antes de comprar um eSIM de viagem, confirme se o modelo do celular é compatível e desbloqueado para outras operadoras."
+        "es": "Si tu iPhone dice “Sin restricciones de SIM” en Ajustes > General > Información > Bloqueo del operador, está desbloqueado. La compatibilidad con eSIM se comprueba aparte para el modelo.",
+        "en": "On iPhone, Settings > General > About > Carrier Lock should say “No SIM restrictions” for an unlocked phone. Check eSIM compatibility separately for your model.",
+        "pt": "No iPhone, em Ajustes > Geral > Sobre > Bloqueio de Operadora, “Sem restrições de SIM” indica aparelho desbloqueado. Confira separadamente se o modelo aceita eSIM."
       },
-      "sources": [],
-      "status": "consejo editorial"
+      "sources": [
+        "apple-unlock"
+      ],
+      "status": "verificado",
+      "icon": "📱"
     },
     {
       "group": "inicio",
       "id": "receipts",
       "texts": {
-        "es": "Guarda recibos y condiciones de devolución en Documentos para consultarlos durante el viaje.",
-        "en": "Save receipts and return conditions in Documents so you can find them while travelling.",
-        "pt": "Guarde recibos e regras de devolução em Documentos para consultar durante a viagem."
+        "es": "En el check-in, el hotel puede retener una garantía por gastos adicionales además de la estadía. Esa autorización reduce temporalmente tu saldo o límite; pregunta el importe antes de elegir tarjeta.",
+        "en": "At check-in, a hotel may hold funds for incidentals in addition to your stay. That temporarily reduces your available balance or credit; ask the amount before choosing a card.",
+        "pt": "No check-in, o hotel pode bloquear uma garantia para despesas extras além da hospedagem. A autorização reduz temporariamente saldo ou limite; pergunte o valor antes de escolher o cartão."
       },
-      "sources": [],
-      "status": "consejo editorial"
+      "sources": [
+        "hotel-hold"
+      ],
+      "status": "verificado",
+      "icon": "🏨"
     },
     {
       "group": "inicio",
       "id": "flight",
       "texts": {
-        "es": "Consulta con tu aerolínea la antelación recomendada y el cierre del check-in; añade margen para controles y traslado entre terminales.",
-        "en": "Check your airline’s recommended arrival time and check-in deadline; allow extra time for security and terminal transfers.",
-        "pt": "Confira a antecedência recomendada e o encerramento do check-in com a companhia aérea; reserve tempo para inspeção e troca de terminal."
+        "es": "Los power banks van en el equipaje de mano. Si despachan tu bolso en la puerta de embarque, retíralos antes y conserva las baterías protegidas contra cortocircuitos. Consulta también las restricciones de tu aerolínea.",
+        "en": "Power banks belong in cabin baggage. If your bag is gate-checked, remove them first and protect spare batteries against short circuits. Check your airline’s additional restrictions.",
+        "pt": "Power banks vão na bagagem de mão. Se a mala for despachada no portão, retire-os antes e proteja as baterias contra curto-circuito. Confira também as restrições da companhia."
       },
-      "sources": [],
-      "status": "consejo editorial"
+      "sources": [
+        "powerbanks"
+      ],
+      "status": "verificado",
+      "icon": "🔋"
     },
     {
       "group": "inicio",
@@ -619,35 +901,6 @@
     },
     {
       "group": "lugares",
-      "id": "omny",
-      "texts": {
-        "es": "En Nueva York puedes pagar OMNY con tu tarjeta sin contacto o celular. Usa siempre el mismo medio para acumular el tope de US$35 en 7 días en metro y buses locales.",
-        "en": "In NYC, tap a bank card or phone on OMNY, similar to London’s Tube. Keep the same payment method for the $35 seven-day subway/local-bus cap.",
-        "pt": "Em Nova York, use cartão por aproximação ou celular no OMNY, sem recarregar um cartão de transporte. O teto de metrô e ônibus locais é US$35 em 7 dias com o mesmo meio."
-      },
-      "sources": [
-        "mta",
-        "omny"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "lugares",
-      "id": "tap",
-      "texts": {
-        "es": "El pago con tarjeta bancaria sin contacto existe en varias redes, pero no se extiende automáticamente a todos los trenes o buses de una ciudad. Revisa el operador concreto.",
-        "en": "Bank-card tapping is available on several US networks, but does not automatically cover every train or bus in a city. Check the specific operator.",
-        "pt": "Várias redes aceitam cartão bancário por aproximação, mas isso não vale automaticamente para todo trem ou ônibus da cidade. Confira a operadora."
-      },
-      "sources": [
-        "latap",
-        "wmatatap",
-        "miamitap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "lugares",
       "id": "ll",
       "texts": {
         "es": "Lightning Lane Multi Pass de Disney World permite elegir hasta 3 experiencias antes de la visita. Después de usar una, puedes reservar otra según disponibilidad; la entrada al parque se compra aparte.",
@@ -663,9 +916,9 @@
       "group": "lugares",
       "id": "ll-window",
       "texts": {
-        "es": "Para comprar Lightning Lane antes de llegar a EE. UU., revisa las restricciones geográficas oficiales. No organices tus reservas contando solo los días de anticipación del hotel.",
-        "en": "Check Disney’s geographic purchase restrictions before planning Lightning Lane bookings from the UK, Australia or another country outside the US. Hotel booking windows alone do not guarantee access abroad.",
-        "pt": "Antes de planejar a compra de Lightning Lane ainda no Brasil, confira a restrição geográfica oficial. A janela do hotel, sozinha, não garante compra fora dos EUA."
+        "es": "La guía internacional de Disney indica comprar Lightning Lane una vez en EE. UU. Desde allí, la anticipación es de hasta 7 días para hoteles elegibles o 3 para otros visitantes; no asumas que podrás reservar desde tu país.",
+        "en": "Disney’s international guidance says to buy Lightning Lane after arriving in the US. From there, eligible hotel guests can buy up to 7 days ahead, others up to 3; do not assume booking from abroad is available.",
+        "pt": "A orientação internacional da Disney indica comprar Lightning Lane após chegar aos EUA. A partir daí, hotéis elegíveis têm até 7 dias de antecedência e outros visitantes até 3; não conte com compra ainda no Brasil."
       },
       "sources": [
         "disneyuk"
@@ -711,42 +964,6 @@
         "brightstations"
       ],
       "status": "verificado"
-    },
-    {
-      "group": "lugares",
-      "id": "return",
-      "texts": {
-        "es": "Antes de reservar transporte de regreso, consulta la última salida y los avisos de obras del día; un horario habitual no garantiza servicio esa noche.",
-        "en": "Before booking a late return, check the last departure and that day’s engineering alerts; usual operating hours do not guarantee service that night.",
-        "pt": "Antes de planejar a volta tarde, confira a última saída e os avisos de obras do dia; o horário habitual não garante serviço naquela noite."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
-      "group": "lugares",
-      "id": "payment-device",
-      "texts": {
-        "es": "En redes con topes o transbordos por contacto, no alternes tarjeta física y billetera digital: el sistema puede contarlas como medios distintos.",
-        "en": "On tap-to-pay systems with caps or transfers, keep using the same card or device; plastic and its mobile-wallet version may be counted separately.",
-        "pt": "Em sistemas com teto ou integração por aproximação, use sempre o mesmo cartão ou dispositivo: cartão físico e carteira digital podem contar separadamente."
-      },
-      "sources": [
-        "omny",
-        "miamitap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "lugares",
-      "id": "booking",
-      "texts": {
-        "es": "Guarda en Documentos el QR de tus entradas y la dirección exacta del acceso; comprueba si la reserva exige seleccionar fecha u horario.",
-        "en": "Save ticket QR codes and the exact entrance address in Documents; check whether admission requires a booked date or time.",
-        "pt": "Salve em Documentos o QR dos ingressos e o endereço exato da entrada; confira se é preciso reservar data ou horário."
-      },
-      "sources": [],
-      "status": "consejo editorial"
     },
     {
       "group": "compras",
@@ -805,23 +1022,27 @@
       "group": "compras",
       "id": "return-policy",
       "texts": {
-        "es": "Antes de pagar, pregunta si el artículo es final sale y si aceptan devoluciones después de tu fecha de salida. Guarda el recibo.",
-        "en": "Check for final-sale restrictions and whether returns will still be practical after you fly home; keep the receipt.",
-        "pt": "Antes de pagar, confira se o produto é final sale e se será possível devolvê-lo depois da viagem. Guarde o recibo."
+        "es": "En Best Buy, el plazo de devolución empieza cuando recibes el producto. Consulta la política de esa categoría antes de comprar: puede haber cargos de reposición y requisitos sobre estado y accesorios.",
+        "en": "At Best Buy, the return period starts when you receive the product. Check your category’s policy before buying: restocking fees and condition/accessory requirements may apply.",
+        "pt": "Na Best Buy, o prazo de devolução começa quando você recebe o produto. Confira a política da categoria: pode haver taxa de reposição e exigências sobre estado e acessórios."
       },
-      "sources": [],
-      "status": "consejo editorial"
+      "sources": [
+        "bbreturn"
+      ],
+      "status": "verificado"
     },
     {
       "group": "compras",
       "id": "coupons",
       "texts": {
-        "es": "Antes de viajar a un outlet por un cupón, revisa vencimiento, marcas excluidas y compra mínima. Compara el precio final con otras tiendas.",
-        "en": "Before travelling to an outlet for a coupon, check expiry, excluded brands and minimum spend. Compare the final price elsewhere.",
-        "pt": "Antes de ir a um outlet por um cupom, confira validade, marcas excluídas e compra mínima. Compare o preço final em outras lojas."
+        "es": "El antiguo VIP Shopper Club de Premium Outlets ahora es Simon+. Busca las ofertas del centro que visitarás; revisa si el beneficio es digital y sus condiciones antes de contar con una cuponera.",
+        "en": "Premium Outlets’ old VIP Shopper Club is now Simon+. Look up your specific centre’s offers and check digital redemption and conditions rather than assuming a paper coupon booklet.",
+        "pt": "O antigo VIP Shopper Club dos Premium Outlets agora é Simon+. Procure as ofertas do centro escolhido e confira resgate digital e condições, sem presumir uma cuponera impressa."
       },
-      "sources": [],
-      "status": "consejo editorial"
+      "sources": [
+        "simon"
+      ],
+      "status": "verificado"
     },
     {
       "group": "compras",
@@ -838,60 +1059,15 @@
       "group": "compras",
       "id": "baggage",
       "texts": {
-        "es": "Pesa tu equipaje y revisa piezas, dimensiones y peso incluidos en tu tarifa. No todos los vuelos permiten 23 kg ni incluyen maleta despachada.",
-        "en": "Weigh your luggage and check the allowance on your actual fare; piece count, size and checked-bag inclusion vary.",
-        "pt": "Pese a bagagem e confira peças, dimensões e peso da sua tarifa. Não presuma que todo voo inclui mala despachada de 23 kg."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
-      "group": "compras",
-      "id": "final-cost",
-      "texts": {
-        "es": "Compara el costo completo: precio, sales tax aplicable y cargos de tu tarjeta. Un descuento de etiqueta no equivale al ahorro final.",
-        "en": "Compare the complete cost: shelf price, applicable sales tax and card charges. A sticker discount is not the final saving.",
-        "pt": "Compare o custo completo: etiqueta, sales tax, IOF e spread do cartão. O desconto da etiqueta não é a economia final em reais."
+        "es": "Antes de sumar una maleta, comprueba piezas, peso y dimensiones de tu boleto, también en vuelos internos. La franquicia depende de la aerolínea y la ruta; no basta con que la maleta pese menos de 23 kg.",
+        "en": "Before buying another suitcase, check your ticket’s piece, weight and size allowance, including domestic connections. Allowances vary by airline and route; staying below 23 kg alone is not enough.",
+        "pt": "Antes de comprar outra mala, confira peças, peso e dimensões da passagem, inclusive nos voos internos. A franquia varia por companhia e rota; ficar abaixo de 23 kg não basta."
       },
       "sources": [
-        "bank",
-        "iof",
-        "ioflaw"
+        "baggage-policy",
+        "bag-report"
       ],
       "status": "verificado"
-    },
-    {
-      "group": "compras",
-      "id": "security",
-      "texts": {
-        "es": "Antes de dejar el auto estacionado, guarda las compras fuera de la vista y evita mostrar objetos de valor al abrir el baúl.",
-        "en": "Keep shopping out of sight before parking, and avoid displaying valuables when opening the boot or trunk.",
-        "pt": "Antes de estacionar, deixe as compras fora de vista e evite expor objetos de valor ao abrir o porta-malas."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
-      "group": "compras",
-      "id": "voltage",
-      "texts": {
-        "es": "Antes de comprar aparatos, lee la etiqueta de entrada eléctrica y comprueba el enchufe y la garantía en tu país. Un adaptador de clavija no cambia el voltaje.",
-        "en": "Before buying appliances, check the input-voltage label, plug and warranty back home. A plug adaptor does not convert voltage.",
-        "pt": "Antes de comprar aparelhos, confira a tensão de entrada, o plugue e a garantia no Brasil. Um adaptador de tomada não transforma a tensão."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
-      "group": "compras",
-      "id": "receipt-copy",
-      "texts": {
-        "es": "Fotografía recibos y etiquetas del modelo antes de quitar el embalaje: te ayudan a identificar la compra y revisar garantías o devoluciones.",
-        "en": "Photograph receipts and model labels before discarding packaging; they help identify purchases for warranty or return enquiries.",
-        "pt": "Fotografe recibos e etiquetas do modelo antes de descartar a embalagem; eles ajudam em consultas sobre garantia e devolução."
-      },
-      "sources": [],
-      "status": "consejo editorial"
     },
     {
       "group": "compras",
@@ -1143,10 +1319,10 @@
       "id": "AR-visa",
       "country": "AR",
       "texts": {
-        "es": "Con pasaporte argentino, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+        "es": "Para turismo con pasaporte argentino, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
       },
       "sources": [
-        "usvisa",
+        "visitor-visa",
         "visa"
       ],
       "status": "verificado"
@@ -1156,10 +1332,10 @@
       "id": "MX-visa",
       "country": "MX",
       "texts": {
-        "es": "Con pasaporte mexicano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+        "es": "Para turismo con pasaporte mexicano, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
       },
       "sources": [
-        "usvisa",
+        "visitor-visa",
         "visa"
       ],
       "status": "verificado"
@@ -1169,10 +1345,10 @@
       "id": "CO-visa",
       "country": "CO",
       "texts": {
-        "es": "Con pasaporte colombiano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+        "es": "Para turismo con pasaporte colombiano, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
       },
       "sources": [
-        "usvisa",
+        "visitor-visa",
         "visa"
       ],
       "status": "verificado"
@@ -1182,10 +1358,10 @@
       "id": "PE-visa",
       "country": "PE",
       "texts": {
-        "es": "Con pasaporte peruano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+        "es": "Para turismo con pasaporte peruano, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
       },
       "sources": [
-        "usvisa",
+        "visitor-visa",
         "visa"
       ],
       "status": "verificado"
@@ -1195,10 +1371,10 @@
       "id": "CR-visa",
       "country": "CR",
       "texts": {
-        "es": "Con pasaporte costarricense, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+        "es": "Para turismo con pasaporte costarricense, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
       },
       "sources": [
-        "usvisa",
+        "visitor-visa",
         "visa"
       ],
       "status": "verificado"
@@ -1208,10 +1384,10 @@
       "id": "PA-visa",
       "country": "PA",
       "texts": {
-        "es": "Con pasaporte panameño, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+        "es": "Para turismo con pasaporte panameño, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
       },
       "sources": [
-        "usvisa",
+        "visitor-visa",
         "visa"
       ],
       "status": "verificado"
@@ -1221,10 +1397,10 @@
       "id": "GT-visa",
       "country": "GT",
       "texts": {
-        "es": "Con pasaporte guatemalteco, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+        "es": "Para turismo con pasaporte guatemalteco, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
       },
       "sources": [
-        "usvisa",
+        "visitor-visa",
         "visa"
       ],
       "status": "verificado"
@@ -1455,19 +1631,6 @@
     },
     {
       "group": "ciudad/orlando",
-      "id": "trolley-map",
-      "texts": {
-        "es": "🗺️ El I-RIDE recorre el área de International Drive. Revisa su mapa antes de usarlo para ir a un parque fuera de ese corredor.",
-        "en": "🗺️ I-RIDE serves the International Drive area; check its route map before planning trips to parks outside that corridor.",
-        "pt": "🗺️ O I-RIDE atende a região da International Drive; confira o mapa antes de planejar ir a parques fora desse corredor."
-      },
-      "sources": [
-        "trolleymap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/orlando",
       "id": "sunrail",
       "texts": {
         "es": "🚂 SunRail opera habitualmente de lunes a viernes; no cuentes con trenes regulares de fin de semana. Revisa servicios especiales.",
@@ -1489,69 +1652,6 @@
       },
       "sources": [
         "bright"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/orlando",
-      "id": "last-bus",
-      "texts": {
-        "es": "🕒 Antes de elegir bus para volver de los parques, comprueba la última salida y la parada exacta; guarda una alternativa para después del cierre.",
-        "en": "🕒 Before taking a bus back from a park, check the last departure and exact stop; save an alternative for after closing.",
-        "pt": "🕒 Antes de voltar de ônibus dos parques, confira a última saída e o ponto exato; deixe uma alternativa para depois do fechamento."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
-      "group": "ciudad/newyork",
-      "id": "fare",
-      "texts": {
-        "es": "🚇 Metro y buses locales: tarifa regular US$3; buses express y AirTrain tienen tarifas distintas.",
-        "en": "🚇 Regular subway/local-bus fare is $3; express buses and AirTrain have separate fares.",
-        "pt": "🚇 Metrô e ônibus locais: tarifa regular US$3; ônibus expressos e AirTrain têm tarifas diferentes."
-      },
-      "sources": [
-        "mta"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/newyork",
-      "id": "cap",
-      "texts": {
-        "es": "💳 OMNY limita el gasto de metro y buses locales a US$35 en 7 días con el mismo medio de pago.",
-        "en": "💳 OMNY caps subway/local-bus spending at $35 over seven days with the same payment method.",
-        "pt": "💳 O OMNY limita metrô e ônibus locais a US$35 em 7 dias com o mesmo meio de pagamento."
-      },
-      "sources": [
-        "omny"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/newyork",
-      "id": "device",
-      "texts": {
-        "es": "📱 Tarjeta física y la misma tarjeta en el celular pueden sumar por separado: no alternes si quieres alcanzar el tope.",
-        "en": "📱 A physical card and its phone-wallet version can count separately; do not switch if you want the cap.",
-        "pt": "📱 Cartão físico e o mesmo cartão no celular podem contar separadamente; não alterne se quiser atingir o teto."
-      },
-      "sources": [
-        "omny"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/newyork",
-      "id": "group",
-      "texts": {
-        "es": "👥 Si pagas por acompañantes, sus viajes no se suman al tope de tu primer pasaje. Revisa las reglas de OMNY para grupos.",
-        "en": "👥 Companion fares paid with your card do not build the cap for your first fare. Check OMNY’s group-payment rules.",
-        "pt": "👥 Viagens dos acompanhantes pagas com seu cartão não somam ao teto da sua primeira passagem. Confira as regras de grupo do OMNY."
-      },
-      "sources": [
-        "omny"
       ],
       "status": "verificado"
     },
@@ -1578,110 +1678,6 @@
       },
       "sources": [
         "siferry"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/newyork",
-      "id": "tap",
-      "texts": {
-        "es": "💳 Para pagar OMNY, acerca solo la tarjeta o el dispositivo que elegiste; no apoyes una billetera con varias tarjetas.",
-        "en": "💳 Tap only your chosen OMNY card or device, as on London’s Tube; keep other contactless cards away from the reader.",
-        "pt": "💳 Encoste só o cartão ou dispositivo escolhido no OMNY; não aproxime uma carteira com vários cartões."
-      },
-      "sources": [
-        "omny"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/miami",
-      "id": "fare",
-      "texts": {
-        "es": "🎫 La tarifa regular de Metrorail y Metrobus es US$2,25. Metromover es gratuito.",
-        "en": "🎫 Regular Metrorail/Metrobus fare is $2.25; Metromover is free.",
-        "pt": "🎫 A tarifa regular de Metrorail e Metrobus é US$2,25; o Metromover é gratuito."
-      },
-      "sources": [
-        "miami"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/miami",
-      "id": "contactless",
-      "texts": {
-        "es": "💳 Puedes usar tarjeta bancaria sin contacto o billetera digital en Metrorail y Metrobus; no necesitas comprar una EASY Card para el pasaje regular.",
-        "en": "💳 Tap a contactless bank card or mobile wallet on Metrorail/Metrobus; an EASY Card is not required for regular fares.",
-        "pt": "💳 Use cartão bancário por aproximação ou carteira digital no Metrorail/Metrobus, sem comprar EASY Card para a tarifa regular."
-      },
-      "sources": [
-        "miamitap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/miami",
-      "id": "cap",
-      "texts": {
-        "es": "📱 Con pago bancario sin contacto, el tope diario es US$5,65; usa siempre la misma tarjeta o dispositivo.",
-        "en": "📱 Contactless bank-card payment caps daily fares at $5.65; keep using the same card or device.",
-        "pt": "📱 Com cartão bancário por aproximação, o teto diário é US$5,65; use sempre o mesmo cartão ou dispositivo."
-      },
-      "sources": [
-        "miamitap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/miami",
-      "id": "mover",
-      "texts": {
-        "es": "✈️ Desde las terminales de MIA, el MIA Mover gratuito conecta con el centro de transporte; no lo confundas con el Metromover del centro.",
-        "en": "✈️ The free MIA Mover links airport terminals with the transport centre; it is different from downtown Metromover.",
-        "pt": "✈️ O MIA Mover gratuito liga os terminais ao centro de transporte; é diferente do Metromover do centro da cidade."
-      },
-      "sources": [
-        "mia"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/miami",
-      "id": "orange",
-      "texts": {
-        "es": "🚆 La línea Orange de Metrorail sirve la estación del aeropuerto MIA. Verifica la dirección del tren antes de subir.",
-        "en": "🚆 Metrorail’s Orange Line serves MIA airport station; check the train’s destination before boarding.",
-        "pt": "🚆 A linha Orange do Metrorail atende a estação do aeroporto MIA; confira o destino do trem antes de embarcar."
-      },
-      "sources": [
-        "mia"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/miami",
-      "id": "beach",
-      "texts": {
-        "es": "🏖️ Para Miami Beach, consulta un trayecto que cruce a la isla: el Metrorail no te deja directamente en South Beach.",
-        "en": "🏖️ Plan a connection across to Miami Beach; Metrorail does not take you directly to South Beach.",
-        "pt": "🏖️ Para Miami Beach, planeje a conexão até a ilha; o Metrorail não deixa você diretamente em South Beach."
-      },
-      "sources": [
-        "mia"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/miami",
-      "id": "transfer",
-      "texts": {
-        "es": "🔁 Para conservar beneficios de transbordo, usa el mismo medio electrónico; pagar cada bus en efectivo puede cambiar el costo del recorrido.",
-        "en": "🔁 Keep the same electronic payment method for transfer benefits; separate cash bus fares can change the trip cost.",
-        "pt": "🔁 Use o mesmo meio eletrônico para aproveitar a integração; pagar cada ônibus em dinheiro pode mudar o custo do trajeto."
-      },
-      "sources": [
-        "miamitap"
       ],
       "status": "verificado"
     },
@@ -1738,108 +1734,6 @@
       "status": "verificado"
     },
     {
-      "group": "ciudad/lasvegas",
-      "id": "walk",
-      "texts": {
-        "es": "🚶 Antes de elegir una estación del Monorail, calcula también la caminata entre la calle, el casino y el andén.",
-        "en": "🚶 When choosing a Monorail station, include the walk from the street through the resort to the platform.",
-        "pt": "🚶 Ao escolher uma estação do Monorail, inclua a caminhada da rua pelo resort até a plataforma."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
-      "group": "ciudad/lasvegas",
-      "id": "routes",
-      "texts": {
-        "es": "🗺️ En RTC, revisa sentido y parada del bus de regreso: el recorrido opuesto puede usar otra calle.",
-        "en": "🗺️ Check RTC’s return direction and stop; the opposite journey may use a different street.",
-        "pt": "🗺️ Confira o sentido e o ponto de volta na RTC; o trajeto contrário pode usar outra rua."
-      },
-      "sources": [
-        "rtcmap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/lasvegas",
-      "id": "events",
-      "texts": {
-        "es": "🕒 Consulta los desvíos RTC del día antes de salir al Strip; no dependas solo de un mapa guardado de otro viaje.",
-        "en": "🕒 Check RTC’s current detours before heading to the Strip instead of relying only on an old saved map.",
-        "pt": "🕒 Confira os desvios atuais da RTC antes de sair para o Strip, em vez de usar só um mapa salvo de outra viagem."
-      },
-      "sources": [
-        "rtcmap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/losangeles",
-      "id": "fare",
-      "texts": {
-        "es": "🎫 Metro: tarifa regular US$1,75. Los servicios de otras operadoras pueden tener tarifas distintas.",
-        "en": "🎫 Metro’s regular fare is $1.75; other operators may charge differently.",
-        "pt": "🎫 Metro: tarifa regular US$1,75; outras operadoras podem cobrar valores diferentes."
-      },
-      "sources": [
-        "lafares"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/losangeles",
-      "id": "cap",
-      "texts": {
-        "es": "💳 En Metro, el tope regular es US$5 diarios y US$18 en 7 días con el mismo medio compatible.",
-        "en": "💳 Metro’s regular caps are $5 per day and $18 over seven days using the same eligible payment method.",
-        "pt": "💳 No Metro, os tetos regulares são US$5 por dia e US$18 em 7 dias com o mesmo meio compatível."
-      },
-      "sources": [
-        "lacap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/losangeles",
-      "id": "transfers",
-      "texts": {
-        "es": "🔁 Con TAP o tarjeta bancaria compatible, Metro incluye transbordos durante 2 h; no incluye viajes de ida y vuelta.",
-        "en": "🔁 TAP or eligible bank-card payment includes Metro transfers for 2 hours, excluding round trips.",
-        "pt": "🔁 Com TAP ou cartão bancário compatível, o Metro inclui integração por 2 h, sem viagens de ida e volta."
-      },
-      "sources": [
-        "latap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/losangeles",
-      "id": "tap",
-      "texts": {
-        "es": "📱 Ya puedes pagar Metro con tarjeta bancaria sin contacto o billetera digital; no hace falta comprar TAP para una tarifa regular.",
-        "en": "📱 You can now tap a bank card or mobile wallet on Metro, without buying TAP for a regular fare.",
-        "pt": "📱 Já é possível pagar o Metro com cartão bancário por aproximação ou carteira digital, sem comprar TAP para a tarifa regular."
-      },
-      "sources": [
-        "latap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/losangeles",
-      "id": "cash",
-      "texts": {
-        "es": "💵 El efectivo en el bus requiere importe exacto y no acumula los topes de Metro.",
-        "en": "💵 Cash bus payment requires the exact fare and does not count towards Metro fare caps.",
-        "pt": "💵 O pagamento em dinheiro no ônibus exige valor exato e não acumula os tetos do Metro."
-      },
-      "sources": [
-        "lafares"
-      ],
-      "status": "verificado"
-    },
-    {
       "group": "ciudad/losangeles",
       "id": "b-line",
       "texts": {
@@ -1867,63 +1761,11 @@
     },
     {
       "group": "ciudad/sanfrancisco",
-      "id": "muni",
-      "texts": {
-        "es": "🎫 Muni regular: US$2,85 con Clipper o tarjeta bancaria; US$3 en efectivo o máquina.",
-        "en": "🎫 Regular Muni fare: $2.85 with Clipper or bank card; $3 cash or ticket machine.",
-        "pt": "🎫 Muni regular: US$2,85 com Clipper ou cartão bancário; US$3 em dinheiro ou máquina."
-      },
-      "sources": [
-        "sf"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/sanfrancisco",
-      "id": "transfer",
-      "texts": {
-        "es": "🔁 El pasaje regular Muni permite 120 minutos de viaje; conserva el comprobante de pago.",
-        "en": "🔁 A regular Muni fare allows 120 minutes of travel; keep proof of payment.",
-        "pt": "🔁 A tarifa regular Muni permite 120 minutos de viagem; guarde o comprovante."
-      },
-      "sources": [
-        "sf"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/sanfrancisco",
       "id": "cable",
       "texts": {
         "es": "🚋 Cable car: US$9 por viaje, sin transbordo incluido. No es la misma tarifa que un tranvía Muni regular.",
         "en": "🚋 Cable car: $9 per ride without transfers; this is not the regular Muni streetcar fare.",
         "pt": "🚋 Cable car: US$9 por viagem, sem integração; não é a tarifa de um bonde Muni regular."
-      },
-      "sources": [
-        "sf"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/sanfrancisco",
-      "id": "day",
-      "texts": {
-        "es": "🎟️ El Day Pass Muni de US$5,70 no incluye cable cars.",
-        "en": "🎟️ The $5.70 Muni Day Pass excludes cable cars.",
-        "pt": "🎟️ O Day Pass Muni de US$5,70 não inclui cable cars."
-      },
-      "sources": [
-        "sf"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/sanfrancisco",
-      "id": "visitor",
-      "texts": {
-        "es": "🎟️ El Visitor Passport de un día cuesta US$15 e incluye Muni y cable cars; no incluye BART.",
-        "en": "🎟️ The $15 one-day Visitor Passport includes Muni and cable cars, not BART.",
-        "pt": "🎟️ O Visitor Passport de um dia custa US$15 e inclui Muni e cable cars, não BART."
       },
       "sources": [
         "sf"
@@ -1958,32 +1800,6 @@
     },
     {
       "group": "ciudad/chicago",
-      "id": "fare",
-      "texts": {
-        "es": "🎫 CTA con Ventra o pago bancario: tren US$2,50, bus US$2,25; hay tarifa especial al salir de O’Hare.",
-        "en": "🎫 With Ventra or bank-card payment: CTA train $2.50, bus $2.25; O’Hare departures have a special fare.",
-        "pt": "🎫 Com Ventra ou cartão bancário: trem CTA US$2,50, ônibus US$2,25; saída de O’Hare tem tarifa especial."
-      },
-      "sources": [
-        "cta"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/chicago",
-      "id": "transfer",
-      "texts": {
-        "es": "🔁 CTA permite hasta 2 viajes adicionales en 2 h sin cargo con el mismo medio electrónico; efectivo no incluye transbordos.",
-        "en": "🔁 CTA allows up to 2 extra rides within 2 hours free with the same electronic payment; cash fares exclude transfers.",
-        "pt": "🔁 A CTA permite até 2 viagens extras em 2 h sem custo com o mesmo meio eletrônico; dinheiro não inclui integração."
-      },
-      "sources": [
-        "cta"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/chicago",
       "id": "ohare",
       "texts": {
         "es": "✈️ Desde O’Hare, el pasaje regular de tren cuesta US$5. Un pase ilimitado válido evita ese cargo adicional.",
@@ -1997,32 +1813,6 @@
     },
     {
       "group": "ciudad/chicago",
-      "id": "blue",
-      "texts": {
-        "es": "🔵 La Blue Line conecta O’Hare con el centro y funciona las 24 h; revisa avisos de obras.",
-        "en": "🔵 The Blue Line links O’Hare and downtown 24 hours a day; check engineering alerts.",
-        "pt": "🔵 A Blue Line liga O’Hare ao centro 24 h por dia; confira avisos de obras."
-      },
-      "sources": [
-        "ctablue"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/chicago",
-      "id": "midway",
-      "texts": {
-        "es": "🟠 Para Midway, consulta la Orange Line; a diferencia de la Blue Line, no presupongas servicio toda la noche.",
-        "en": "🟠 Use the Orange Line for Midway; unlike the Blue Line, do not assume all-night service.",
-        "pt": "🟠 Para Midway, consulte a Orange Line; diferente da Blue Line, não conte com serviço a noite toda."
-      },
-      "sources": [
-        "ctaair"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/chicago",
       "id": "pass",
       "texts": {
         "es": "🎟️ El pase CTA/Pace de un día vale 24 h desde el primer uso: no vence necesariamente a medianoche.",
@@ -2031,45 +1821,6 @@
       },
       "sources": [
         "cta"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/chicago",
-      "id": "cash",
-      "texts": {
-        "es": "💵 En buses CTA, el efectivo requiere importe exacto; para tomar tren compra tu boleto o usa un medio sin contacto.",
-        "en": "💵 CTA buses require exact cash; for trains buy a ticket or use contactless payment.",
-        "pt": "💵 Nos ônibus CTA, leve o valor exato; para trens compre bilhete ou use pagamento por aproximação."
-      },
-      "sources": [
-        "ctapay"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/washington",
-      "id": "rail",
-      "texts": {
-        "es": "🎫 Metrorail regular: US$2,25–6,75 según el trayecto y el horario.",
-        "en": "🎫 Regular Metrorail fare: $2.25–$6.75 depending on journey and time.",
-        "pt": "🎫 Metrorail regular: US$2,25–6,75 conforme o trajeto e o horário."
-      },
-      "sources": [
-        "wmata"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/washington",
-      "id": "bus",
-      "texts": {
-        "es": "🚌 El pasaje regular de bus local Metro cuesta US$2,25; no apliques esa tarifa a todas las redes de la región.",
-        "en": "🚌 A regular local Metro bus fare is $2.25; other regional operators may differ.",
-        "pt": "🚌 A tarifa regular do ônibus local Metro é US$2,25; outras redes da região podem cobrar diferente."
-      },
-      "sources": [
-        "wmata"
       ],
       "status": "verificado"
     },
@@ -2127,19 +1878,6 @@
       "status": "verificado"
     },
     {
-      "group": "ciudad/washington",
-      "id": "museum-location",
-      "texts": {
-        "es": "📍 Revisa la sede exacta del museo: no todas las instalaciones Smithsonian están en el National Mall.",
-        "en": "📍 Check the exact museum location; not all Smithsonian facilities are on the National Mall.",
-        "pt": "📍 Confira a unidade exata do museu; nem todas as instalações Smithsonian ficam no National Mall."
-      },
-      "sources": [
-        "si"
-      ],
-      "status": "verificado"
-    },
-    {
       "group": "ciudad/boston",
       "id": "logan",
       "texts": {
@@ -2159,19 +1897,6 @@
         "es": "🔵 La Blue Line sirve la estación Airport; un shuttle gratuito de Massport enlaza esa estación con las terminales.",
         "en": "🔵 The Blue Line serves Airport station; a free Massport shuttle links the station with the terminals.",
         "pt": "🔵 A Blue Line atende a estação Airport; um shuttle gratuito da Massport liga a estação aos terminais."
-      },
-      "sources": [
-        "logan"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/boston",
-      "id": "red",
-      "texts": {
-        "es": "🔴 La Red Line no llega directamente a las terminales de Logan: una opción es combinar en South Station con SL1.",
-        "en": "🔴 The Red Line does not reach Logan’s terminals directly; one option is transferring to SL1 at South Station.",
-        "pt": "🔴 A Red Line não chega diretamente aos terminais de Logan; uma opção é fazer conexão com SL1 em South Station."
       },
       "sources": [
         "logan"
@@ -2205,17 +1930,6 @@
       "status": "verificado"
     },
     {
-      "group": "ciudad/boston",
-      "id": "walk-time",
-      "texts": {
-        "es": "🕒 Para Freedom Trail, separa el tiempo de caminata del de visitas interiores; guarda los horarios de los lugares que más te interesan.",
-        "en": "🕒 For the Freedom Trail, allow separate time for walking and indoor visits; save opening hours for your priority stops.",
-        "pt": "🕒 Na Freedom Trail, separe o tempo de caminhada do de visitas internas; salve os horários dos locais prioritários."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
       "group": "ciudad/seattle",
       "id": "link",
       "texts": {
@@ -2225,19 +1939,6 @@
       },
       "sources": [
         "link"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/seattle",
-      "id": "orca",
-      "texts": {
-        "es": "💳 ORCA permite transbordos entre servicios participantes; no confundas ORCA en el celular con cualquier tarjeta bancaria.",
-        "en": "💳 ORCA supports transfers across participating services; a mobile ORCA card is different from an ordinary bank card.",
-        "pt": "💳 O ORCA permite integração entre serviços participantes; ORCA no celular não é o mesmo que qualquer cartão bancário."
-      },
-      "sources": [
-        "linktransfer"
       ],
       "status": "verificado"
     },
@@ -2281,17 +1982,6 @@
       "status": "verificado"
     },
     {
-      "group": "ciudad/seattle",
-      "id": "route",
-      "texts": {
-        "es": "🕒 Antes de elegir un viaje nocturno al aeropuerto, revisa el horario de la estación y deja margen para caminar hasta la terminal.",
-        "en": "🕒 Before choosing a late airport train, check station times and allow for the walk to the terminal.",
-        "pt": "🕒 Antes de escolher um trem noturno ao aeroporto, confira os horários e reserve tempo para caminhar até o terminal."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
       "group": "ciudad/neworleans",
       "id": "fare",
       "texts": {
@@ -2308,9 +1998,9 @@
       "group": "ciudad/neworleans",
       "id": "app",
       "texts": {
-        "es": "📱 Usa Le Pass para comprar y validar pasajes de bus, streetcar y ferry; reemplaza la antigua referencia a GoMobile.",
-        "en": "📱 Use Le Pass to buy and validate bus, streetcar and ferry tickets; it replaces the old GoMobile reference.",
-        "pt": "📱 Use Le Pass para comprar e validar passagens de ônibus, streetcar e ferry; ele substitui a antiga referência ao GoMobile."
+        "es": "📱 Le Pass permite comprar y validar viajes de bus, streetcar y ferry. Ten el pase activo y disponible antes de subir; no confundas comprarlo con haberlo validado.",
+        "en": "📱 Le Pass sells and validates bus, streetcar and ferry fares. Have the active pass ready before boarding; buying is not the same as validating.",
+        "pt": "📱 O Le Pass permite comprar e validar viagens de ônibus, streetcar e ferry. Tenha o passe ativo pronto ao embarcar; comprar não é o mesmo que validar."
       },
       "sources": [
         "lepass"
@@ -2342,43 +2032,6 @@
         "nortamap"
       ],
       "status": "verificado"
-    },
-    {
-      "group": "ciudad/neworleans",
-      "id": "app-live",
-      "texts": {
-        "es": "🗺️ En Le Pass puedes consultar recorridos y ubicación del transporte; revisa el regreso antes de alejarte del centro.",
-        "en": "🗺️ Le Pass provides route planning and live vehicle information; check the return before travelling beyond downtown.",
-        "pt": "🗺️ O Le Pass oferece planejamento e informações em tempo real; confira a volta antes de se afastar do centro."
-      },
-      "sources": [
-        "lepass"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/neworleans",
-      "id": "events",
-      "texts": {
-        "es": "🎭 Si viajas durante un desfile o evento, consulta desvíos RTA: un streetcar puede ser reemplazado temporalmente por bus.",
-        "en": "🎭 During parades or events, check RTA detours; a streetcar may be temporarily replaced by buses.",
-        "pt": "🎭 Durante desfiles ou eventos, confira os desvios RTA; um streetcar pode ser substituído temporariamente por ônibus."
-      },
-      "sources": [
-        "nortamap"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/neworleans",
-      "id": "pass-choice",
-      "texts": {
-        "es": "🎟️ Compara el pase con tus viajes efectivos y transbordos; no lo justifiques contando cada cambio de vehículo como otro pasaje completo.",
-        "en": "🎟️ Compare a pass against actual paid trips and transfer rules, rather than treating every vehicle change as a full fare.",
-        "pt": "🎟️ Compare o passe com as viagens pagas e as regras de integração, sem contar toda troca de veículo como tarifa cheia."
-      },
-      "sources": [],
-      "status": "consejo editorial"
     },
     {
       "group": "ciudad/denver",
@@ -2433,43 +2086,6 @@
       "status": "verificado"
     },
     {
-      "group": "ciudad/denver",
-      "id": "union",
-      "texts": {
-        "es": "🔁 Union Station reúne conexiones de tren y bus. Calcula la caminata al siguiente andén cuando combines servicios.",
-        "en": "🔁 Union Station connects rail and bus services; allow for walking to your next boarding point.",
-        "pt": "🔁 Union Station reúne conexões de trem e ônibus; reserve tempo para caminhar até o próximo embarque."
-      },
-      "sources": [
-        "denver"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/denver",
-      "id": "local-pass",
-      "texts": {
-        "es": "🎟️ El Day Pass regular de US$5,50 no incluye el aeropuerto; no lo confundas con el Airport Day Pass.",
-        "en": "🎟️ The standard $5.50 Day Pass excludes the airport; it differs from the Airport Day Pass.",
-        "pt": "🎟️ O Day Pass regular de US$5,50 não inclui o aeroporto; é diferente do Airport Day Pass."
-      },
-      "sources": [
-        "rtdday"
-      ],
-      "status": "verificado"
-    },
-    {
-      "group": "ciudad/denver",
-      "id": "mountains",
-      "texts": {
-        "es": "🏔️ Para una excursión a la montaña, comprueba el servicio hasta el destino final y la vuelta: llegar a una estación no garantiza el traslado hasta el sendero.",
-        "en": "🏔️ For a mountain trip, check service all the way to the destination and back; reaching a station does not guarantee a trailhead connection.",
-        "pt": "🏔️ Para um passeio na montanha, confira o trajeto completo e a volta; chegar à estação não garante conexão até a trilha."
-      },
-      "sources": [],
-      "status": "consejo editorial"
-    },
-    {
       "group": "compras",
       "id": "PA-moneda",
       "country": "PA",
@@ -2493,18 +2109,6 @@
         "sag"
       ],
       "status": "verificado"
-    },
-    {
-      "group": "lugares",
-      "id": "AR-omny",
-      "country": "AR",
-      "texts": {
-        "es": "OMNY se parece al gesto de usar la SUBE, pero puedes pagar con tu propia tarjeta bancaria sin contacto o celular, sin cargar una tarjeta de transporte."
-      },
-      "sources": [
-        "omny"
-      ],
-      "status": "adaptación cultural"
     },
     {
       "group": "ciudad/newyork",
@@ -2542,6 +2146,749 @@
         "disneytickets"
       ],
       "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "toll-rentals",
+      "texts": {
+        "es": "Antes de cruzar peajes con un auto alquilado, confirma cómo los pagarás y qué cargo administrativo aplica la rentadora. El costo del peaje y la comisión del programa son conceptos distintos.",
+        "en": "Before taking a rental car through tolls, confirm the payment method and rental-company administration fee. The toll itself and the toll-program fee are separate charges.",
+        "pt": "Antes de passar por pedágios com carro alugado, confirme a forma de pagamento e a taxa administrativa da locadora. Pedágio e tarifa do programa são cobranças diferentes."
+      },
+      "sources": [
+        "toll-rental"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "universal-express",
+      "texts": {
+        "es": "Universal Express es un adicional: no reemplaza la entrada al parque. Antes de pagar, verifica parques, fecha y si permite una vez por atracción o repeticiones Unlimited.",
+        "en": "Universal Express is an add-on, not park admission. Before paying, check the parks, date and whether access is once per attraction or Unlimited.",
+        "pt": "O Universal Express é um adicional, não o ingresso do parque. Antes de pagar, confira parques, data e se permite uma vez por atração ou repetições Unlimited."
+      },
+      "sources": [
+        "universal-express"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "hogwarts",
+      "texts": {
+        "es": "Para viajar en Hogwarts Express entre Universal Studios Florida e Islands of Adventure necesitas entrada Park-to-Park válida. El Express Pass no sustituye ese requisito.",
+        "en": "Hogwarts Express between Universal Studios Florida and Islands of Adventure requires valid Park-to-Park admission. An Express Pass does not replace that requirement.",
+        "pt": "Para viajar no Hogwarts Express entre Universal Studios Florida e Islands of Adventure é necessário ingresso Park-to-Park válido. O Express Pass não substitui esse requisito."
+      },
+      "sources": [
+        "hogwarts"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "accessibility",
+      "texts": {
+        "es": "Con valijas o cochecito en Nueva York, filtra estaciones accesibles en la app MTA y comprueba el estado de los ascensores. La estación más cercana puede no ofrecer un recorrido sin escaleras.",
+        "en": "With luggage or a pushchair in NYC, filter accessible stations in the MTA app and check lift status. The closest station may not offer a step-free route.",
+        "pt": "Com malas ou carrinho em Nova York, filtre estações acessíveis no app MTA e confira os elevadores. A estação mais próxima pode não oferecer trajeto sem escadas."
+      },
+      "sources": [
+        "mta-access"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "missing-bag",
+      "texts": {
+        "es": "Si tu maleta despachada no aparece, presenta el reporte de equipaje faltante en el área de reclamo antes de salir del aeropuerto. Guarda el número de caso y la etiqueta de equipaje.",
+        "en": "If your checked bag does not arrive, file a missing-bag report in baggage reclaim before leaving the airport. Keep the case number and baggage tag.",
+        "pt": "Se a mala despachada não chegar, faça o registro de bagagem extraviada na área de retirada antes de sair do aeroporto. Guarde o protocolo e a etiqueta."
+      },
+      "sources": [
+        "bag-report"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "unlocked-phone",
+      "texts": {
+        "es": "Si compras un iPhone en Apple para usarlo en otro país, revisa la opción “Connect to any carrier later” y confirma que quede desbloqueado. Comprueba además que tu operadora admita el modelo y su eSIM.",
+        "en": "When buying an iPhone from Apple for use abroad, check “Connect to any carrier later” and confirm it is unlocked. Also verify that your home network supports that model and its eSIM.",
+        "pt": "Se comprar um iPhone na Apple para usar no Brasil, confira “Connect to any carrier later” e confirme o desbloqueio. Verifique também se sua operadora aceita o modelo e seu eSIM."
+      },
+      "sources": [
+        "apple-buy",
+        "apple-unlock"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "warranty-country",
+      "texts": {
+        "es": "No presupongas una garantía internacional de iPhone o iPad: Apple puede limitar el servicio al país donde se vendió originalmente. Consulta las condiciones del modelo antes de comprarlo en EE. UU.",
+        "en": "Do not assume an iPhone or iPad has worldwide warranty service: Apple may restrict service to the original country of sale. Check the model’s terms before buying in the US.",
+        "pt": "Não presuma garantia internacional de iPhone ou iPad: a Apple pode limitar o atendimento ao país da venda original. Confira as condições do modelo antes de comprar nos EUA."
+      },
+      "sources": [
+        "apple-warranty"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "pump-zip",
+      "texts": {
+        "es": "Si el surtidor pide un ZIP que tu tarjeta extranjera no puede validar, ve a la caja e indica el número del surtidor. Evita probar códigos postales inventados.",
+        "en": "If a petrol pump cannot validate the billing ZIP for your foreign card, go inside and give the cashier your pump number. Do not rely on invented US ZIP codes.",
+        "pt": "Se a bomba não validar o ZIP do cartão brasileiro, vá ao caixa e informe o número da bomba. Não conte com códigos postais americanos inventados."
+      },
+      "sources": [
+        "pump-zip"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "ttc",
+      "texts": {
+        "es": "🎢 En Magic Kingdom, el estacionamiento y la bajada habitual de Uber/Lyft están en el TTC. Desde allí todavía debes tomar monorriel o ferry hasta la entrada; añade ese tramo al tiempo de llegada.",
+        "en": "🎢 Magic Kingdom parking and the usual Uber/Lyft drop-off are at the TTC. You still need the monorail or ferry to the park entrance; allow for that extra leg.",
+        "pt": "🎢 O estacionamento e o desembarque habitual de Uber/Lyft para Magic Kingdom ficam no TTC. Ainda é preciso pegar monorail ou ferry até a entrada; inclua esse trecho no tempo de chegada."
+      },
+      "sources": [
+        "ttc"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "visitor-toll",
+      "texts": {
+        "es": "🚗 Si retiras y devuelves un auto de una rentadora participante en MCO, evalúa Visitor Toll Pass. Se reserva sin cargo adicional al peaje; para evitar cobro doble debes rechazar el programa de peajes de la rentadora.",
+        "en": "🚗 If collecting and returning a participating rental car at MCO, consider Visitor Toll Pass. There is no added toll-program fee; decline the rental firm’s toll programme to avoid double billing.",
+        "pt": "🚗 Se retirar e devolver carro de locadora participante no MCO, avalie o Visitor Toll Pass. Não há tarifa adicional do programa; recuse o programa de pedágio da locadora para evitar cobrança dupla."
+      },
+      "sources": [
+        "visitor-toll"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "springs-buses",
+      "texts": {
+        "es": "🛍️ Disney Springs tiene estacionamiento estándar gratuito, pero no es un atajo garantizado a los parques. Para sus buses a hoteles pueden pedir prueba de hospedaje o reserva válida de comida/experiencia.",
+        "en": "🛍️ Disney Springs has free standard parking, but is not a guaranteed park-access shortcut. Resort buses may require proof of a hotel stay or valid dining/experience reservation.",
+        "pt": "🛍️ O estacionamento padrão de Disney Springs é gratuito, mas não é um atalho garantido aos parques. Ônibus aos hotéis podem exigir comprovação de hospedagem ou reserva válida de refeição/experiência."
+      },
+      "sources": [
+        "disneyparking",
+        "springs"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "omny-complete",
+      "texts": {
+        "es": "🚇 OMNY: metro y buses locales cuestan US$3, con tope de US$35 en 7 días. Usa siempre la misma tarjeta o dispositivo: la tarjeta física y su versión en el celular acumulan por separado.",
+        "en": "🚇 OMNY: subway/local buses cost $3, capped at $35 over seven days. Keep the same card or device: plastic and its mobile-wallet version build separate caps.",
+        "pt": "🚇 OMNY: metrô e ônibus locais custam US$3, com teto de US$35 em 7 dias. Use o mesmo cartão ou dispositivo: o físico e a versão no celular acumulam separadamente."
+      },
+      "sources": [
+        "mta",
+        "omny"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "omny-group",
+      "texts": {
+        "es": "👥 Puedes pagar hasta 3 acompañantes con OMNY, pero solo tu primer toque suma a tu tope. Para que cada viajero acumule el suyo, debe usar su propio medio de pago.",
+        "en": "👥 OMNY lets you pay for up to 3 companions, but only the first tap builds your cap. Each traveller needs a separate payment method to build their own.",
+        "pt": "👥 O OMNY permite pagar até 3 acompanhantes, mas só o primeiro toque soma ao seu teto. Para cada pessoa acumular o próprio, use meios de pagamento separados."
+      },
+      "sources": [
+        "omny"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "met-eligibility",
+      "texts": {
+        "es": "🖼️ The Met no ofrece “paga lo que quieras” a todo turista. Esa modalidad tiene requisitos de residencia o estudios; la entrada general incluye ambas sedes el mismo día, no varios días.",
+        "en": "🖼️ The Met’s pay-what-you-wish admission is limited by residence/student eligibility, not available to every tourist. General admission covers both locations on the same day, not multiple days.",
+        "pt": "🖼️ O “pague quanto quiser” do Met exige residência ou condição estudantil elegível; não vale para todo turista. O ingresso geral inclui as duas unidades no mesmo dia, não em vários dias."
+      },
+      "sources": [
+        "metvisit"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "statue",
+      "texts": {
+        "es": "🗽 Para desembarcar en Liberty Island, compra el ferry autorizado de Statue City Cruises. Acceso general, pedestal y corona son modalidades distintas; la corona requiere reserva anticipada y no tiene ascensor.",
+        "en": "🗽 To land on Liberty Island, use authorised Statue City Cruises. General admission, pedestal and crown are different options; the crown needs advance booking and has no lift.",
+        "pt": "🗽 Para desembarcar na Liberty Island, use o ferry autorizado Statue City Cruises. Acesso geral, pedestal e coroa são modalidades diferentes; a coroa exige reserva antecipada e não tem elevador."
+      },
+      "sources": [
+        "liberty"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "911",
+      "texts": {
+        "es": "🏙️ El Memorial del 11-S al aire libre es gratuito y no exige comprar la entrada del museo. El museo interior es otra visita y requiere boleto.",
+        "en": "🏙️ The outdoor 9/11 Memorial is free without a Museum ticket. The indoor Museum is a separate, ticketed visit.",
+        "pt": "🏙️ O Memorial do 11 de Setembro ao ar livre é gratuito, sem ingresso do museu. O museu interno é uma visita separada e exige bilhete."
+      },
+      "sources": [
+        "memorial911"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "transit-pay",
+      "texts": {
+        "es": "💳 Metrorail/Metrobus regular: US$2,25. Con tarjeta bancaria sin contacto, el tope diario es US$5,65 usando siempre el mismo medio; Metromover es gratuito.",
+        "en": "💳 Regular Metrorail/Metrobus fare is $2.25. The daily contactless bank-card cap is $5.65 with the same payment method; Metromover is free.",
+        "pt": "💳 Metrorail/Metrobus regular: US$2,25. Com o mesmo cartão bancário por aproximação, o teto diário é US$5,65; Metromover é gratuito."
+      },
+      "sources": [
+        "miami",
+        "miamitap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "airport-orange",
+      "texts": {
+        "es": "✈️ Desde MIA, toma el MIA Mover gratuito hasta el centro de transporte y allí la Orange Line de Metrorail. No confundas ese primer traslado con el Metromover del centro.",
+        "en": "✈️ From MIA, take the free MIA Mover to the transport centre, then Metrorail’s Orange Line. That airport shuttle is different from downtown Metromover.",
+        "pt": "✈️ No MIA, pegue o MIA Mover gratuito até o centro de transporte e depois a Orange Line do Metrorail. Não confunda com o Metromover do centro."
+      },
+      "sources": [
+        "mia"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "beach-trolley",
+      "texts": {
+        "es": "🏖️ Dentro de Miami Beach, el trolley municipal es gratuito y funciona normalmente de 8:00 a 23:00. Revisa la ruta de South Beach, Mid Beach o North Beach que te corresponda.",
+        "en": "🏖️ Within Miami Beach, the city trolley is free and normally runs 8 am–11 pm. Choose the appropriate South Beach, Mid Beach or North Beach route.",
+        "pt": "🏖️ Dentro de Miami Beach, o trolley municipal é gratuito e funciona normalmente das 8h às 23h. Escolha a rota adequada a South Beach, Mid Beach ou North Beach."
+      },
+      "sources": [
+        "beachtrolley"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "coral-trolley",
+      "texts": {
+        "es": "🚎 El trolley de Coral Gables es gratuito y tiene rutas Ponce de Leon y Grand Avenue. Es otra red: no lo confundas con el trolley de Miami Beach.",
+        "en": "🚎 Coral Gables’ free trolley has Ponce de Leon and Grand Avenue routes. It is a separate network from Miami Beach’s trolley.",
+        "pt": "🚎 O trolley gratuito de Coral Gables tem rotas Ponce de Leon e Grand Avenue. É outra rede, diferente do trolley de Miami Beach."
+      },
+      "sources": [
+        "coralgables"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "wynwood-entry",
+      "texts": {
+        "es": "🎨 Wynwood Walls es un museo con política de entradas propia. La gratuidad anunciada para residentes de Miami-Dade exige identificación local y no se extiende automáticamente a visitantes extranjeros.",
+        "en": "🎨 Wynwood Walls is a museum with its own admission policy. Miami-Dade resident free entry requires local photo ID and does not automatically include overseas visitors.",
+        "pt": "🎨 Wynwood Walls é um museu com política própria de ingresso. A gratuidade para residentes de Miami-Dade exige documento local e não vale automaticamente para turistas brasileiros."
+      },
+      "sources": [
+        "wynwood"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "tap-transfer",
+      "texts": {
+        "es": "🔁 Conserva el mismo medio electrónico al combinar Metrorail y Metrobus para aplicar beneficios de transbordo. Pagar cada bus en efectivo puede hacerte perder esa integración.",
+        "en": "🔁 Keep the same electronic payment method for Metrorail/Metrobus transfer benefits; paying each bus in cash can lose those benefits.",
+        "pt": "🔁 Use o mesmo meio eletrônico para integração entre Metrorail e Metrobus; pagar cada ônibus em dinheiro pode perder o benefício."
+      },
+      "sources": [
+        "miamitap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "beach-location",
+      "texts": {
+        "es": "📍 Miami Beach está al otro lado de la bahía: un hotel en Downtown o junto a MIA no es un hotel en South Beach. Comprueba el trayecto real antes de elegir alojamiento por precio.",
+        "en": "📍 Miami Beach is across the bay: a Downtown or MIA-area hotel is not in South Beach. Check the actual journey before choosing a hotel on price.",
+        "pt": "📍 Miami Beach fica do outro lado da baía: hotel em Downtown ou perto do MIA não é em South Beach. Confira o trajeto real antes de escolher só pelo preço."
+      },
+      "sources": [
+        "mia",
+        "beachtrolley"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "fountains",
+      "texts": {
+        "es": "⛲ Ver las fuentes de Bellagio desde el exterior es gratuito. El espectáculo puede cancelarse por clima; no compres una entrada solo para ver las fuentes públicas.",
+        "en": "⛲ Watching the Bellagio fountains from outside is free. Shows may be cancelled for weather; no attraction ticket is needed for the public fountain display.",
+        "pt": "⛲ Assistir às fontes do Bellagio pelo lado de fora é gratuito. O show pode ser cancelado por clima; não é necessário ingresso para o espetáculo público."
+      },
+      "sources": [
+        "bellagio"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "neon",
+      "texts": {
+        "es": "💡 The Neon Museum vende modalidades diurnas y nocturnas diferentes. Si tu objetivo es fotografiar los carteles iluminados, elige la sesión correspondiente antes de pagar.",
+        "en": "💡 The Neon Museum sells different daytime and evening admissions. If you want illuminated-sign photos, choose the corresponding session before buying.",
+        "pt": "💡 O Neon Museum vende ingressos diurnos e noturnos diferentes. Se quiser fotografar os letreiros iluminados, escolha a sessão correspondente antes de pagar."
+      },
+      "sources": [
+        "neon"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "metro-rules",
+      "texts": {
+        "es": "🚇 Metro regular cuesta US$1,75. Con el mismo TAP, tarjeta bancaria o dispositivo compatible, acumulas topes de US$5 al día y US$18 en 7 días; el efectivo no los acumula.",
+        "en": "🚇 Metro’s regular fare is $1.75. The same eligible TAP, bank card or device earns caps of $5 per day and $18 over seven days; cash does not.",
+        "pt": "🚇 A tarifa regular Metro é US$1,75. Com o mesmo TAP, cartão bancário ou dispositivo compatível, os tetos são US$5 por dia e US$18 em 7 dias; dinheiro não acumula."
+      },
+      "sources": [
+        "lafares",
+        "latap",
+        "lacap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "metro-transfers",
+      "texts": {
+        "es": "🔁 Metro incluye transbordos por 2 h al pagar con TAP o tarjeta compatible, pero no viajes de ida y vuelta. Si pagas el bus en efectivo, lleva el importe exacto.",
+        "en": "🔁 TAP or eligible card payment includes Metro transfers for 2 hours, excluding round trips. Cash bus payment needs the exact fare.",
+        "pt": "🔁 TAP ou cartão compatível inclui integração Metro por 2 h, sem ida e volta. No pagamento em dinheiro no ônibus, leve o valor exato."
+      },
+      "sources": [
+        "latap",
+        "lafares"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "flyaway",
+      "texts": {
+        "es": "✈️ LAX FlyAway conecta el aeropuerto con Union Station y Van Nuys. Si compras boleto móvil, actívalo al embarcar: después de activarlo tiene una validez limitada, no desde cualquier momento de tu viaje.",
+        "en": "✈️ LAX FlyAway serves Union Station and Van Nuys. Activate a mobile ticket when boarding: activation starts a limited validity window.",
+        "pt": "✈️ O LAX FlyAway liga o aeroporto a Union Station e Van Nuys. Ative o bilhete móvel ao embarcar: a ativação inicia um prazo limitado de validade."
+      },
+      "sources": [
+        "flyaway",
+        "flyawayticket"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "getty",
+      "texts": {
+        "es": "🖼️ El Getty Center tiene entrada gratuita con reserva de horario, pero el estacionamiento se cobra aparte. No confundas la reserva del museo con estacionamiento gratuito ni con el Getty Villa.",
+        "en": "🖼️ Getty Center admission is free with a timed reservation, but parking is charged separately. A museum booking is not free parking or a Getty Villa reservation.",
+        "pt": "🖼️ O Getty Center tem entrada gratuita com horário reservado, mas estacionamento pago à parte. A reserva não inclui estacionamento grátis nem visita ao Getty Villa."
+      },
+      "sources": [
+        "getty",
+        "gettyparking"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "griffith",
+      "texts": {
+        "es": "🔭 El edificio, los jardines y los telescopios públicos de Griffith Observatory son gratuitos. Los shows del planetario y el estacionamiento tienen cobro separado.",
+        "en": "🔭 Griffith Observatory’s building, grounds and public telescopes are free. Planetarium shows and parking are charged separately.",
+        "pt": "🔭 O prédio, os jardins e os telescópios públicos do Griffith Observatory são gratuitos. Shows do planetário e estacionamento são cobrados à parte."
+      },
+      "sources": [
+        "griffith"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "muni-combined",
+      "texts": {
+        "es": "🎫 Muni regular: US$2,85 con Clipper o tarjeta bancaria y US$3 en efectivo, con 120 minutos de viaje. Los cable cars tienen tarifa propia.",
+        "en": "🎫 Regular Muni fare is $2.85 with Clipper/bank card or $3 cash, allowing 120 minutes of travel. Cable cars have a separate fare.",
+        "pt": "🎫 Muni regular: US$2,85 com Clipper/cartão bancário ou US$3 em dinheiro, com 120 minutos de viagem. Cable cars têm tarifa própria."
+      },
+      "sources": [
+        "sf"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "pass-choice",
+      "texts": {
+        "es": "🎟️ Si quieres cable cars, compara el Visitor Passport de un día (US$15) con el Day Pass Muni (US$5,70): solo el primero los incluye. Ninguno sustituye el boleto BART al aeropuerto.",
+        "en": "🎟️ For cable cars, compare the $15 one-day Visitor Passport with the $5.70 Muni Day Pass: only the former includes them. Neither replaces your airport BART fare.",
+        "pt": "🎟️ Para cable cars, compare o Visitor Passport de um dia (US$15) com o Day Pass Muni (US$5,70): só o primeiro os inclui. Nenhum substitui o BART ao aeroporto."
+      },
+      "sources": [
+        "sf",
+        "sfo"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "alcatraz",
+      "texts": {
+        "es": "🏝️ Para desembarcar en Alcatraz necesitas ferry de Alcatraz City Cruises, el operador autorizado por NPS. Un crucero que solo pasa junto a la isla no permite visitar la prisión.",
+        "en": "🏝️ Landing on Alcatraz requires the NPS-authorised Alcatraz City Cruises ferry. A sightseeing boat that only sails past does not include a prison visit.",
+        "pt": "🏝️ Para desembarcar em Alcatraz, é necessário o ferry Alcatraz City Cruises, autorizado pelo NPS. Um passeio de barco que só passa pela ilha não inclui visita à prisão."
+      },
+      "sources": [
+        "alcatraz"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "golden-gate",
+      "texts": {
+        "es": "🚗 El Golden Gate cobra peaje solo al conducir hacia San Francisco y no acepta efectivo en el puente. Si alquilas auto, acuerda cómo pagarlo antes de cruzar para evitar comisiones inesperadas.",
+        "en": "🚗 Golden Gate tolls apply only when driving towards San Francisco, with no cash collection at the bridge. Agree the rental-car payment method before crossing.",
+        "pt": "🚗 A Golden Gate cobra pedágio só no sentido de San Francisco, sem pagamento em dinheiro na ponte. Combine o pagamento do carro alugado antes de atravessar."
+      },
+      "sources": [
+        "ggbridge",
+        "gg-rental"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "cta-combined",
+      "texts": {
+        "es": "🚇 Con Ventra o pago bancario, CTA cobra US$2,50 en tren y US$2,25 en bus, con hasta 2 viajes adicionales en 2 h. Desde O’Hare hay tarifa especial.",
+        "en": "🚇 With Ventra or bank-card payment, CTA fares are $2.50 train/$2.25 bus, with up to 2 extra rides in 2 hours. O’Hare departures have a special fare.",
+        "pt": "🚇 Com Ventra ou cartão bancário, a CTA cobra US$2,50 no trem e US$2,25 no ônibus, com até 2 viagens extras em 2 h. O’Hare tem tarifa especial."
+      },
+      "sources": [
+        "cta"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "airports",
+      "texts": {
+        "es": "✈️ O’Hare usa Blue Line, con servicio las 24 h; Midway usa Orange Line, que no funciona toda la noche. No intercambies las rutas al calcular un vuelo temprano.",
+        "en": "✈️ O’Hare uses the 24-hour Blue Line; Midway uses the Orange Line, which is not all-night. Check the correct airport for early flights.",
+        "pt": "✈️ O’Hare usa a Blue Line, 24 h; Midway usa a Orange Line, que não funciona a noite toda. Confira o aeroporto certo para voos cedo."
+      },
+      "sources": [
+        "ctablue",
+        "ctaair"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "millennium",
+      "texts": {
+        "es": "🫘 Millennium Park, incluido el arte público de Cloud Gate, tiene acceso gratuito. No necesitas comprar una excursión para entrar al parque.",
+        "en": "🫘 Millennium Park, including Cloud Gate’s public art, has free admission. A paid guided tour is not required to enter.",
+        "pt": "🫘 O Millennium Park, incluindo a arte pública Cloud Gate, tem entrada gratuita. Não é preciso comprar excursão para entrar no parque."
+      },
+      "sources": [
+        "millennium"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "resident-days",
+      "texts": {
+        "es": "🐠 Las horas gratuitas de Shedd Aquarium para residentes de Illinois no incluyen automáticamente a turistas extranjeros, ni por acompañar a un residente. Revisa la categoría antes de reservar.",
+        "en": "🐠 Shedd Aquarium’s Illinois-resident free hours do not automatically include overseas visitors, even when accompanying a resident. Check eligibility before booking.",
+        "pt": "🐠 Os horários gratuitos do Shedd Aquarium para residentes de Illinois não incluem automaticamente turistas brasileiros, mesmo acompanhando um residente. Confira a elegibilidade."
+      },
+      "sources": [
+        "shedd-free"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "architecture-cruise",
+      "texts": {
+        "es": "🚤 Si buscas el crucero del Chicago Architecture Center, confirma que sea el CAC River Cruise aboard First Lady. No todo paseo en barco del río incluye ese guía ni el mismo recorrido.",
+        "en": "🚤 For the Chicago Architecture Center cruise, choose CAC River Cruise aboard First Lady. Other river boats do not necessarily include the same guide or route.",
+        "pt": "🚤 Se quiser o cruzeiro do Chicago Architecture Center, escolha CAC River Cruise aboard First Lady. Outros barcos do rio não incluem necessariamente o mesmo guia ou percurso."
+      },
+      "sources": [
+        "cac-cruise"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "fares-combined",
+      "texts": {
+        "es": "🎫 Metrorail regular cuesta US$2,25–6,75 según trayecto y horario; el bus local Metro cuesta US$2,25. Usa la misma tarjeta al entrar y salir del tren.",
+        "en": "🎫 Regular Metrorail fares are $2.25–$6.75 by journey/time; local Metro buses cost $2.25. Use the same card to enter and leave rail stations.",
+        "pt": "🎫 Metrorail regular custa US$2,25–6,75 conforme trajeto/horário; ônibus local Metro custa US$2,25. Use o mesmo cartão para entrar e sair do trem."
+      },
+      "sources": [
+        "wmata",
+        "wmatatap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "capitol",
+      "texts": {
+        "es": "🏛️ El tour del Capitolio es gratuito y conviene reservarlo en visitthecapitol.gov. No incluye las galerías del Senado o la Cámara: son accesos distintos.",
+        "en": "🏛️ Capitol tours are free; book through visitthecapitol.gov. The tour does not include Senate or House galleries, which have separate access.",
+        "pt": "🏛️ O tour do Capitólio é gratuito; reserve em visitthecapitol.gov. Ele não inclui as galerias do Senado ou da Câmara, que têm acesso separado."
+      },
+      "sources": [
+        "capitol"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "monument",
+      "texts": {
+        "es": "🗼 Para subir al Washington Monument necesitas boleto. La visita no tiene entrada de pago, pero la reserva online cobra una tarifa de gestión; hay boletos del día limitados en el Lodge.",
+        "en": "🗼 Going up the Washington Monument requires a ticket. Admission is free, but online reservations have a handling fee; limited same-day tickets are available at the Lodge.",
+        "pt": "🗼 Para subir ao Washington Monument é necessário bilhete. A visita é gratuita, mas a reserva online cobra taxa; há bilhetes limitados do dia no Lodge."
+      },
+      "sources": [
+        "monument"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "freedom-fees",
+      "texts": {
+        "es": "🚶 Caminar Freedom Trail por tu cuenta es gratuito; algunas visitas interiores y los tours guiados se pagan aparte. La línea roja no representa un boleto que incluya todos los edificios.",
+        "en": "🚶 Walking the Freedom Trail independently is free; some interiors and guided tours cost extra. The red trail is not an admission pass to every building.",
+        "pt": "🚶 Percorrer a Freedom Trail por conta própria é gratuito; alguns interiores e tours guiados são pagos. A linha vermelha não é um ingresso para todos os prédios."
+      },
+      "sources": [
+        "freedom-fees"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "constitution-id",
+      "texts": {
+        "es": "⚓ Para subir al USS Constitution, mayores de 18 años deben presentar identificación física válida o pasaporte y pasar seguridad. El barco y el museo cercano se administran por separado.",
+        "en": "⚓ To board USS Constitution, adults 18+ need valid physical photo ID or a passport and must clear security. The ship and nearby museum are operated separately.",
+        "pt": "⚓ Para embarcar no USS Constitution, maiores de 18 anos precisam de documento físico válido ou passaporte e inspeção de segurança. O navio e o museu próximo têm gestão separada."
+      },
+      "sources": [
+        "constitution",
+        "freedom"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "accessible-trip",
+      "texts": {
+        "es": "🧳 Con valijas o cochecito, usa el planificador accesible de MBTA y sus alertas de ascensores. No elijas una conexión solo por ser la más corta en el mapa.",
+        "en": "🧳 With luggage or a pushchair, use MBTA’s accessible trip planner and lift alerts, rather than choosing a connection only because it is shortest on the map.",
+        "pt": "🧳 Com malas ou carrinho, use o planejador acessível da MBTA e os alertas de elevadores, em vez de escolher a conexão só pela distância no mapa."
+      },
+      "sources": [
+        "boston-access"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "bainbridge-walk",
+      "texts": {
+        "es": "⛴️ En Seattle–Bainbridge Island, el pasaje de peatón se cobra al salir de Seattle; el regreso a pie desde Bainbridge no tiene otro cobro de pasajero. Los vehículos tienen reglas diferentes.",
+        "en": "⛴️ On Seattle–Bainbridge Island, walk-on passenger fares are collected in Seattle; the walk-on return from Bainbridge has no further passenger charge. Vehicles follow different rules.",
+        "pt": "⛴️ Em Seattle–Bainbridge Island, o passageiro a pé paga saindo de Seattle; a volta a pé de Bainbridge não cobra outra passagem. Veículos têm regras diferentes."
+      },
+      "sources": [
+        "bainbridge"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "pike-free",
+      "texts": {
+        "es": "🐟 Entrar a Pike Place Market es gratuito. Los tours gastronómicos son opcionales y se pagan por separado; no necesitas uno para recorrer el mercado.",
+        "en": "🐟 Pike Place Market has free admission. Food tours are optional paid experiences; you do not need one to explore the market.",
+        "pt": "🐟 A entrada no Pike Place Market é gratuita. Tours gastronômicos são opcionais e pagos à parte; não são necessários para conhecer o mercado."
+      },
+      "sources": [
+        "pikefree"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "airport202",
+      "texts": {
+        "es": "✈️ Desde MSY, RTA opera el Airport Express 202. No confundas su boleto o pase con los de JET: para combinar ambas redes, el aeropuerto indica que se necesita Regional Ride u otro pago separado.",
+        "en": "✈️ RTA runs Airport Express 202 from MSY. Do not assume its ticket/pass covers JET: the airport specifies Regional Ride for both networks, or separate fares.",
+        "pt": "✈️ A RTA opera o Airport Express 202 saindo do MSY. Não presuma integração com JET: o aeroporto indica Regional Ride para ambas as redes ou pagamentos separados."
+      },
+      "sources": [
+        "msy"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "cafe-cash",
+      "texts": {
+        "es": "☕ Si vas al Café du Monde original del French Market, lleva efectivo: su carta oficial indica “Cash Only”. No supongas que podrás pagar los beignets con tarjeta.",
+        "en": "☕ Bring cash to the original French Market Café du Monde: its official menu says “Cash Only”. Do not rely on a card for your beignets.",
+        "pt": "☕ Leve dinheiro ao Café du Monde original do French Market: o cardápio oficial informa “Cash Only”. Não conte com cartão para os beignets."
+      },
+      "sources": [
+        "cafecash"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "red-rocks",
+      "texts": {
+        "es": "🎵 Red Rocks permite visitas por cuenta propia sin pagar entrada ni estacionamiento cuando no hay evento. En días de concierto el anfiteatro puede cerrar temprano: confirma el acceso de ese día, no la hora del show.",
+        "en": "🎵 Red Rocks allows free self-guided visits and parking on non-event days. On concert days the amphitheatre can close early; check daytime access, not just showtime.",
+        "pt": "🎵 O Red Rocks permite visita por conta própria e estacionamento gratuitos em dias sem evento. Em dias de show, o anfiteatro pode fechar cedo; confira o acesso diurno, não só o horário do espetáculo."
+      },
+      "sources": [
+        "redrocks"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "rocky-timed",
+      "texts": {
+        "es": "🏔️ Para una excursión a Rocky Mountain National Park, comprueba si tu fecha y sector requieren Timed Entry y si incluye Bear Lake Road. El permiso de horario y la entrada al parque son requisitos distintos.",
+        "en": "🏔️ For Rocky Mountain National Park, check whether your date/area needs Timed Entry and whether it includes Bear Lake Road. A time reservation and park admission are separate requirements.",
+        "pt": "🏔️ Para Rocky Mountain National Park, confira se a data/área exige Timed Entry e se inclui Bear Lake Road. A reserva de horário e a entrada do parque são requisitos separados."
+      },
+      "sources": [
+        "rocky"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "wdw-parks",
+      "texts": {
+        "es": "Disney World tiene cuatro parques temáticos: Magic Kingdom, EPCOT, Hollywood Studios y Animal Kingdom. Antes de comprar, arma el calendario por parque y confirma qué días y accesos cubre tu entrada.",
+        "en": "Disney World has four theme parks: Magic Kingdom, EPCOT, Hollywood Studios and Animal Kingdom. Plan your days by park before buying, then check which dates and park access your ticket covers.",
+        "pt": "O Disney World tem quatro parques temáticos: Magic Kingdom, EPCOT, Hollywood Studios e Animal Kingdom. Organize os dias por parque antes de comprar e confira as datas e os acessos incluídos no ingresso."
+      },
+      "sources": [
+        "wdw-parks"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "universal-parks",
+      "texts": {
+        "es": "Universal Orlando: compara entradas según los parques que quieras visitar: Universal Studios Florida, Islands of Adventure, Epic Universe y el acuático Volcano Bay. Comprueba que tu producto incluya Epic Universe y las fechas elegidas; el nombre “Universal” por sí solo no alcanza.",
+        "en": "Universal Orlando: compare tickets for the parks you want—Universal Studios Florida, Islands of Adventure, Epic Universe and the Volcano Bay water park. Check that your product includes Epic Universe and your chosen dates; the Universal name alone is not enough.",
+        "pt": "Universal Orlando: compare ingressos para os parques desejados — Universal Studios Florida, Islands of Adventure, Epic Universe e o aquático Volcano Bay. Confira se o produto inclui Epic Universe e as datas escolhidas; só o nome Universal não basta."
+      },
+      "sources": [
+        "universal-parks"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "hogwarts-express",
+      "texts": {
+        "es": "Hogwarts Express une Diagon Alley en Universal Studios Florida con Hogsmeade en Islands of Adventure. Necesitas una entrada con acceso Park-to-Park entre esos dos parques; revisa también los cierres de la atracción antes de organizar el día.",
+        "en": "Hogwarts Express links Diagon Alley in Universal Studios Florida with Hogsmeade in Islands of Adventure. You need Park-to-Park access between those two parks; check attraction closures before planning your day around the train.",
+        "pt": "O Hogwarts Express liga Diagon Alley no Universal Studios Florida a Hogsmeade no Islands of Adventure. É preciso acesso Park-to-Park entre esses dois parques; confira também os fechamentos da atração antes de organizar o dia."
+      },
+      "sources": [
+        "hogwarts-express"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "disneyland-entry",
+      "texts": {
+        "es": "Disneyland Resort en California tiene Disneyland Park y Disney California Adventure. A partir de 3 años se requiere entrada válida y reserva para el mismo parque y fecha: confirma ambas antes de cerrar el traslado.",
+        "en": "California’s Disneyland Resort has Disneyland Park and Disney California Adventure. Guests aged 3 and over need valid admission and a reservation for the same park and date: confirm both before booking transport.",
+        "pt": "O Disneyland Resort na Califórnia tem Disneyland Park e Disney California Adventure. A partir de 3 anos, é preciso ingresso válido e reserva para o mesmo parque e data: confirme ambos antes de fechar o transporte."
+      },
+      "sources": [
+        "disneyland-entry"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "hollywood-entry",
+      "texts": {
+        "es": "Universal Studios Hollywood: distingue el ticket Universal Express, que incluye entrada de un día, del Express Add-On, que requiere comprar la entrada aparte. Revisa las atracciones excluidas y la fecha del producto antes de pagar.",
+        "en": "Universal Studios Hollywood: distinguish the Universal Express ticket, which includes one-day admission, from the Express Add-On, which requires separate admission. Check excluded attractions and the product date before paying.",
+        "pt": "Universal Studios Hollywood: diferencie o ingresso Universal Express, que inclui entrada de um dia, do Express Add-On, que exige ingresso de entrada separado. Confira as atrações excluídas e a data do produto antes de pagar."
+      },
+      "sources": [
+        "hollywood-entry"
+      ],
+      "status": "verificado"
     }
   ],
   "country_shop": {
@@ -2569,8 +2916,8 @@
       "Para regresar a Costa Rica, revisa los requisitos de la franquicia del viajero en Hacienda: no asumas que una franquicia usada en un viaje anterior se renueva con cada entrada."
     ],
     "PA": [
-      "Panamá usa el dólar estadounidense. Si tu tarjeta se liquida en US$ y pagas en US$, no hay conversión entre monedas; aun así, consulta posibles comisiones internacionales.",
-      "Antes de ingresar a Panamá, consulta la Declaración de Viajero de la Autoridad Nacional de Aduanas y verifica si tus compras deben declararse; no confundas equipaje personal con mercancía adicional."
+      "Antes de ingresar a Panamá, consulta la Declaración de Viajero de la Autoridad Nacional de Aduanas y verifica si tus compras deben declararse; no confundas equipaje personal con mercancía adicional.",
+      "Panamá usa el dólar estadounidense. Si tu tarjeta se liquida en US$ y pagas en US$, no hay conversión entre monedas; aun así, consulta posibles comisiones internacionales."
     ],
     "GT": [
       "Para viajar desde o hacia Guatemala, usa la Declaración Jurada Regional de Viajero electrónica de SAT. Accede desde portal.sat.gob.gt para evitar formularios de terceros."
@@ -2584,7 +2931,611 @@
     "Sin promesa de incorporación de Argentina a ESTA en 2027.",
     "Sin precio de OMNY Card, fin de efectivo en buses NY, porcentajes de ahorro de Uber ni horarios o frecuencias no confirmados.",
     "No se promete que todas las aerolíneas acepten 50 lb/23 kg ni que los talles de ropa tengan una equivalencia fija.",
-    "El consejo de propinas evita porcentajes presentados como norma oficial; invita a revisar cargos ya incluidos.",
-    "Conversión eléctrica: se mantiene como consejo de revisar etiqueta y garantía, sin asumir que todos los aparatos son compatibles."
+    "Conversión eléctrica: se mantiene como consejo de revisar etiqueta y garantía, sin asumir que todos los aparatos son compatibles.",
+    "Sin trucos de ZIP inventados ni garantías internacionales de electrónicos por defecto.",
+    "Las tarifas y horarios estacionales se remiten al operador cuando no hay confirmación suficiente; no se extrapola Rocky Mountain a otras temporadas."
+  ],
+  "revision": "3 — iconos, recuperación de Outlets y parques por ciudad",
+  "revision_changes": [
+    {
+      "group": "inicio",
+      "id": "tip",
+      "action": "revisado"
+    },
+    {
+      "group": "inicio",
+      "id": "roaming",
+      "action": "revisado"
+    },
+    {
+      "group": "inicio",
+      "id": "receipts",
+      "action": "revisado"
+    },
+    {
+      "group": "inicio",
+      "id": "flight",
+      "action": "revisado"
+    },
+    {
+      "group": "lugares",
+      "id": "omny",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "lugares",
+      "id": "tap",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "lugares",
+      "id": "return",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "lugares",
+      "id": "payment-device",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "lugares",
+      "id": "booking",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "lugares",
+      "id": "toll-rentals",
+      "action": "nuevo"
+    },
+    {
+      "group": "lugares",
+      "id": "universal-express",
+      "action": "nuevo"
+    },
+    {
+      "group": "lugares",
+      "id": "hogwarts",
+      "action": "nuevo"
+    },
+    {
+      "group": "lugares",
+      "id": "accessibility",
+      "action": "nuevo"
+    },
+    {
+      "group": "lugares",
+      "id": "missing-bag",
+      "action": "nuevo"
+    },
+    {
+      "group": "compras",
+      "id": "final-cost",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "compras",
+      "id": "security",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "compras",
+      "id": "voltage",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "compras",
+      "id": "receipt-copy",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "compras",
+      "id": "coupons",
+      "action": "revisado"
+    },
+    {
+      "group": "compras",
+      "id": "return-policy",
+      "action": "revisado"
+    },
+    {
+      "group": "compras",
+      "id": "baggage",
+      "action": "revisado"
+    },
+    {
+      "group": "compras",
+      "id": "unlocked-phone",
+      "action": "nuevo"
+    },
+    {
+      "group": "compras",
+      "id": "warranty-country",
+      "action": "nuevo"
+    },
+    {
+      "group": "compras",
+      "id": "pump-zip",
+      "action": "nuevo"
+    },
+    {
+      "group": "inicio",
+      "id": "AR-visa",
+      "action": "trámite de visa más concreto"
+    },
+    {
+      "group": "inicio",
+      "id": "MX-visa",
+      "action": "trámite de visa más concreto"
+    },
+    {
+      "group": "inicio",
+      "id": "CO-visa",
+      "action": "trámite de visa más concreto"
+    },
+    {
+      "group": "inicio",
+      "id": "PE-visa",
+      "action": "trámite de visa más concreto"
+    },
+    {
+      "group": "inicio",
+      "id": "CR-visa",
+      "action": "trámite de visa más concreto"
+    },
+    {
+      "group": "inicio",
+      "id": "PA-visa",
+      "action": "trámite de visa más concreto"
+    },
+    {
+      "group": "inicio",
+      "id": "GT-visa",
+      "action": "trámite de visa más concreto"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "trolley-map",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "last-bus",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "ttc",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "visitor-toll",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "springs-buses",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "fare",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "cap",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "device",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "group",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "tap",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "omny-complete",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "omny-group",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "met-eligibility",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "statue",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "911",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "fare",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "contactless",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "cap",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "mover",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "orange",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "beach",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "transfer",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "transit-pay",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "airport-orange",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "beach-trolley",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "coral-trolley",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "wynwood-entry",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "tap-transfer",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "beach-location",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "walk",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "routes",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "events",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "fountains",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "neon",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "fare",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "cap",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "transfers",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "tap",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "cash",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "metro-rules",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "metro-transfers",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "flyaway",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "getty",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "griffith",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "muni",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "transfer",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "day",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "visitor",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "muni-combined",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "pass-choice",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "alcatraz",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "golden-gate",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "fare",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "transfer",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "blue",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "midway",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "cash",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "cta-combined",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "airports",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "millennium",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "resident-days",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "architecture-cruise",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "rail",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "bus",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "museum-location",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "fares-combined",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "capitol",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "monument",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "red",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "walk-time",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "freedom-fees",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "constitution-id",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "accessible-trip",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "orca",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "route",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "bainbridge-walk",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "pike-free",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "app-live",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "events",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "pass-choice",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "airport202",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "cafe-cash",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "app",
+      "action": "revisado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "union",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "local-pass",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "mountains",
+      "action": "retirado o fusionado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "red-rocks",
+      "action": "nuevo"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "rocky-timed",
+      "action": "nuevo"
+    },
+    {
+      "group": "lugares",
+      "id": "ll-window",
+      "action": "Se explicita el requisito geográfico publicado por Disney y sus ventanas de compra."
+    }
   ]
 }

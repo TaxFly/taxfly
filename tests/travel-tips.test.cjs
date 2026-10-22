@@ -4,7 +4,8 @@ const cut=(s,a,b)=>s.slice(s.indexOf(a),s.indexOf(b,s.indexOf(a)));
 function env(){
  const m=new Map(),events={},timers=[],el={style:{},innerText:''};
  const localStorage={getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k)};
- const window={addEventListener:(k,f)=>(events[k]??=[]).push(f)};
+ const core=require('../assets/travel-tip-core.js'),rot=core.createRotation();
+ const window={TaxflyTips:{...core,nextIndex:(list,index)=>rot.nextIndex(list,index),reset:()=>rot.reset()},addEventListener:(k,f)=>(events[k]??=[]).push(f)};
  const ctx=vm.createContext({window,localStorage,document:{getElementById:()=>el},setTimeout:f=>timers.push(f),clearTimeout(){},Math});
  return {window,localStorage,events,timers,el,run:s=>vm.runInContext(s,ctx)};
 }
@@ -27,7 +28,7 @@ test('shopping customs match the country and never leak to English or Portuguese
  const e=env();loadShop(e);const base=e.run('shoppingTipsFor("es").length');
  for(const c of ['AR','MX','CO','CL','PE','CR','PA','GT']){
   e.localStorage.setItem('appCountry',c);assert.ok(e.run('shoppingTipsFor("es").length')>base);
-  assert.equal(e.run('shoppingTipsFor("en").length'),12);assert.equal(e.run('shoppingTipsFor("pt").length'),14);
+  assert.equal(e.run('shoppingTipsFor("en").length'),11);assert.equal(e.run('shoppingTipsFor("pt").length'),13);
  }
  e.localStorage.removeItem('appCountry');assert.equal(e.run('shoppingTipsFor("es").length'),base);
  assert.ok(e.run('shoppingTipsFor("es").every(t=>!/(ARCA|SUBE|Receita|DIAN)/.test(t))'));
@@ -65,5 +66,5 @@ test('all shipped tips have provenance or are explicitly identified as editorial
  e.run(cut(read('assets/lugares.js'),'const tips =','const citiesConfig ='));
  e.run(cut(read('assets/unidades.js'),'const unitTips =','window.nextTip ='));
  const actual=e.run('[...Object.values(I18N).flatMap(v=>v.tips.map(t=>t.text)),...Object.values(TIPS_ES_PAIS).flat().map(t=>t.text),...Object.values(shoppingTips).flat(),...Object.values(shoppingTipsPais).flat(),...Object.values(tips).flat(),...Object.values(tipsPais).flat(),...Object.values(unitTips).flat(),...CITIES.flatMap(c=>Object.entries(c).filter(([k])=>k.startsWith("tips_")).flatMap(([,v])=>v))]');
- const recorded=new Set(d.records.flatMap(r=>Object.values(r.texts)));for(const t of actual)assert.ok(recorded.has(t),t);assert.equal(actual.length,423);
+ const recorded=new Set(d.records.flatMap(r=>Object.values(r.texts)));for(const t of actual)assert.ok(recorded.has(t),t);assert.equal(actual.length,431);
 });

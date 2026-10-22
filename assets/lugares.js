@@ -1,3 +1,4 @@
+import "./travel-tip-core.js";
 import { fsNet } from "./fs-net.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
@@ -447,52 +448,48 @@ window._i18n = i18n;
 
 const tips = {
   "es": [
-    "Disney World vende entradas estándar por fecha. Compara el calendario para tus días y el tipo de entrada; comprar antes no garantiza un porcentaje fijo de descuento.",
-    "En Nueva York puedes pagar OMNY con tu tarjeta sin contacto o celular. Usa siempre el mismo medio para acumular el tope de US$35 en 7 días en metro y buses locales.",
-    "El pago con tarjeta bancaria sin contacto existe en varias redes, pero no se extiende automáticamente a todos los trenes o buses de una ciudad. Revisa el operador concreto.",
     "Lightning Lane Multi Pass de Disney World permite elegir hasta 3 experiencias antes de la visita. Después de usar una, puedes reservar otra según disponibilidad; la entrada al parque se compra aparte.",
-    "Para comprar Lightning Lane antes de llegar a EE. UU., revisa las restricciones geográficas oficiales. No organices tus reservas contando solo los días de anticipación del hotel.",
+    "La guía internacional de Disney indica comprar Lightning Lane una vez en EE. UU. Desde allí, la anticipación es de hasta 7 días para hoteles elegibles o 3 para otros visitantes; no asumas que podrás reservar desde tu país.",
     "UberX Share es para un solo pasajero por solicitud y depende de la ciudad. Si viajas con acompañantes o mucho equipaje, comprueba otra categoría en la app.",
     "La temporada oficial de huracanes del Atlántico va del 1 de junio al 30 de noviembre. Para Florida y Nueva Orleans, consulta avisos del NHC antes de salir.",
     "Brightline conecta Orlando con el sur de Florida. Su estación de Orlando está en MCO, junto a la Terminal C: incluye ese traslado en el cálculo, no sale de los parques.",
-    "Antes de reservar transporte de regreso, consulta la última salida y los avisos de obras del día; un horario habitual no garantiza servicio esa noche.",
-    "En redes con topes o transbordos por contacto, no alternes tarjeta física y billetera digital: el sistema puede contarlas como medios distintos.",
-    "Guarda en Documentos el QR de tus entradas y la dirección exacta del acceso; comprueba si la reserva exige seleccionar fecha u horario."
+    "Disney World vende entradas estándar por fecha. Compara el calendario para tus días y el tipo de entrada; comprar antes no garantiza un porcentaje fijo de descuento.",
+    "Antes de cruzar peajes con un auto alquilado, confirma cómo los pagarás y qué cargo administrativo aplica la rentadora. El costo del peaje y la comisión del programa son conceptos distintos.",
+    "Universal Express es un adicional: no reemplaza la entrada al parque. Antes de pagar, verifica parques, fecha y si permite una vez por atracción o repeticiones Unlimited.",
+    "Para viajar en Hogwarts Express entre Universal Studios Florida e Islands of Adventure necesitas entrada Park-to-Park válida. El Express Pass no sustituye ese requisito.",
+    "Con valijas o cochecito en Nueva York, filtra estaciones accesibles en la app MTA y comprueba el estado de los ascensores. La estación más cercana puede no ofrecer un recorrido sin escaleras.",
+    "Si tu maleta despachada no aparece, presenta el reporte de equipaje faltante en el área de reclamo antes de salir del aeropuerto. Guarda el número de caso y la etiqueta de equipaje."
   ],
   "en": [
-    "Disney World’s standard tickets are date-based. Compare your dates and ticket type in the calendar; booking early does not guarantee a fixed discount.",
-    "In NYC, tap a bank card or phone on OMNY, similar to London’s Tube. Keep the same payment method for the $35 seven-day subway/local-bus cap.",
-    "Bank-card tapping is available on several US networks, but does not automatically cover every train or bus in a city. Check the specific operator.",
     "Disney World’s Lightning Lane Multi Pass lets you choose up to 3 experiences ahead. After redeeming one, book another subject to availability; park admission is separate.",
-    "Check Disney’s geographic purchase restrictions before planning Lightning Lane bookings from the UK, Australia or another country outside the US. Hotel booking windows alone do not guarantee access abroad.",
+    "Disney’s international guidance says to buy Lightning Lane after arriving in the US. From there, eligible hotel guests can buy up to 7 days ahead, others up to 3; do not assume booking from abroad is available.",
     "UberX Share allows one passenger per request and depends on location. Check a different category if travelling with companions or substantial luggage.",
     "Atlantic hurricane season officially runs June 1–November 30. Check NHC alerts before trips to Florida or New Orleans.",
     "Brightline links Orlando with South Florida. Its Orlando station is at MCO beside Terminal C, so include the airport transfer when comparing it with driving.",
-    "Before booking a late return, check the last departure and that day’s engineering alerts; usual operating hours do not guarantee service that night.",
-    "On tap-to-pay systems with caps or transfers, keep using the same card or device; plastic and its mobile-wallet version may be counted separately.",
-    "Save ticket QR codes and the exact entrance address in Documents; check whether admission requires a booked date or time."
+    "Disney World’s standard tickets are date-based. Compare your dates and ticket type in the calendar; booking early does not guarantee a fixed discount.",
+    "Before taking a rental car through tolls, confirm the payment method and rental-company administration fee. The toll itself and the toll-program fee are separate charges.",
+    "Universal Express is an add-on, not park admission. Before paying, check the parks, date and whether access is once per attraction or Unlimited.",
+    "Hogwarts Express between Universal Studios Florida and Islands of Adventure requires valid Park-to-Park admission. An Express Pass does not replace that requirement.",
+    "With luggage or a pushchair in NYC, filter accessible stations in the MTA app and check lift status. The closest station may not offer a step-free route.",
+    "If your checked bag does not arrive, file a missing-bag report in baggage reclaim before leaving the airport. Keep the case number and baggage tag."
   ],
   "pt": [
-    "Os ingressos padrão da Disney World são por data. Compare os dias e o tipo de ingresso no calendário; comprar antes não garante desconto fixo.",
-    "Em Nova York, use cartão por aproximação ou celular no OMNY, sem recarregar um cartão de transporte. O teto de metrô e ônibus locais é US$35 em 7 dias com o mesmo meio.",
-    "Várias redes aceitam cartão bancário por aproximação, mas isso não vale automaticamente para todo trem ou ônibus da cidade. Confira a operadora.",
     "O Lightning Lane Multi Pass da Disney World permite escolher até 3 experiências antes da visita. Depois de usar uma, reserve outra conforme disponibilidade; o ingresso do parque é separado.",
-    "Antes de planejar a compra de Lightning Lane ainda no Brasil, confira a restrição geográfica oficial. A janela do hotel, sozinha, não garante compra fora dos EUA.",
+    "A orientação internacional da Disney indica comprar Lightning Lane após chegar aos EUA. A partir daí, hotéis elegíveis têm até 7 dias de antecedência e outros visitantes até 3; não conte com compra ainda no Brasil.",
     "O UberX Share permite um passageiro por solicitação e depende da cidade. Para viajar acompanhado ou com muita bagagem, confira outra categoria no app.",
     "A temporada oficial de furacões do Atlântico vai de 1º de junho a 30 de novembro. Confira os alertas do NHC antes de visitar a Flórida ou Nova Orleans.",
     "O Brightline liga Orlando ao sul da Flórida. A estação de Orlando fica no MCO, junto ao Terminal C: some o traslado até o aeroporto ao comparar custos.",
-    "Antes de planejar a volta tarde, confira a última saída e os avisos de obras do dia; o horário habitual não garante serviço naquela noite.",
-    "Em sistemas com teto ou integração por aproximação, use sempre o mesmo cartão ou dispositivo: cartão físico e carteira digital podem contar separadamente.",
-    "Salve em Documentos o QR dos ingressos e o endereço exato da entrada; confira se é preciso reservar data ou horário."
+    "Os ingressos padrão da Disney World são por data. Compare os dias e o tipo de ingresso no calendário; comprar antes não garante desconto fixo.",
+    "Antes de passar por pedágios com carro alugado, confirme a forma de pagamento e a taxa administrativa da locadora. Pedágio e tarifa do programa são cobranças diferentes.",
+    "O Universal Express é um adicional, não o ingresso do parque. Antes de pagar, confira parques, data e se permite uma vez por atração ou repetições Unlimited.",
+    "Para viajar no Hogwarts Express entre Universal Studios Florida e Islands of Adventure é necessário ingresso Park-to-Park válido. O Express Pass não substitui esse requisito.",
+    "Com malas ou carrinho em Nova York, filtre estações acessíveis no app MTA e confira os elevadores. A estação mais próxima pode não oferecer trajeto sem escadas.",
+    "Se a mala despachada não chegar, faça o registro de bagagem extraviada na área de retirada antes de sair do aeroporto. Guarde o protocolo e a etiqueta."
   ]
 };
 
 // Capa por país (solo español): se suma al ES general según appCountry (Ajustes).
-const tipsPais = {
-  "AR": [
-    "OMNY se parece al gesto de usar la SUBE, pero puedes pagar con tu propia tarjeta bancaria sin contacto o celular, sin cargar una tarjeta de transporte."
-  ]
-};
+const tipsPais = {};
 
 function tipsFor(lang) {
   const base = tips[lang] || tips.es;
@@ -622,7 +619,7 @@ window.nextTip = () => {
   setTimeout(() => {
     const activeLang = localStorage.getItem("appLang") || "es";
     const list = tipsFor(activeLang);
-    currentTipIndex = (currentTipIndex + 1) % list.length;
+    currentTipIndex = window.TaxflyTips.nextIndex(list, currentTipIndex, "places");
     el.innerText = list[currentTipIndex];
     el.style.opacity = 1;
   }, 300);
@@ -1094,6 +1091,7 @@ window.removeCustomItem = customIdx => {
 };
 
 window.changeLanguage = lang => {
+  window.TaxflyTips.reset("places");
   currentTipIndex = 0;
   { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Travel assistant" : lang === "pt" ? "Assistente de viagem" : "Asistente de viaje"); }
   { const _c = document.getElementById("ai-close"); if (_c) _c.setAttribute("aria-label", lang === "en" ? "Close chat" : lang === "pt" ? "Fechar chat" : "Cerrar chat"); }

@@ -1,3 +1,4 @@
+import "./travel-tip-core.js";
 import { fsNet } from "./fs-net.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
@@ -110,7 +111,7 @@ window.nextTip = () => {
   setTimeout(() => {
     const activeLang = localStorage.getItem("appLang") || "es";
     const list = unitTips[activeLang] || unitTips.es;
-    tipIndex = (tipIndex + 1) % list.length;
+    tipIndex = window.TaxflyTips.nextIndex(list, tipIndex, "units");
     el.innerText = list[tipIndex];
     el.style.opacity = 1;
   }, 300);
@@ -125,6 +126,7 @@ window.toggleGroup = id => {
 };
 
 window.changeLanguage = lang => {
+  window.TaxflyTips.reset("units");
   tipIndex = 0;
   { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
   localStorage.setItem("appLang", lang);

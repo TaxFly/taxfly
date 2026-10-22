@@ -2238,7 +2238,7 @@ const sectionMeta = {
 function planPanelPending(section) {
   const states=window._planInitialState, panel=document.getElementById("panel-"+section);
   if(!states||!panel)return false;
-  const group=section==="parques"?(parquesSubTab==="atracciones"?"atracciones":"agenda"):section;
+  const group=section==="parques"?(parquesSubTab==="atracciones"?"atracciones":"agenda"):section==="outlets"&&outletSubTab==="lista"?"outletShopping":section;
   const required=window.PlanLoading.groups[group]||[];
   if(required.every(id=>states[id]==="ready")){
     panel.removeAttribute("aria-busy");delete panel.dataset.planWaiting;return false;
@@ -2246,7 +2246,8 @@ function planPanelPending(section) {
   const error=required.some(id=>states[id]==="error");
   const message=window.I18N?.t(error?"No se pudo actualizar.":"Cargando…") || (error?"No se pudo actualizar.":"Cargando…");
   panel.dataset.planWaiting="true";panel.setAttribute("aria-busy",String(!error));
-  panel.innerHTML=`<div class="budget-note" role="status" style="min-height:180px">${escapeHtml(message)}</div>`;
+  const retry=error?`<button type="button" class="wm-reset-btn" onclick="window.retryPlanningLoads?.()">${escapeHtml(window.I18N?.t("Reintentar")||"Reintentar")}</button>`:"";
+  panel.innerHTML=(section==="outlets"?outletTabsHTML():"")+`<div class="budget-note" role="status" style="min-height:180px">${escapeHtml(message)} ${retry}</div>`;
   return true;
 }
 window.planPanelPending=planPanelPending;
@@ -2363,6 +2364,9 @@ function shopGetItem(id) {
 
 let _outletsFirstRender = true;
 
+function outletTabsHTML() {
+  return `<div class="outlets-subtabs"><button class="outlets-stab${outletSubTab === "cronograma" ? " active" : ""}" onclick="switchOutletTab('cronograma')">${ic("calendar", 13)} Cronograma</button><button class="outlets-stab${outletSubTab === "lista" ? " active" : ""}" onclick="switchOutletTab('lista')">${ic("shirt", 13)} Compras</button></div>`;
+}
 function renderOutlets() {
   const requestedDay=new URLSearchParams(location.search).get("searchOutletDay");
   if(requestedDay!==null&&/^\d+$/.test(requestedDay)&&Number(requestedDay)<days.length){currentOutletDay=Number(requestedDay);outletSubTab="cronograma";}
@@ -2562,7 +2566,7 @@ function renderDayContent(d) {
   const done = visited[d].size;
   const pct = total > 0 ? Math.round(done / total * 100) : 0;
   const allDone = done === total && total > 0;
-  let html = `\n    <div class="hotel-bar" id="hotel-bar-${d}">\n      <div class="hotel-icon">${ic("home", 16)}</div>\n      <div class="hotel-info">\n        <div class="hotel-label">Punto de partida</div>\n        <div class="hotel-addr">${hotel.addr ? escapeHtml(hotel.addr) : "Sin definir — tocá el lápiz para agregarlo"}</div>\n      </div>\n      ${tripMapLink(hotel.addr, "hotel-map-link")}\n      <button class="wm-icon-btn hotel-edit-btn" onclick="openHotelEdit()" title="Editar dirección" aria-label="Editar punto de partida">${ic("pencil", 13)}</button>\n    </div>`;
+  let html = `\n    <div class="hotel-bar" id="hotel-bar-${d}">\n      <div class="hotel-icon">${ic("home", 16)}</div>\n      <div class="hotel-info">\n        <div class="hotel-label">Punto de partida</div>\n        <div class="hotel-addr">${window._planInitialState && window._planInitialState.hotel !== "ready" ? "Dirección pendiente de sincronización" : hotel.addr ? escapeHtml(hotel.addr) : "Sin definir — tocá el lápiz para agregarlo"}</div>\n      </div>\n      ${tripMapLink(hotel.addr, "hotel-map-link")}\n      <button class="wm-icon-btn hotel-edit-btn" ${window._planInitialState && window._planInitialState.hotel !== "ready" ? "disabled" : ""} onclick="openHotelEdit()" title="Editar dirección" aria-label="Editar punto de partida">${ic("pencil", 13)}</button>\n    </div>`;
   if (outletEditingDayIdx === d) {
     html += `<div class="stop-card" style="cursor:default;flex-direction:column;align-items:stretch;margin-bottom:14px">\n      <div class="wm-edit-form" style="width:100%">\n        <input class="wm-edit-input" id="outlet-day-edit-name" value="${escapeHtml(day.dayName || "")}" placeholder="Nombre del día (ej: Día 4)" style="margin-bottom:6px;width:100%">\n        <input class="wm-edit-input" id="outlet-day-edit-date" value="${escapeHtml(day.date || "")}" placeholder="Fecha (ej: Jue 28/01)" style="margin-bottom:6px;width:100%">\n        <textarea class="wm-edit-input" id="outlet-day-edit-label" placeholder="Descripción del día" style="margin-bottom:6px;width:100%;min-height:48px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.4">${escapeHtml(day.label || "")}</textarea>\n        <div class="del-day-row" style="margin:0 0 8px">\n          ${days.length > 1 ? `<button class="mbtn" onclick="outletMoveDay(${d},-1)" ${d === 0 ? "disabled" : ""} title="Mover el día hacia la izquierda">${ic("chevronLeft", 13)} Mover</button>\n          <button class="mbtn" onclick="outletMoveDay(${d},1)" ${d === days.length - 1 ? "disabled" : ""} title="Mover el día hacia la derecha">Mover ${ic("chevronRight", 13)}</button>` : ""}\n        </div>\n        <div class="wm-edit-actions">\n          <button class="mbtn mdel" onclick="outletDeleteDay(${d})">Eliminar día</button>\n          <button class="mbtn" onclick="outletCancelEditDay()">Cancelar</button>\n          <button class="mbtn msave" onclick="outletSaveDay(${d})">Guardar</button>\n        </div>\n      </div>\n    </div>`;
   } else {

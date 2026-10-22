@@ -1,3 +1,4 @@
+import "./travel-tip-core.js";
 import { fsNet } from "./fs-net.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
@@ -185,7 +186,7 @@ const I18N = {
   },
   {
     "icon": "💵",
-    "text": "En restaurantes con servicio de mesa, revisa si la cuenta ya incluye propina o service charge antes de añadir otra."
+    "text": "En restaurantes con servicio de mesa, Visit Orlando orienta una propina de 15–25 %. Es una referencia de costumbre: revisa si ya incluyeron gratuity o service charge antes de agregar otra."
   },
   {
     "icon": "🛃",
@@ -197,15 +198,15 @@ const I18N = {
   },
   {
     "icon": "📱",
-    "text": "Antes de comprar una eSIM, comprueba que tu modelo de celular sea compatible y esté desbloqueado para otras operadoras."
+    "text": "Si tu iPhone dice “Sin restricciones de SIM” en Ajustes > General > Información > Bloqueo del operador, está desbloqueado. La compatibilidad con eSIM se comprueba aparte para el modelo."
   },
   {
-    "icon": "🗂️",
-    "text": "Guarda recibos y condiciones de devolución en Documentos para consultarlos durante el viaje."
+    "icon": "🏨",
+    "text": "En el check-in, el hotel puede retener una garantía por gastos adicionales además de la estadía. Esa autorización reduce temporalmente tu saldo o límite; pregunta el importe antes de elegir tarjeta."
   },
   {
-    "icon": "✈️",
-    "text": "Consulta con tu aerolínea la antelación recomendada y el cierre del check-in; añade margen para controles y traslado entre terminales."
+    "icon": "🔋",
+    "text": "Los power banks van en el equipaje de mano. Si despachan tu bolso en la puerta de embarque, retíralos antes y conserva las baterías protegidas contra cortocircuitos. Consulta también las restricciones de tu aerolínea."
   },
   {
     "icon": "💱",
@@ -326,7 +327,7 @@ const I18N = {
   },
   {
     "icon": "💵",
-    "text": "At a sit-down restaurant, check whether gratuity or a service charge is already included before adding a tip."
+    "text": "Visit Orlando suggests 15–25% at table-service restaurants. This is customary guidance: check for an included gratuity or service charge before adding another tip."
   },
   {
     "icon": "🛃",
@@ -338,15 +339,15 @@ const I18N = {
   },
   {
     "icon": "📱",
-    "text": "Before buying a travel eSIM, check that your particular phone model supports it and is unlocked for other networks."
+    "text": "On iPhone, Settings > General > About > Carrier Lock should say “No SIM restrictions” for an unlocked phone. Check eSIM compatibility separately for your model."
   },
   {
-    "icon": "🗂️",
-    "text": "Save receipts and return conditions in Documents so you can find them while travelling."
+    "icon": "🏨",
+    "text": "At check-in, a hotel may hold funds for incidentals in addition to your stay. That temporarily reduces your available balance or credit; ask the amount before choosing a card."
   },
   {
-    "icon": "✈️",
-    "text": "Check your airline’s recommended arrival time and check-in deadline; allow extra time for security and terminal transfers."
+    "icon": "🔋",
+    "text": "Power banks belong in cabin baggage. If your bag is gate-checked, remove them first and protect spare batteries against short circuits. Check your airline’s additional restrictions."
   },
   {
     "icon": "💱",
@@ -467,7 +468,7 @@ const I18N = {
   },
   {
     "icon": "💵",
-    "text": "No restaurante com garçom, confira se já há gratuity ou service charge antes de acrescentar gorjeta; não presuma que funciona como os 10% do Brasil."
+    "text": "Em restaurantes com garçom, o Visit Orlando orienta gorjeta de 15–25%. É uma referência de costume: confira gratuity ou service charge já incluído antes de acrescentar outra."
   },
   {
     "icon": "🛃",
@@ -479,15 +480,15 @@ const I18N = {
   },
   {
     "icon": "📱",
-    "text": "Antes de comprar um eSIM de viagem, confirme se o modelo do celular é compatível e desbloqueado para outras operadoras."
+    "text": "No iPhone, em Ajustes > Geral > Sobre > Bloqueio de Operadora, “Sem restrições de SIM” indica aparelho desbloqueado. Confira separadamente se o modelo aceita eSIM."
   },
   {
-    "icon": "🗂️",
-    "text": "Guarde recibos e regras de devolução em Documentos para consultar durante a viagem."
+    "icon": "🏨",
+    "text": "No check-in, o hotel pode bloquear uma garantia para despesas extras além da hospedagem. A autorização reduz temporariamente saldo ou limite; pergunte o valor antes de escolher o cartão."
   },
   {
-    "icon": "✈️",
-    "text": "Confira a antecedência recomendada e o encerramento do check-in com a companhia aérea; reserve tempo para inspeção e troca de terminal."
+    "icon": "🔋",
+    "text": "Power banks vão na bagagem de mão. Se a mala for despachada no portão, retire-os antes e proteja as baterias contra curto-circuito. Confira também as restrições da companhia."
   },
   {
     "icon": "💱",
@@ -518,7 +519,7 @@ const TIPS_ES_PAIS = {
   "AR": [
     {
       "icon": "🛂",
-      "text": "Con pasaporte argentino, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      "text": "Para turismo con pasaporte argentino, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
     },
     {
       "icon": "💳",
@@ -532,37 +533,37 @@ const TIPS_ES_PAIS = {
   "MX": [
     {
       "icon": "🛂",
-      "text": "Con pasaporte mexicano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      "text": "Para turismo con pasaporte mexicano, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
     }
   ],
   "CO": [
     {
       "icon": "🛂",
-      "text": "Con pasaporte colombiano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      "text": "Para turismo con pasaporte colombiano, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
     }
   ],
   "PE": [
     {
       "icon": "🛂",
-      "text": "Con pasaporte peruano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      "text": "Para turismo con pasaporte peruano, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
     }
   ],
   "CR": [
     {
       "icon": "🛂",
-      "text": "Con pasaporte costarricense, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      "text": "Para turismo con pasaporte costarricense, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
     }
   ],
   "PA": [
     {
       "icon": "🛂",
-      "text": "Con pasaporte panameño, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      "text": "Para turismo con pasaporte panameño, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
     }
   ],
   "GT": [
     {
       "icon": "🛂",
-      "text": "Con pasaporte guatemalteco, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      "text": "Para turismo con pasaporte guatemalteco, consulta el trámite de visa de visitante B-2 o B1/B2 en travel.state.gov. Si tienes otra ciudadanía, verifica los requisitos del pasaporte con el que viajarás."
     }
   ],
   "CL": [
@@ -600,6 +601,7 @@ function applyI18n() {
 }
 
 window.changeLanguage = function(nl) {
+  window.TaxflyTips.reset("home");
   tipIndex = 0;
   lang = nl;
   localStorage.setItem("appLang", lang);
@@ -1188,16 +1190,16 @@ function renderTip() {
       el.style.opacity = "1";
     }, 180);
   }
-  if (ic) ic.textContent = tip.icon;
+  if (ic) ic.innerHTML = window.uiTipIcon ? window.uiTipIcon(tip.icon, 20) : window.uiIcon("bulb", 20);
 }
 
 window.nextTip = function() {
-  tipIndex = (tipIndex + 1) % tipsList().length;
+  tipIndex = window.TaxflyTips.nextIndex(tipsList(), tipIndex, "home");
   renderTip();
 };
 
 setInterval(() => {
-  tipIndex = (tipIndex + 1) % tipsList().length;
+  tipIndex = window.TaxflyTips.nextIndex(tipsList(), tipIndex, "home");
   renderTip();
 }, 12e3);
 

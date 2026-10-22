@@ -98,9 +98,10 @@
     tooth: '<path d="M7 3.5c-2.5 0-4 2-4 4.5 0 2 1 3 1.5 5S5.5 20 7.5 20c1.8 0 1.5-4 4.5-4s2.7 4 4.5 4c2 0 2-4.5 3-6.5S21 10 21 8c0-2.5-1.5-4.5-4-4.5-2 0-3 1-5 1s-3-1-5-1Z"/>'
   };
   window.UI_ICONS = ICONS;
-  const svg = (name, size) => `<svg class="ui-ic" width="${size || 20}" height="${size || 20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+  const svg = (name, size) => `<svg class="ui-ic" width="${size || 20}" height="${size || 20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.bulb}</svg>`;
   window.uiIcon = svg;
   const EMOJI = {
+    "🚫": "xCircle", "⛔": "xCircle", "🪄": "sparkles", "🎵": "headphones", "🌡": "thermo", "🚄": "bus", "🚂": "bus", "🚎": "bus", "⛴": "bus",
     "🏠": "home",
     "📊": "chart",
     "📍": "pin",
@@ -244,6 +245,7 @@
     "🎯": "search",
     "🏬": "landmark"
   };
+  window.uiTipIcon = (symbol, size=20) => svg(ICONS[symbol] ? symbol : EMOJI[norm(symbol)] || "bulb", size);
   const BY_HREF = [ [ /tax\.html/, "calculator", "blue" ], [ /compras\.html/, "bag", "violet" ], [ /itinerario\.html/, "pin", "green" ], [ /unidades\.html/, "bulb", "amber" ], [ /tickets\.html/, "file", "cyan" ], [ /grupo\.html/, "users", "indigo" ], [ /rutas\.html/, "map", "red" ], [ /Maps\//, "ferris", "teal" ], [ /index\.html|^\.?\/?$/, "home", "blue" ] ];
   const norm = s => (s || "").replace(/[️‍]|\uD83C[\uDFFB-\uDFFF]/g, "").trim();
   function pick(el, text) {
@@ -259,7 +261,7 @@
     return EMOJI[k] ? {
       icon: EMOJI[k],
       tone: null
-    } : null;
+    } : /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(k) ? {icon:"bulb",tone:null} : null;
   }
   const ICON_SLOTS = ".btn-nav .ni, .dd-icon, .sc-emoji, .w-icon, #ne-dot, .tip-icon, .tab-btn .ti, .ui-emoji";
   function swapSlots(root) {
@@ -281,7 +283,7 @@
       const txt = el.textContent || "";
       const m = txt.match(/^\s*(\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*)\s*/u);
       if (!m) return;
-      const name = EMOJI[norm(m[1])];
+      const name = EMOJI[norm(m[1])] || "bulb";
       if (!name) return;
       el.textContent = txt.slice(m[0].length);
       el.insertAdjacentHTML("afterbegin", svg(name, 20) + " ");
@@ -389,7 +391,7 @@
     nav.querySelector("#btnMore").setAttribute("aria-expanded","false");
     nav.setAttribute("data-ui-nav", lang);
   }
-  const LEAD_RE = /^(\s*)(\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*|[✓✕])(\s*)/u;
+  const LEAD_RE = /^(\s*)(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*|[✓✕])(\s*)/u;
   const SKIP_TAGS = new Set([ "SCRIPT", "STYLE", "TEXTAREA", "OPTION", "SELECT", "TITLE", "INPUT", "NOSCRIPT" ]);
   const ALWAYS = ".ios-step-icon,.crop-zoom-icon,.pc-emoji,.tip-icon,.btn-label,#sync-banner,#offlineBannerBody,#offline-group-banner span,#toast,.toast,#offline-toast,#offline-toast-msg,#sync-ok-toast,#export-toast,#reminder-toast,.park-emoji,.filter-btn,.subcat-btn,.member-chip,.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon,.h-thumb-placeholder,.cat-bar-name,.h-del,.act-del,.note-del,.member-del,.stop-row-del,.cart-item-del,.preview-remove,.close-scanner,.cam-close,.viewer-close,#ai-close,.ocr-btn-cancel,.rv-btn-close,.preview-pdf span";
   let staticEls = new WeakSet;
@@ -404,7 +406,7 @@
     const hits = [];
     for (let n = walker.nextNode(); n; n = walker.nextNode()) {
       const v = n.nodeValue;
-      if (!v || v.length > 400) continue;
+      if (!v || v.length > 2000) continue;
       const m = v.match(LEAD_RE);
       if (!m) continue;
       const el = n.parentElement;
@@ -413,7 +415,7 @@
       while (prev && prev.nodeType === 3 && !prev.nodeValue.trim()) prev = prev.previousSibling;
       if (prev && prev.nodeName !== "BR") continue;
       if (!isStaticZone(el) && !el.closest(ALWAYS)) continue;
-      const name = EMOJI[norm(m[2])];
+      const name = EMOJI[norm(m[2])] || (/\p{Regional_Indicator}/u.test(m[2]) ? "globe" : "bulb");
       if (!name) continue;
       hits.push([ n, m, name, el ]);
     }
@@ -465,7 +467,7 @@
   }
   function run() {
     buildNav();
-    if(navOnly){markActive();return;}
+    
     swapSlots(document);
     swapHeadings(document);
     swapLeading(document);
@@ -490,7 +492,6 @@
         if(!event.target.closest(".btn-nav-more"))document.querySelectorAll(".taxfly-main-nav .btn-nav-more").forEach(button=>{button.classList.remove("open");button.setAttribute("aria-expanded","false");button.querySelector(".nav-dropdown")?.classList.remove("show");});
       });
       window.addEventListener("storage",event=>{if(event.key==="appLang")schedule();});
-      return;
     }
     document.querySelectorAll("body *").forEach(e => staticEls.add(e));
     run();
