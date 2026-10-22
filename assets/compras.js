@@ -784,10 +784,103 @@ const i18n = {
 };
 
 const shoppingTips = {
-  es: [ "Jersey Gardens (NJ): ¡Tax Free! No pagás impuesto en ropa ni calzado.", "El precio de etiqueta NO incluye el Tax (aprox. 7-9%).", "Ross/Marshalls: Los mejores precios están en los racks de 'Clearance'.", "Apple: Comprá 'Refurbished' en su web oficial para ahorrar un 15%.", "Best Buy: Tienen sección 'Open Box' con productos casi nuevos rebajados.", "Cupones: Descargá 'RetailMeNot' para descuentos en el momento.", "Seguridad: Nunca dejes bolsas visibles dentro del auto estacionado.", "Un 'M' en USA suele ser un 'L' en Argentina. ¡Probate siempre!", "Siempre tené billetes de $1 y $5 USD para propinas rápidas.", "Premium Outlets: Registrate en su web para recibir cuponeras VIP gratis.", "Pesá tu valija antes de ir al aeropuerto; el límite suele ser 23 kg.", "Avisá en tu homebanking que vas a usar la tarjeta en el exterior." ],
-  en: [ "Jersey Gardens (NJ): Tax Free! No tax on clothing or footwear.", "The price tag does NOT include sales tax (approx. 7-9%).", "Ross Stores / Marshalls: Best deals are in the Clearance racks.", "Apple: Buy Refurbished on their official site to save around 15%.", "Best Buy has an Open Box section with nearly new discounted products.", "Download RetailMeNot for instant in-store discounts.", "Safety: Never leave shopping bags visible inside a parked car.", "A Medium (M) in the US is usually a Large (L). Always try things on!", "Always carry $1 and $5 bills for quick tips.", "Premium Outlets: Sign up for free VIP coupon booklets.", "Weigh your suitcase before the airport; limit is usually 23 kg (50 lb).", "Notify your bank that you'll be using your card abroad." ],
-  pt: [ "Jersey Gardens (NJ): Tax Free! Sem imposto em roupas e calçados.", "O preço na etiqueta NÃO inclui o imposto (aprox. 7-9%).", "Ross / Marshalls: Os melhores preços estão nas gôndolas de 'Clearance'.", "Apple: Compre 'Refurbished' no site oficial para economizar até 15%.", "Best Buy tem seção 'Open Box' com produtos quase novos com desconto.", "Baixe o RetailMeNot para cupons de desconto na hora da compra.", "Segurança: Nunca deixe sacolas visíveis dentro do carro estacionado.", "Um 'M' nos EUA costuma ser um 'G' no Brasil. Sempre experimente!", "Tenha sempre notas de $1 e $5 USD para gorjetas rápidas.", "Premium Outlets: Cadastre-se no site para receber cupons VIP grátis.", "Pese sua mala antes do aeroporto; o limite costuma ser 23 kg.", "Avise seu banco que vai usar o cartão no exterior." ]
+  "es": [
+    "En Nueva Jersey, la ropa y el calzado de uso general suelen estar exentos de sales tax. Accesorios y equipo deportivo especializado pueden tributar.",
+    "En NYC, la ropa y el calzado que califican y cuestan menos de US$110 por artículo o par están exentos. El límite no se calcula sobre el total del carrito.",
+    "Apple Certified Refurbished anuncia ahorros de hasta 15 % y garantía limitada de un año. Compara el modelo exacto y la disponibilidad, no un descuento garantizado.",
+    "En Best Buy, Open Box no significa siempre “como nuevo”. Revisa la condición publicada, accesorios incluidos y plazo de devolución de esa unidad.",
+    "Antes de pagar, pregunta si el artículo es final sale y si aceptan devoluciones después de tu fecha de salida. Guarda el recibo.",
+    "Antes de viajar a un outlet por un cupón, revisa vencimiento, marcas excluidas y compra mínima. Compara el precio final con otras tiendas.",
+    "Las tallas cambian según marca y corte. Compara medidas de la tabla oficial y pruébate la prenda; no conviertas automáticamente M en L.",
+    "Pesa tu equipaje y revisa piezas, dimensiones y peso incluidos en tu tarifa. No todos los vuelos permiten 23 kg ni incluyen maleta despachada.",
+    "Compara el costo completo: precio, sales tax aplicable y cargos de tu tarjeta. Un descuento de etiqueta no equivale al ahorro final.",
+    "Antes de dejar el auto estacionado, guarda las compras fuera de la vista y evita mostrar objetos de valor al abrir el baúl.",
+    "Antes de comprar aparatos, lee la etiqueta de entrada eléctrica y comprueba el enchufe y la garantía en tu país. Un adaptador de clavija no cambia el voltaje.",
+    "Fotografía recibos y etiquetas del modelo antes de quitar el embalaje: te ayudan a identificar la compra y revisar garantías o devoluciones."
+  ],
+  "en": [
+    "In New Jersey, ordinary clothing and footwear are generally sales-tax exempt; accessories and specialist sports equipment may still be taxed.",
+    "NYC exempts qualifying clothing and footwear priced below $110 per item or pair; the threshold is not the total shopping basket.",
+    "Apple Certified Refurbished advertises savings up to 15% and a one-year limited warranty. Compare the exact model and stock; the maximum discount is not guaranteed.",
+    "Best Buy Open Box does not always mean like new. Check the listed condition, included accessories and that unit’s return window.",
+    "Check for final-sale restrictions and whether returns will still be practical after you fly home; keep the receipt.",
+    "Before travelling to an outlet for a coupon, check expiry, excluded brands and minimum spend. Compare the final price elsewhere.",
+    "US and UK/Australian size labels can differ, and brands vary. Use the brand’s measurements and try items on rather than converting letters automatically.",
+    "Weigh your luggage and check the allowance on your actual fare; piece count, size and checked-bag inclusion vary.",
+    "Compare the complete cost: shelf price, applicable sales tax and card charges. A sticker discount is not the final saving.",
+    "Keep shopping out of sight before parking, and avoid displaying valuables when opening the boot or trunk.",
+    "Before buying appliances, check the input-voltage label, plug and warranty back home. A plug adaptor does not convert voltage.",
+    "Photograph receipts and model labels before discarding packaging; they help identify purchases for warranty or return enquiries."
+  ],
+  "pt": [
+    "Em Nova Jersey, roupas e calçados de uso geral costumam ser isentos de sales tax; acessórios e equipamentos esportivos específicos podem ser tributados.",
+    "Em Nova York, roupas e calçados elegíveis abaixo de US$110 por peça ou par são isentos; o limite não é o total do carrinho.",
+    "O Apple Certified Refurbished anuncia economia de até 15% e garantia limitada de um ano. Compare o modelo exato e o estoque; o desconto máximo não é garantido.",
+    "Open Box na Best Buy não significa sempre “como novo”. Confira a condição anunciada, os acessórios incluídos e o prazo de devolução da unidade.",
+    "Antes de pagar, confira se o produto é final sale e se será possível devolvê-lo depois da viagem. Guarde o recibo.",
+    "Antes de ir a um outlet por um cupom, confira validade, marcas excluídas e compra mínima. Compare o preço final em outras lojas.",
+    "A numeração dos EUA não equivale automaticamente à brasileira. Confira as medidas da marca e experimente; não transforme M em G por regra fixa.",
+    "Pese a bagagem e confira peças, dimensões e peso da sua tarifa. Não presuma que todo voo inclui mala despachada de 23 kg.",
+    "Compare o custo completo: etiqueta, sales tax, IOF e spread do cartão. O desconto da etiqueta não é a economia final em reais.",
+    "Antes de estacionar, deixe as compras fora de vista e evite expor objetos de valor ao abrir o porta-malas.",
+    "Antes de comprar aparelhos, confira a tensão de entrada, o plugue e a garantia no Brasil. Um adaptador de tomada não transforma a tensão.",
+    "Fotografe recibos e etiquetas do modelo antes de descartar a embalagem; eles ajudam em consultas sobre garantia e devolução.",
+    "Na volta ao Brasil por avião ou navio, a cota de bagagem tributável é US$1.000 por pessoa, respeitadas as condições e quantidades da Receita. Compras em duty free no exterior entram nessa conta.",
+    "Se houver bens tributáveis acima da cota, use a e-DBV e o canal Bens a Declarar. O imposto é de 50% sobre o excedente; a cota não pode ser somada entre familiares."
+  ]
 };
+
+// Español general más contenido del país seleccionado en Ajustes.
+const shoppingTipsPais = {
+  "AR": [
+    "Al volver a Argentina por vía aérea o marítima, la franquicia de equipaje es US$500; para menores de 16 años corresponde la mitad. Revisa en ARCA las condiciones para combinarla como familia.",
+    "Antes de salir de Argentina, revisa si debes declarar tus equipos mediante el OM 121. Conservar esa constancia ayuda a acreditar que no los compraste durante el viaje."
+  ],
+  "MX": [
+    "Al ingresar a México, ANAM informa una franquicia de hasta US$500 en mercancías adicionales al equipaje personal. Conserva facturas para acreditar el valor.",
+    "Para México, alcohol, tabaco y combustible no se cubren con la franquicia general de compras. Consulta sus límites específicos antes de aprovechar un duty free."
+  ],
+  "CO": [
+    "Al regresar a Colombia, la DIAN permite hasta US$2.000 en equipaje acompañado libre de tributo, dentro de los límites de cantidad y sin finalidad comercial.",
+    "Si tus compras exceden el cupo o traes bienes que deben declararse en Colombia, revisa el Formulario 530 de la DIAN antes de pasar el control."
+  ],
+  "CL": [
+    "Al volver a Chile, consulta la lista oficial de Equipaje de Viajero: la franquicia distingue efectos personales de otras mercancías; no todo lo comprado cuenta como equipaje exento.",
+    "Al regresar a Chile, declara los productos de origen animal o vegetal mediante el formulario oficial del SAG; la declaración digital es gratuita y no equivale a permiso automático de ingreso."
+  ],
+  "PE": [
+    "En Perú, SUNAT contempla una laptop y dos celulares entre los bienes libres de tributos; hay condiciones por edad. Consulta la lista oficial antes de comprar equipos extra.",
+    "Antes de volver a Perú, revisa en Bienvenido al Perú de SUNAT qué bienes requieren declaración. La lista de equipaje exento tiene cantidades y condiciones por tipo de artículo."
+  ],
+  "CR": [
+    "Para regresar a Costa Rica, revisa los requisitos de la franquicia del viajero en Hacienda: no asumas que una franquicia usada en un viaje anterior se renueva con cada entrada."
+  ],
+  "PA": [
+    "Panamá usa el dólar estadounidense. Si tu tarjeta se liquida en US$ y pagas en US$, no hay conversión entre monedas; aun así, consulta posibles comisiones internacionales.",
+    "Antes de ingresar a Panamá, consulta la Declaración de Viajero de la Autoridad Nacional de Aduanas y verifica si tus compras deben declararse; no confundas equipaje personal con mercancía adicional."
+  ],
+  "GT": [
+    "Para viajar desde o hacia Guatemala, usa la Declaración Jurada Regional de Viajero electrónica de SAT. Accede desde portal.sat.gob.gt para evitar formularios de terceros."
+  ]
+};
+
+function shoppingTipsFor(lang) {
+  const base = shoppingTips[lang] || shoppingTips.es;
+  if (lang !== "es") return base;
+  let country = "";
+  try { country = (localStorage.getItem("appCountry") || "").toUpperCase(); } catch (_) {}
+  const extra = shoppingTipsPais[country];
+  return Array.isArray(extra) ? base.concat(extra) : base;
+}
+
+// Actualizar solo el tip ante cambio de país, incluido otra pestaña.
+function refreshShoppingTip() {
+  tipIndex = 0;
+  const el = document.getElementById("tip-text");
+  if (el) { el.innerText = shoppingTipsFor(localStorage.getItem("appLang") || "es")[0]; el.style.opacity = 1; }
+}
+window.addEventListener("taxfly:countrychange", refreshShoppingTip);
+window.addEventListener("storage", e => { if (e.key === "appCountry") refreshShoppingTip(); });
 
 const knownStores = [ "ROSS", "MARSHALLS", "WALMART", "APPLE", "BEST BUY", "TARGET", "TJ MAXX", "MACY'S", "ZARA", "H&M", "NIKE", "ADIDAS", "AMAZON", "COSTCO", "FOOT LOCKER", "JD SPORTS", "BATH & BODY WORKS" ];
 
@@ -823,19 +916,21 @@ function esc(s) {
 
 window.nextTip = () => {
   const lang = localStorage.getItem("appLang") || "es";
-  const list = shoppingTips[lang];
+  const list = shoppingTipsFor(lang);
   tipIndex = (tipIndex + 1) % list.length;
   const el = document.getElementById("tip-text");
   if (el) {
     el.style.opacity = 0;
     setTimeout(() => {
-      el.innerText = list[tipIndex];
+      const active = shoppingTipsFor(localStorage.getItem("appLang") || "es");
+      el.innerText = active[tipIndex % active.length];
       el.style.opacity = 1;
     }, 300);
   }
 };
 
 window.changeLanguage = lang => {
+  tipIndex = 0;
   { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
   localStorage.setItem("appLang", lang);
   document.documentElement.setAttribute("lang", lang);
@@ -854,7 +949,7 @@ window.changeLanguage = lang => {
     if (i18n[lang]?.[k]) opt.text = i18n[lang][k];
   });
   const el = document.getElementById("tip-text");
-  if (el) el.innerText = shoppingTips[lang][tipIndex];
+  if (el) el.innerText = shoppingTipsFor(lang)[tipIndex % shoppingTipsFor(lang).length];
   const t = i18n[lang] || i18n.es;
   const offTitle = document.querySelector("#offline-label strong");
   const offSub = document.querySelector("#offline-label span");
@@ -3201,7 +3296,7 @@ onAuthStateChanged(auth, async user => {
   initPushNotifications();
   const lang = localStorage.getItem("appLang") || "es";
   window.changeLanguage(lang);
-  document.getElementById("tip-text").innerText = shoppingTips[lang][0];
+  document.getElementById("tip-text").innerText = shoppingTipsFor(lang)[0];
   setInterval(window.nextTip, 8e3);
 });
 
@@ -3592,3 +3687,4 @@ function offerReservationPayment(){
  };
  panel.append(form);document.getElementById('budget-card').after(panel);panel.scrollIntoView({block:'center',behavior:'smooth'});form.elements.amount.focus();
 }
+

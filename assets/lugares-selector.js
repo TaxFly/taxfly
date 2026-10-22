@@ -11,7 +11,7 @@ const SELECTOR_TO_CITY_ID = {
 
 function buildTransportHTML(city, lang) {
   const t = window._i18n && window._i18n[lang] || {};
-  const tips = city["tips_" + lang] || city.tips_es;
+  const tips = cityTipsFor(city, lang);
   const sysLabel = t.transport_system || "🚇 Sistema";
   const priceLabel = t.transport_price || "💵 Precio";
   const payLabel = t.transport_payment || "💳 Pago";

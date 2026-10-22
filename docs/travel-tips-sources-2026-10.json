@@ -1,0 +1,2590 @@
+{
+  "sources": {
+    "nytax": {
+      "title": "NYC Department of Finance — Sales tax",
+      "url": "https://www.nyc.gov/site/finance/business/business-nys-sales-tax.page",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "refund": {
+      "title": "CBP — Sales tax refunds",
+      "url": "https://www.help.cbp.gov/s/article/Article-1410",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "refundtx": {
+      "title": "Sales Tax Institute — International visitor exceptions",
+      "url": "https://www.salestaxinstitute.com/sales_tax_faqs/foreign_visitor_sales_tax_refund",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "ftc": {
+      "title": "FTC — Unfair or Deceptive Fees FAQs",
+      "url": "https://www.ftc.gov/business-guidance/resources/rule-unfair-or-deceptive-fees-frequently-asked-questions",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "dcc": {
+      "title": "Visa — Dynamic Currency Conversion",
+      "url": "https://www.visa.com/en-us/personal/travel/dynamic-currency-conversion",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "bank": {
+      "title": "Visa — Foreign transactions",
+      "url": "https://www.visa.com/en-us/personal/travel/travel-cards-and-foreign-transactions",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "iof": {
+      "title": "Santander Brasil — IOF no cartão",
+      "url": "https://www.santander.com.br/blog/para-voce/iof-no-cartao-de-credito/",
+      "verification": "Publicación 2025-10-14; consultada 2026-10-22. Banco emisor; no se extrapola a cualquier tipo de cuenta."
+    },
+    "brquota": {
+      "title": "Receita Federal — Cotas de isenção",
+      "url": "https://www.gov.br/receitafederal/pt-br/assuntos/aduana-e-comercio-exterior/viagens-internacionais/guia-do-viajante/entrada-no-brasil/cota-de-isencao-duty-free-e-bagagem-tributavel",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "brdeclare": {
+      "title": "Receita Federal — Bens a declarar",
+      "url": "https://www.gov.br/receitafederal/simples/pt-br/assuntos/aduana-e-comercio-exterior/viagens-internacionais/guia-do-viajante/entrada-no-brasil/bens-a-declarar-tributacao-e-calculo-do-imposto",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "visa": {
+      "title": "US Department of State — Visa Waiver Program",
+      "url": "https://travel.state.gov/content/travel/en/us-visas/tourism-visit/visa-waiver-program.html",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "usvisa": {
+      "title": "USAGov — Tourist visa",
+      "url": "https://www.usa.gov/tourist-visa",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "clvisa": {
+      "title": "Chile Ministerio de Relaciones Exteriores — Visa Waiver",
+      "url": "https://www.minrel.gob.cl/servicios-ciudadanos/programa-visa-waiver",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "arperc": {
+      "title": "ARCA — Operaciones alcanzadas",
+      "url": "https://www.arca.gob.ar/regimen-devolucion-percepciones/percepcion/operaciones.asp",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "arrate": {
+      "title": "ARCA — Importe de la percepción",
+      "url": "https://www.arca.gob.ar/regimen-devolucion-percepciones/percepcion/importe.asp",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "arbank": {
+      "title": "Santander Argentina — Percepciones",
+      "url": "https://ayuda.santander.com.ar/NM1QYJ7N52-1/article/BZHMEUMQKB-como-funcionan-percepciones-sobre-consumos-moneda-extranjera/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "arquota": {
+      "title": "ARCA — Franquicia de ingreso",
+      "url": "https://www.afip.gob.ar/viajeros/ayuda/franquicia.asp",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "ardeclare": {
+      "title": "Argentina.gob.ar — Declarar objetos al salir",
+      "url": "https://www.argentina.gob.ar/servicio/declarar-objetos-del-equipaje-en-viajes-al-exterior",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "mxquota": {
+      "title": "ANAM — Equipaje y franquicia",
+      "url": "https://www.anam.gob.mx/equipaje-y-franquicia/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "mx2026": {
+      "title": "ANAM — Comunicado 22/2026",
+      "url": "https://www.anam.gob.mx/comunicado-prensa-22-2026/",
+      "verification": "Publicación 2026-06-09; consulta 2026-10-22"
+    },
+    "coquota": {
+      "title": "DIAN — Modalidad viajeros",
+      "url": "https://www.dian.gov.co/Viajeros-y-Servicios-aduaneros/Paginas/Modalidad-viajeros.aspx",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "codeclare": {
+      "title": "DIAN — Formulario 530",
+      "url": "https://www.dian.gov.co/Viajeros-y-Servicios-aduaneros/Paginas/Declaracion-de-viajeros-Formulario-530.aspx",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "clquota": {
+      "title": "Aduanas Chile — Equipaje de viajeros",
+      "url": "https://www.aduana.cl/equipaje-de-viajero-y-viajera/aduana/2018-12-28/083959.html",
+      "verification": "Contenido localizado en índice oficial; sin agregar cifras no confirmadas"
+    },
+    "pequota": {
+      "title": "SUNAT — Bienes libres de impuestos",
+      "url": "https://bienvenidoalperu.sunat.gob.pe/es.bienes-o-articulos-libres-de-impuesto.html",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "peunits": {
+      "title": "SUNAT — Lista y condiciones por edad",
+      "url": "https://www.sunat.gob.pe/orientacionaduanera/viajeros/equipaje_bienes.html",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "crquota": {
+      "title": "Costa Rica SINALEVI — Franquicia del viajero",
+      "url": "https://sinalevi.go.cr/ResultadosNormativa/Informacion?param1=48352&param2=111504&param3=3&param4=373",
+      "verification": "Normativa oficial consultada; se remite a requisitos vigentes sin fijar un monto en la app"
+    },
+    "padeclare": {
+      "title": "Autoridad Nacional de Aduanas Panamá — Declaración",
+      "url": "https://declaraciondeviajero.ana.gob.pa/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "gtdeclare": {
+      "title": "SAT Guatemala — Declaración de viajero",
+      "url": "https://portal.sat.gob.gt/portal/declaracion-jurada-regional-de-viajero/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "gtguide": {
+      "title": "SAT Guatemala — Guía DJRV",
+      "url": "https://portal.sat.gob.gt/portal/wpfd_file/guia-declaracion-jurada-regional-de-viajero-2/",
+      "verification": "Publicación 2025-09-30; consulta 2026-10-22"
+    },
+    "disney": {
+      "title": "Walt Disney World — Lightning Lane",
+      "url": "https://disneyworld.disney.go.com/lightning-lane-passes/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "disneyuk": {
+      "title": "Walt Disney World UK — Compra de pases",
+      "url": "https://www.disneyworld.co.uk/lightning-lane-passes/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "uber": {
+      "title": "Uber — UberX Share",
+      "url": "https://www.uber.com/us/en/ride/uberx-share/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "uberhelp": {
+      "title": "Uber Help — One passenger",
+      "url": "https://help.uber.com/en/riders/article/qu%C3%A9-es-uberx%C2%A0juntos?nodeId=0e39e1b7-aa81-4455-a60e-310887ec6b61",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "hurricane": {
+      "title": "NOAA NHC — Tropical cyclone climatology",
+      "url": "https://www.nhc.noaa.gov/climo/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "bright": {
+      "title": "Brightline — Orlando station",
+      "url": "https://www.gobrightline.com/orlando",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "brightstations": {
+      "title": "Brightline — GDS station guide",
+      "url": "https://www.gobrightline.com/content/dam/brightline/pdfs/travel-trade/amadeusguide-v2.pdf",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "lynx": {
+      "title": "LYNX — Fares and passes",
+      "url": "https://www.golynx.com/fares-passes/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "trolley": {
+      "title": "I-RIDE Trolley — Fares",
+      "url": "https://www.internationaldriveorlando.com/iride-trolley/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "trolleymap": {
+      "title": "I-RIDE Trolley — Route map",
+      "url": "https://www.internationaldriveorlando.com/iride-trolley/i-ride-trolley-route-map.html",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "sunrail": {
+      "title": "SunRail — Operating days",
+      "url": "https://sunrail.com/help-center/support/maps-schedules/how-often-does-sunrail-run/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "mta": {
+      "title": "MTA — Subway and bus fares",
+      "url": "https://www.mta.info/fares-tolls/subway-bus",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "omny": {
+      "title": "OMNY — Fare cap FAQs",
+      "url": "https://omny.info/faq/fare-cap",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "miami": {
+      "title": "Miami-Dade — Transit fares",
+      "url": "https://www.miamidade.gov/global/service.page?Mduid_service=ser1617316231654558",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "miamitap": {
+      "title": "Miami-Dade — Contactless FAQ",
+      "url": "https://www.miamidade.gov/global/transportation/contactless-payment-faqs.page",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "mia": {
+      "title": "Miami International Airport — Public transport",
+      "url": "https://www.miami-airport.com/public-transportation.asp?fsource=stcweb",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "rtc": {
+      "title": "RTC — Fares and passes",
+      "url": "https://www.rtcsnv.com/ways-to-travel/fares-passes/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "rtcairport": {
+      "title": "RTC — Airport routes",
+      "url": "https://www.rtcsnv.com/ways-to-travel/transit-services/airport-transit-routes/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "rtcmap": {
+      "title": "RTC — Schedules and maps",
+      "url": "https://www.rtcsnv.com/ways-to-travel/schedules-maps/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "monorail": {
+      "title": "Las Vegas Monorail — Tickets",
+      "url": "https://www.lvmonorail.com/ticket-information/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "lafares": {
+      "title": "LA Metro — Fares",
+      "url": "https://www.metro.net/fares/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "latap": {
+      "title": "LA Metro — How to pay",
+      "url": "https://www.metro.net/fares/how-to-pay/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "lacap": {
+      "title": "LA Metro — Fare capping",
+      "url": "https://www.metro.net/fares/fare-capping/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "sf": {
+      "title": "SFMTA — Fares",
+      "url": "https://www.sfmta.com/getting-around/muni/fares",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "bart": {
+      "title": "BART — Tap and Ride",
+      "url": "https://www.bart.gov/tickets/contactless",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "sfo": {
+      "title": "BART — SFO airport",
+      "url": "https://www.bart.gov/guide/airport/sfo",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "cta": {
+      "title": "CTA — Fare chart",
+      "url": "https://www.transitchicago.com/fares/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "ctaair": {
+      "title": "CTA — Airports",
+      "url": "https://www.transitchicago.com/airports/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "ctablue": {
+      "title": "CTA — Blue Line",
+      "url": "https://www.transitchicago.com/blueline/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "ctapay": {
+      "title": "CTA — How to pay",
+      "url": "https://www.transitchicago.com/howto/pay-for-your-fare/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "wmata": {
+      "title": "WMATA — Fares",
+      "url": "https://www.wmata.com/pay.html",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "wmatatap": {
+      "title": "WMATA — Tap Ride Go",
+      "url": "https://www.wmata.com/pay/tap-ride-go.html",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "si": {
+      "title": "Smithsonian — Museums and Zoo",
+      "url": "https://www.si.edu/visit/museums",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "sientry": {
+      "title": "Smithsonian — Entry guidelines",
+      "url": "https://www.si.edu/visit/guidelines",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "mbta": {
+      "title": "MBTA — Charlie",
+      "url": "https://www.charlie.mbta.com/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "logan": {
+      "title": "Massport Logan — Public transport",
+      "url": "https://www.massport.com/logan-airport/getting-to-logan/public-transportation",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "freedom": {
+      "title": "NPS — Boston Freedom Trail",
+      "url": "https://www.nps.gov/bost/planyourvisit/basicinfo.htm",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "link": {
+      "title": "Sound Transit — Fares",
+      "url": "https://www.soundtransit.org/ride-with-us/how-to-pay/fares",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "linktransfer": {
+      "title": "Sound Transit — Transfers",
+      "url": "https://www.soundtransit.org/ride-with-us/know-before-you-go/transferring",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "sea": {
+      "title": "Port of Seattle — Public transport",
+      "url": "https://www.portseattle.org/sea/ground-transportation/public-transit",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "norta": {
+      "title": "New Orleans RTA — Fares",
+      "url": "https://www.norta.com/ride-with-us/how-to-pay/fares",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "lepass": {
+      "title": "New Orleans RTA — Le Pass",
+      "url": "https://www.norta.com/ride-with-us/how-to-pay/lepass",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "nortamap": {
+      "title": "New Orleans RTA — Rider tools",
+      "url": "https://www.norta.com/rider-tools/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "nolatour": {
+      "title": "New Orleans tourism — Streetcar itinerary",
+      "url": "https://www.neworleans.com/plan/itineraries/streetcar-itinerary/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "rtd": {
+      "title": "RTD — Fares",
+      "url": "https://www.rtd-denver.com/fares-passes/fares",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "rtdday": {
+      "title": "RTD — Day passes",
+      "url": "https://www.rtd-denver.com/fares-passes/passes-and-ticket-books/day-pass",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "rtdline": {
+      "title": "RTD — A Line",
+      "url": "https://www.rtd-denver.com/open-records/reports-and-policies/facts-and-figures/a-line",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "denver": {
+      "title": "VISIT DENVER — Airport rail and FreeRide",
+      "url": "https://visitdenver.com/about-denver/transportation/denver-airport-rail/",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "nj": {
+      "title": "NJ Division of Taxation — Sales tax guide",
+      "url": "https://www.nj.gov/treasury/taxation/pdf/pubs/sales/su4.pdf",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "apple": {
+      "title": "Apple — Certified Refurbished",
+      "url": "https://www.apple.com/shop/refurbished/about",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "bestbuy": {
+      "title": "Best Buy — Outlet guide",
+      "url": "https://www.bestbuy.com/site/buying-guides/outlet-buying-guide/pcmcat748300448284.c?id=pcmcat748300448284",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "bbreturn": {
+      "title": "Best Buy — Returns",
+      "url": "https://www.bestbuy.com/site/help-topics/return-exchange-policy/pcmcat260800050014.c?id=pcmcat260800000050000",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "nist": {
+      "title": "NIST — Conversion factors",
+      "url": "https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b9",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "nisttemp": {
+      "title": "NIST — Temperature",
+      "url": "https://www.nist.gov/pml/owm/si-units-temperature",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "fhwa": {
+      "title": "FHWA — SI conversion factors",
+      "url": "https://www.fhwa.dot.gov/publications/convtabl.cfm",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "tsa": {
+      "title": "TSA — Travel checklist",
+      "url": "https://www.tsa.gov/sites/default/files/tsa-travel-checklist.pdf",
+      "verification": "Consulta 2026-10-22; página oficial o fuente primaria"
+    },
+    "jfk": {
+      "title": "JFK Airport — Public transport",
+      "url": "https://www.jfkairport.com/transportation/public-transport",
+      "verification": "Consulta 2026-10-22; fuente primaria"
+    },
+    "siferry": {
+      "title": "NYC DOT — Staten Island Ferry",
+      "url": "https://www.nyc.gov/html/dot/html/ferrybus/staten-island-ferry.shtml",
+      "verification": "Consulta 2026-10-22; fuente primaria"
+    },
+    "larail": {
+      "title": "LA Metro — Rail guide",
+      "url": "https://www.metro.net/riding/how-to-ride-metro-rail/",
+      "verification": "Consulta 2026-10-22; fuente primaria"
+    },
+    "dcair": {
+      "title": "WMATA — Airports",
+      "url": "https://www.wmata.com/ride/guides/airports-and-train-stations.html",
+      "verification": "Consulta 2026-10-22; fuente primaria"
+    },
+    "wmataweekend": {
+      "title": "WMATA — Weekend hours",
+      "url": "https://www.wmata.com/weekend",
+      "verification": "Consulta 2026-10-22; fuente primaria"
+    },
+    "pamoneda": {
+      "title": "Superintendencia de Bancos de Panamá — Sistema financiero",
+      "url": "https://www.tubalboaconsentido.gob.pa/sistema-financiero/",
+      "verification": "Consulta 2026-10-22; fuente oficial"
+    },
+    "arbankusd": {
+      "title": "Santander Argentina — Pago de consumos con dólares",
+      "url": "https://ayuda.santander.com.ar/NM1QYJ7N52-1/article/7EXGMU2V81-como-hacer-pago-con-dolares-si-tenes-debito-automatico-tarjeta-credito/",
+      "verification": "Consulta 2026-10-22; procedimiento de un emisor, no se generalizan horarios a otros bancos"
+    },
+    "sag": {
+      "title": "SAG — Declaración de productos al ingresar a Chile",
+      "url": "https://www.sag.gob.cl/tramites/declaracion-jurada-sag-sobre-ingreso-de-productos-de-origen-vegetal-o-animal-chile",
+      "verification": "Consulta 2026-10-22; fuente oficial"
+    },
+    "nistalpha": {
+      "title": "NIST — Conversiones por orden alfabético",
+      "url": "https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b8",
+      "verification": "Constantes y conversiones aritméticas consultadas 2026-10-22"
+    },
+    "usma": {
+      "title": "US Metric Association — Conversiones básicas",
+      "url": "https://usma.org/basics",
+      "verification": "Constantes y conversiones aritméticas consultadas 2026-10-22"
+    },
+    "disneytickets": {
+      "title": "Walt Disney World — Theme park tickets",
+      "url": "https://disneyworld.disney.go.com/admission/tickets/",
+      "verification": "Consulta 2026-10-22; entrada estándar por fecha, sin usar promociones vencidas"
+    },
+    "ioflaw": {
+      "title": "Presidência da República — Decreto 12.499/2025, art. 15-B",
+      "url": "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/decreto/d12499.htm",
+      "verification": "Consulta 2026-10-22; 3,5 % en operaciones de cambio vinculadas a compras con tarjetas internacionales"
+    }
+  },
+  "records": [
+    {
+      "group": "inicio",
+      "id": "sales-tax",
+      "texts": {
+        "es": "El precio de etiqueta suele excluir el sales tax. En Nueva York la tasa general es 8,875 %, con exenciones según el producto.",
+        "en": "Unlike VAT/GST-inclusive prices in many countries, US shelf prices usually exclude sales tax. NYC’s general rate is 8.875%, with product exemptions.",
+        "pt": "Diferente do preço final habitual no Brasil, a etiqueta nos EUA geralmente não inclui sales tax. Em Nova York a alíquota geral é 8,875%, com isenções."
+      },
+      "sources": [
+        "nytax"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "bank-fees",
+      "texts": {
+        "es": "Consulta las comisiones internacionales y el tipo de cambio de tu tarjeta antes de viajar.",
+        "en": "Check your card’s foreign transaction fees and exchange rate before travelling, even if the card is billed in US dollars.",
+        "pt": "Confira o spread cambial e as tarifas internacionais do cartão antes de viajar; eles são custos diferentes do IOF."
+      },
+      "sources": [
+        "bank"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "tip",
+      "texts": {
+        "es": "En restaurantes con servicio de mesa, revisa si la cuenta ya incluye propina o service charge antes de añadir otra.",
+        "en": "At a sit-down restaurant, check whether gratuity or a service charge is already included before adding a tip.",
+        "pt": "No restaurante com garçom, confira se já há gratuity ou service charge antes de acrescentar gorjeta; não presuma que funciona como os 10% do Brasil."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "inicio",
+      "id": "refund",
+      "texts": {
+        "es": "No hay devolución federal del sales tax a turistas. Las excepciones estatales tienen condiciones: no cuentes con un reintegro automático en el aeropuerto.",
+        "en": "There is no federal tourist sales-tax refund. State exceptions have conditions, so do not budget for an automatic airport refund like an EU tax-free scheme.",
+        "pt": "Não existe devolução federal de sales tax para turistas. Exceções estaduais têm condições: não conte com reembolso automático no aeroporto."
+      },
+      "sources": [
+        "refund",
+        "refundtx"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "hotel-fees",
+      "texts": {
+        "es": "Al comparar hoteles, revisa el total: la regla de la FTC exige incluir cargos obligatorios como resort fees en el precio anunciado, pero permite mostrar impuestos aparte.",
+        "en": "Compare hotel totals: FTC rules require mandatory resort fees in the advertised price, but allow government taxes to be shown separately.",
+        "pt": "Compare o total do hotel: a regra da FTC exige resort fees obrigatórias no preço anunciado, mas permite exibir impostos separadamente."
+      },
+      "sources": [
+        "ftc"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "roaming",
+      "texts": {
+        "es": "Antes de comprar una eSIM, comprueba que tu modelo de celular sea compatible y esté desbloqueado para otras operadoras.",
+        "en": "Before buying a travel eSIM, check that your particular phone model supports it and is unlocked for other networks.",
+        "pt": "Antes de comprar um eSIM de viagem, confirme se o modelo do celular é compatível e desbloqueado para outras operadoras."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "inicio",
+      "id": "receipts",
+      "texts": {
+        "es": "Guarda recibos y condiciones de devolución en Documentos para consultarlos durante el viaje.",
+        "en": "Save receipts and return conditions in Documents so you can find them while travelling.",
+        "pt": "Guarde recibos e regras de devolução em Documentos para consultar durante a viagem."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "inicio",
+      "id": "flight",
+      "texts": {
+        "es": "Consulta con tu aerolínea la antelación recomendada y el cierre del check-in; añade margen para controles y traslado entre terminales.",
+        "en": "Check your airline’s recommended arrival time and check-in deadline; allow extra time for security and terminal transfers.",
+        "pt": "Confira a antecedência recomendada e o encerramento do check-in com a companhia aérea; reserve tempo para inspeção e troca de terminal."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "inicio",
+      "id": "dcc",
+      "texts": {
+        "es": "Si el terminal ofrece cobrar en tu moneda, revisa el tipo de cambio y recargos de esa conversión. Puedes rechazarla y pagar en US$.",
+        "en": "If a terminal offers GBP, AUD or CAD instead of USD, review its conversion rate and markup. You can decline DCC and pay in USD.",
+        "pt": "Se a maquininha oferecer cobrar em reais, confira o câmbio e o acréscimo. Você pode recusar a conversão da loja e pagar em US$."
+      },
+      "sources": [
+        "dcc"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "liquids",
+      "texts": {
+        "es": "En controles TSA, los líquidos de mano van en envases de hasta 100 ml dentro de una bolsa transparente de un cuarto de galón; revisa las excepciones médicas.",
+        "en": "At TSA checkpoints, carry-on liquids go in containers up to 100 ml (3.4 fl oz), in one clear quart-sized bag. Check medical exceptions.",
+        "pt": "Na inspeção TSA, líquidos de mão devem ir em frascos de até 100 ml, numa bolsa transparente de um quarto de galão. Confira as exceções médicas."
+      },
+      "sources": [
+        "tsa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "iof-br",
+      "texts": {
+        "pt": "Compras internacionais com cartão têm IOF de 3,5%. Inclua também o spread e as tarifas do seu emissor no orçamento."
+      },
+      "sources": [
+        "iof",
+        "ioflaw"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "omny",
+      "texts": {
+        "es": "En Nueva York puedes pagar OMNY con tu tarjeta sin contacto o celular. Usa siempre el mismo medio para acumular el tope de US$35 en 7 días en metro y buses locales.",
+        "en": "In NYC, tap a bank card or phone on OMNY, similar to London’s Tube. Keep the same payment method for the $35 seven-day subway/local-bus cap.",
+        "pt": "Em Nova York, use cartão por aproximação ou celular no OMNY, sem recarregar um cartão de transporte. O teto de metrô e ônibus locais é US$35 em 7 dias com o mesmo meio."
+      },
+      "sources": [
+        "mta",
+        "omny"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "tap",
+      "texts": {
+        "es": "El pago con tarjeta bancaria sin contacto existe en varias redes, pero no se extiende automáticamente a todos los trenes o buses de una ciudad. Revisa el operador concreto.",
+        "en": "Bank-card tapping is available on several US networks, but does not automatically cover every train or bus in a city. Check the specific operator.",
+        "pt": "Várias redes aceitam cartão bancário por aproximação, mas isso não vale automaticamente para todo trem ou ônibus da cidade. Confira a operadora."
+      },
+      "sources": [
+        "latap",
+        "wmatatap",
+        "miamitap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "ll",
+      "texts": {
+        "es": "Lightning Lane Multi Pass de Disney World permite elegir hasta 3 experiencias antes de la visita. Después de usar una, puedes reservar otra según disponibilidad; la entrada al parque se compra aparte.",
+        "en": "Disney World’s Lightning Lane Multi Pass lets you choose up to 3 experiences ahead. After redeeming one, book another subject to availability; park admission is separate.",
+        "pt": "O Lightning Lane Multi Pass da Disney World permite escolher até 3 experiências antes da visita. Depois de usar uma, reserve outra conforme disponibilidade; o ingresso do parque é separado."
+      },
+      "sources": [
+        "disney"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "ll-window",
+      "texts": {
+        "es": "Para comprar Lightning Lane antes de llegar a EE. UU., revisa las restricciones geográficas oficiales. No organices tus reservas contando solo los días de anticipación del hotel.",
+        "en": "Check Disney’s geographic purchase restrictions before planning Lightning Lane bookings from the UK, Australia or another country outside the US. Hotel booking windows alone do not guarantee access abroad.",
+        "pt": "Antes de planejar a compra de Lightning Lane ainda no Brasil, confira a restrição geográfica oficial. A janela do hotel, sozinha, não garante compra fora dos EUA."
+      },
+      "sources": [
+        "disneyuk"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "share",
+      "texts": {
+        "es": "UberX Share es para un solo pasajero por solicitud y depende de la ciudad. Si viajas con acompañantes o mucho equipaje, comprueba otra categoría en la app.",
+        "en": "UberX Share allows one passenger per request and depends on location. Check a different category if travelling with companions or substantial luggage.",
+        "pt": "O UberX Share permite um passageiro por solicitação e depende da cidade. Para viajar acompanhado ou com muita bagagem, confira outra categoria no app."
+      },
+      "sources": [
+        "uberhelp"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "hurricane",
+      "texts": {
+        "es": "La temporada oficial de huracanes del Atlántico va del 1 de junio al 30 de noviembre. Para Florida y Nueva Orleans, consulta avisos del NHC antes de salir.",
+        "en": "Atlantic hurricane season officially runs June 1–November 30. Check NHC alerts before trips to Florida or New Orleans.",
+        "pt": "A temporada oficial de furacões do Atlântico vai de 1º de junho a 30 de novembro. Confira os alertas do NHC antes de visitar a Flórida ou Nova Orleans."
+      },
+      "sources": [
+        "hurricane"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "brightline",
+      "texts": {
+        "es": "Brightline conecta Orlando con el sur de Florida. Su estación de Orlando está en MCO, junto a la Terminal C: incluye ese traslado en el cálculo, no sale de los parques.",
+        "en": "Brightline links Orlando with South Florida. Its Orlando station is at MCO beside Terminal C, so include the airport transfer when comparing it with driving.",
+        "pt": "O Brightline liga Orlando ao sul da Flórida. A estação de Orlando fica no MCO, junto ao Terminal C: some o traslado até o aeroporto ao comparar custos."
+      },
+      "sources": [
+        "bright",
+        "brightstations"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "return",
+      "texts": {
+        "es": "Antes de reservar transporte de regreso, consulta la última salida y los avisos de obras del día; un horario habitual no garantiza servicio esa noche.",
+        "en": "Before booking a late return, check the last departure and that day’s engineering alerts; usual operating hours do not guarantee service that night.",
+        "pt": "Antes de planejar a volta tarde, confira a última saída e os avisos de obras do dia; o horário habitual não garante serviço naquela noite."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "lugares",
+      "id": "payment-device",
+      "texts": {
+        "es": "En redes con topes o transbordos por contacto, no alternes tarjeta física y billetera digital: el sistema puede contarlas como medios distintos.",
+        "en": "On tap-to-pay systems with caps or transfers, keep using the same card or device; plastic and its mobile-wallet version may be counted separately.",
+        "pt": "Em sistemas com teto ou integração por aproximação, use sempre o mesmo cartão ou dispositivo: cartão físico e carteira digital podem contar separadamente."
+      },
+      "sources": [
+        "omny",
+        "miamitap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "booking",
+      "texts": {
+        "es": "Guarda en Documentos el QR de tus entradas y la dirección exacta del acceso; comprueba si la reserva exige seleccionar fecha u horario.",
+        "en": "Save ticket QR codes and the exact entrance address in Documents; check whether admission requires a booked date or time.",
+        "pt": "Salve em Documentos o QR dos ingressos e o endereço exato da entrada; confira se é preciso reservar data ou horário."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "nj-clothing",
+      "texts": {
+        "es": "En Nueva Jersey, la ropa y el calzado de uso general suelen estar exentos de sales tax. Accesorios y equipo deportivo especializado pueden tributar.",
+        "en": "In New Jersey, ordinary clothing and footwear are generally sales-tax exempt; accessories and specialist sports equipment may still be taxed.",
+        "pt": "Em Nova Jersey, roupas e calçados de uso geral costumam ser isentos de sales tax; acessórios e equipamentos esportivos específicos podem ser tributados."
+      },
+      "sources": [
+        "nj"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "ny-clothing",
+      "texts": {
+        "es": "En NYC, la ropa y el calzado que califican y cuestan menos de US$110 por artículo o par están exentos. El límite no se calcula sobre el total del carrito.",
+        "en": "NYC exempts qualifying clothing and footwear priced below $110 per item or pair; the threshold is not the total shopping basket.",
+        "pt": "Em Nova York, roupas e calçados elegíveis abaixo de US$110 por peça ou par são isentos; o limite não é o total do carrinho."
+      },
+      "sources": [
+        "nytax"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "refurb",
+      "texts": {
+        "es": "Apple Certified Refurbished anuncia ahorros de hasta 15 % y garantía limitada de un año. Compara el modelo exacto y la disponibilidad, no un descuento garantizado.",
+        "en": "Apple Certified Refurbished advertises savings up to 15% and a one-year limited warranty. Compare the exact model and stock; the maximum discount is not guaranteed.",
+        "pt": "O Apple Certified Refurbished anuncia economia de até 15% e garantia limitada de um ano. Compare o modelo exato e o estoque; o desconto máximo não é garantido."
+      },
+      "sources": [
+        "apple"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "open-box",
+      "texts": {
+        "es": "En Best Buy, Open Box no significa siempre “como nuevo”. Revisa la condición publicada, accesorios incluidos y plazo de devolución de esa unidad.",
+        "en": "Best Buy Open Box does not always mean like new. Check the listed condition, included accessories and that unit’s return window.",
+        "pt": "Open Box na Best Buy não significa sempre “como novo”. Confira a condição anunciada, os acessórios incluídos e o prazo de devolução da unidade."
+      },
+      "sources": [
+        "bestbuy",
+        "bbreturn"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "return-policy",
+      "texts": {
+        "es": "Antes de pagar, pregunta si el artículo es final sale y si aceptan devoluciones después de tu fecha de salida. Guarda el recibo.",
+        "en": "Check for final-sale restrictions and whether returns will still be practical after you fly home; keep the receipt.",
+        "pt": "Antes de pagar, confira se o produto é final sale e se será possível devolvê-lo depois da viagem. Guarde o recibo."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "coupons",
+      "texts": {
+        "es": "Antes de viajar a un outlet por un cupón, revisa vencimiento, marcas excluidas y compra mínima. Compara el precio final con otras tiendas.",
+        "en": "Before travelling to an outlet for a coupon, check expiry, excluded brands and minimum spend. Compare the final price elsewhere.",
+        "pt": "Antes de ir a um outlet por um cupom, confira validade, marcas excluídas e compra mínima. Compare o preço final em outras lojas."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "sizes",
+      "texts": {
+        "es": "Las tallas cambian según marca y corte. Compara medidas de la tabla oficial y pruébate la prenda; no conviertas automáticamente M en L.",
+        "en": "US and UK/Australian size labels can differ, and brands vary. Use the brand’s measurements and try items on rather than converting letters automatically.",
+        "pt": "A numeração dos EUA não equivale automaticamente à brasileira. Confira as medidas da marca e experimente; não transforme M em G por regra fixa."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "baggage",
+      "texts": {
+        "es": "Pesa tu equipaje y revisa piezas, dimensiones y peso incluidos en tu tarifa. No todos los vuelos permiten 23 kg ni incluyen maleta despachada.",
+        "en": "Weigh your luggage and check the allowance on your actual fare; piece count, size and checked-bag inclusion vary.",
+        "pt": "Pese a bagagem e confira peças, dimensões e peso da sua tarifa. Não presuma que todo voo inclui mala despachada de 23 kg."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "final-cost",
+      "texts": {
+        "es": "Compara el costo completo: precio, sales tax aplicable y cargos de tu tarjeta. Un descuento de etiqueta no equivale al ahorro final.",
+        "en": "Compare the complete cost: shelf price, applicable sales tax and card charges. A sticker discount is not the final saving.",
+        "pt": "Compare o custo completo: etiqueta, sales tax, IOF e spread do cartão. O desconto da etiqueta não é a economia final em reais."
+      },
+      "sources": [
+        "bank",
+        "iof",
+        "ioflaw"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "security",
+      "texts": {
+        "es": "Antes de dejar el auto estacionado, guarda las compras fuera de la vista y evita mostrar objetos de valor al abrir el baúl.",
+        "en": "Keep shopping out of sight before parking, and avoid displaying valuables when opening the boot or trunk.",
+        "pt": "Antes de estacionar, deixe as compras fora de vista e evite expor objetos de valor ao abrir o porta-malas."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "voltage",
+      "texts": {
+        "es": "Antes de comprar aparatos, lee la etiqueta de entrada eléctrica y comprueba el enchufe y la garantía en tu país. Un adaptador de clavija no cambia el voltaje.",
+        "en": "Before buying appliances, check the input-voltage label, plug and warranty back home. A plug adaptor does not convert voltage.",
+        "pt": "Antes de comprar aparelhos, confira a tensão de entrada, o plugue e a garantia no Brasil. Um adaptador de tomada não transforma a tensão."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "receipt-copy",
+      "texts": {
+        "es": "Fotografía recibos y etiquetas del modelo antes de quitar el embalaje: te ayudan a identificar la compra y revisar garantías o devoluciones.",
+        "en": "Photograph receipts and model labels before discarding packaging; they help identify purchases for warranty or return enquiries.",
+        "pt": "Fotografe recibos e etiquetas do modelo antes de descartar a embalagem; eles ajudam em consultas sobre garantia e devolução."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "br-customs-0",
+      "texts": {
+        "pt": "Na volta ao Brasil por avião ou navio, a cota de bagagem tributável é US$1.000 por pessoa, respeitadas as condições e quantidades da Receita. Compras em duty free no exterior entram nessa conta."
+      },
+      "sources": [
+        "brquota"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "br-customs-1",
+      "texts": {
+        "pt": "Se houver bens tributáveis acima da cota, use a e-DBV e o canal Bens a Declarar. O imposto é de 50% sobre o excedente; a cota não pode ser somada entre familiares."
+      },
+      "sources": [
+        "brquota",
+        "brdeclare"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "unidades",
+      "id": "freezing",
+      "texts": {
+        "es": "32 °F = 0 °C. Para convertir °F a °C: resta 32 y divide entre 1,8.",
+        "en": "32°F = 0°C. To convert °F to °C, subtract 32 and divide by 1.8.",
+        "pt": "32 °F = 0 °C. Para converter °F em °C, subtraia 32 e divida por 1,8."
+      },
+      "sources": [
+        "nisttemp"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "weather",
+      "texts": {
+        "es": "68 °F = 20 °C y 86 °F = 30 °C: dos referencias para interpretar el pronóstico.",
+        "en": "68°F = 20°C and 86°F = 30°C: useful reference points for the forecast.",
+        "pt": "68 °F = 20 °C e 86 °F = 30 °C: referências para entender a previsão."
+      },
+      "sources": [
+        "nisttemp"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "body",
+      "texts": {
+        "es": "37 °C = 98,6 °F: es una equivalencia de temperatura, no un criterio de fiebre.",
+        "en": "37°C = 98.6°F: a temperature conversion, not a fever threshold.",
+        "pt": "37 °C = 98,6 °F: é uma conversão de temperatura, não um critério de febre."
+      },
+      "sources": [
+        "nisttemp"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "mile",
+      "texts": {
+        "es": "1 milla = 1,609 km aproximadamente. Una distancia de 10 millas equivale a unos 16,1 km.",
+        "en": "1 mile is about 1.609 km; 10 miles is roughly 16.1 km.",
+        "pt": "1 milha equivale a cerca de 1,609 km; 10 milhas são aproximadamente 16,1 km."
+      },
+      "sources": [
+        "fhwa"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "speed",
+      "texts": {
+        "es": "65 mph ≈ 105 km/h. Es una conversión, no el límite de velocidad de todas las autopistas: sigue las señales.",
+        "en": "65 mph is about 105 km/h. That is a conversion, not a universal highway speed limit; follow posted signs.",
+        "pt": "65 mph ≈ 105 km/h. É uma conversão, não o limite de todas as rodovias: siga as placas."
+      },
+      "sources": [
+        "fhwa"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "gallon",
+      "texts": {
+        "es": "1 galón estadounidense ≈ 3,785 litros. No lo confundas con el galón imperial, que es mayor.",
+        "en": "1 US gallon is about 3.785 litres; a UK imperial gallon is about 4.546 litres. Fuel prices and mpg use the US gallon in the US.",
+        "pt": "1 galão americano equivale a cerca de 3,785 litros; não é o galão imperial, de aproximadamente 4,546 litros."
+      },
+      "sources": [
+        "nist",
+        "nistalpha",
+        "usma"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "pound",
+      "texts": {
+        "es": "1 lb ≈ 454 g. Para estimar el precio por kilogramo desde un precio por libra, multiplícalo por 2,205.",
+        "en": "1 lb is about 454 g. Multiply a per-pound price by 2.205 to estimate the per-kilogram price.",
+        "pt": "1 lb equivale a cerca de 454 g. Multiplique o preço por libra por 2,205 para estimar o preço por quilo."
+      },
+      "sources": [
+        "nist",
+        "nistalpha",
+        "usma"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "baggage-weight",
+      "texts": {
+        "es": "50 lb ≈ 22,68 kg. Comprueba el límite exacto del boleto: 50 lb y 23 kg no son idénticos.",
+        "en": "50 lb is about 22.68 kg. Check the exact allowance on your ticket: 50 lb and 23 kg are not identical.",
+        "pt": "50 lb ≈ 22,68 kg. Confira o limite exato da passagem: 50 lb e 23 kg não são iguais."
+      },
+      "sources": [
+        "nist",
+        "nistalpha",
+        "usma"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "ounce",
+      "texts": {
+        "es": "1 oz de peso ≈ 28,35 g. La onza de peso no es la onza líquida (fl oz).",
+        "en": "1 oz by weight is about 28.35 g; it is different from a fluid ounce (fl oz).",
+        "pt": "1 oz de peso equivale a cerca de 28,35 g; não é a mesma medida que a onça líquida (fl oz)."
+      },
+      "sources": [
+        "nist",
+        "nistalpha",
+        "usma"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "fluid-ounce",
+      "texts": {
+        "es": "1 US fl oz ≈ 29,57 ml; una botella de 16,9 US fl oz contiene unos 500 ml.",
+        "en": "1 US fl oz is about 29.57 ml; a 16.9 US fl oz bottle holds about 500 ml. UK fluid ounces are a different size.",
+        "pt": "1 US fl oz equivale a cerca de 29,57 ml; uma garrafa de 16,9 US fl oz tem aproximadamente 500 ml."
+      },
+      "sources": [
+        "fhwa"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "inch",
+      "texts": {
+        "es": "1 pulgada (in) = 2,54 cm. Úsalo para revisar las dimensiones del equipaje en la web de la aerolínea.",
+        "en": "1 inch equals 2.54 cm; use it to check cabin-bag dimensions on your airline’s website.",
+        "pt": "1 polegada (in) = 2,54 cm. Use a conversão para conferir as dimensões da bagagem no site da companhia."
+      },
+      "sources": [
+        "fhwa"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "feet",
+      "texts": {
+        "es": "1 pie (ft) = 30,48 cm. Una altura de 6 ft equivale a unos 1,83 m.",
+        "en": "1 foot equals 30.48 cm; 6 ft is about 1.83 m.",
+        "pt": "1 pé (ft) = 30,48 cm; 6 ft equivalem a aproximadamente 1,83 m."
+      },
+      "sources": [
+        "fhwa"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "quart",
+      "texts": {
+        "es": "1 cuarto de galón estadounidense (US qt) ≈ 0,946 litros. Es una medida de volumen, no de peso.",
+        "en": "1 US quart is about 0.946 litres, smaller than an imperial quart; it measures volume, not weight.",
+        "pt": "1 quarto de galão americano (US qt) equivale a cerca de 0,946 litro; mede volume, não peso."
+      },
+      "sources": [
+        "nist",
+        "nistalpha",
+        "usma"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "pint",
+      "texts": {
+        "es": "1 pinta estadounidense (US pint) ≈ 473 ml; la pinta imperial es de unos 568 ml.",
+        "en": "A US pint is about 473 ml; a UK imperial pint is about 568 ml. Keep this in mind when comparing drink sizes.",
+        "pt": "1 pinta americana (US pint) equivale a cerca de 473 ml; a pinta imperial tem aproximadamente 568 ml."
+      },
+      "sources": [
+        "nist",
+        "nistalpha",
+        "usma"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "mpg",
+      "texts": {
+        "es": "Para pasar de millas por galón estadounidense a litros/100 km, divide 235,215 entre los mpg. Ejemplo: 30 mpg ≈ 7,84 l/100 km.",
+        "en": "For US mpg to L/100 km, divide 235.215 by mpg: 30 US mpg is about 7.84 L/100 km. Do not apply UK mpg figures directly.",
+        "pt": "Para converter mpg americano em km/l, multiplique por 0,42514: 30 mpg ≈ 12,75 km/l."
+      },
+      "sources": [
+        "nist",
+        "nistalpha",
+        "usma"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "unidades",
+      "id": "yard",
+      "texts": {
+        "es": "1 yarda (yd) = 0,9144 m. Una distancia de 100 yd equivale a 91,44 m.",
+        "en": "1 yard equals 0.9144 metres; 100 yd is 91.44 m.",
+        "pt": "1 jarda (yd) = 0,9144 m; 100 yd equivalem a 91,44 m."
+      },
+      "sources": [
+        "fhwa"
+      ],
+      "status": "conversión aritmética comprobada"
+    },
+    {
+      "group": "inicio",
+      "id": "AR-visa",
+      "country": "AR",
+      "texts": {
+        "es": "Con pasaporte argentino, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      },
+      "sources": [
+        "usvisa",
+        "visa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "MX-visa",
+      "country": "MX",
+      "texts": {
+        "es": "Con pasaporte mexicano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      },
+      "sources": [
+        "usvisa",
+        "visa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "CO-visa",
+      "country": "CO",
+      "texts": {
+        "es": "Con pasaporte colombiano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      },
+      "sources": [
+        "usvisa",
+        "visa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "PE-visa",
+      "country": "PE",
+      "texts": {
+        "es": "Con pasaporte peruano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      },
+      "sources": [
+        "usvisa",
+        "visa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "CR-visa",
+      "country": "CR",
+      "texts": {
+        "es": "Con pasaporte costarricense, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      },
+      "sources": [
+        "usvisa",
+        "visa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "PA-visa",
+      "country": "PA",
+      "texts": {
+        "es": "Con pasaporte panameño, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      },
+      "sources": [
+        "usvisa",
+        "visa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "GT-visa",
+      "country": "GT",
+      "texts": {
+        "es": "Con pasaporte guatemalteco, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+      },
+      "sources": [
+        "usvisa",
+        "visa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "CL-esta",
+      "country": "CL",
+      "texts": {
+        "es": "Con pasaporte chileno, revisa la elegibilidad para Visa Waiver y solicita ESTA solo en esta.cbp.dhs.gov. No toda persona con pasaporte chileno cumple las condiciones."
+      },
+      "sources": [
+        "clvisa"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "AR-percepcion",
+      "country": "AR",
+      "texts": {
+        "es": "Al pagar en pesos consumos de tarjeta en el exterior, puede corresponder una percepción del 30 % a cuenta de Ganancias/Bienes Personales. Revisa las operaciones alcanzadas y tu resumen; no es el Impuesto PAIS."
+      },
+      "sources": [
+        "arperc",
+        "arrate"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "inicio",
+      "id": "AR-usd",
+      "country": "AR",
+      "texts": {
+        "es": "Si vas a cancelar consumos con dólares propios, consulta al banco el procedimiento y el débito automático. No des por hecho que pagarás menos: compara el costo de esos dólares y los cargos aplicables."
+      },
+      "sources": [
+        "arbank",
+        "arperc",
+        "arbankusd"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "AR-franquicia",
+      "country": "AR",
+      "texts": {
+        "es": "Al volver a Argentina por vía aérea o marítima, la franquicia de equipaje es US$500; para menores de 16 años corresponde la mitad. Revisa en ARCA las condiciones para combinarla como familia."
+      },
+      "sources": [
+        "arquota"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "AR-salida",
+      "country": "AR",
+      "texts": {
+        "es": "Antes de salir de Argentina, revisa si debes declarar tus equipos mediante el OM 121. Conservar esa constancia ayuda a acreditar que no los compraste durante el viaje."
+      },
+      "sources": [
+        "ardeclare"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "MX-franquicia",
+      "country": "MX",
+      "texts": {
+        "es": "Al ingresar a México, ANAM informa una franquicia de hasta US$500 en mercancías adicionales al equipaje personal. Conserva facturas para acreditar el valor."
+      },
+      "sources": [
+        "mxquota",
+        "mx2026"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "MX-exclusiones",
+      "country": "MX",
+      "texts": {
+        "es": "Para México, alcohol, tabaco y combustible no se cubren con la franquicia general de compras. Consulta sus límites específicos antes de aprovechar un duty free."
+      },
+      "sources": [
+        "mxquota"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "CO-franquicia",
+      "country": "CO",
+      "texts": {
+        "es": "Al regresar a Colombia, la DIAN permite hasta US$2.000 en equipaje acompañado libre de tributo, dentro de los límites de cantidad y sin finalidad comercial."
+      },
+      "sources": [
+        "coquota"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "CO-declaracion",
+      "country": "CO",
+      "texts": {
+        "es": "Si tus compras exceden el cupo o traes bienes que deben declararse en Colombia, revisa el Formulario 530 de la DIAN antes de pasar el control."
+      },
+      "sources": [
+        "codeclare"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "CL-equipaje",
+      "country": "CL",
+      "texts": {
+        "es": "Al volver a Chile, consulta la lista oficial de Equipaje de Viajero: la franquicia distingue efectos personales de otras mercancías; no todo lo comprado cuenta como equipaje exento."
+      },
+      "sources": [
+        "clquota"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "PE-equipos",
+      "country": "PE",
+      "texts": {
+        "es": "En Perú, SUNAT contempla una laptop y dos celulares entre los bienes libres de tributos; hay condiciones por edad. Consulta la lista oficial antes de comprar equipos extra."
+      },
+      "sources": [
+        "peunits"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "PE-lista",
+      "country": "PE",
+      "texts": {
+        "es": "Antes de volver a Perú, revisa en Bienvenido al Perú de SUNAT qué bienes requieren declaración. La lista de equipaje exento tiene cantidades y condiciones por tipo de artículo."
+      },
+      "sources": [
+        "pequota"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "CR-equipaje",
+      "country": "CR",
+      "texts": {
+        "es": "Para regresar a Costa Rica, revisa los requisitos de la franquicia del viajero en Hacienda: no asumas que una franquicia usada en un viaje anterior se renueva con cada entrada."
+      },
+      "sources": [
+        "crquota"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "PA-declaracion",
+      "country": "PA",
+      "texts": {
+        "es": "Antes de ingresar a Panamá, consulta la Declaración de Viajero de la Autoridad Nacional de Aduanas y verifica si tus compras deben declararse; no confundas equipaje personal con mercancía adicional."
+      },
+      "sources": [
+        "padeclare"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "GT-djrv",
+      "country": "GT",
+      "texts": {
+        "es": "Para viajar desde o hacia Guatemala, usa la Declaración Jurada Regional de Viajero electrónica de SAT. Accede desde portal.sat.gob.gt para evitar formularios de terceros."
+      },
+      "sources": [
+        "gtdeclare",
+        "gtguide"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "lynx-fare",
+      "texts": {
+        "es": "🚌 LYNX: pasaje regular US$2; el pase de todo el día cuesta US$4,50.",
+        "en": "🚌 LYNX regular fare is $2; an all-day pass costs $4.50.",
+        "pt": "🚌 LYNX: tarifa regular US$2; passe diário US$4,50."
+      },
+      "sources": [
+        "lynx"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "transfer",
+      "texts": {
+        "es": "🎫 Si necesitas combinar buses LYNX, pide el transbordo al subir: vale 90 minutos, sin vuelta ni repetición de la misma línea.",
+        "en": "🎫 Ask for a LYNX transfer when boarding: valid 90 minutes, excluding return trips and the same route.",
+        "pt": "🎫 Peça a integração LYNX ao embarcar: vale 90 minutos, sem volta nem repetição da mesma linha."
+      },
+      "sources": [
+        "lynx"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "trolley",
+      "texts": {
+        "es": "🚎 I-RIDE Trolley: US$2 por viaje de adulto, con importe exacto; el conductor no da cambio.",
+        "en": "🚎 I-RIDE Trolley adult fare is $2 per ride; have exact cash, as drivers give no change.",
+        "pt": "🚎 I-RIDE Trolley: US$2 por viagem de adulto; leve o valor exato, pois o motorista não dá troco."
+      },
+      "sources": [
+        "trolley"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "trolley-map",
+      "texts": {
+        "es": "🗺️ El I-RIDE recorre el área de International Drive. Revisa su mapa antes de usarlo para ir a un parque fuera de ese corredor.",
+        "en": "🗺️ I-RIDE serves the International Drive area; check its route map before planning trips to parks outside that corridor.",
+        "pt": "🗺️ O I-RIDE atende a região da International Drive; confira o mapa antes de planejar ir a parques fora desse corredor."
+      },
+      "sources": [
+        "trolleymap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "sunrail",
+      "texts": {
+        "es": "🚂 SunRail opera habitualmente de lunes a viernes; no cuentes con trenes regulares de fin de semana. Revisa servicios especiales.",
+        "en": "🚂 SunRail normally runs Monday–Friday; do not assume regular weekend trains. Check for special services.",
+        "pt": "🚂 O SunRail opera normalmente de segunda a sexta; não conte com trens regulares no fim de semana. Confira serviços especiais."
+      },
+      "sources": [
+        "sunrail"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "bright-airport",
+      "texts": {
+        "es": "🚄 La estación Brightline de Orlando está en MCO, junto a la Terminal C. Reserva tiempo para llegar desde tu hotel o parque.",
+        "en": "🚄 Orlando’s Brightline station is at MCO beside Terminal C; allow time to get there from your hotel or park.",
+        "pt": "🚄 A estação Brightline de Orlando fica no MCO, junto ao Terminal C. Reserve tempo para sair do hotel ou parque."
+      },
+      "sources": [
+        "bright"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/orlando",
+      "id": "last-bus",
+      "texts": {
+        "es": "🕒 Antes de elegir bus para volver de los parques, comprueba la última salida y la parada exacta; guarda una alternativa para después del cierre.",
+        "en": "🕒 Before taking a bus back from a park, check the last departure and exact stop; save an alternative for after closing.",
+        "pt": "🕒 Antes de voltar de ônibus dos parques, confira a última saída e o ponto exato; deixe uma alternativa para depois do fechamento."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "fare",
+      "texts": {
+        "es": "🚇 Metro y buses locales: tarifa regular US$3; buses express y AirTrain tienen tarifas distintas.",
+        "en": "🚇 Regular subway/local-bus fare is $3; express buses and AirTrain have separate fares.",
+        "pt": "🚇 Metrô e ônibus locais: tarifa regular US$3; ônibus expressos e AirTrain têm tarifas diferentes."
+      },
+      "sources": [
+        "mta"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "cap",
+      "texts": {
+        "es": "💳 OMNY limita el gasto de metro y buses locales a US$35 en 7 días con el mismo medio de pago.",
+        "en": "💳 OMNY caps subway/local-bus spending at $35 over seven days with the same payment method.",
+        "pt": "💳 O OMNY limita metrô e ônibus locais a US$35 em 7 dias com o mesmo meio de pagamento."
+      },
+      "sources": [
+        "omny"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "device",
+      "texts": {
+        "es": "📱 Tarjeta física y la misma tarjeta en el celular pueden sumar por separado: no alternes si quieres alcanzar el tope.",
+        "en": "📱 A physical card and its phone-wallet version can count separately; do not switch if you want the cap.",
+        "pt": "📱 Cartão físico e o mesmo cartão no celular podem contar separadamente; não alterne se quiser atingir o teto."
+      },
+      "sources": [
+        "omny"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "group",
+      "texts": {
+        "es": "👥 Si pagas por acompañantes, sus viajes no se suman al tope de tu primer pasaje. Revisa las reglas de OMNY para grupos.",
+        "en": "👥 Companion fares paid with your card do not build the cap for your first fare. Check OMNY’s group-payment rules.",
+        "pt": "👥 Viagens dos acompanhantes pagas com seu cartão não somam ao teto da sua primeira passagem. Confira as regras de grupo do OMNY."
+      },
+      "sources": [
+        "omny"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "jfk",
+      "texts": {
+        "es": "✈️ AirTrain JFK se paga aparte del metro o LIRR. Compara el viaje completo, no solo la tarifa del tren urbano.",
+        "en": "✈️ JFK AirTrain costs extra on top of subway or LIRR fares; compare the full journey.",
+        "pt": "✈️ O AirTrain JFK é pago separadamente do metrô ou LIRR; compare o trajeto completo."
+      },
+      "sources": [
+        "jfk"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "ferry",
+      "texts": {
+        "es": "⛴️ El Staten Island Ferry de NYC DOT es gratuito entre Lower Manhattan y Staten Island. No es un desembarco en Liberty Island.",
+        "en": "⛴️ NYC DOT’s Staten Island Ferry is free between Lower Manhattan and Staten Island; it does not stop on Liberty Island.",
+        "pt": "⛴️ O Staten Island Ferry da NYC DOT é gratuito entre Lower Manhattan e Staten Island; não desembarca na Liberty Island."
+      },
+      "sources": [
+        "siferry"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "tap",
+      "texts": {
+        "es": "💳 Para pagar OMNY, acerca solo la tarjeta o el dispositivo que elegiste; no apoyes una billetera con varias tarjetas.",
+        "en": "💳 Tap only your chosen OMNY card or device, as on London’s Tube; keep other contactless cards away from the reader.",
+        "pt": "💳 Encoste só o cartão ou dispositivo escolhido no OMNY; não aproxime uma carteira com vários cartões."
+      },
+      "sources": [
+        "omny"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "fare",
+      "texts": {
+        "es": "🎫 La tarifa regular de Metrorail y Metrobus es US$2,25. Metromover es gratuito.",
+        "en": "🎫 Regular Metrorail/Metrobus fare is $2.25; Metromover is free.",
+        "pt": "🎫 A tarifa regular de Metrorail e Metrobus é US$2,25; o Metromover é gratuito."
+      },
+      "sources": [
+        "miami"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "contactless",
+      "texts": {
+        "es": "💳 Puedes usar tarjeta bancaria sin contacto o billetera digital en Metrorail y Metrobus; no necesitas comprar una EASY Card para el pasaje regular.",
+        "en": "💳 Tap a contactless bank card or mobile wallet on Metrorail/Metrobus; an EASY Card is not required for regular fares.",
+        "pt": "💳 Use cartão bancário por aproximação ou carteira digital no Metrorail/Metrobus, sem comprar EASY Card para a tarifa regular."
+      },
+      "sources": [
+        "miamitap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "cap",
+      "texts": {
+        "es": "📱 Con pago bancario sin contacto, el tope diario es US$5,65; usa siempre la misma tarjeta o dispositivo.",
+        "en": "📱 Contactless bank-card payment caps daily fares at $5.65; keep using the same card or device.",
+        "pt": "📱 Com cartão bancário por aproximação, o teto diário é US$5,65; use sempre o mesmo cartão ou dispositivo."
+      },
+      "sources": [
+        "miamitap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "mover",
+      "texts": {
+        "es": "✈️ Desde las terminales de MIA, el MIA Mover gratuito conecta con el centro de transporte; no lo confundas con el Metromover del centro.",
+        "en": "✈️ The free MIA Mover links airport terminals with the transport centre; it is different from downtown Metromover.",
+        "pt": "✈️ O MIA Mover gratuito liga os terminais ao centro de transporte; é diferente do Metromover do centro da cidade."
+      },
+      "sources": [
+        "mia"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "orange",
+      "texts": {
+        "es": "🚆 La línea Orange de Metrorail sirve la estación del aeropuerto MIA. Verifica la dirección del tren antes de subir.",
+        "en": "🚆 Metrorail’s Orange Line serves MIA airport station; check the train’s destination before boarding.",
+        "pt": "🚆 A linha Orange do Metrorail atende a estação do aeroporto MIA; confira o destino do trem antes de embarcar."
+      },
+      "sources": [
+        "mia"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "beach",
+      "texts": {
+        "es": "🏖️ Para Miami Beach, consulta un trayecto que cruce a la isla: el Metrorail no te deja directamente en South Beach.",
+        "en": "🏖️ Plan a connection across to Miami Beach; Metrorail does not take you directly to South Beach.",
+        "pt": "🏖️ Para Miami Beach, planeje a conexão até a ilha; o Metrorail não deixa você diretamente em South Beach."
+      },
+      "sources": [
+        "mia"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/miami",
+      "id": "transfer",
+      "texts": {
+        "es": "🔁 Para conservar beneficios de transbordo, usa el mismo medio electrónico; pagar cada bus en efectivo puede cambiar el costo del recorrido.",
+        "en": "🔁 Keep the same electronic payment method for transfer benefits; separate cash bus fares can change the trip cost.",
+        "pt": "🔁 Use o mesmo meio eletrônico para aproveitar a integração; pagar cada ônibus em dinheiro pode mudar o custo do trajeto."
+      },
+      "sources": [
+        "miamitap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "passes",
+      "texts": {
+        "es": "🎫 Deuce/Strip & All Access: pase de 2 h US$6, de 24 h US$8 y de 3 días US$20.",
+        "en": "🎫 Deuce/Strip & All Access passes: $6 for 2 hours, $8 for 24 hours, $20 for 3 days.",
+        "pt": "🎫 Deuce/Strip & All Access: US$6 por 2 h, US$8 por 24 h e US$20 por 3 dias."
+      },
+      "sources": [
+        "rtc"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "fare-category",
+      "texts": {
+        "es": "🚌 Para recorrer el Strip, elige la tarifa Strip & All Access: no presupuestes automáticamente la tarifa residencial.",
+        "en": "🚌 For the Strip, choose the Strip & All Access fare rather than automatically budgeting a residential fare.",
+        "pt": "🚌 Para o Strip, escolha a tarifa Strip & All Access; não conte automaticamente com a tarifa residencial."
+      },
+      "sources": [
+        "rtc"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "airport",
+      "texts": {
+        "es": "✈️ El aeropuerto tiene rutas RTC específicas. Consulta la ruta según tu terminal y destino; no supongas que el Deuce pasa por la terminal.",
+        "en": "✈️ Airport RTC routes depend on terminal and destination; do not assume the Deuce stops at your terminal.",
+        "pt": "✈️ As rotas RTC do aeroporto dependem do terminal e do destino; não presuma que o Deuce passe no terminal."
+      },
+      "sources": [
+        "rtcairport"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "monorail",
+      "texts": {
+        "es": "🚝 El Monorail vende boletos propios: no presupongas que tu pase de bus RTC lo incluye. Compara ambos trayectos.",
+        "en": "🚝 The Monorail sells its own tickets; do not assume your RTC bus pass includes it. Compare routes.",
+        "pt": "🚝 O Monorail vende bilhetes próprios; não presuma que esteja incluído no passe de ônibus RTC."
+      },
+      "sources": [
+        "monorail"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "walk",
+      "texts": {
+        "es": "🚶 Antes de elegir una estación del Monorail, calcula también la caminata entre la calle, el casino y el andén.",
+        "en": "🚶 When choosing a Monorail station, include the walk from the street through the resort to the platform.",
+        "pt": "🚶 Ao escolher uma estação do Monorail, inclua a caminhada da rua pelo resort até a plataforma."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "routes",
+      "texts": {
+        "es": "🗺️ En RTC, revisa sentido y parada del bus de regreso: el recorrido opuesto puede usar otra calle.",
+        "en": "🗺️ Check RTC’s return direction and stop; the opposite journey may use a different street.",
+        "pt": "🗺️ Confira o sentido e o ponto de volta na RTC; o trajeto contrário pode usar outra rua."
+      },
+      "sources": [
+        "rtcmap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/lasvegas",
+      "id": "events",
+      "texts": {
+        "es": "🕒 Consulta los desvíos RTC del día antes de salir al Strip; no dependas solo de un mapa guardado de otro viaje.",
+        "en": "🕒 Check RTC’s current detours before heading to the Strip instead of relying only on an old saved map.",
+        "pt": "🕒 Confira os desvios atuais da RTC antes de sair para o Strip, em vez de usar só um mapa salvo de outra viagem."
+      },
+      "sources": [
+        "rtcmap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "fare",
+      "texts": {
+        "es": "🎫 Metro: tarifa regular US$1,75. Los servicios de otras operadoras pueden tener tarifas distintas.",
+        "en": "🎫 Metro’s regular fare is $1.75; other operators may charge differently.",
+        "pt": "🎫 Metro: tarifa regular US$1,75; outras operadoras podem cobrar valores diferentes."
+      },
+      "sources": [
+        "lafares"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "cap",
+      "texts": {
+        "es": "💳 En Metro, el tope regular es US$5 diarios y US$18 en 7 días con el mismo medio compatible.",
+        "en": "💳 Metro’s regular caps are $5 per day and $18 over seven days using the same eligible payment method.",
+        "pt": "💳 No Metro, os tetos regulares são US$5 por dia e US$18 em 7 dias com o mesmo meio compatível."
+      },
+      "sources": [
+        "lacap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "transfers",
+      "texts": {
+        "es": "🔁 Con TAP o tarjeta bancaria compatible, Metro incluye transbordos durante 2 h; no incluye viajes de ida y vuelta.",
+        "en": "🔁 TAP or eligible bank-card payment includes Metro transfers for 2 hours, excluding round trips.",
+        "pt": "🔁 Com TAP ou cartão bancário compatível, o Metro inclui integração por 2 h, sem viagens de ida e volta."
+      },
+      "sources": [
+        "latap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "tap",
+      "texts": {
+        "es": "📱 Ya puedes pagar Metro con tarjeta bancaria sin contacto o billetera digital; no hace falta comprar TAP para una tarifa regular.",
+        "en": "📱 You can now tap a bank card or mobile wallet on Metro, without buying TAP for a regular fare.",
+        "pt": "📱 Já é possível pagar o Metro com cartão bancário por aproximação ou carteira digital, sem comprar TAP para a tarifa regular."
+      },
+      "sources": [
+        "latap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "cash",
+      "texts": {
+        "es": "💵 El efectivo en el bus requiere importe exacto y no acumula los topes de Metro.",
+        "en": "💵 Cash bus payment requires the exact fare and does not count towards Metro fare caps.",
+        "pt": "💵 O pagamento em dinheiro no ônibus exige valor exato e não acumula os tetos do Metro."
+      },
+      "sources": [
+        "lafares"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "b-line",
+      "texts": {
+        "es": "🚇 La línea B conecta Union Station con North Hollywood; consulta la parada de Hollywood que corresponde a tu visita.",
+        "en": "🚇 The B Line connects Union Station with North Hollywood; choose the Hollywood stop for your destination.",
+        "pt": "🚇 A linha B liga Union Station a North Hollywood; confira a estação de Hollywood adequada ao passeio."
+      },
+      "sources": [
+        "larail"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/losangeles",
+      "id": "e-line",
+      "texts": {
+        "es": "🏖️ La línea E llega a Santa Monica. Revisa el destino y las conexiones del tren, no solo los antiguos nombres de colores.",
+        "en": "🏖️ The E Line reaches Santa Monica; check destinations and connections rather than relying on old colour names.",
+        "pt": "🏖️ A linha E chega a Santa Monica; confira destinos e conexões, em vez de depender dos antigos nomes por cor."
+      },
+      "sources": [
+        "larail"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "muni",
+      "texts": {
+        "es": "🎫 Muni regular: US$2,85 con Clipper o tarjeta bancaria; US$3 en efectivo o máquina.",
+        "en": "🎫 Regular Muni fare: $2.85 with Clipper or bank card; $3 cash or ticket machine.",
+        "pt": "🎫 Muni regular: US$2,85 com Clipper ou cartão bancário; US$3 em dinheiro ou máquina."
+      },
+      "sources": [
+        "sf"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "transfer",
+      "texts": {
+        "es": "🔁 El pasaje regular Muni permite 120 minutos de viaje; conserva el comprobante de pago.",
+        "en": "🔁 A regular Muni fare allows 120 minutes of travel; keep proof of payment.",
+        "pt": "🔁 A tarifa regular Muni permite 120 minutos de viagem; guarde o comprovante."
+      },
+      "sources": [
+        "sf"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "cable",
+      "texts": {
+        "es": "🚋 Cable car: US$9 por viaje, sin transbordo incluido. No es la misma tarifa que un tranvía Muni regular.",
+        "en": "🚋 Cable car: $9 per ride without transfers; this is not the regular Muni streetcar fare.",
+        "pt": "🚋 Cable car: US$9 por viagem, sem integração; não é a tarifa de um bonde Muni regular."
+      },
+      "sources": [
+        "sf"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "day",
+      "texts": {
+        "es": "🎟️ El Day Pass Muni de US$5,70 no incluye cable cars.",
+        "en": "🎟️ The $5.70 Muni Day Pass excludes cable cars.",
+        "pt": "🎟️ O Day Pass Muni de US$5,70 não inclui cable cars."
+      },
+      "sources": [
+        "sf"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "visitor",
+      "texts": {
+        "es": "🎟️ El Visitor Passport de un día cuesta US$15 e incluye Muni y cable cars; no incluye BART.",
+        "en": "🎟️ The $15 one-day Visitor Passport includes Muni and cable cars, not BART.",
+        "pt": "🎟️ O Visitor Passport de um dia custa US$15 e inclui Muni e cable cars, não BART."
+      },
+      "sources": [
+        "sf"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "bart",
+      "texts": {
+        "es": "💳 En BART puedes pagar con tarjeta bancaria sin contacto; usa el mismo medio al entrar y salir, uno por viajero.",
+        "en": "💳 On BART, tap the same bank card or device in and out, one per rider.",
+        "pt": "💳 No BART, use o mesmo cartão bancário ou dispositivo ao entrar e sair, um por passageiro."
+      },
+      "sources": [
+        "bart"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/sanfrancisco",
+      "id": "sfo",
+      "texts": {
+        "es": "✈️ BART llega a SFO; su tarifa depende del trayecto y se paga aparte de los pases turísticos Muni.",
+        "en": "✈️ BART serves SFO; its fare depends on the journey and is separate from Muni visitor passes.",
+        "pt": "✈️ O BART atende o SFO; a tarifa depende do trajeto e é separada dos passes turísticos Muni."
+      },
+      "sources": [
+        "sfo"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "fare",
+      "texts": {
+        "es": "🎫 CTA con Ventra o pago bancario: tren US$2,50, bus US$2,25; hay tarifa especial al salir de O’Hare.",
+        "en": "🎫 With Ventra or bank-card payment: CTA train $2.50, bus $2.25; O’Hare departures have a special fare.",
+        "pt": "🎫 Com Ventra ou cartão bancário: trem CTA US$2,50, ônibus US$2,25; saída de O’Hare tem tarifa especial."
+      },
+      "sources": [
+        "cta"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "transfer",
+      "texts": {
+        "es": "🔁 CTA permite hasta 2 viajes adicionales en 2 h sin cargo con el mismo medio electrónico; efectivo no incluye transbordos.",
+        "en": "🔁 CTA allows up to 2 extra rides within 2 hours free with the same electronic payment; cash fares exclude transfers.",
+        "pt": "🔁 A CTA permite até 2 viagens extras em 2 h sem custo com o mesmo meio eletrônico; dinheiro não inclui integração."
+      },
+      "sources": [
+        "cta"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "ohare",
+      "texts": {
+        "es": "✈️ Desde O’Hare, el pasaje regular de tren cuesta US$5. Un pase ilimitado válido evita ese cargo adicional.",
+        "en": "✈️ A regular train fare from O’Hare is $5; a valid unlimited-ride pass avoids the extra charge.",
+        "pt": "✈️ A tarifa regular de trem saindo de O’Hare é US$5; um passe ilimitado válido evita o adicional."
+      },
+      "sources": [
+        "cta"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "blue",
+      "texts": {
+        "es": "🔵 La Blue Line conecta O’Hare con el centro y funciona las 24 h; revisa avisos de obras.",
+        "en": "🔵 The Blue Line links O’Hare and downtown 24 hours a day; check engineering alerts.",
+        "pt": "🔵 A Blue Line liga O’Hare ao centro 24 h por dia; confira avisos de obras."
+      },
+      "sources": [
+        "ctablue"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "midway",
+      "texts": {
+        "es": "🟠 Para Midway, consulta la Orange Line; a diferencia de la Blue Line, no presupongas servicio toda la noche.",
+        "en": "🟠 Use the Orange Line for Midway; unlike the Blue Line, do not assume all-night service.",
+        "pt": "🟠 Para Midway, consulte a Orange Line; diferente da Blue Line, não conte com serviço a noite toda."
+      },
+      "sources": [
+        "ctaair"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "pass",
+      "texts": {
+        "es": "🎟️ El pase CTA/Pace de un día vale 24 h desde el primer uso: no vence necesariamente a medianoche.",
+        "en": "🎟️ A CTA/Pace one-day pass lasts 24 hours from first use, rather than necessarily ending at midnight.",
+        "pt": "🎟️ O passe CTA/Pace de um dia vale 24 h desde o primeiro uso, não necessariamente até meia-noite."
+      },
+      "sources": [
+        "cta"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/chicago",
+      "id": "cash",
+      "texts": {
+        "es": "💵 En buses CTA, el efectivo requiere importe exacto; para tomar tren compra tu boleto o usa un medio sin contacto.",
+        "en": "💵 CTA buses require exact cash; for trains buy a ticket or use contactless payment.",
+        "pt": "💵 Nos ônibus CTA, leve o valor exato; para trens compre bilhete ou use pagamento por aproximação."
+      },
+      "sources": [
+        "ctapay"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "rail",
+      "texts": {
+        "es": "🎫 Metrorail regular: US$2,25–6,75 según el trayecto y el horario.",
+        "en": "🎫 Regular Metrorail fare: $2.25–$6.75 depending on journey and time.",
+        "pt": "🎫 Metrorail regular: US$2,25–6,75 conforme o trajeto e o horário."
+      },
+      "sources": [
+        "wmata"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "bus",
+      "texts": {
+        "es": "🚌 El pasaje regular de bus local Metro cuesta US$2,25; no apliques esa tarifa a todas las redes de la región.",
+        "en": "🚌 A regular local Metro bus fare is $2.25; other regional operators may differ.",
+        "pt": "🚌 A tarifa regular do ônibus local Metro é US$2,25; outras redes da região podem cobrar diferente."
+      },
+      "sources": [
+        "wmata"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "tap",
+      "texts": {
+        "es": "💳 Puedes pagar Metro con tarjeta bancaria sin contacto o celular. En tren, usa el mismo medio para entrar y salir.",
+        "en": "💳 Tap a bank card or phone on Metro, as on London’s Tube; on rail, use the same method in and out.",
+        "pt": "💳 Pague o Metro com cartão bancário por aproximação ou celular, sem recarga de transporte; no trem, use o mesmo meio na entrada e saída."
+      },
+      "sources": [
+        "wmatatap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "airports",
+      "texts": {
+        "es": "✈️ Dulles (IAD) tiene Silver Line; Reagan National (DCA), Blue y Yellow. Revisa el aeropuerto de tu boleto antes de elegir ruta.",
+        "en": "✈️ Dulles (IAD) uses the Silver Line; Reagan National (DCA) uses Blue/Yellow. Check your ticket’s airport.",
+        "pt": "✈️ Dulles (IAD) tem Silver Line; Reagan National (DCA), Blue e Yellow. Confira o aeroporto da passagem."
+      },
+      "sources": [
+        "dcair"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "smithsonian",
+      "texts": {
+        "es": "🏛️ Los museos Smithsonian de Washington son gratuitos; algunos requieren pase con horario. Reserva desde el sitio del museo.",
+        "en": "🏛️ Washington’s Smithsonian museums are free; some require timed-entry passes. Book through the museum’s website.",
+        "pt": "🏛️ Os museus Smithsonian de Washington são gratuitos; alguns exigem horário reservado. Reserve no site do museu."
+      },
+      "sources": [
+        "si",
+        "sientry"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "hours",
+      "texts": {
+        "es": "🕒 El horario general de fin de semana es sábado 6:00–2:00 y domingo 6:00–medianoche; verifica último tren y obras por estación.",
+        "en": "🕒 Usual weekend rail hours are Saturday 6 am–2 am and Sunday 6 am–midnight; check your station’s last train and works.",
+        "pt": "🕒 O horário geral é sábado 6h–2h e domingo 6h–meia-noite; confira o último trem e obras por estação."
+      },
+      "sources": [
+        "wmataweekend"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "museum-location",
+      "texts": {
+        "es": "📍 Revisa la sede exacta del museo: no todas las instalaciones Smithsonian están en el National Mall.",
+        "en": "📍 Check the exact museum location; not all Smithsonian facilities are on the National Mall.",
+        "pt": "📍 Confira a unidade exata do museu; nem todas as instalações Smithsonian ficam no National Mall."
+      },
+      "sources": [
+        "si"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "logan",
+      "texts": {
+        "es": "✈️ Silver Line SL1 sale gratis desde las terminales de Logan hacia South Station. No supongas que el regreso al aeropuerto también es gratis.",
+        "en": "✈️ Silver Line SL1 is free from Logan terminals to South Station; do not assume the return to the airport is also free.",
+        "pt": "✈️ A Silver Line SL1 é gratuita dos terminais de Logan até South Station; não presuma que a volta ao aeroporto também seja grátis."
+      },
+      "sources": [
+        "logan"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "blue",
+      "texts": {
+        "es": "🔵 La Blue Line sirve la estación Airport; un shuttle gratuito de Massport enlaza esa estación con las terminales.",
+        "en": "🔵 The Blue Line serves Airport station; a free Massport shuttle links the station with the terminals.",
+        "pt": "🔵 A Blue Line atende a estação Airport; um shuttle gratuito da Massport liga a estação aos terminais."
+      },
+      "sources": [
+        "logan"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "red",
+      "texts": {
+        "es": "🔴 La Red Line no llega directamente a las terminales de Logan: una opción es combinar en South Station con SL1.",
+        "en": "🔴 The Red Line does not reach Logan’s terminals directly; one option is transferring to SL1 at South Station.",
+        "pt": "🔴 A Red Line não chega diretamente aos terminais de Logan; uma opção é fazer conexão com SL1 em South Station."
+      },
+      "sources": [
+        "logan"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "tap",
+      "texts": {
+        "es": "💳 Charlie permite pago bancario sin contacto en servicios compatibles de MBTA. Consulta el modo específico: Commuter Rail tiene billetes propios.",
+        "en": "💳 Charlie supports bank-card tapping on eligible MBTA services. Check the mode: Commuter Rail uses its own tickets.",
+        "pt": "💳 O Charlie aceita cartão bancário por aproximação nos serviços compatíveis da MBTA. Confira a modalidade: Commuter Rail usa bilhetes próprios."
+      },
+      "sources": [
+        "mbta"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "freedom",
+      "texts": {
+        "es": "🚶 Freedom Trail recorre unos 4 km entre Boston y Charlestown. La línea roja del suelo ayuda a seguirlo.",
+        "en": "🚶 The Freedom Trail runs about 2.5 miles/4 km through Boston and Charlestown, marked by a red line.",
+        "pt": "🚶 A Freedom Trail tem cerca de 4 km entre Boston e Charlestown, marcada por uma linha vermelha."
+      },
+      "sources": [
+        "freedom"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/boston",
+      "id": "walk-time",
+      "texts": {
+        "es": "🕒 Para Freedom Trail, separa el tiempo de caminata del de visitas interiores; guarda los horarios de los lugares que más te interesan.",
+        "en": "🕒 For the Freedom Trail, allow separate time for walking and indoor visits; save opening hours for your priority stops.",
+        "pt": "🕒 Na Freedom Trail, separe o tempo de caminhada do de visitas internas; salve os horários dos locais prioritários."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "link",
+      "texts": {
+        "es": "🚆 Link 1 y 2: tarifa adulta regular US$3 por viaje; no depende de la distancia.",
+        "en": "🚆 Link 1/2 Line regular adult fare is $3 per trip, regardless of distance.",
+        "pt": "🚆 Link linhas 1 e 2: tarifa regular de adulto US$3 por viagem, sem depender da distância."
+      },
+      "sources": [
+        "link"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "orca",
+      "texts": {
+        "es": "💳 ORCA permite transbordos entre servicios participantes; no confundas ORCA en el celular con cualquier tarjeta bancaria.",
+        "en": "💳 ORCA supports transfers across participating services; a mobile ORCA card is different from an ordinary bank card.",
+        "pt": "💳 O ORCA permite integração entre serviços participantes; ORCA no celular não é o mesmo que qualquer cartão bancário."
+      },
+      "sources": [
+        "linktransfer"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "validation",
+      "texts": {
+        "es": "📱 Con ORCA, valida al subir a Link. El operador indica que ya no es necesario validar al bajar de Link o bus.",
+        "en": "📱 With ORCA, tap before boarding Link; the operator says you no longer need to tap off Link or buses.",
+        "pt": "📱 Com ORCA, valide antes de embarcar no Link; a operadora informa que não é mais necessário validar ao sair do Link ou ônibus."
+      },
+      "sources": [
+        "linktransfer"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "airport-walk",
+      "texts": {
+        "es": "✈️ Para llegar a la estación SeaTac/Airport desde la terminal, sigue el recorrido peatonal por el estacionamiento; añade ese tiempo al trayecto.",
+        "en": "✈️ Follow the walkway through the airport garage to SeaTac/Airport station; add that walk to your journey time.",
+        "pt": "✈️ Siga a passagem pelo estacionamento até a estação SeaTac/Airport; inclua essa caminhada no tempo de trajeto."
+      },
+      "sources": [
+        "sea"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "day-pass",
+      "texts": {
+        "es": "🎟️ El pase regional ORCA de US$6 cubre viajes participantes de hasta US$3; servicios más caros pueden requerir saldo adicional.",
+        "en": "🎟️ The $6 regional ORCA day pass covers eligible rides up to $3; higher fares may need extra stored value.",
+        "pt": "🎟️ O passe regional ORCA de US$6 cobre viagens participantes de até US$3; serviços mais caros podem exigir saldo extra."
+      },
+      "sources": [
+        "link"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/seattle",
+      "id": "route",
+      "texts": {
+        "es": "🕒 Antes de elegir un viaje nocturno al aeropuerto, revisa el horario de la estación y deja margen para caminar hasta la terminal.",
+        "en": "🕒 Before choosing a late airport train, check station times and allow for the walk to the terminal.",
+        "pt": "🕒 Antes de escolher um trem noturno ao aeroporto, confira os horários e reserve tempo para caminhar até o terminal."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "fare",
+      "texts": {
+        "es": "🎫 RTA: bus o streetcar regular US$1,25 por viaje; pase de un día US$3.",
+        "en": "🎫 RTA regular bus/streetcar fare is $1.25; a one-day pass costs $3.",
+        "pt": "🎫 RTA: ônibus ou streetcar regular US$1,25; passe de um dia US$3."
+      },
+      "sources": [
+        "norta"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "app",
+      "texts": {
+        "es": "📱 Usa Le Pass para comprar y validar pasajes de bus, streetcar y ferry; reemplaza la antigua referencia a GoMobile.",
+        "en": "📱 Use Le Pass to buy and validate bus, streetcar and ferry tickets; it replaces the old GoMobile reference.",
+        "pt": "📱 Use Le Pass para comprar e validar passagens de ônibus, streetcar e ferry; ele substitui a antiga referência ao GoMobile."
+      },
+      "sources": [
+        "lepass"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "st-charles",
+      "texts": {
+        "es": "🚋 Para explorar St. Charles Avenue y el área del Garden District, revisa la ruta St. Charles y sus avisos de servicio.",
+        "en": "🚋 For St. Charles Avenue and the Garden District area, check the St. Charles route and its service alerts.",
+        "pt": "🚋 Para St. Charles Avenue e a região do Garden District, confira a rota St. Charles e os avisos de serviço."
+      },
+      "sources": [
+        "nolatour"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "branches",
+      "texts": {
+        "es": "🌳 Las rutas Canal/Cemeteries y Canal/City Park tienen destinos distintos; revisa el cartel antes de subir.",
+        "en": "🌳 Canal/Cemeteries and Canal/City Park have different destinations; check the sign before boarding.",
+        "pt": "🌳 Canal/Cemeteries e Canal/City Park têm destinos diferentes; confira a placa antes de embarcar."
+      },
+      "sources": [
+        "nortamap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "app-live",
+      "texts": {
+        "es": "🗺️ En Le Pass puedes consultar recorridos y ubicación del transporte; revisa el regreso antes de alejarte del centro.",
+        "en": "🗺️ Le Pass provides route planning and live vehicle information; check the return before travelling beyond downtown.",
+        "pt": "🗺️ O Le Pass oferece planejamento e informações em tempo real; confira a volta antes de se afastar do centro."
+      },
+      "sources": [
+        "lepass"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "events",
+      "texts": {
+        "es": "🎭 Si viajas durante un desfile o evento, consulta desvíos RTA: un streetcar puede ser reemplazado temporalmente por bus.",
+        "en": "🎭 During parades or events, check RTA detours; a streetcar may be temporarily replaced by buses.",
+        "pt": "🎭 Durante desfiles ou eventos, confira os desvios RTA; um streetcar pode ser substituído temporariamente por ônibus."
+      },
+      "sources": [
+        "nortamap"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/neworleans",
+      "id": "pass-choice",
+      "texts": {
+        "es": "🎟️ Compara el pase con tus viajes efectivos y transbordos; no lo justifiques contando cada cambio de vehículo como otro pasaje completo.",
+        "en": "🎟️ Compare a pass against actual paid trips and transfer rules, rather than treating every vehicle change as a full fare.",
+        "pt": "🎟️ Compare o passe com as viagens pagas e as regras de integração, sem contar toda troca de veículo como tarifa cheia."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "fare",
+      "texts": {
+        "es": "🎫 RTD regular: US$2,75 por 3 h y US$5,50 por día; el aeropuerto requiere la tarifa correspondiente.",
+        "en": "🎫 Standard RTD fares: $2.75 for 3 hours or $5.50 for a day; airport travel needs the appropriate fare.",
+        "pt": "🎫 RTD regular: US$2,75 por 3 h ou US$5,50 por dia; aeroporto exige a tarifa correspondente."
+      },
+      "sources": [
+        "rtd"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "airport-pass",
+      "texts": {
+        "es": "✈️ El Airport Day Pass regular cuesta US$10 e incluye el sistema RTD durante el día de servicio, también el aeropuerto.",
+        "en": "✈️ The standard $10 Airport Day Pass covers the RTD system for the service day, including the airport.",
+        "pt": "✈️ O Airport Day Pass regular custa US$10 e inclui o sistema RTD no dia de serviço, inclusive aeroporto."
+      },
+      "sources": [
+        "rtdday"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "a-line",
+      "texts": {
+        "es": "🚆 La A Line conecta DEN con Union Station en unos 37 minutos; añade el tiempo para llegar al andén.",
+        "en": "🚆 The A Line links DEN and Union Station in about 37 minutes; add time to reach the platform.",
+        "pt": "🚆 A A Line liga DEN a Union Station em cerca de 37 minutos; acrescente o tempo até a plataforma."
+      },
+      "sources": [
+        "rtdline"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "freeride",
+      "texts": {
+        "es": "🚌 El shuttle FreeRide de 16th Street es gratuito. Revisa sus paradas y cualquier desvío del día.",
+        "en": "🚌 The 16th Street FreeRide shuttle is free; check its stops and current detours.",
+        "pt": "🚌 O shuttle FreeRide da 16th Street é gratuito; confira os pontos e desvios do dia."
+      },
+      "sources": [
+        "denver"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "union",
+      "texts": {
+        "es": "🔁 Union Station reúne conexiones de tren y bus. Calcula la caminata al siguiente andén cuando combines servicios.",
+        "en": "🔁 Union Station connects rail and bus services; allow for walking to your next boarding point.",
+        "pt": "🔁 Union Station reúne conexões de trem e ônibus; reserve tempo para caminhar até o próximo embarque."
+      },
+      "sources": [
+        "denver"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "local-pass",
+      "texts": {
+        "es": "🎟️ El Day Pass regular de US$5,50 no incluye el aeropuerto; no lo confundas con el Airport Day Pass.",
+        "en": "🎟️ The standard $5.50 Day Pass excludes the airport; it differs from the Airport Day Pass.",
+        "pt": "🎟️ O Day Pass regular de US$5,50 não inclui o aeroporto; é diferente do Airport Day Pass."
+      },
+      "sources": [
+        "rtdday"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "ciudad/denver",
+      "id": "mountains",
+      "texts": {
+        "es": "🏔️ Para una excursión a la montaña, comprueba el servicio hasta el destino final y la vuelta: llegar a una estación no garantiza el traslado hasta el sendero.",
+        "en": "🏔️ For a mountain trip, check service all the way to the destination and back; reaching a station does not guarantee a trailhead connection.",
+        "pt": "🏔️ Para um passeio na montanha, confira o trajeto completo e a volta; chegar à estação não garante conexão até a trilha."
+      },
+      "sources": [],
+      "status": "consejo editorial"
+    },
+    {
+      "group": "compras",
+      "id": "PA-moneda",
+      "country": "PA",
+      "texts": {
+        "es": "Panamá usa el dólar estadounidense. Si tu tarjeta se liquida en US$ y pagas en US$, no hay conversión entre monedas; aun así, consulta posibles comisiones internacionales."
+      },
+      "sources": [
+        "pamoneda",
+        "bank"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "compras",
+      "id": "CL-sag",
+      "country": "CL",
+      "texts": {
+        "es": "Al regresar a Chile, declara los productos de origen animal o vegetal mediante el formulario oficial del SAG; la declaración digital es gratuita y no equivale a permiso automático de ingreso."
+      },
+      "sources": [
+        "sag"
+      ],
+      "status": "verificado"
+    },
+    {
+      "group": "lugares",
+      "id": "AR-omny",
+      "country": "AR",
+      "texts": {
+        "es": "OMNY se parece al gesto de usar la SUBE, pero puedes pagar con tu propia tarjeta bancaria sin contacto o celular, sin cargar una tarjeta de transporte."
+      },
+      "sources": [
+        "omny"
+      ],
+      "status": "adaptación cultural"
+    },
+    {
+      "group": "ciudad/newyork",
+      "id": "AR-omny",
+      "country": "AR",
+      "texts": {
+        "es": "💳 Como el gesto de usar la SUBE, pero con tu tarjeta bancaria o celular: OMNY no exige comprar y recargar una tarjeta de transporte."
+      },
+      "sources": [
+        "omny"
+      ],
+      "status": "adaptación cultural"
+    },
+    {
+      "group": "ciudad/washington",
+      "id": "AR-tap",
+      "country": "AR",
+      "texts": {
+        "es": "💳 El gesto se parece a usar la SUBE, pero Metro permite tu tarjeta bancaria sin contacto: en tren debes usarla también al salir."
+      },
+      "sources": [
+        "wmatatap"
+      ],
+      "status": "adaptación cultural"
+    },
+    {
+      "group": "lugares",
+      "id": "disney-tickets",
+      "texts": {
+        "es": "Disney World vende entradas estándar por fecha. Compara el calendario para tus días y el tipo de entrada; comprar antes no garantiza un porcentaje fijo de descuento.",
+        "en": "Disney World’s standard tickets are date-based. Compare your dates and ticket type in the calendar; booking early does not guarantee a fixed discount.",
+        "pt": "Os ingressos padrão da Disney World são por data. Compare os dias e o tipo de ingresso no calendário; comprar antes não garante desconto fixo."
+      },
+      "sources": [
+        "disneytickets"
+      ],
+      "status": "verificado"
+    }
+  ],
+  "country_shop": {
+    "AR": [
+      "Al volver a Argentina por vía aérea o marítima, la franquicia de equipaje es US$500; para menores de 16 años corresponde la mitad. Revisa en ARCA las condiciones para combinarla como familia.",
+      "Antes de salir de Argentina, revisa si debes declarar tus equipos mediante el OM 121. Conservar esa constancia ayuda a acreditar que no los compraste durante el viaje."
+    ],
+    "MX": [
+      "Al ingresar a México, ANAM informa una franquicia de hasta US$500 en mercancías adicionales al equipaje personal. Conserva facturas para acreditar el valor.",
+      "Para México, alcohol, tabaco y combustible no se cubren con la franquicia general de compras. Consulta sus límites específicos antes de aprovechar un duty free."
+    ],
+    "CO": [
+      "Al regresar a Colombia, la DIAN permite hasta US$2.000 en equipaje acompañado libre de tributo, dentro de los límites de cantidad y sin finalidad comercial.",
+      "Si tus compras exceden el cupo o traes bienes que deben declararse en Colombia, revisa el Formulario 530 de la DIAN antes de pasar el control."
+    ],
+    "CL": [
+      "Al volver a Chile, consulta la lista oficial de Equipaje de Viajero: la franquicia distingue efectos personales de otras mercancías; no todo lo comprado cuenta como equipaje exento.",
+      "Al regresar a Chile, declara los productos de origen animal o vegetal mediante el formulario oficial del SAG; la declaración digital es gratuita y no equivale a permiso automático de ingreso."
+    ],
+    "PE": [
+      "En Perú, SUNAT contempla una laptop y dos celulares entre los bienes libres de tributos; hay condiciones por edad. Consulta la lista oficial antes de comprar equipos extra.",
+      "Antes de volver a Perú, revisa en Bienvenido al Perú de SUNAT qué bienes requieren declaración. La lista de equipaje exento tiene cantidades y condiciones por tipo de artículo."
+    ],
+    "CR": [
+      "Para regresar a Costa Rica, revisa los requisitos de la franquicia del viajero en Hacienda: no asumas que una franquicia usada en un viaje anterior se renueva con cada entrada."
+    ],
+    "PA": [
+      "Panamá usa el dólar estadounidense. Si tu tarjeta se liquida en US$ y pagas en US$, no hay conversión entre monedas; aun así, consulta posibles comisiones internacionales.",
+      "Antes de ingresar a Panamá, consulta la Declaración de Viajero de la Autoridad Nacional de Aduanas y verifica si tus compras deben declararse; no confundas equipaje personal con mercancía adicional."
+    ],
+    "GT": [
+      "Para viajar desde o hacia Guatemala, usa la Declaración Jurada Regional de Viajero electrónica de SAT. Accede desde portal.sat.gob.gt para evitar formularios de terceros."
+    ]
+  },
+  "review_date": "2026-10-22",
+  "omitted": [
+    "Sin tarifas ni recargos bancarios nacionales inventados para MX, CO, CL, PE, CR, PA o GT: dependen del producto y no se confirmó una regla nacional aplicable.",
+    "Sin monto de franquicia PA: se encontró documentación oficial con conflicto entre umbrales; se remite a Aduanas.",
+    "Sin cifra aduanera CR/GT: no se confirmó con suficiente claridad un monto actual y sus condiciones completas. Se conserva una lista menor de tips verificados.",
+    "Sin promesa de incorporación de Argentina a ESTA en 2027.",
+    "Sin precio de OMNY Card, fin de efectivo en buses NY, porcentajes de ahorro de Uber ni horarios o frecuencias no confirmados.",
+    "No se promete que todas las aerolíneas acepten 50 lb/23 kg ni que los talles de ropa tengan una equivalencia fija.",
+    "El consejo de propinas evita porcentajes presentados como norma oficial; invita a revisar cargos ya incluidos.",
+    "Conversión eléctrica: se mantiene como consejo de revisar etiqueta y garantía, sin asumir que todos los aparatos son compatibles."
+  ]
+}

@@ -1021,6 +1021,7 @@
       try {
         if (e.target.value) localStorage.setItem("appCountry", e.target.value); else localStorage.removeItem("appCountry");
       } catch (err) {}
+      window.dispatchEvent(new Event("taxfly:countrychange"));
     }
   });
   drawer.addEventListener("click", function(e) {

@@ -446,20 +446,60 @@ const i18n = {
 window._i18n = i18n;
 
 const tips = {
-  es: ["Disney. Los tickets de Disney World tienen precio por fecha: el mismo día cuesta más o menos según la demanda. Comparar fechas en el calendario puede ahorrar más que un cupón.", "OMNY. En Nueva York no necesitas tarjeta de transporte: apoya tu tarjeta de crédito/débito o tu celular en el lector OMNY, como en un molinete con tarjeta, pero sin cargar saldo. Cada viaje cuesta US$3 y, tras 12 viajes pagos en 7 días, el resto de la semana es gratis.", "Pagar con tarjeta en el transporte. Además de Nueva York, en Washington DC, Los Ángeles, Boston y Miami puedes pagar apoyando tu tarjeta o celular: no hace falta comprar una tarjeta aparte.", "Uber Pool ya no existe con ese nombre: hoy es UberX Share y solo funciona en ciudades seleccionadas. Da un descuento al pedirlo y hasta 20 % más si te emparejan con otro pasajero.", "Avisa a tu banco antes de viajar para evitar bloqueos de la tarjeta.", "Lightning Lane (Disney). El Multi Pass se compra por parque y fecha en la app My Disney Experience, ya con tu entrada, y permite elegir hasta 3 atracciones de antemano. El precio cambia según el día y se ve hasta 21 días antes.", "Huracanes. La temporada del Atlántico va del 1 de junio al 30 de noviembre. Si viajas a Florida o Nueva Orleans en esas fechas, mira el pronóstico y las políticas de cambio de vuelos y hotel.", "Brightline. El tren une Miami, Fort Lauderdale, West Palm Beach y el aeropuerto de Orlando (MCO), con la estación dentro del aeropuerto."],
-  en: ["Disney World tickets are priced by date: the same day costs more or less depending on demand. Comparing dates on the calendar can save more than a coupon.", "In New York just tap your contactless card or phone on the OMNY reader, the same idea as the Tube or Sydney's Opal. A ride is $3, and after 12 paid rides in 7 days the rest of the week is free.", "Besides New York, you can tap a contactless card or phone to ride in Washington DC, Los Angeles, Boston and Miami.", "Uber Pool no longer exists under that name: it's now UberX Share and only works in select cities. It gives a discount when you request it and up to 20% more if you're matched with another rider.", "Tell your bank before you travel to avoid card blocks.", "Lightning Lane (Disney). Multi Pass is bought per park and date in the My Disney Experience app, along with your ticket, and lets you pick up to 3 attractions in advance. The price changes by day and is visible up to 21 days ahead.", "Hurricanes. The Atlantic season runs from June 1 to November 30. If you travel to Florida or New Orleans in those dates, check the forecast and your flight and hotel change policies.", "Brightline. The train links Miami, Fort Lauderdale, West Palm Beach and Orlando airport (MCO), with the station inside the airport."],
-  pt: ["Os ingressos da Disney World têm preço por data: o mesmo dia custa mais ou menos conforme a demanda. Comparar datas no calendário pode economizar mais do que um cupom.", "Em Nova York você não precisa de cartão de transporte: encoste seu cartão ou celular no leitor OMNY. Diferente do Bilhete Único, não há recarga. Cada viagem custa US$3 e, depois de 12 viagens pagas em 7 dias, o resto da semana é grátis.", "Além de Nova York, em Washington DC, Los Angeles, Boston e Miami dá para pagar o transporte com cartão ou celular por aproximação.", "O Uber Pool não existe mais com esse nome: hoje é UberX Share e só funciona em cidades selecionadas. Dá desconto ao pedir e até 20% a mais se você for pareado com outro passageiro.", "Avise seu banco antes de viajar para evitar bloqueios do cartão.", "Lightning Lane (Disney). O Multi Pass é comprado por parque e data no app My Disney Experience, junto com seu ingresso, e permite escolher até 3 atrações com antecedência. O preço muda conforme o dia e aparece até 21 dias antes.", "Furacões. A temporada do Atlântico vai de 1º de junho a 30 de novembro. Se for para a Flórida ou Nova Orleans nessas datas, confira a previsão e as políticas de troca de voo e hotel.", "Brightline. O trem liga Miami, Fort Lauderdale, West Palm Beach e o aeroporto de Orlando (MCO), com a estação dentro do aeroporto."]
+  "es": [
+    "Disney World vende entradas estándar por fecha. Compara el calendario para tus días y el tipo de entrada; comprar antes no garantiza un porcentaje fijo de descuento.",
+    "En Nueva York puedes pagar OMNY con tu tarjeta sin contacto o celular. Usa siempre el mismo medio para acumular el tope de US$35 en 7 días en metro y buses locales.",
+    "El pago con tarjeta bancaria sin contacto existe en varias redes, pero no se extiende automáticamente a todos los trenes o buses de una ciudad. Revisa el operador concreto.",
+    "Lightning Lane Multi Pass de Disney World permite elegir hasta 3 experiencias antes de la visita. Después de usar una, puedes reservar otra según disponibilidad; la entrada al parque se compra aparte.",
+    "Para comprar Lightning Lane antes de llegar a EE. UU., revisa las restricciones geográficas oficiales. No organices tus reservas contando solo los días de anticipación del hotel.",
+    "UberX Share es para un solo pasajero por solicitud y depende de la ciudad. Si viajas con acompañantes o mucho equipaje, comprueba otra categoría en la app.",
+    "La temporada oficial de huracanes del Atlántico va del 1 de junio al 30 de noviembre. Para Florida y Nueva Orleans, consulta avisos del NHC antes de salir.",
+    "Brightline conecta Orlando con el sur de Florida. Su estación de Orlando está en MCO, junto a la Terminal C: incluye ese traslado en el cálculo, no sale de los parques.",
+    "Antes de reservar transporte de regreso, consulta la última salida y los avisos de obras del día; un horario habitual no garantiza servicio esa noche.",
+    "En redes con topes o transbordos por contacto, no alternes tarjeta física y billetera digital: el sistema puede contarlas como medios distintos.",
+    "Guarda en Documentos el QR de tus entradas y la dirección exacta del acceso; comprueba si la reserva exige seleccionar fecha u horario."
+  ],
+  "en": [
+    "Disney World’s standard tickets are date-based. Compare your dates and ticket type in the calendar; booking early does not guarantee a fixed discount.",
+    "In NYC, tap a bank card or phone on OMNY, similar to London’s Tube. Keep the same payment method for the $35 seven-day subway/local-bus cap.",
+    "Bank-card tapping is available on several US networks, but does not automatically cover every train or bus in a city. Check the specific operator.",
+    "Disney World’s Lightning Lane Multi Pass lets you choose up to 3 experiences ahead. After redeeming one, book another subject to availability; park admission is separate.",
+    "Check Disney’s geographic purchase restrictions before planning Lightning Lane bookings from the UK, Australia or another country outside the US. Hotel booking windows alone do not guarantee access abroad.",
+    "UberX Share allows one passenger per request and depends on location. Check a different category if travelling with companions or substantial luggage.",
+    "Atlantic hurricane season officially runs June 1–November 30. Check NHC alerts before trips to Florida or New Orleans.",
+    "Brightline links Orlando with South Florida. Its Orlando station is at MCO beside Terminal C, so include the airport transfer when comparing it with driving.",
+    "Before booking a late return, check the last departure and that day’s engineering alerts; usual operating hours do not guarantee service that night.",
+    "On tap-to-pay systems with caps or transfers, keep using the same card or device; plastic and its mobile-wallet version may be counted separately.",
+    "Save ticket QR codes and the exact entrance address in Documents; check whether admission requires a booked date or time."
+  ],
+  "pt": [
+    "Os ingressos padrão da Disney World são por data. Compare os dias e o tipo de ingresso no calendário; comprar antes não garante desconto fixo.",
+    "Em Nova York, use cartão por aproximação ou celular no OMNY, sem recarregar um cartão de transporte. O teto de metrô e ônibus locais é US$35 em 7 dias com o mesmo meio.",
+    "Várias redes aceitam cartão bancário por aproximação, mas isso não vale automaticamente para todo trem ou ônibus da cidade. Confira a operadora.",
+    "O Lightning Lane Multi Pass da Disney World permite escolher até 3 experiências antes da visita. Depois de usar uma, reserve outra conforme disponibilidade; o ingresso do parque é separado.",
+    "Antes de planejar a compra de Lightning Lane ainda no Brasil, confira a restrição geográfica oficial. A janela do hotel, sozinha, não garante compra fora dos EUA.",
+    "O UberX Share permite um passageiro por solicitação e depende da cidade. Para viajar acompanhado ou com muita bagagem, confira outra categoria no app.",
+    "A temporada oficial de furacões do Atlântico vai de 1º de junho a 30 de novembro. Confira os alertas do NHC antes de visitar a Flórida ou Nova Orleans.",
+    "O Brightline liga Orlando ao sul da Flórida. A estação de Orlando fica no MCO, junto ao Terminal C: some o traslado até o aeroporto ao comparar custos.",
+    "Antes de planejar a volta tarde, confira a última saída e os avisos de obras do dia; o horário habitual não garante serviço naquela noite.",
+    "Em sistemas com teto ou integração por aproximação, use sempre o mesmo cartão ou dispositivo: cartão físico e carteira digital podem contar separadamente.",
+    "Salve em Documentos o QR dos ingressos e o endereço exato da entrada; confira se é preciso reservar data ou horário."
+  ]
 };
 
 // Capa por país (solo español): se suma al ES general según appCountry (Ajustes).
-const tipsPais = { AR: ["OMNY: como la SUBE, pero con tu propia tarjeta o celular. Apoyala en el lector, sin comprar una tarjeta aparte."] };
+const tipsPais = {
+  "AR": [
+    "OMNY se parece al gesto de usar la SUBE, pero puedes pagar con tu propia tarjeta bancaria sin contacto o celular, sin cargar una tarjeta de transporte."
+  ]
+};
 
 function tipsFor(lang) {
   const base = tips[lang] || tips.es;
   if (lang !== "es") return base;
   let c = "";
-  try { c = localStorage.getItem("appCountry") || ""; } catch (e) {}
-  return tipsPais[c] ? base.concat(tipsPais[c]) : base;
+  try { c = (localStorage.getItem("appCountry") || "").toUpperCase(); } catch (e) {}
+  return Array.isArray(tipsPais[c]) ? base.concat(tipsPais[c]) : base;
 }
 
 const citiesConfig = {
@@ -580,8 +620,10 @@ window.nextTip = () => {
   if (!el) return;
   el.style.opacity = 0;
   setTimeout(() => {
-    currentTipIndex = (currentTipIndex + 1) % tipsFor(lang).length;
-    el.innerText = tipsFor(lang)[currentTipIndex];
+    const activeLang = localStorage.getItem("appLang") || "es";
+    const list = tipsFor(activeLang);
+    currentTipIndex = (currentTipIndex + 1) % list.length;
+    el.innerText = list[currentTipIndex];
     el.style.opacity = 1;
   }, 300);
 };
@@ -1052,6 +1094,7 @@ window.removeCustomItem = customIdx => {
 };
 
 window.changeLanguage = lang => {
+  currentTipIndex = 0;
   { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Travel assistant" : lang === "pt" ? "Assistente de viagem" : "Asistente de viaje"); }
   { const _c = document.getElementById("ai-close"); if (_c) _c.setAttribute("aria-label", lang === "en" ? "Close chat" : lang === "pt" ? "Fechar chat" : "Cerrar chat"); }
   localStorage.setItem("appLang", lang);
@@ -1078,7 +1121,7 @@ window.changeLanguage = lang => {
     actType.value = cur;
   }
   const tipEl = document.getElementById("tip-text");
-  if (tipEl) tipEl.innerText = tipsFor(lang)[currentTipIndex];
+  if (tipEl) tipEl.innerText = tipsFor(lang)[currentTipIndex % tipsFor(lang).length];
   document.title = lang === "en" ? "TaxFly — Itinerary" : lang === "pt" ? "TaxFly — Itinerário" : "TaxFly — Itinerario";
   renderCityData();
   if (window._updateParquesTab) window._updateParquesTab();
@@ -1589,3 +1632,15 @@ document.addEventListener("visibilitychange", () => {
  document.getElementById("actName")?.addEventListener("focus",populateActivityZone);
 
 document.getElementById("actType")?.addEventListener("change",populateActivityZone);
+
+function refreshPlacesTips() {
+  currentTipIndex = 0;
+  const lang = localStorage.getItem("appLang") || "es";
+  const el = document.getElementById("tip-text");
+  if (el) { el.innerText = tipsFor(lang)[0]; el.style.opacity = 1; }
+  window.updateInlineTransport?.();
+  const active = window.activeCity;
+  if (active && window.showCity) { window.activeCity = null; window.showCity(active); }
+}
+window.addEventListener("taxfly:countrychange", refreshPlacesTips);
+window.addEventListener("storage", e => { if (e.key === "appCountry") refreshPlacesTips(); });

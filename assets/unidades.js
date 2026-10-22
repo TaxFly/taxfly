@@ -46,9 +46,60 @@ let tipIndex = 0;
 const i18n = window.i18n;
 
 const unitTips = {
-  es: [ "32°F = 0°C, el punto de congelamiento del agua.", "50 lbs es el límite estándar de equipaje en vuelos a EE.UU.", "1 galón de nafta = 3.785 litros. El precio suele mostrarse por galón.", "6 feet (6ft) equivalen a 1.83 m — la estatura promedio de un hombre en EE.UU.", "16.9 fl oz es la botella de agua más común en los supermercados.", "La velocidad en autopistas suele ser 65 mph ≈ 105 km/h.", "1 libra (lb) = 453 gramos. El pollo se vende por libra.", "1 oz de queso ≈ 28 gramos. Los paquetes de snacks los listan en oz.", "37°C (fiebre) = 98.6°F en términos médicos americanos.", "1 milla = 1.609 km. Las distancias en GPS americanos son en millas." ],
-  en: [ "32°F = 0°C, the freezing point of water.", "50 lbs is the standard luggage limit on US flights.", "1 gallon of gas = 3.785 liters. Gas prices are shown per gallon.", "6 feet = 1.83 m — the average US adult male height.", "16.9 fl oz is the most common water bottle size in stores.", "Highway speed is usually 65 mph ≈ 105 km/h.", "1 pound (lb) = 453 grams. Chicken is sold by the pound.", "1 oz of cheese ≈ 28 grams. Snack packages list weight in oz.", "37°C (fever) = 98.6°F in US medical terms.", "1 mile = 1.609 km. US GPS distances are in miles." ],
-  pt: [ "32°F = 0°C, o ponto de congelamento da água.", "50 lbs é o limite padrão de bagagem em voos para os EUA.", "1 galão de gasolina = 3,785 litros. O preço é mostrado por galão.", "6 pés = 1,83 m — a altura média de um homem adulto nos EUA.", "16,9 fl oz é a garrafa de água mais comum nos supermercados.", "A velocidade nas rodovias costuma ser 65 mph ≈ 105 km/h.", "1 libra (lb) = 453 gramas. O frango é vendido por libra.", "1 oz de queijo ≈ 28 gramas. Pacotes de snacks listam em oz.", "37°C (febre) = 98,6°F nos termos médicos americanos.", "1 milha = 1,609 km. Os GPS americanos usam milhas." ]
+  "es": [
+    "32 °F = 0 °C. Para convertir °F a °C: resta 32 y divide entre 1,8.",
+    "68 °F = 20 °C y 86 °F = 30 °C: dos referencias para interpretar el pronóstico.",
+    "37 °C = 98,6 °F: es una equivalencia de temperatura, no un criterio de fiebre.",
+    "1 milla = 1,609 km aproximadamente. Una distancia de 10 millas equivale a unos 16,1 km.",
+    "65 mph ≈ 105 km/h. Es una conversión, no el límite de velocidad de todas las autopistas: sigue las señales.",
+    "1 galón estadounidense ≈ 3,785 litros. No lo confundas con el galón imperial, que es mayor.",
+    "1 lb ≈ 454 g. Para estimar el precio por kilogramo desde un precio por libra, multiplícalo por 2,205.",
+    "50 lb ≈ 22,68 kg. Comprueba el límite exacto del boleto: 50 lb y 23 kg no son idénticos.",
+    "1 oz de peso ≈ 28,35 g. La onza de peso no es la onza líquida (fl oz).",
+    "1 US fl oz ≈ 29,57 ml; una botella de 16,9 US fl oz contiene unos 500 ml.",
+    "1 pulgada (in) = 2,54 cm. Úsalo para revisar las dimensiones del equipaje en la web de la aerolínea.",
+    "1 pie (ft) = 30,48 cm. Una altura de 6 ft equivale a unos 1,83 m.",
+    "1 cuarto de galón estadounidense (US qt) ≈ 0,946 litros. Es una medida de volumen, no de peso.",
+    "1 pinta estadounidense (US pint) ≈ 473 ml; la pinta imperial es de unos 568 ml.",
+    "Para pasar de millas por galón estadounidense a litros/100 km, divide 235,215 entre los mpg. Ejemplo: 30 mpg ≈ 7,84 l/100 km.",
+    "1 yarda (yd) = 0,9144 m. Una distancia de 100 yd equivale a 91,44 m."
+  ],
+  "en": [
+    "32°F = 0°C. To convert °F to °C, subtract 32 and divide by 1.8.",
+    "68°F = 20°C and 86°F = 30°C: useful reference points for the forecast.",
+    "37°C = 98.6°F: a temperature conversion, not a fever threshold.",
+    "1 mile is about 1.609 km; 10 miles is roughly 16.1 km.",
+    "65 mph is about 105 km/h. That is a conversion, not a universal highway speed limit; follow posted signs.",
+    "1 US gallon is about 3.785 litres; a UK imperial gallon is about 4.546 litres. Fuel prices and mpg use the US gallon in the US.",
+    "1 lb is about 454 g. Multiply a per-pound price by 2.205 to estimate the per-kilogram price.",
+    "50 lb is about 22.68 kg. Check the exact allowance on your ticket: 50 lb and 23 kg are not identical.",
+    "1 oz by weight is about 28.35 g; it is different from a fluid ounce (fl oz).",
+    "1 US fl oz is about 29.57 ml; a 16.9 US fl oz bottle holds about 500 ml. UK fluid ounces are a different size.",
+    "1 inch equals 2.54 cm; use it to check cabin-bag dimensions on your airline’s website.",
+    "1 foot equals 30.48 cm; 6 ft is about 1.83 m.",
+    "1 US quart is about 0.946 litres, smaller than an imperial quart; it measures volume, not weight.",
+    "A US pint is about 473 ml; a UK imperial pint is about 568 ml. Keep this in mind when comparing drink sizes.",
+    "For US mpg to L/100 km, divide 235.215 by mpg: 30 US mpg is about 7.84 L/100 km. Do not apply UK mpg figures directly.",
+    "1 yard equals 0.9144 metres; 100 yd is 91.44 m."
+  ],
+  "pt": [
+    "32 °F = 0 °C. Para converter °F em °C, subtraia 32 e divida por 1,8.",
+    "68 °F = 20 °C e 86 °F = 30 °C: referências para entender a previsão.",
+    "37 °C = 98,6 °F: é uma conversão de temperatura, não um critério de febre.",
+    "1 milha equivale a cerca de 1,609 km; 10 milhas são aproximadamente 16,1 km.",
+    "65 mph ≈ 105 km/h. É uma conversão, não o limite de todas as rodovias: siga as placas.",
+    "1 galão americano equivale a cerca de 3,785 litros; não é o galão imperial, de aproximadamente 4,546 litros.",
+    "1 lb equivale a cerca de 454 g. Multiplique o preço por libra por 2,205 para estimar o preço por quilo.",
+    "50 lb ≈ 22,68 kg. Confira o limite exato da passagem: 50 lb e 23 kg não são iguais.",
+    "1 oz de peso equivale a cerca de 28,35 g; não é a mesma medida que a onça líquida (fl oz).",
+    "1 US fl oz equivale a cerca de 29,57 ml; uma garrafa de 16,9 US fl oz tem aproximadamente 500 ml.",
+    "1 polegada (in) = 2,54 cm. Use a conversão para conferir as dimensões da bagagem no site da companhia.",
+    "1 pé (ft) = 30,48 cm; 6 ft equivalem a aproximadamente 1,83 m.",
+    "1 quarto de galão americano (US qt) equivale a cerca de 0,946 litro; mede volume, não peso.",
+    "1 pinta americana (US pint) equivale a cerca de 473 ml; a pinta imperial tem aproximadamente 568 ml.",
+    "Para converter mpg americano em km/l, multiplique por 0,42514: 30 mpg ≈ 12,75 km/l.",
+    "1 jarda (yd) = 0,9144 m; 100 yd equivalem a 91,44 m."
+  ]
 };
 
 window.nextTip = () => {
@@ -57,8 +108,10 @@ window.nextTip = () => {
   if (!el) return;
   el.style.opacity = 0;
   setTimeout(() => {
-    tipIndex = (tipIndex + 1) % unitTips[lang].length;
-    el.innerText = unitTips[lang][tipIndex];
+    const activeLang = localStorage.getItem("appLang") || "es";
+    const list = unitTips[activeLang] || unitTips.es;
+    tipIndex = (tipIndex + 1) % list.length;
+    el.innerText = list[tipIndex];
     el.style.opacity = 1;
   }, 300);
 };
@@ -72,6 +125,7 @@ window.toggleGroup = id => {
 };
 
 window.changeLanguage = lang => {
+  tipIndex = 0;
   { const _b = document.getElementById("ai-bubble"); if (_b) _b.setAttribute("aria-label", lang === "en" ? "Taxie — Travel assistant" : lang === "pt" ? "Taxie — Assistente de viagem" : "Taxie — Asistente de viaje"); }
   localStorage.setItem("appLang", lang);
   document.documentElement.setAttribute("lang", lang);
@@ -82,7 +136,7 @@ window.changeLanguage = lang => {
     if (i18n[lang]?.[k]) el.innerText = i18n[lang][k];
   });
   const tc = document.getElementById("tip-content");
-  if (tc) tc.innerText = unitTips[lang][tipIndex];
+  if (tc) tc.innerText = (unitTips[lang] || unitTips.es)[tipIndex % (unitTips[lang] || unitTips.es).length];
   document.title = lang === "en" ? "TaxFly — Units" : lang === "pt" ? "TaxFly — Unidades" : "TaxFly — Unidades";
   const offMsg = document.getElementById("offline-toast-msg");
   if (offMsg && i18n[lang]?.offline_msg) offMsg.textContent = i18n[lang].offline_msg;
@@ -415,7 +469,7 @@ onAuthStateChanged(auth, async user => {
   const lang = localStorage.getItem("appLang") || "es";
   window.changeLanguage(lang);
   const tc = document.getElementById("tip-content");
-  if (tc) tc.innerText = unitTips[lang][tipIndex];
+  if (tc) tc.innerText = (unitTips[lang] || unitTips.es)[tipIndex % (unitTips[lang] || unitTips.es).length];
   setInterval(window.nextTip, 8e3);
   window._flushPinPending = async () => {
     const pendingHash = localStorage.getItem("taxusa_pin_pending_sync");

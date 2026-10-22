@@ -174,31 +174,48 @@ const I18N = {
       name: "Planificación",
       desc: "Viajes, lugares, comidas, compras y atracciones por EE. UU."
     } ],
-    tips: [ {
-      icon: "🧾",
-      text: "Sales tax. El precio de etiqueta en EE. UU. no incluye el sales tax: se suma en la caja y cambia según estado y ciudad (en Nueva York es 8,875 %)."
-    }, {
-      icon: "💳",
-      text: "Comisión de la tarjeta. Pregúntale a tu banco si cobra comisión por consumos en el exterior."
-    }, {
-      icon: "💵",
-      text: "Propinas. En restaurantes con servicio en mesa se acostumbra dejar entre 15 % y 20 %; lleva billetes de US$1 y US$5."
-    }, {
-      icon: "🚫",
-      text: "Sin devolución de impuestos. EE. UU. no devuelve el sales tax a los turistas. Solo se evita si la tienda envía la compra fuera del país y no te la llevas en mano."
-    }, {
-      icon: "🏨",
-      text: "Resort fee. Desde el 12/05/2025 los hoteles y alquileres de corta estadía deben mostrar el precio total, con el resort fee y otros cargos obligatorios, desde el primer precio. El cargo sigue existiendo: compáralo siempre con el total. Lo mismo rige para entradas de eventos en vivo."
-    }, {
-      icon: "📱",
-      text: "Datos y roaming. Fíjate si tu celular acepta eSIM antes de viajar; con modo avión + WiFi evitas cargos de roaming."
-    }, {
-      icon: "🗂️",
-      text: "Guarda tus recibos en Documentos: te los pueden pedir para devoluciones."
-    }, {
-      icon: "✈️",
-      text: "Llega 3 horas antes a un vuelo internacional."
-    } ]
+    tips: [
+  {
+    "icon": "🧾",
+    "text": "El precio de etiqueta suele excluir el sales tax. En Nueva York la tasa general es 8,875 %, con exenciones según el producto."
+  },
+  {
+    "icon": "💳",
+    "text": "Consulta las comisiones internacionales y el tipo de cambio de tu tarjeta antes de viajar."
+  },
+  {
+    "icon": "💵",
+    "text": "En restaurantes con servicio de mesa, revisa si la cuenta ya incluye propina o service charge antes de añadir otra."
+  },
+  {
+    "icon": "🛃",
+    "text": "No hay devolución federal del sales tax a turistas. Las excepciones estatales tienen condiciones: no cuentes con un reintegro automático en el aeropuerto."
+  },
+  {
+    "icon": "🏨",
+    "text": "Al comparar hoteles, revisa el total: la regla de la FTC exige incluir cargos obligatorios como resort fees en el precio anunciado, pero permite mostrar impuestos aparte."
+  },
+  {
+    "icon": "📱",
+    "text": "Antes de comprar una eSIM, comprueba que tu modelo de celular sea compatible y esté desbloqueado para otras operadoras."
+  },
+  {
+    "icon": "🗂️",
+    "text": "Guarda recibos y condiciones de devolución en Documentos para consultarlos durante el viaje."
+  },
+  {
+    "icon": "✈️",
+    "text": "Consulta con tu aerolínea la antelación recomendada y el cierre del check-in; añade margen para controles y traslado entre terminales."
+  },
+  {
+    "icon": "💱",
+    "text": "Si el terminal ofrece cobrar en tu moneda, revisa el tipo de cambio y recargos de esa conversión. Puedes rechazarla y pagar en US$."
+  },
+  {
+    "icon": "🧴",
+    "text": "En controles TSA, los líquidos de mano van en envases de hasta 100 ml dentro de una bolsa transparente de un cuarto de galón; revisa las excepciones médicas."
+  }
+]
   },
   en: {
     load_error: "Could not refresh.", saved_offline: "Offline · saved data", no_local_data: "Offline · data unavailable",
@@ -298,31 +315,48 @@ const I18N = {
       name: "Maps",
       desc: "Trips, places, meals, shopping and attractions across the USA"
     } ],
-    tips: [ {
-      icon: "🧾",
-      text: "Shelf prices in the US don't include sales tax, unlike VAT/GST in the UK or Australia. It's added at the register and varies by state and city (8.875% in New York City)."
-    }, {
-      icon: "💳",
-      text: "Ask your bank about foreign transaction fees before you fly, or use a card that doesn't charge them: they're added to every purchase."
-    }, {
-      icon: "💵",
-      text: "Tipping is far more expected in the US than in the UK or Australia: 15–20% at sit-down restaurants. Carry $1 and $5 bills."
-    }, {
-      icon: "🚫",
-      text: "The US has no tourist tax refund, like the old UK VAT scheme (closed end of 2020) or EU tax-free shopping. Sales tax is final unless the retailer ships the goods out of the US."
-    }, {
-      icon: "🏨",
-      text: "Resort fees. Since May 12, 2025, hotels and short-term rentals must show the total price, including resort fees and other mandatory charges, from the first price you see. The fee still exists: always compare the total. The same applies to live-event tickets."
-    }, {
-      icon: "📱",
-      text: "Data and roaming. Check that your phone supports eSIM before you travel; airplane mode + WiFi avoids roaming charges."
-    }, {
-      icon: "🗂️",
-      text: "Keep your receipts in Documents: you may be asked for them for returns."
-    }, {
-      icon: "✈️",
-      text: "Arrive 3 hours before an international flight."
-    } ]
+    tips: [
+  {
+    "icon": "🧾",
+    "text": "Unlike VAT/GST-inclusive prices in many countries, US shelf prices usually exclude sales tax. NYC’s general rate is 8.875%, with product exemptions."
+  },
+  {
+    "icon": "💳",
+    "text": "Check your card’s foreign transaction fees and exchange rate before travelling, even if the card is billed in US dollars."
+  },
+  {
+    "icon": "💵",
+    "text": "At a sit-down restaurant, check whether gratuity or a service charge is already included before adding a tip."
+  },
+  {
+    "icon": "🛃",
+    "text": "There is no federal tourist sales-tax refund. State exceptions have conditions, so do not budget for an automatic airport refund like an EU tax-free scheme."
+  },
+  {
+    "icon": "🏨",
+    "text": "Compare hotel totals: FTC rules require mandatory resort fees in the advertised price, but allow government taxes to be shown separately."
+  },
+  {
+    "icon": "📱",
+    "text": "Before buying a travel eSIM, check that your particular phone model supports it and is unlocked for other networks."
+  },
+  {
+    "icon": "🗂️",
+    "text": "Save receipts and return conditions in Documents so you can find them while travelling."
+  },
+  {
+    "icon": "✈️",
+    "text": "Check your airline’s recommended arrival time and check-in deadline; allow extra time for security and terminal transfers."
+  },
+  {
+    "icon": "💱",
+    "text": "If a terminal offers GBP, AUD or CAD instead of USD, review its conversion rate and markup. You can decline DCC and pay in USD."
+  },
+  {
+    "icon": "🧴",
+    "text": "At TSA checkpoints, carry-on liquids go in containers up to 100 ml (3.4 fl oz), in one clear quart-sized bag. Check medical exceptions."
+  }
+]
   },
   pt: {
     load_error: "Não foi possível atualizar.", saved_offline: "Sem conexão · dados salvos", no_local_data: "Sem conexão · dados indisponíveis",
@@ -422,34 +456,52 @@ const I18N = {
       name: "Maps",
       desc: "Viagens, lugares, refeições, compras e atrações pelos EUA"
     } ],
-    tips: [ {
-      icon: "🧾",
-      text: "O preço da etiqueta nos EUA não inclui o sales tax: ele é somado no caixa e varia por estado e cidade (em Nova York é 8,875%)."
-    }, {
-      icon: "💱",
-      text: "IOF. Compras no exterior com cartão de crédito, débito ou pré-pago pagam IOF de 3,5% (alíquota única desde 17/07/2025, sem cronograma de redução). Entre na conta do orçamento."
-    }, {
-      icon: "💳",
-      text: "Antes de viajar, pergunte ao banco se há spread ou taxa de conversão além do IOF de 3,5%."
-    }, {
-      icon: "💵",
-      text: "Gorjeta nos EUA é esperada: 15% a 20% em restaurantes com garçom e, em geral, não vem inclusa na conta (diferente dos 10% do Brasil)."
-    }, {
-      icon: "🚫",
-      text: "Os EUA não devolvem o sales tax a turistas (não existe o 'tax free' europeu). Só não há cobrança se a loja enviar a compra para fora dos EUA."
-    }, {
-      icon: "🏨",
-      text: "Resort fee. Desde 12/05/2025, hotéis e aluguéis de curta temporada devem mostrar o preço total, com resort fee e outras taxas obrigatórias, já no primeiro preço. A taxa continua existindo: compare sempre o total. O mesmo vale para ingressos de eventos ao vivo."
-    }, {
-      icon: "📱",
-      text: "Dados e roaming. Veja se seu celular aceita eSIM antes de viajar; com modo avião + WiFi você evita cobranças de roaming."
-    }, {
-      icon: "🗂️",
-      text: "Guarde seus recibos em Documentos: podem ser pedidos para devoluções."
-    }, {
-      icon: "✈️",
-      text: "Chegue 3 horas antes em um voo internacional."
-    } ]
+    tips: [
+  {
+    "icon": "🧾",
+    "text": "Diferente do preço final habitual no Brasil, a etiqueta nos EUA geralmente não inclui sales tax. Em Nova York a alíquota geral é 8,875%, com isenções."
+  },
+  {
+    "icon": "💳",
+    "text": "Confira o spread cambial e as tarifas internacionais do cartão antes de viajar; eles são custos diferentes do IOF."
+  },
+  {
+    "icon": "💵",
+    "text": "No restaurante com garçom, confira se já há gratuity ou service charge antes de acrescentar gorjeta; não presuma que funciona como os 10% do Brasil."
+  },
+  {
+    "icon": "🛃",
+    "text": "Não existe devolução federal de sales tax para turistas. Exceções estaduais têm condições: não conte com reembolso automático no aeroporto."
+  },
+  {
+    "icon": "🏨",
+    "text": "Compare o total do hotel: a regra da FTC exige resort fees obrigatórias no preço anunciado, mas permite exibir impostos separadamente."
+  },
+  {
+    "icon": "📱",
+    "text": "Antes de comprar um eSIM de viagem, confirme se o modelo do celular é compatível e desbloqueado para outras operadoras."
+  },
+  {
+    "icon": "🗂️",
+    "text": "Guarde recibos e regras de devolução em Documentos para consultar durante a viagem."
+  },
+  {
+    "icon": "✈️",
+    "text": "Confira a antecedência recomendada e o encerramento do check-in com a companhia aérea; reserve tempo para inspeção e troca de terminal."
+  },
+  {
+    "icon": "💱",
+    "text": "Se a maquininha oferecer cobrar em reais, confira o câmbio e o acréscimo. Você pode recusar a conversão da loja e pagar em US$."
+  },
+  {
+    "icon": "🧴",
+    "text": "Na inspeção TSA, líquidos de mão devem ir em frascos de até 100 ml, numa bolsa transparente de um quarto de galão. Confira as exceções médicas."
+  },
+  {
+    "icon": "💱",
+    "text": "Compras internacionais com cartão têm IOF de 3,5%. Inclua também o spread e as tarifas do seu emissor no orçamento."
+  }
+]
   }
 };
 
@@ -463,80 +515,74 @@ let currentUser = null;
 
 // Tips por país (capa sobre el español general). Se eligen con appCountry (Ajustes).
 const TIPS_ES_PAIS = {
-  AR: [ {
-    icon: "💱",
-    text: "Dólar tarjeta. Tu consumo con tarjeta en el exterior se convierte al dólar oficial más una percepción del 30 % a cuenta de Ganancias/Bienes Personales (el Impuesto PAIS ya no existe). Ese 30 % se puede computar en tus impuestos o pedir su devolución en ARCA."
-  }, {
-    icon: "💵",
-    text: "Pagar en dólares. Cancelar el resumen con dólares propios (cuenta en dólares o cajero) sale a un costo menor que el dólar tarjeta. Consultá a tu banco cómo pedir el \"stop debit\"."
-  }, {
-    icon: "💳",
-    text: "Comisión de la tarjeta. Aparte de la percepción del 30 %, preguntale a tu banco si cobra comisión por consumos en el exterior."
-  }, {
-    icon: "🛃",
-    text: "Franquicia de Aduana. Por vía aérea podés traer hasta US$500 en compras por persona (menores de 16: la mitad; un grupo familiar puede usarla en conjunto). Sobre el excedente se paga 50 %."
-  }, {
-    icon: "🛂",
-    text: "Visa. Hoy los argentinos necesitan visa de turismo para entrar a EE. UU. El Gobierno espera que Argentina ingrese al programa de exención de visa (ESTA) en los primeros meses de 2027: verificá el estado en el sitio oficial."
-  } ],
-  MX: [ {
-    icon: "🛃",
-    text: "Franquicia de aduana. Al volver por vía aérea puedes traer hasta US$500 en mercancía por persona, además de tu equipaje personal; la franquicia de una familia (padres e hijos que viajan juntos) se acumula. Alcohol y tabaco no entran en la franquicia. Guarda tus tickets para comprobar el valor."
-  }, {
-    icon: "🛂",
-    text: "Visa. Los ciudadanos mexicanos necesitan visa para entrar a EE. UU.: verifica los requisitos en el sitio oficial del Departamento de Estado."
-  } ],
-  CO: [ {
-    icon: "🛃",
-    text: "Franquicia de aduana. Al ingresar a Colombia puedes traer hasta US$2.000 en mercancía (distinta de tus efectos personales) en tu equipaje acompañado sin pagar tributo; el exceso, hasta un cupo total de US$5.000, paga un tributo único del 15 % y se declara en el formulario 530 de la DIAN."
-  }, {
-    icon: "🛂",
-    text: "Visa. Los ciudadanos colombianos necesitan visa para entrar a EE. UU.: verifica los requisitos en el sitio oficial del Departamento de Estado."
-  } ],
-  CL: [ {
-    icon: "🛂",
-    text: "Entrada a EE. UU. Chile participa del programa de exención de visa: se viaja con pasaporte electrónico y una autorización ESTA aprobada antes de embarcar. Verifica los requisitos en el sitio oficial de ESTA."
-  }, {
-    icon: "🛃",
-    text: "Franquicia de aduana. Con la franquicia del viajero entran sin impuestos artículos de uso personal (por ejemplo, dos celulares, un computador, una tablet y una cámara) y hasta US$300 en regalos. Lo que exceda se declara y paga impuestos. Verifica los montos vigentes en Aduanas de Chile."
-  } ],
-  PE: [ {
-    icon: "🛃",
-    text: "Franquicia de aduana. Al volver al Perú se permite el ingreso libre de impuestos de dos celulares y una laptop. Puedes registrar tu declaración antes de llegar en la app \"Bienvenido al Perú\" de la SUNAT. Verifica los límites vigentes en el sitio de la SUNAT."
-  }, {
-    icon: "🛂",
-    text: "Visa. Los ciudadanos peruanos necesitan visa para entrar a EE. UU.: verifica los requisitos en el sitio oficial del Departamento de Estado."
-  } ],
-  CR: [ {
-    icon: "🛂",
-    text: "Visa. Chile es el único país latinoamericano en el programa de exención de visa: los ciudadanos costarricenses necesitan visa para entrar a EE. UU. Verifica los requisitos en el sitio oficial del Departamento de Estado."
-  } ],
-  PA: [ {
-    icon: "💵",
-    text: "Moneda. Panamá usa el dólar estadounidense: tus consumos en EE. UU. no pasan por conversión de moneda. Aun así, pregunta a tu banco si cobra comisión por consumos en el exterior."
-  }, {
-    icon: "🛃",
-    text: "Efectivo. La declaración jurada de viajero de Panamá obliga a informar si viajas con US$10.000 o más en efectivo."
-  }, {
-    icon: "🛂",
-    text: "Visa. Chile es el único país latinoamericano en el programa de exención de visa: los ciudadanos panameños necesitan visa para entrar a EE. UU. Verifica los requisitos en el sitio oficial del Departamento de Estado."
-  } ],
-  GT: [ {
-    icon: "🛂",
-    text: "Visa. Chile es el único país latinoamericano en el programa de exención de visa: los ciudadanos guatemaltecos necesitan visa para entrar a EE. UU. Verifica los requisitos en el sitio oficial del Departamento de Estado."
-  } ]
+  "AR": [
+    {
+      "icon": "🛂",
+      "text": "Con pasaporte argentino, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+    },
+    {
+      "icon": "💳",
+      "text": "Al pagar en pesos consumos de tarjeta en el exterior, puede corresponder una percepción del 30 % a cuenta de Ganancias/Bienes Personales. Revisa las operaciones alcanzadas y tu resumen; no es el Impuesto PAIS."
+    },
+    {
+      "icon": "💳",
+      "text": "Si vas a cancelar consumos con dólares propios, consulta al banco el procedimiento y el débito automático. No des por hecho que pagarás menos: compara el costo de esos dólares y los cargos aplicables."
+    }
+  ],
+  "MX": [
+    {
+      "icon": "🛂",
+      "text": "Con pasaporte mexicano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+    }
+  ],
+  "CO": [
+    {
+      "icon": "🛂",
+      "text": "Con pasaporte colombiano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+    }
+  ],
+  "PE": [
+    {
+      "icon": "🛂",
+      "text": "Con pasaporte peruano, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+    }
+  ],
+  "CR": [
+    {
+      "icon": "🛂",
+      "text": "Con pasaporte costarricense, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+    }
+  ],
+  "PA": [
+    {
+      "icon": "🛂",
+      "text": "Con pasaporte panameño, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+    }
+  ],
+  "GT": [
+    {
+      "icon": "🛂",
+      "text": "Con pasaporte guatemalteco, verifica los requisitos de visa de turismo en travel.state.gov antes de reservar."
+    }
+  ],
+  "CL": [
+    {
+      "icon": "🛂",
+      "text": "Con pasaporte chileno, revisa la elegibilidad para Visa Waiver y solicita ESTA solo en esta.cbp.dhs.gov. No toda persona con pasaporte chileno cumple las condiciones."
+    }
+  ]
 };
 
 function tipsList() {
   const base = t.tips || I18N.es.tips;
   if (lang !== "es") return base;
   let c = "";
-  try { c = localStorage.getItem("appCountry") || ""; } catch (e) {}
+  try { c = (localStorage.getItem("appCountry") || "").toUpperCase(); } catch (e) {}
   const extra = TIPS_ES_PAIS[c];
-  return extra ? base.concat(extra) : base;
+  return Array.isArray(extra) ? base.concat(extra) : base;
 }
 
-let tipIndex = Math.floor(Math.random() * 8);
+let tipIndex = Math.floor(Math.random() * tipsList().length);
 
 function applyI18n() {
   t = I18N[lang] || I18N.es;
@@ -554,6 +600,7 @@ function applyI18n() {
 }
 
 window.changeLanguage = function(nl) {
+  tipIndex = 0;
   lang = nl;
   localStorage.setItem("appLang", lang);
   applyI18n();
@@ -1127,14 +1174,16 @@ function loadNextEvent(){
  renderUpcoming();
 }
 
+let tipRenderTimer;
 function renderTip() {
+  clearTimeout(tipRenderTimer);
   const tips = tipsList();
   const tip = tips[tipIndex % tips.length];
   const el = document.getElementById("tip-text");
   const ic = document.getElementById("tip-icon");
   if (el) {
     el.style.opacity = "0";
-    setTimeout(() => {
+    tipRenderTimer = setTimeout(() => {
       el.textContent = tip.text;
       el.style.opacity = "1";
     }, 180);
@@ -1361,3 +1410,7 @@ window.addEventListener("taxfly:budget-updated",event=>{
  if(!currentUser||!homeFinance||homeScope!==homeContext()||data?.uid!==currentUser.uid||data.pid!==perfilId||data.trip!==window.TripContext.view(currentUser.uid,perfilId))return;
  homeFinance.base.receive(data.value);renderBudgetUI();
 });
+
+function refreshHomeTip() { tipIndex = 0; renderTip(); }
+window.addEventListener("taxfly:countrychange", refreshHomeTip);
+window.addEventListener("storage", e => { if (e.key === "appCountry") refreshHomeTip(); });
