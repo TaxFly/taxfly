@@ -25,6 +25,8 @@
       profile: "Perfil activo",
       prefs: "Preferencias",
       language: "Idioma",
+      country: "País (tips)",
+      country_none: "Sin especificar",
       dark: "Modo oscuro",
       data: "Datos y respaldo",
       bk_title: "Respaldo de tu perfil",
@@ -539,7 +541,7 @@
   function row(act, icon, color, key, extra) {
     return '<button type="button" class="sx-row" data-act="' + act + '"><span class="sx-ico" style="--c:' + color + '">' + ic(icon) + '</span><span class="sx-lbl" data-t="' + key + '"></span>' + (extra || '<span class="sx-go">' + ic("chev", 16) + "</span>") + "</button>";
   }
-  drawer.innerHTML = '<div class="sx-head"><span class="sx-title" data-t="title"></span><button type="button" class="sx-x" data-act="close" data-tl="close" aria-label="Cerrar">' + ic("close", 16) + "</button></div>" + '<div class="sx-scroll">' + '<div class="sx-me">' + '<div class="sx-av" id="sxAvatar">' + ic("users", 22) + "</div>" + '<div class="sx-me-txt"><div class="sx-me-lbl" data-t="profile"></div><p id="userEmail" class="drawer-email"></p><div class="sx-mail" id="sxMail"></div></div>' + '<button type="button" class="sx-chip" data-act="profile" data-tl="switch_profile">' + ic("users", 18) + "</button>" + "</div>" + '<span class="sx-sec" data-t="prefs"></span>' + '<div class="sx-card">' + '<div class="sx-row sx-row-lang"><span class="sx-ico" style="--c:#0ea5e9">' + ic("globe") + '</span><span class="sx-lbl" data-t="language"></span>' + '<div class="sx-lang">' + '<button type="button" class="lang-opt" id="lang-es" data-lang="es">' + FLAG.es + " ES</button>" + '<button type="button" class="lang-opt" id="lang-en" data-lang="en">' + FLAG.en + " EN</button>" + '<button type="button" class="lang-opt" id="lang-pt" data-lang="pt">' + FLAG.pt + " PT</button>" + "</div></div>" + row("theme", "moon", "#7c3aed", "dark", '<span class="sx-sw" id="sxSwitch" role="switch" aria-checked="false"></span>') + "</div>" + '<span class="sx-sec" data-t="data"></span>' + '<div class="sx-bk">' + '<div class="sx-bk-h"><span class="sx-ico">' + ic("shield") + '</span><span data-t="bk_title"></span></div>' + '<p data-t="bk_desc"></p>' + '<div class="sx-bk-btns">' + '<button type="button" class="sx-btn pri" data-act="export">' + ic("download", 16) + '<span data-t="export"></span></button>' + '<button type="button" class="sx-btn" data-act="import">' + ic("upload", 16) + '<span data-t="import"></span></button>' + "</div>" + '<div class="sx-last" id="sxLast"></div>' + "</div>" + '<span class="sx-sec" data-t="ai_center"></span>' + '<details class="sx-ai"><summary class="sx-ai-top"><span class="sx-ico">' + ic("sparkles") + '</span><span class="sx-ai-title" data-t="ai_credits"></span><strong class="sx-ai-balance" id="sxAIValue">—</strong><span class="sx-ai-chev">' + ic("chev",16) + '</span></summary><div class="sx-ai-body"><p class="sx-ai-desc" data-t="ai_desc"></p><div class="sx-ai-actions"><button type="button" class="sx-btn ai-pri" data-act="buy-credits">' + ic("card",16) + '<span data-t="buy_credits"></span></button><button type="button" class="sx-btn" data-act="ai-history">' + ic("history",16) + '<span data-t="ai_history"></span></button></div><div class="sx-ai-support"><p class="sx-ai-support-copy" data-t="support_desc"></p><button type="button" class="sx-btn" data-act="cafecito">' + ic("coffee",16) + '<span data-t="cafecito"></span></button></div></div></details>' + '<span class="sx-sec" data-t="account"></span>' + '<div class="sx-card">' + row("profile-controls", "users", "#7c3aed", "profile_controls") + row("email", "mail", "#2563eb", "email") + row("password", "key", "#f59e0b", "password") + row("pin", "lock", "#14b8a6", "pin") + "</div>" + '<span class="sx-sec" data-t="app"></span>' + '<div class="sx-card">' + row("install", "phone", "#10b981", "install") + row("reload", "refresh", "#0ea5e9", "update") + "</div>" + '<div class="sx-foot">' + '<button type="button" class="sx-btn sx-out" data-act="logout">' + ic("logout", 16) + '<span data-t="logout"></span></button>' + '<div class="sx-danger"><span class="sx-danger-l" data-t="danger"></span>' + '<button type="button" class="sx-del" data-act="delete">' + ic("trash", 15) + '<span data-t="del"></span></button></div>' + "</div>" + "</div>" + '<input type="file" id="sxFile" accept="application/json,.json" style="display:none">';
+  drawer.innerHTML = '<div class="sx-head"><span class="sx-title" data-t="title"></span><button type="button" class="sx-x" data-act="close" data-tl="close" aria-label="Cerrar">' + ic("close", 16) + "</button></div>" + '<div class="sx-scroll">' + '<div class="sx-me">' + '<div class="sx-av" id="sxAvatar">' + ic("users", 22) + "</div>" + '<div class="sx-me-txt"><div class="sx-me-lbl" data-t="profile"></div><p id="userEmail" class="drawer-email"></p><div class="sx-mail" id="sxMail"></div></div>' + '<button type="button" class="sx-chip" data-act="profile" data-tl="switch_profile">' + ic("users", 18) + "</button>" + "</div>" + '<span class="sx-sec" data-t="prefs"></span>' + '<div class="sx-card">' + '<div class="sx-row sx-row-lang"><span class="sx-ico" style="--c:#0ea5e9">' + ic("globe") + '</span><span class="sx-lbl" data-t="language"></span>' + '<div class="sx-lang">' + '<button type="button" class="lang-opt" id="lang-es" data-lang="es">' + FLAG.es + " ES</button>" + '<button type="button" class="lang-opt" id="lang-en" data-lang="en">' + FLAG.en + " EN</button>" + '<button type="button" class="lang-opt" id="lang-pt" data-lang="pt">' + FLAG.pt + " PT</button>" + "</div></div>" + '<div class="sx-row" id="sxCountryRow"><span class="sx-ico" style="--c:#14b8a6">' + ic("globe") + '</span><span class="sx-lbl" data-t="country"></span><select id="sxCountry" class="sx-country" aria-label="País" style="margin-left:auto;max-width:150px;padding:6px 8px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font:inherit;font-size:.82rem"></select></div>' + row("theme", "moon", "#7c3aed", "dark", '<span class="sx-sw" id="sxSwitch" role="switch" aria-checked="false"></span>') + "</div>" + '<span class="sx-sec" data-t="data"></span>' + '<div class="sx-bk">' + '<div class="sx-bk-h"><span class="sx-ico">' + ic("shield") + '</span><span data-t="bk_title"></span></div>' + '<p data-t="bk_desc"></p>' + '<div class="sx-bk-btns">' + '<button type="button" class="sx-btn pri" data-act="export">' + ic("download", 16) + '<span data-t="export"></span></button>' + '<button type="button" class="sx-btn" data-act="import">' + ic("upload", 16) + '<span data-t="import"></span></button>' + "</div>" + '<div class="sx-last" id="sxLast"></div>' + "</div>" + '<span class="sx-sec" data-t="ai_center"></span>' + '<details class="sx-ai"><summary class="sx-ai-top"><span class="sx-ico">' + ic("sparkles") + '</span><span class="sx-ai-title" data-t="ai_credits"></span><strong class="sx-ai-balance" id="sxAIValue">—</strong><span class="sx-ai-chev">' + ic("chev",16) + '</span></summary><div class="sx-ai-body"><p class="sx-ai-desc" data-t="ai_desc"></p><div class="sx-ai-actions"><button type="button" class="sx-btn ai-pri" data-act="buy-credits">' + ic("card",16) + '<span data-t="buy_credits"></span></button><button type="button" class="sx-btn" data-act="ai-history">' + ic("history",16) + '<span data-t="ai_history"></span></button></div><div class="sx-ai-support"><p class="sx-ai-support-copy" data-t="support_desc"></p><button type="button" class="sx-btn" data-act="cafecito">' + ic("coffee",16) + '<span data-t="cafecito"></span></button></div></div></details>' + '<span class="sx-sec" data-t="account"></span>' + '<div class="sx-card">' + row("profile-controls", "users", "#7c3aed", "profile_controls") + row("email", "mail", "#2563eb", "email") + row("password", "key", "#f59e0b", "password") + row("pin", "lock", "#14b8a6", "pin") + "</div>" + '<span class="sx-sec" data-t="app"></span>' + '<div class="sx-card">' + row("install", "phone", "#10b981", "install") + row("reload", "refresh", "#0ea5e9", "update") + "</div>" + '<div class="sx-foot">' + '<button type="button" class="sx-btn sx-out" data-act="logout">' + ic("logout", 16) + '<span data-t="logout"></span></button>' + '<div class="sx-danger"><span class="sx-danger-l" data-t="danger"></span>' + '<button type="button" class="sx-del" data-act="delete">' + ic("trash", 15) + '<span data-t="del"></span></button></div>' + "</div>" + "</div>" + '<input type="file" id="sxFile" accept="application/json,.json" style="display:none">';
   function applyText() {
     drawer.querySelectorAll("[data-t]").forEach(function(el) {
       el.textContent = t(el.getAttribute("data-t"));
@@ -553,6 +555,21 @@
       var b = document.getElementById("lang-" + l);
       if (b) b.classList.toggle("active", l === lang());
     });
+    applyCountry();
+  }
+  var COUNTRIES = [ [ "AR", "Argentina" ], [ "MX", "México" ], [ "CO", "Colombia" ], [ "CL", "Chile" ], [ "PE", "Perú" ], [ "CR", "Costa Rica" ], [ "PA", "Panamá" ], [ "GT", "Guatemala" ] ];
+  function applyCountry() {
+    var row = document.getElementById("sxCountryRow"), sel = document.getElementById("sxCountry");
+    if (row) row.style.display = lang() === "es" ? "" : "none";
+    if (!sel) return;
+    var cur = "";
+    try {
+      cur = localStorage.getItem("appCountry") || "";
+    } catch (e) {}
+    sel.innerHTML = '<option value="">' + esc(t("country_none")) + "</option>" + COUNTRIES.map(function(c) {
+      return '<option value="' + c[0] + '">' + esc(c[1]) + "</option>";
+    }).join("");
+    sel.value = cur;
   }
   function activePid() {
     try {
@@ -999,6 +1016,13 @@
     }
     location.href = new URL("login.html?install=1", document.baseURI).href;
   }
+  drawer.addEventListener("change", function(e) {
+    if (e.target && e.target.id === "sxCountry") {
+      try {
+        if (e.target.value) localStorage.setItem("appCountry", e.target.value); else localStorage.removeItem("appCountry");
+      } catch (err) {}
+    }
+  });
   drawer.addEventListener("click", function(e) {
     var lb = e.target.closest("[data-lang]");
     if (lb) {

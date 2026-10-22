@@ -446,10 +446,21 @@ const i18n = {
 window._i18n = i18n;
 
 const tips = {
-  es: [ "Comprá los tickets de Disney con anticipación — hasta 20% más barato.", "En NYC, la tarjeta OMNY funciona como Sube en el subte.", "Los outlets suelen tener mejores precios de jueves a sábado.", "En Florida, la mayoría de hoteles cobran resort fee aparte. Preguntá antes.", "El Uber Pool en grandes ciudades ahorra hasta 40% vs taxi.", "En Vegas, los buffets de lunes a jueves son más baratos y menos llenos.", "Las atracciones de Universal abren antes que Disney — ideal para madrugadores.", "Siempre avisá a tu banco antes de viajar para evitar bloqueos de tarjeta.", "En Miami, South Beach tiene estacionamiento gratis después de las 21hs.", "Las tiendas Target suelen tener mejores precios que Walmart en electrónica." ],
-  en: [ "Buy Disney tickets in advance — up to 20% cheaper.", "In NYC, the OMNY card works like a transit pass on the subway.", "Outlets usually have better prices Thursday through Saturday.", "In Florida, most hotels charge resort fees separately. Ask upfront.", "Uber Pool in big cities saves up to 40% vs a taxi.", "In Vegas, buffets Monday–Thursday are cheaper and less crowded.", "Universal opens before Disney — perfect for early birds.", "Always notify your bank before traveling to avoid card blocks.", "In Miami, South Beach has free parking after 9 PM.", "Target stores often have better prices than Walmart on electronics." ],
-  pt: [ "Compre ingressos da Disney com antecedência — até 20% mais barato.", "Em NYC, o cartão OMNY funciona como o bilhete Único no metrô.", "Outlets costumam ter melhores preços de quinta a sábado.", "Na Flórida, a maioria dos hotéis cobra resort fee separado. Pergunte antes.", "O Uber Pool em grandes cidades economiza até 40% vs táxi.", "Em Vegas, os buffets de segunda a quinta são mais baratos e menos cheios.", "A Universal abre antes da Disney — ideal para quem acorda cedo.", "Avise seu banco antes de viajar para evitar bloqueios no cartão.", "Em Miami, South Beach tem estacionamento gratuito após as 21h.", "As lojas Target costumam ter preços melhores que o Walmart em eletrônicos." ]
+  es: ["Disney. Los tickets de Disney World tienen precio por fecha: el mismo día cuesta más o menos según la demanda. Comparar fechas en el calendario puede ahorrar más que un cupón.", "OMNY. En Nueva York no necesitas tarjeta de transporte: apoya tu tarjeta de crédito/débito o tu celular en el lector OMNY, como en un molinete con tarjeta, pero sin cargar saldo. Cada viaje cuesta US$3 y, tras 12 viajes pagos en 7 días, el resto de la semana es gratis.", "Pagar con tarjeta en el transporte. Además de Nueva York, en Washington DC, Los Ángeles, Boston y Miami puedes pagar apoyando tu tarjeta o celular: no hace falta comprar una tarjeta aparte.", "Uber Pool ya no existe con ese nombre: hoy es UberX Share y solo funciona en ciudades seleccionadas. Da un descuento al pedirlo y hasta 20 % más si te emparejan con otro pasajero.", "Avisa a tu banco antes de viajar para evitar bloqueos de la tarjeta.", "Lightning Lane (Disney). El Multi Pass se compra por parque y fecha en la app My Disney Experience, ya con tu entrada, y permite elegir hasta 3 atracciones de antemano. El precio cambia según el día y se ve hasta 21 días antes.", "Huracanes. La temporada del Atlántico va del 1 de junio al 30 de noviembre. Si viajas a Florida o Nueva Orleans en esas fechas, mira el pronóstico y las políticas de cambio de vuelos y hotel.", "Brightline. El tren une Miami, Fort Lauderdale, West Palm Beach y el aeropuerto de Orlando (MCO), con la estación dentro del aeropuerto."],
+  en: ["Disney World tickets are priced by date: the same day costs more or less depending on demand. Comparing dates on the calendar can save more than a coupon.", "In New York just tap your contactless card or phone on the OMNY reader, the same idea as the Tube or Sydney's Opal. A ride is $3, and after 12 paid rides in 7 days the rest of the week is free.", "Besides New York, you can tap a contactless card or phone to ride in Washington DC, Los Angeles, Boston and Miami.", "Uber Pool no longer exists under that name: it's now UberX Share and only works in select cities. It gives a discount when you request it and up to 20% more if you're matched with another rider.", "Tell your bank before you travel to avoid card blocks.", "Lightning Lane (Disney). Multi Pass is bought per park and date in the My Disney Experience app, along with your ticket, and lets you pick up to 3 attractions in advance. The price changes by day and is visible up to 21 days ahead.", "Hurricanes. The Atlantic season runs from June 1 to November 30. If you travel to Florida or New Orleans in those dates, check the forecast and your flight and hotel change policies.", "Brightline. The train links Miami, Fort Lauderdale, West Palm Beach and Orlando airport (MCO), with the station inside the airport."],
+  pt: ["Os ingressos da Disney World têm preço por data: o mesmo dia custa mais ou menos conforme a demanda. Comparar datas no calendário pode economizar mais do que um cupom.", "Em Nova York você não precisa de cartão de transporte: encoste seu cartão ou celular no leitor OMNY. Diferente do Bilhete Único, não há recarga. Cada viagem custa US$3 e, depois de 12 viagens pagas em 7 dias, o resto da semana é grátis.", "Além de Nova York, em Washington DC, Los Angeles, Boston e Miami dá para pagar o transporte com cartão ou celular por aproximação.", "O Uber Pool não existe mais com esse nome: hoje é UberX Share e só funciona em cidades selecionadas. Dá desconto ao pedir e até 20% a mais se você for pareado com outro passageiro.", "Avise seu banco antes de viajar para evitar bloqueios do cartão.", "Lightning Lane (Disney). O Multi Pass é comprado por parque e data no app My Disney Experience, junto com seu ingresso, e permite escolher até 3 atrações com antecedência. O preço muda conforme o dia e aparece até 21 dias antes.", "Furacões. A temporada do Atlântico vai de 1º de junho a 30 de novembro. Se for para a Flórida ou Nova Orleans nessas datas, confira a previsão e as políticas de troca de voo e hotel.", "Brightline. O trem liga Miami, Fort Lauderdale, West Palm Beach e o aeroporto de Orlando (MCO), com a estação dentro do aeroporto."]
 };
+
+// Capa por país (solo español): se suma al ES general según appCountry (Ajustes).
+const tipsPais = { AR: ["OMNY: como la SUBE, pero con tu propia tarjeta o celular. Apoyala en el lector, sin comprar una tarjeta aparte."] };
+
+function tipsFor(lang) {
+  const base = tips[lang] || tips.es;
+  if (lang !== "es") return base;
+  let c = "";
+  try { c = localStorage.getItem("appCountry") || ""; } catch (e) {}
+  return tipsPais[c] ? base.concat(tipsPais[c]) : base;
+}
 
 const citiesConfig = {
   orlando: [],
@@ -569,8 +580,8 @@ window.nextTip = () => {
   if (!el) return;
   el.style.opacity = 0;
   setTimeout(() => {
-    currentTipIndex = (currentTipIndex + 1) % tips[lang].length;
-    el.innerText = tips[lang][currentTipIndex];
+    currentTipIndex = (currentTipIndex + 1) % tipsFor(lang).length;
+    el.innerText = tipsFor(lang)[currentTipIndex];
     el.style.opacity = 1;
   }, 300);
 };
@@ -1067,7 +1078,7 @@ window.changeLanguage = lang => {
     actType.value = cur;
   }
   const tipEl = document.getElementById("tip-text");
-  if (tipEl) tipEl.innerText = tips[lang][currentTipIndex];
+  if (tipEl) tipEl.innerText = tipsFor(lang)[currentTipIndex];
   document.title = lang === "en" ? "TaxFly — Itinerary" : lang === "pt" ? "TaxFly — Itinerário" : "TaxFly — Itinerario";
   renderCityData();
   if (window._updateParquesTab) window._updateParquesTab();
