@@ -66,5 +66,5 @@ test('all shipped tips have provenance or are explicitly identified as editorial
  e.run(cut(read('assets/lugares.js'),'const tips =','const citiesConfig ='));
  e.run(cut(read('assets/unidades.js'),'const unitTips =','window.nextTip ='));
  const actual=e.run('[...Object.values(I18N).flatMap(v=>v.tips.map(t=>t.text)),...Object.values(TIPS_ES_PAIS).flat().map(t=>t.text),...Object.values(shoppingTips).flat(),...Object.values(shoppingTipsPais).flat(),...Object.values(tips).flat(),...Object.values(tipsPais).flat(),...Object.values(unitTips).flat(),...CITIES.flatMap(c=>Object.entries(c).filter(([k])=>k.startsWith("tips_")).flatMap(([,v])=>v))]');
- const recorded=new Set(d.records.flatMap(r=>Object.values(r.texts)));for(const t of actual)assert.ok(recorded.has(t),t);assert.equal(actual.length,431);
+ const recorded=new Set(d.records.flatMap(r=>Object.values(r.texts)));for(const t of actual)assert.ok(recorded.has(t),t);assert.equal(actual.length,482);
 });

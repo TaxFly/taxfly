@@ -37,7 +37,7 @@ La nueva rotación alterna temas cuando existe otra categoría disponible, sin d
 
 ## Contenido
 
-El inventario contiene 163 entradas por ubicación/audiencia y 431 textos localizados (160 ES, 134 EN, 137 PT). Las traducciones se cuentan por separado; no son 431 consejos distintos. La segunda revisión priorizó utilidad sobre cantidad.
+El inventario contiene 180 entradas por ubicación/audiencia y 482 textos localizados (177 ES, 151 EN, 154 PT). Las traducciones se cuentan por separado; no son 482 consejos distintos. La segunda revisión priorizó utilidad sobre cantidad.
 
 | Ubicación | Contenido general |
 | --- | --- |
@@ -45,7 +45,7 @@ El inventario contiene 163 entradas por ubicación/audiencia y 431 textos locali
 | Lugares | ES 11 · EN 11 · PT 11; capas por país cuando aplica |
 | Compras | ES 11 · EN 11 · PT 13; capas por país cuando aplica |
 | Unidades | ES 16 · EN 16 · PT 16; capas por país cuando aplica |
-| Ciudades | 86 tips por idioma en 12 ciudades; dos comparaciones culturales exclusivas de AR |
+| Ciudades | 103 tips por idioma en 12 ciudades; dos comparaciones culturales exclusivas de AR |
 
 Argentina, México, Colombia, Chile, Perú, Costa Rica, Panamá y Guatemala conservan contenido exclusivo. Costa Rica y Guatemala tienen listas menores: se excluyeron cifras o reglas que no pudieron confirmarse con claridad. Los requisitos de entrada se vinculan al pasaporte utilizado, no se infiere la ciudadanía desde el país seleccionado.
 
@@ -92,3 +92,24 @@ Se corrigieron las afirmaciones absolutas sobre tax refund, tarifas antiguas, Re
 - Orlando suma Disney World (sus cuatro parques), los parques de Universal incluido Epic Universe y las condiciones de Hogwarts Express.
 - Los Ángeles suma Disneyland/California Adventure y la diferencia entre Universal Express y Express Add-On de Hollywood. Los cinco tips nuevos tienen versiones ES/EN/PT y fuentes oficiales en el registro.
 - El ZIP se genera de nuevo desde el proyecto completo; se verifica su CRC y se compara cada archivo extraído con el original.
+
+## Cuarta revisión: más parques, ciencia y experiencias locales
+
+Se añaden 17 consejos distintos (51 textos en español, inglés y portugués), repartidos entre las 12 ciudades. Se mantienen los cambios de iconos y recuperación de Outlets de la versión anterior.
+
+| Ciudad | Nuevos consejos |
+| --- | --- |
+| Orlando y excursiones cercanas | SeaWorld Quick Queue; anticipación exigida con Reserved Seating; LEGOLAND en Winter Haven y acceso al acuático; Kennedy Space Center Bus Tour y último bus; traslado y cambios de lanzamientos |
+| Nueva York | Intrepid y acceso incluido al Space Shuttle Pavilion |
+| Miami | Shark Valley: entrada nacional frente a tram o bicicleta |
+| Las Vegas | Sphere: seleccionar la función correcta de cine o concierto |
+| Los Ángeles y alrededores | Knott’s frente a Soak City: entrada y temporada |
+| San Francisco | NightLife de California Academy of Sciences: edad, documento y planetario |
+| Chicago | Adler: entrada general frente a función en la cúpula |
+| Washington y alrededores | Udvar-Hazy en Virginia: Discovery, traslado y estacionamiento |
+| Boston | Museum of Science: tickets con horario para Omni y Planetarium |
+| Seattle y alrededores | Boeing Everett Factory Tour: altura, objetos prohibidos y llegada; Museum of Flight: primer jueves gratuito |
+| Nueva Orleans | Audubon: Aquarium/Insectarium, Zoo y combo |
+| Denver | Museum of Nature & Science: qué queda fuera de los días gratuitos |
+
+Las ubicaciones fuera de la ciudad se identifican en el consejo, sin presentarlas como visitas del centro. Los textos no prometen filas cortas, lanzamientos garantizados ni precios promocionales. El registro de fuentes contiene las páginas oficiales y los textos exactos de cada idioma.

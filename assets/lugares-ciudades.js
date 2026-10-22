@@ -32,7 +32,12 @@ const CITIES = [
       "🛍️ Disney Springs tiene estacionamiento estándar gratuito, pero no es un atajo garantizado a los parques. Para sus buses a hoteles pueden pedir prueba de hospedaje o reserva válida de comida/experiencia.",
       "Disney World tiene cuatro parques temáticos: Magic Kingdom, EPCOT, Hollywood Studios y Animal Kingdom. Antes de comprar, arma el calendario por parque y confirma qué días y accesos cubre tu entrada.",
       "Universal Orlando: compara entradas según los parques que quieras visitar: Universal Studios Florida, Islands of Adventure, Epic Universe y el acuático Volcano Bay. Comprueba que tu producto incluya Epic Universe y las fechas elegidas; el nombre “Universal” por sí solo no alcanza.",
-      "Hogwarts Express une Diagon Alley en Universal Studios Florida con Hogsmeade en Islands of Adventure. Necesitas una entrada con acceso Park-to-Park entre esos dos parques; revisa también los cierres de la atracción antes de organizar el día."
+      "Hogwarts Express une Diagon Alley en Universal Studios Florida con Hogsmeade en Islands of Adventure. Necesitas una entrada con acceso Park-to-Park entre esos dos parques; revisa también los cierres de la atracción antes de organizar el día.",
+      "SeaWorld Orlando: Quick Queue se paga aparte y no incluye entrada al parque. Revisa las atracciones participantes y las alturas mínimas antes de comprarlo; no cubre automáticamente todas las atracciones.",
+      "SeaWorld Orlando: si compras Reserved Seating para presentaciones, las condiciones exigen llegar 30 minutos antes. Reserva ese bloque en tu recorrido; pagar el asiento no permite llegar justo al inicio ni garantiza la primera fila.",
+      "LEGOLAND Florida queda en Winter Haven: planifica el traslado completo desde Orlando antes de comprar. Su Water Park está dentro del parque temático, requiere una entrada que incluya ese acceso y tiene calendario propio; comprueba que abra en tu fecha.",
+      "Kennedy Space Center: el Bus Tour al Apollo/Saturn V Center está incluido en la entrada. La web recomienda unas 3 horas y el último bus sale 2 horas y media antes del cierre; confirma el horario del día y no dejes ese recorrido para el final.",
+      "Kennedy Space Center no ofrece traslado propio desde Orlando. Organiza ida y vuelta por separado o revisa si tu excursión las incluye. Si eliges el día por un lanzamiento, ten un plan alternativo: el horario puede cambiar o cancelarse incluso a último momento."
     ],
     "tips_en": [
       "🚌 LYNX regular fare is $2; an all-day pass costs $4.50.",
@@ -45,7 +50,12 @@ const CITIES = [
       "🛍️ Disney Springs has free standard parking, but is not a guaranteed park-access shortcut. Resort buses may require proof of a hotel stay or valid dining/experience reservation.",
       "Disney World has four theme parks: Magic Kingdom, EPCOT, Hollywood Studios and Animal Kingdom. Plan your days by park before buying, then check which dates and park access your ticket covers.",
       "Universal Orlando: compare tickets for the parks you want—Universal Studios Florida, Islands of Adventure, Epic Universe and the Volcano Bay water park. Check that your product includes Epic Universe and your chosen dates; the Universal name alone is not enough.",
-      "Hogwarts Express links Diagon Alley in Universal Studios Florida with Hogsmeade in Islands of Adventure. You need Park-to-Park access between those two parks; check attraction closures before planning your day around the train."
+      "Hogwarts Express links Diagon Alley in Universal Studios Florida with Hogsmeade in Islands of Adventure. You need Park-to-Park access between those two parks; check attraction closures before planning your day around the train.",
+      "SeaWorld Orlando: Quick Queue costs extra and excludes park admission. Check participating rides and minimum heights before buying; it does not automatically cover every attraction.",
+      "SeaWorld Orlando: Reserved Seating for presentations requires arrival 30 minutes before showtime. Allow that block in your route; paying for a seat does not allow last-minute arrival or guarantee the front row.",
+      "LEGOLAND Florida is in Winter Haven: plan the full journey from Orlando before buying. Its Water Park is inside the theme park, requires a ticket including that access and has its own calendar; check that it opens on your date.",
+      "Kennedy Space Center: the Bus Tour to the Apollo/Saturn V Center is included with admission. The official guide allows about 3 hours; the last bus leaves 2.5 hours before closing. Check the daily schedule and do not leave it until the end.",
+      "Kennedy Space Center does not provide its own transport from Orlando. Arrange a return journey or check that your excursion includes it. If visiting for a launch, keep a backup plan: launch times can change or be scrubbed at the last minute."
     ],
     "tips_pt": [
       "🚌 LYNX: tarifa regular US$2; passe diário US$4,50.",
@@ -58,7 +68,12 @@ const CITIES = [
       "🛍️ O estacionamento padrão de Disney Springs é gratuito, mas não é um atalho garantido aos parques. Ônibus aos hotéis podem exigir comprovação de hospedagem ou reserva válida de refeição/experiência.",
       "O Disney World tem quatro parques temáticos: Magic Kingdom, EPCOT, Hollywood Studios e Animal Kingdom. Organize os dias por parque antes de comprar e confira as datas e os acessos incluídos no ingresso.",
       "Universal Orlando: compare ingressos para os parques desejados — Universal Studios Florida, Islands of Adventure, Epic Universe e o aquático Volcano Bay. Confira se o produto inclui Epic Universe e as datas escolhidas; só o nome Universal não basta.",
-      "O Hogwarts Express liga Diagon Alley no Universal Studios Florida a Hogsmeade no Islands of Adventure. É preciso acesso Park-to-Park entre esses dois parques; confira também os fechamentos da atração antes de organizar o dia."
+      "O Hogwarts Express liga Diagon Alley no Universal Studios Florida a Hogsmeade no Islands of Adventure. É preciso acesso Park-to-Park entre esses dois parques; confira também os fechamentos da atração antes de organizar o dia.",
+      "SeaWorld Orlando: Quick Queue é pago à parte e não inclui entrada no parque. Confira as atrações participantes e alturas mínimas antes de comprar; ele não cobre automaticamente todas as atrações.",
+      "SeaWorld Orlando: o Reserved Seating para apresentações exige chegada 30 minutos antes. Reserve esse intervalo no roteiro; pagar pelo assento não permite chegar no início nem garante a primeira fila.",
+      "O LEGOLAND Florida fica em Winter Haven: planeje o trajeto completo desde Orlando antes de comprar. O Water Park fica dentro do parque temático, exige ingresso com esse acesso e tem calendário próprio; confira se abre na sua data.",
+      "Kennedy Space Center: o Bus Tour ao Apollo/Saturn V Center está incluído no ingresso. O guia oficial recomenda cerca de 3 horas; o último ônibus sai 2 horas e meia antes do fechamento. Confira a programação do dia e não deixe para o final.",
+      "O Kennedy Space Center não oferece transporte próprio desde Orlando. Organize ida e volta ou confira se sua excursão as inclui. Se escolher a data por um lançamento, tenha um plano alternativo: o horário pode mudar ou o lançamento ser cancelado na última hora."
     ]
   },
   {
@@ -90,7 +105,8 @@ const CITIES = [
       "👥 Puedes pagar hasta 3 acompañantes con OMNY, pero solo tu primer toque suma a tu tope. Para que cada viajero acumule el suyo, debe usar su propio medio de pago.",
       "🖼️ The Met no ofrece “paga lo que quieras” a todo turista. Esa modalidad tiene requisitos de residencia o estudios; la entrada general incluye ambas sedes el mismo día, no varios días.",
       "🗽 Para desembarcar en Liberty Island, compra el ferry autorizado de Statue City Cruises. Acceso general, pedestal y corona son modalidades distintas; la corona requiere reserva anticipada y no tiene ascensor.",
-      "🏙️ El Memorial del 11-S al aire libre es gratuito y no exige comprar la entrada del museo. El museo interior es otra visita y requiere boleto."
+      "🏙️ El Memorial del 11-S al aire libre es gratuito y no exige comprar la entrada del museo. El museo interior es otra visita y requiere boleto.",
+      "Intrepid Museum: la entrada general incluye el Space Shuttle Pavilion, donde está el Enterprise, y el submarino Growler. Comprueba aparte las experiencias adicionales que quieras; no compres otro producto solo para ver el transbordador."
     ],
     "tips_en": [
       "✈️ JFK AirTrain costs extra on top of subway or LIRR fares; compare the full journey.",
@@ -99,7 +115,8 @@ const CITIES = [
       "👥 OMNY lets you pay for up to 3 companions, but only the first tap builds your cap. Each traveller needs a separate payment method to build their own.",
       "🖼️ The Met’s pay-what-you-wish admission is limited by residence/student eligibility, not available to every tourist. General admission covers both locations on the same day, not multiple days.",
       "🗽 To land on Liberty Island, use authorised Statue City Cruises. General admission, pedestal and crown are different options; the crown needs advance booking and has no lift.",
-      "🏙️ The outdoor 9/11 Memorial is free without a Museum ticket. The indoor Museum is a separate, ticketed visit."
+      "🏙️ The outdoor 9/11 Memorial is free without a Museum ticket. The indoor Museum is a separate, ticketed visit.",
+      "Intrepid Museum: general admission includes the Space Shuttle Pavilion, home to Enterprise, and the submarine Growler. Check any extra experiences separately; you do not need another product just to see the shuttle."
     ],
     "tips_pt": [
       "✈️ O AirTrain JFK é pago separadamente do metrô ou LIRR; compare o trajeto completo.",
@@ -108,7 +125,8 @@ const CITIES = [
       "👥 O OMNY permite pagar até 3 acompanhantes, mas só o primeiro toque soma ao seu teto. Para cada pessoa acumular o próprio, use meios de pagamento separados.",
       "🖼️ O “pague quanto quiser” do Met exige residência ou condição estudantil elegível; não vale para todo turista. O ingresso geral inclui as duas unidades no mesmo dia, não em vários dias.",
       "🗽 Para desembarcar na Liberty Island, use o ferry autorizado Statue City Cruises. Acesso geral, pedestal e coroa são modalidades diferentes; a coroa exige reserva antecipada e não tem elevador.",
-      "🏙️ O Memorial do 11 de Setembro ao ar livre é gratuito, sem ingresso do museu. O museu interno é uma visita separada e exige bilhete."
+      "🏙️ O Memorial do 11 de Setembro ao ar livre é gratuito, sem ingresso do museu. O museu interno é uma visita separada e exige bilhete.",
+      "Intrepid Museum: o ingresso geral inclui o Space Shuttle Pavilion, onde está o Enterprise, e o submarino Growler. Confira separadamente as experiências extras desejadas; não é preciso outro produto só para ver o ônibus espacial."
     ],
     "tips_es_AR": [
       "💳 Como el gesto de usar la SUBE, pero con tu tarjeta bancaria o celular: OMNY no exige comprar y recargar una tarjeta de transporte."
@@ -143,7 +161,8 @@ const CITIES = [
       "🚎 El trolley de Coral Gables es gratuito y tiene rutas Ponce de Leon y Grand Avenue. Es otra red: no lo confundas con el trolley de Miami Beach.",
       "🎨 Wynwood Walls es un museo con política de entradas propia. La gratuidad anunciada para residentes de Miami-Dade exige identificación local y no se extiende automáticamente a visitantes extranjeros.",
       "🔁 Conserva el mismo medio electrónico al combinar Metrorail y Metrobus para aplicar beneficios de transbordo. Pagar cada bus en efectivo puede hacerte perder esa integración.",
-      "📍 Miami Beach está al otro lado de la bahía: un hotel en Downtown o junto a MIA no es un hotel en South Beach. Comprueba el trayecto real antes de elegir alojamiento por precio."
+      "📍 Miami Beach está al otro lado de la bahía: un hotel en Downtown o junto a MIA no es un hotel en South Beach. Comprueba el trayecto real antes de elegir alojamiento por precio.",
+      "Everglades desde Miami: si eliges Shark Valley, suma la entrada del parque nacional y el tram o alquiler de bicicleta, que se pagan aparte. Define primero ese acceso concreto; una excursión anunciada como “Everglades” puede visitar otra zona."
     ],
     "tips_en": [
       "💳 Regular Metrorail/Metrobus fare is $2.25. The daily contactless bank-card cap is $5.65 with the same payment method; Metromover is free.",
@@ -152,7 +171,8 @@ const CITIES = [
       "🚎 Coral Gables’ free trolley has Ponce de Leon and Grand Avenue routes. It is a separate network from Miami Beach’s trolley.",
       "🎨 Wynwood Walls is a museum with its own admission policy. Miami-Dade resident free entry requires local photo ID and does not automatically include overseas visitors.",
       "🔁 Keep the same electronic payment method for Metrorail/Metrobus transfer benefits; paying each bus in cash can lose those benefits.",
-      "📍 Miami Beach is across the bay: a Downtown or MIA-area hotel is not in South Beach. Check the actual journey before choosing a hotel on price."
+      "📍 Miami Beach is across the bay: a Downtown or MIA-area hotel is not in South Beach. Check the actual journey before choosing a hotel on price.",
+      "Everglades from Miami: for Shark Valley, budget for national park entry plus the tram or bike rental, charged separately. Choose the specific entrance first; a tour advertised simply as Everglades may visit a different area."
     ],
     "tips_pt": [
       "💳 Metrorail/Metrobus regular: US$2,25. Com o mesmo cartão bancário por aproximação, o teto diário é US$5,65; Metromover é gratuito.",
@@ -161,7 +181,8 @@ const CITIES = [
       "🚎 O trolley gratuito de Coral Gables tem rotas Ponce de Leon e Grand Avenue. É outra rede, diferente do trolley de Miami Beach.",
       "🎨 Wynwood Walls é um museu com política própria de ingresso. A gratuidade para residentes de Miami-Dade exige documento local e não vale automaticamente para turistas brasileiros.",
       "🔁 Use o mesmo meio eletrônico para integração entre Metrorail e Metrobus; pagar cada ônibus em dinheiro pode perder o benefício.",
-      "📍 Miami Beach fica do outro lado da baía: hotel em Downtown ou perto do MIA não é em South Beach. Confira o trajeto real antes de escolher só pelo preço."
+      "📍 Miami Beach fica do outro lado da baía: hotel em Downtown ou perto do MIA não é em South Beach. Confira o trajeto real antes de escolher só pelo preço.",
+      "Everglades desde Miami: em Shark Valley, some a entrada do parque nacional ao tram ou aluguel de bicicleta, cobrados à parte. Defina primeiro esse acesso; uma excursão anunciada apenas como Everglades pode visitar outra área."
     ]
   },
   {
@@ -192,7 +213,8 @@ const CITIES = [
       "✈️ El aeropuerto tiene rutas RTC específicas. Consulta la ruta según tu terminal y destino; no supongas que el Deuce pasa por la terminal.",
       "🚝 El Monorail vende boletos propios: no presupongas que tu pase de bus RTC lo incluye. Compara ambos trayectos.",
       "⛲ Ver las fuentes de Bellagio desde el exterior es gratuito. El espectáculo puede cancelarse por clima; no compres una entrada solo para ver las fuentes públicas.",
-      "💡 The Neon Museum vende modalidades diurnas y nocturnas diferentes. Si tu objetivo es fotografiar los carteles iluminados, elige la sesión correspondiente antes de pagar."
+      "💡 The Neon Museum vende modalidades diurnas y nocturnas diferentes. Si tu objetivo es fotografiar los carteles iluminados, elige la sesión correspondiente antes de pagar.",
+      "Sphere: elige primero la película o concierto que quieres y después la fecha y el asiento. La programación vende funciones concretas; revisa el nombre del evento antes de pagar para no confundir una experiencia de cine con un concierto."
     ],
     "tips_en": [
       "🎫 Deuce/Strip & All Access passes: $6 for 2 hours, $8 for 24 hours, $20 for 3 days.",
@@ -200,7 +222,8 @@ const CITIES = [
       "✈️ Airport RTC routes depend on terminal and destination; do not assume the Deuce stops at your terminal.",
       "🚝 The Monorail sells its own tickets; do not assume your RTC bus pass includes it. Compare routes.",
       "⛲ Watching the Bellagio fountains from outside is free. Shows may be cancelled for weather; no attraction ticket is needed for the public fountain display.",
-      "💡 The Neon Museum sells different daytime and evening admissions. If you want illuminated-sign photos, choose the corresponding session before buying."
+      "💡 The Neon Museum sells different daytime and evening admissions. If you want illuminated-sign photos, choose the corresponding session before buying.",
+      "Sphere: choose the film or concert first, then the date and seat. Tickets are for specific performances; check the event name before paying so you do not confuse a film experience with a concert."
     ],
     "tips_pt": [
       "🎫 Deuce/Strip & All Access: US$6 por 2 h, US$8 por 24 h e US$20 por 3 dias.",
@@ -208,7 +231,8 @@ const CITIES = [
       "✈️ As rotas RTC do aeroporto dependem do terminal e do destino; não presuma que o Deuce passe no terminal.",
       "🚝 O Monorail vende bilhetes próprios; não presuma que esteja incluído no passe de ônibus RTC.",
       "⛲ Assistir às fontes do Bellagio pelo lado de fora é gratuito. O show pode ser cancelado por clima; não é necessário ingresso para o espetáculo público.",
-      "💡 O Neon Museum vende ingressos diurnos e noturnos diferentes. Se quiser fotografar os letreiros iluminados, escolha a sessão correspondente antes de pagar."
+      "💡 O Neon Museum vende ingressos diurnos e noturnos diferentes. Se quiser fotografar os letreiros iluminados, escolha a sessão correspondente antes de pagar.",
+      "Sphere: escolha primeiro o filme ou show desejado, depois a data e o assento. Os ingressos são para sessões específicas; confira o nome do evento antes de pagar para não confundir uma experiência de cinema com um show."
     ]
   },
   {
@@ -242,7 +266,8 @@ const CITIES = [
       "🖼️ El Getty Center tiene entrada gratuita con reserva de horario, pero el estacionamiento se cobra aparte. No confundas la reserva del museo con estacionamiento gratuito ni con el Getty Villa.",
       "🔭 El edificio, los jardines y los telescopios públicos de Griffith Observatory son gratuitos. Los shows del planetario y el estacionamiento tienen cobro separado.",
       "Disneyland Resort en California tiene Disneyland Park y Disney California Adventure. A partir de 3 años se requiere entrada válida y reserva para el mismo parque y fecha: confirma ambas antes de cerrar el traslado.",
-      "Universal Studios Hollywood: distingue el ticket Universal Express, que incluye entrada de un día, del Express Add-On, que requiere comprar la entrada aparte. Revisa las atracciones excluidas y la fecha del producto antes de pagar."
+      "Universal Studios Hollywood: distingue el ticket Universal Express, que incluye entrada de un día, del Express Add-On, que requiere comprar la entrada aparte. Revisa las atracciones excluidas y la fecha del producto antes de pagar.",
+      "Knott’s Berry Farm y el acuático vecino Soak City tienen accesos distintos. Soak City requiere entrada propia o un producto que lo incluya y abre por temporada, en fechas seleccionadas; revisa su calendario antes de añadirlo al mismo día."
     ],
     "tips_en": [
       "🚇 The B Line connects Union Station with North Hollywood; choose the Hollywood stop for your destination.",
@@ -253,7 +278,8 @@ const CITIES = [
       "🖼️ Getty Center admission is free with a timed reservation, but parking is charged separately. A museum booking is not free parking or a Getty Villa reservation.",
       "🔭 Griffith Observatory’s building, grounds and public telescopes are free. Planetarium shows and parking are charged separately.",
       "California’s Disneyland Resort has Disneyland Park and Disney California Adventure. Guests aged 3 and over need valid admission and a reservation for the same park and date: confirm both before booking transport.",
-      "Universal Studios Hollywood: distinguish the Universal Express ticket, which includes one-day admission, from the Express Add-On, which requires separate admission. Check excluded attractions and the product date before paying."
+      "Universal Studios Hollywood: distinguish the Universal Express ticket, which includes one-day admission, from the Express Add-On, which requires separate admission. Check excluded attractions and the product date before paying.",
+      "Knott’s Berry Farm and the neighbouring Soak City water park have separate gates. Soak City needs its own admission or a product including it and opens seasonally on selected dates; check its calendar before adding it to the same day."
     ],
     "tips_pt": [
       "🚇 A linha B liga Union Station a North Hollywood; confira a estação de Hollywood adequada ao passeio.",
@@ -264,7 +290,8 @@ const CITIES = [
       "🖼️ O Getty Center tem entrada gratuita com horário reservado, mas estacionamento pago à parte. A reserva não inclui estacionamento grátis nem visita ao Getty Villa.",
       "🔭 O prédio, os jardins e os telescópios públicos do Griffith Observatory são gratuitos. Shows do planetário e estacionamento são cobrados à parte.",
       "O Disneyland Resort na Califórnia tem Disneyland Park e Disney California Adventure. A partir de 3 anos, é preciso ingresso válido e reserva para o mesmo parque e data: confirme ambos antes de fechar o transporte.",
-      "Universal Studios Hollywood: diferencie o ingresso Universal Express, que inclui entrada de um dia, do Express Add-On, que exige ingresso de entrada separado. Confira as atrações excluídas e a data do produto antes de pagar."
+      "Universal Studios Hollywood: diferencie o ingresso Universal Express, que inclui entrada de um dia, do Express Add-On, que exige ingresso de entrada separado. Confira as atrações excluídas e a data do produto antes de pagar.",
+      "Knott’s Berry Farm e o aquático vizinho Soak City têm acessos separados. O Soak City exige ingresso próprio ou produto que o inclua e abre por temporada em datas selecionadas; confira o calendário antes de incluí-lo no mesmo dia."
     ]
   },
   {
@@ -296,7 +323,8 @@ const CITIES = [
       "🎫 Muni regular: US$2,85 con Clipper o tarjeta bancaria y US$3 en efectivo, con 120 minutos de viaje. Los cable cars tienen tarifa propia.",
       "🎟️ Si quieres cable cars, compara el Visitor Passport de un día (US$15) con el Day Pass Muni (US$5,70): solo el primero los incluye. Ninguno sustituye el boleto BART al aeropuerto.",
       "🏝️ Para desembarcar en Alcatraz necesitas ferry de Alcatraz City Cruises, el operador autorizado por NPS. Un crucero que solo pasa junto a la isla no permite visitar la prisión.",
-      "🚗 El Golden Gate cobra peaje solo al conducir hacia San Francisco y no acepta efectivo en el puente. Si alquilas auto, acuerda cómo pagarlo antes de cruzar para evitar comisiones inesperadas."
+      "🚗 El Golden Gate cobra peaje solo al conducir hacia San Francisco y no acepta efectivo en el puente. Si alquilas auto, acuerda cómo pagarlo antes de cruzar para evitar comisiones inesperadas.",
+      "California Academy of Sciences: NightLife es solo para personas de 21 años o más y exige identificación física válida con foto. Sus pases de planetario se venden aparte; para una visita con menores, elige la programación diurna."
     ],
     "tips_en": [
       "🚋 Cable car: $9 per ride without transfers; this is not the regular Muni streetcar fare.",
@@ -305,7 +333,8 @@ const CITIES = [
       "🎫 Regular Muni fare is $2.85 with Clipper/bank card or $3 cash, allowing 120 minutes of travel. Cable cars have a separate fare.",
       "🎟️ For cable cars, compare the $15 one-day Visitor Passport with the $5.70 Muni Day Pass: only the former includes them. Neither replaces your airport BART fare.",
       "🏝️ Landing on Alcatraz requires the NPS-authorised Alcatraz City Cruises ferry. A sightseeing boat that only sails past does not include a prison visit.",
-      "🚗 Golden Gate tolls apply only when driving towards San Francisco, with no cash collection at the bridge. Agree the rental-car payment method before crossing."
+      "🚗 Golden Gate tolls apply only when driving towards San Francisco, with no cash collection at the bridge. Agree the rental-car payment method before crossing.",
+      "California Academy of Sciences: NightLife is for ages 21 and over and requires valid physical photo ID. Planetarium passes are sold separately; choose the daytime programme when visiting with younger guests."
     ],
     "tips_pt": [
       "🚋 Cable car: US$9 por viagem, sem integração; não é a tarifa de um bonde Muni regular.",
@@ -314,7 +343,8 @@ const CITIES = [
       "🎫 Muni regular: US$2,85 com Clipper/cartão bancário ou US$3 em dinheiro, com 120 minutos de viagem. Cable cars têm tarifa própria.",
       "🎟️ Para cable cars, compare o Visitor Passport de um dia (US$15) com o Day Pass Muni (US$5,70): só o primeiro os inclui. Nenhum substitui o BART ao aeroporto.",
       "🏝️ Para desembarcar em Alcatraz, é necessário o ferry Alcatraz City Cruises, autorizado pelo NPS. Um passeio de barco que só passa pela ilha não inclui visita à prisão.",
-      "🚗 A Golden Gate cobra pedágio só no sentido de San Francisco, sem pagamento em dinheiro na ponte. Combine o pagamento do carro alugado antes de atravessar."
+      "🚗 A Golden Gate cobra pedágio só no sentido de San Francisco, sem pagamento em dinheiro na ponte. Combine o pagamento do carro alugado antes de atravessar.",
+      "California Academy of Sciences: o NightLife é para pessoas com 21 anos ou mais e exige documento físico válido com foto. Os passes do planetário são vendidos à parte; com menores de 21, escolha a programação diurna."
     ]
   },
   {
@@ -346,7 +376,8 @@ const CITIES = [
       "✈️ O’Hare usa Blue Line, con servicio las 24 h; Midway usa Orange Line, que no funciona toda la noche. No intercambies las rutas al calcular un vuelo temprano.",
       "🫘 Millennium Park, incluido el arte público de Cloud Gate, tiene acceso gratuito. No necesitas comprar una excursión para entrar al parque.",
       "🐠 Las horas gratuitas de Shedd Aquarium para residentes de Illinois no incluyen automáticamente a turistas extranjeros, ni por acompañar a un residente. Revisa la categoría antes de reservar.",
-      "🚤 Si buscas el crucero del Chicago Architecture Center, confirma que sea el CAC River Cruise aboard First Lady. No todo paseo en barco del río incluye ese guía ni el mismo recorrido."
+      "🚤 Si buscas el crucero del Chicago Architecture Center, confirma que sea el CAC River Cruise aboard First Lady. No todo paseo en barco del río incluye ese guía ni el mismo recorrido.",
+      "Adler Planetarium: la entrada general al museo no equivale a una función bajo la cúpula. Si esa es tu prioridad, añade el show y comprueba su horario antes de organizar el resto del Museum Campus."
     ],
     "tips_en": [
       "✈️ A regular train fare from O’Hare is $5; a valid unlimited-ride pass avoids the extra charge.",
@@ -355,7 +386,8 @@ const CITIES = [
       "✈️ O’Hare uses the 24-hour Blue Line; Midway uses the Orange Line, which is not all-night. Check the correct airport for early flights.",
       "🫘 Millennium Park, including Cloud Gate’s public art, has free admission. A paid guided tour is not required to enter.",
       "🐠 Shedd Aquarium’s Illinois-resident free hours do not automatically include overseas visitors, even when accompanying a resident. Check eligibility before booking.",
-      "🚤 For the Chicago Architecture Center cruise, choose CAC River Cruise aboard First Lady. Other river boats do not necessarily include the same guide or route."
+      "🚤 For the Chicago Architecture Center cruise, choose CAC River Cruise aboard First Lady. Other river boats do not necessarily include the same guide or route.",
+      "Adler Planetarium: general museum admission is not a dome-show ticket. If the show is your priority, add it and check its time before planning the rest of Museum Campus."
     ],
     "tips_pt": [
       "✈️ A tarifa regular de trem saindo de O’Hare é US$5; um passe ilimitado válido evita o adicional.",
@@ -364,7 +396,8 @@ const CITIES = [
       "✈️ O’Hare usa a Blue Line, 24 h; Midway usa a Orange Line, que não funciona a noite toda. Confira o aeroporto certo para voos cedo.",
       "🫘 O Millennium Park, incluindo a arte pública Cloud Gate, tem entrada gratuita. Não é preciso comprar excursão para entrar no parque.",
       "🐠 Os horários gratuitos do Shedd Aquarium para residentes de Illinois não incluem automaticamente turistas brasileiros, mesmo acompanhando um residente. Confira a elegibilidade.",
-      "🚤 Se quiser o cruzeiro do Chicago Architecture Center, escolha CAC River Cruise aboard First Lady. Outros barcos do rio não incluem necessariamente o mesmo guia ou percurso."
+      "🚤 Se quiser o cruzeiro do Chicago Architecture Center, escolha CAC River Cruise aboard First Lady. Outros barcos do rio não incluem necessariamente o mesmo guia ou percurso.",
+      "Adler Planetarium: a entrada geral do museu não equivale a um ingresso para sessão na cúpula. Se essa for sua prioridade, acrescente o show e confira o horário antes de organizar o restante do Museum Campus."
     ]
   },
   {
@@ -396,7 +429,8 @@ const CITIES = [
       "🕒 El horario general de fin de semana es sábado 6:00–2:00 y domingo 6:00–medianoche; verifica último tren y obras por estación.",
       "🎫 Metrorail regular cuesta US$2,25–6,75 según trayecto y horario; el bus local Metro cuesta US$2,25. Usa la misma tarjeta al entrar y salir del tren.",
       "🏛️ El tour del Capitolio es gratuito y conviene reservarlo en visitthecapitol.gov. No incluye las galerías del Senado o la Cámara: son accesos distintos.",
-      "🗼 Para subir al Washington Monument necesitas boleto. La visita no tiene entrada de pago, pero la reserva online cobra una tarifa de gestión; hay boletos del día limitados en el Lodge."
+      "🗼 Para subir al Washington Monument necesitas boleto. La visita no tiene entrada de pago, pero la reserva online cobra una tarifa de gestión; hay boletos del día limitados en el Lodge.",
+      "Para ver el transbordador Discovery, elige el Udvar-Hazy Center en Chantilly, Virginia, cerca de Dulles. No es la sede Air and Space del centro de Washington: la entrada es gratuita, pero estacionar tiene costo y el traslado debe planificarse aparte."
     ],
     "tips_en": [
       "💳 Tap a bank card or phone on Metro, as on London’s Tube; on rail, use the same method in and out.",
@@ -405,7 +439,8 @@ const CITIES = [
       "🕒 Usual weekend rail hours are Saturday 6 am–2 am and Sunday 6 am–midnight; check your station’s last train and works.",
       "🎫 Regular Metrorail fares are $2.25–$6.75 by journey/time; local Metro buses cost $2.25. Use the same card to enter and leave rail stations.",
       "🏛️ Capitol tours are free; book through visitthecapitol.gov. The tour does not include Senate or House galleries, which have separate access.",
-      "🗼 Going up the Washington Monument requires a ticket. Admission is free, but online reservations have a handling fee; limited same-day tickets are available at the Lodge."
+      "🗼 Going up the Washington Monument requires a ticket. Admission is free, but online reservations have a handling fee; limited same-day tickets are available at the Lodge.",
+      "To see Space Shuttle Discovery, choose the Udvar-Hazy Center in Chantilly, Virginia, near Dulles. It is separate from the downtown Washington Air and Space museum: admission is free, parking costs extra and transport needs its own plan."
     ],
     "tips_pt": [
       "💳 Pague o Metro com cartão bancário por aproximação ou celular, sem recarga de transporte; no trem, use o mesmo meio na entrada e saída.",
@@ -414,7 +449,8 @@ const CITIES = [
       "🕒 O horário geral é sábado 6h–2h e domingo 6h–meia-noite; confira o último trem e obras por estação.",
       "🎫 Metrorail regular custa US$2,25–6,75 conforme trajeto/horário; ônibus local Metro custa US$2,25. Use o mesmo cartão para entrar e sair do trem.",
       "🏛️ O tour do Capitólio é gratuito; reserve em visitthecapitol.gov. Ele não inclui as galerias do Senado ou da Câmara, que têm acesso separado.",
-      "🗼 Para subir ao Washington Monument é necessário bilhete. A visita é gratuita, mas a reserva online cobra taxa; há bilhetes limitados do dia no Lodge."
+      "🗼 Para subir ao Washington Monument é necessário bilhete. A visita é gratuita, mas a reserva online cobra taxa; há bilhetes limitados do dia no Lodge.",
+      "Para ver o ônibus espacial Discovery, escolha o Udvar-Hazy Center em Chantilly, Virgínia, perto de Dulles. É outra sede, diferente do Air and Space no centro de Washington: a entrada é gratuita, o estacionamento é pago e o transporte precisa ser planejado à parte."
     ],
     "tips_es_AR": [
       "💳 El gesto se parece a usar la SUBE, pero Metro permite tu tarjeta bancaria sin contacto: en tren debes usarla también al salir."
@@ -449,7 +485,8 @@ const CITIES = [
       "🚶 Freedom Trail recorre unos 4 km entre Boston y Charlestown. La línea roja del suelo ayuda a seguirlo.",
       "🚶 Caminar Freedom Trail por tu cuenta es gratuito; algunas visitas interiores y los tours guiados se pagan aparte. La línea roja no representa un boleto que incluya todos los edificios.",
       "⚓ Para subir al USS Constitution, mayores de 18 años deben presentar identificación física válida o pasaporte y pasar seguridad. El barco y el museo cercano se administran por separado.",
-      "🧳 Con valijas o cochecito, usa el planificador accesible de MBTA y sus alertas de ascensores. No elijas una conexión solo por ser la más corta en el mapa."
+      "🧳 Con valijas o cochecito, usa el planificador accesible de MBTA y sus alertas de ascensores. No elijas una conexión solo por ser la más corta en el mapa.",
+      "Museum of Science de Boston: el Omni Theater y el Planetarium requieren tickets con horario propio. Si quieres una función concreta, resérvala y organiza las salas alrededor de ese bloque; revisa por separado qué entrada necesitas para Exhibit Halls."
     ],
     "tips_en": [
       "✈️ Silver Line SL1 is free from Logan terminals to South Station; do not assume the return to the airport is also free.",
@@ -458,7 +495,8 @@ const CITIES = [
       "🚶 The Freedom Trail runs about 2.5 miles/4 km through Boston and Charlestown, marked by a red line.",
       "🚶 Walking the Freedom Trail independently is free; some interiors and guided tours cost extra. The red trail is not an admission pass to every building.",
       "⚓ To board USS Constitution, adults 18+ need valid physical photo ID or a passport and must clear security. The ship and nearby museum are operated separately.",
-      "🧳 With luggage or a pushchair, use MBTA’s accessible trip planner and lift alerts, rather than choosing a connection only because it is shortest on the map."
+      "🧳 With luggage or a pushchair, use MBTA’s accessible trip planner and lift alerts, rather than choosing a connection only because it is shortest on the map.",
+      "Boston’s Museum of Science: Omni Theater and Planetarium shows require their own timed tickets. Book the specific show you want and arrange your exhibitions around that block; check Exhibit Halls admission separately."
     ],
     "tips_pt": [
       "✈️ A Silver Line SL1 é gratuita dos terminais de Logan até South Station; não presuma que a volta ao aeroporto também seja grátis.",
@@ -467,7 +505,8 @@ const CITIES = [
       "🚶 A Freedom Trail tem cerca de 4 km entre Boston e Charlestown, marcada por uma linha vermelha.",
       "🚶 Percorrer a Freedom Trail por conta própria é gratuito; alguns interiores e tours guiados são pagos. A linha vermelha não é um ingresso para todos os prédios.",
       "⚓ Para embarcar no USS Constitution, maiores de 18 anos precisam de documento físico válido ou passaporte e inspeção de segurança. O navio e o museu próximo têm gestão separada.",
-      "🧳 Com malas ou carrinho, use o planejador acessível da MBTA e os alertas de elevadores, em vez de escolher a conexão só pela distância no mapa."
+      "🧳 Com malas ou carrinho, use o planejador acessível da MBTA e os alertas de elevadores, em vez de escolher a conexão só pela distância no mapa.",
+      "Museum of Science de Boston: Omni Theater e Planetarium exigem ingressos próprios com horário. Reserve a sessão desejada e organize as exposições ao redor desse intervalo; confira separadamente a entrada para Exhibit Halls."
     ]
   },
   {
@@ -498,7 +537,9 @@ const CITIES = [
       "✈️ Para llegar a la estación SeaTac/Airport desde la terminal, sigue el recorrido peatonal por el estacionamiento; añade ese tiempo al trayecto.",
       "🎟️ El pase regional ORCA de US$6 cubre viajes participantes de hasta US$3; servicios más caros pueden requerir saldo adicional.",
       "⛴️ En Seattle–Bainbridge Island, el pasaje de peatón se cobra al salir de Seattle; el regreso a pie desde Bainbridge no tiene otro cobro de pasajero. Los vehículos tienen reglas diferentes.",
-      "🐟 Entrar a Pike Place Market es gratuito. Los tours gastronómicos son opcionales y se pagan por separado; no necesitas uno para recorrer el mercado."
+      "🐟 Entrar a Pike Place Market es gratuito. Los tours gastronómicos son opcionales y se pagan por separado; no necesitas uno para recorrer el mercado.",
+      "Boeing Everett Factory Tour: reserva con anticipación y comprueba la altura mínima de 122 cm. No se permiten celulares, cámaras ni bolsos durante el recorrido; hay lockers gratuitos y recomiendan llegar 30 minutos antes.",
+      "The Museum of Flight ofrece entrada gratuita de 17:00 a 21:00 el primer jueves del mes. Si tu viaje coincide, comprueba la fecha en su calendario antes de pagar una visita diurna; es una actividad distinta del tour de la fábrica Boeing en Everett."
     ],
     "tips_en": [
       "🚆 Link 1/2 Line regular adult fare is $3 per trip, regardless of distance.",
@@ -506,7 +547,9 @@ const CITIES = [
       "✈️ Follow the walkway through the airport garage to SeaTac/Airport station; add that walk to your journey time.",
       "🎟️ The $6 regional ORCA day pass covers eligible rides up to $3; higher fares may need extra stored value.",
       "⛴️ On Seattle–Bainbridge Island, walk-on passenger fares are collected in Seattle; the walk-on return from Bainbridge has no further passenger charge. Vehicles follow different rules.",
-      "🐟 Pike Place Market has free admission. Food tours are optional paid experiences; you do not need one to explore the market."
+      "🐟 Pike Place Market has free admission. Food tours are optional paid experiences; you do not need one to explore the market.",
+      "Boeing Everett Factory Tour: book ahead and check the 122 cm/48 in minimum height. Phones, cameras and bags are not allowed on the tour; free lockers are provided and arrival 30 minutes early is recommended.",
+      "The Museum of Flight offers free admission from 5–9 pm on the first Thursday of the month. If your trip overlaps, check its calendar before buying a daytime visit; it is a different activity from the Boeing factory tour in Everett."
     ],
     "tips_pt": [
       "🚆 Link linhas 1 e 2: tarifa regular de adulto US$3 por viagem, sem depender da distância.",
@@ -514,7 +557,9 @@ const CITIES = [
       "✈️ Siga a passagem pelo estacionamento até a estação SeaTac/Airport; inclua essa caminhada no tempo de trajeto.",
       "🎟️ O passe regional ORCA de US$6 cobre viagens participantes de até US$3; serviços mais caros podem exigir saldo extra.",
       "⛴️ Em Seattle–Bainbridge Island, o passageiro a pé paga saindo de Seattle; a volta a pé de Bainbridge não cobra outra passagem. Veículos têm regras diferentes.",
-      "🐟 A entrada no Pike Place Market é gratuita. Tours gastronômicos são opcionais e pagos à parte; não são necessários para conhecer o mercado."
+      "🐟 A entrada no Pike Place Market é gratuita. Tours gastronômicos são opcionais e pagos à parte; não são necessários para conhecer o mercado.",
+      "Boeing Everett Factory Tour: reserve com antecedência e confira a altura mínima de 122 cm. Celulares, câmeras e bolsas não são permitidos no passeio; há armários gratuitos e a recomendação é chegar 30 minutos antes.",
+      "The Museum of Flight oferece entrada gratuita das 17h às 21h na primeira quinta-feira do mês. Se coincidir com a viagem, confira o calendário antes de pagar uma visita diurna; é uma atividade diferente do tour da fábrica Boeing em Everett."
     ]
   },
   {
@@ -545,7 +590,8 @@ const CITIES = [
       "🚋 Para explorar St. Charles Avenue y el área del Garden District, revisa la ruta St. Charles y sus avisos de servicio.",
       "🌳 Las rutas Canal/Cemeteries y Canal/City Park tienen destinos distintos; revisa el cartel antes de subir.",
       "✈️ Desde MSY, RTA opera el Airport Express 202. No confundas su boleto o pase con los de JET: para combinar ambas redes, el aeropuerto indica que se necesita Regional Ride u otro pago separado.",
-      "☕ Si vas al Café du Monde original del French Market, lleva efectivo: su carta oficial indica “Cash Only”. No supongas que podrás pagar los beignets con tarjeta."
+      "☕ Si vas al Café du Monde original del French Market, lleva efectivo: su carta oficial indica “Cash Only”. No supongas que podrás pagar los beignets con tarjeta.",
+      "Audubon: Aquarium e Insectarium se ofrecen juntos en una entrada; el Zoo tiene su propio ticket y existe un combo para los tres. Compara esos productos según lo que realmente vas a visitar y revisa la vigencia del combo antes de repartir las visitas entre días."
     ],
     "tips_en": [
       "🎫 RTA regular bus/streetcar fare is $1.25; a one-day pass costs $3.",
@@ -553,7 +599,8 @@ const CITIES = [
       "🚋 For St. Charles Avenue and the Garden District area, check the St. Charles route and its service alerts.",
       "🌳 Canal/Cemeteries and Canal/City Park have different destinations; check the sign before boarding.",
       "✈️ RTA runs Airport Express 202 from MSY. Do not assume its ticket/pass covers JET: the airport specifies Regional Ride for both networks, or separate fares.",
-      "☕ Bring cash to the original French Market Café du Monde: its official menu says “Cash Only”. Do not rely on a card for your beignets."
+      "☕ Bring cash to the original French Market Café du Monde: its official menu says “Cash Only”. Do not rely on a card for your beignets.",
+      "Audubon: Aquarium and Insectarium are offered together on one ticket; the Zoo has its own ticket and a three-attraction combo is available. Compare products for the places you will actually visit and check combo validity before splitting visits across days."
     ],
     "tips_pt": [
       "🎫 RTA: ônibus ou streetcar regular US$1,25; passe de um dia US$3.",
@@ -561,7 +608,8 @@ const CITIES = [
       "🚋 Para St. Charles Avenue e a região do Garden District, confira a rota St. Charles e os avisos de serviço.",
       "🌳 Canal/Cemeteries e Canal/City Park têm destinos diferentes; confira a placa antes de embarcar.",
       "✈️ A RTA opera o Airport Express 202 saindo do MSY. Não presuma integração com JET: o aeroporto indica Regional Ride para ambas as redes ou pagamentos separados.",
-      "☕ Leve dinheiro ao Café du Monde original do French Market: o cardápio oficial informa “Cash Only”. Não conte com cartão para os beignets."
+      "☕ Leve dinheiro ao Café du Monde original do French Market: o cardápio oficial informa “Cash Only”. Não conte com cartão para os beignets.",
+      "Audubon: Aquarium e Insectarium são oferecidos juntos em um ingresso; o Zoo tem ingresso próprio e há combo para os três. Compare os produtos conforme o que realmente pretende visitar e confira a validade do combo antes de dividir as visitas entre dias."
     ]
   },
   {
@@ -592,7 +640,8 @@ const CITIES = [
       "🚆 La A Line conecta DEN con Union Station en unos 37 minutos; añade el tiempo para llegar al andén.",
       "🚌 El shuttle FreeRide de 16th Street es gratuito. Revisa sus paradas y cualquier desvío del día.",
       "🎵 Red Rocks permite visitas por cuenta propia sin pagar entrada ni estacionamiento cuando no hay evento. En días de concierto el anfiteatro puede cerrar temprano: confirma el acceso de ese día, no la hora del show.",
-      "🏔️ Para una excursión a Rocky Mountain National Park, comprueba si tu fecha y sector requieren Timed Entry y si incluye Bear Lake Road. El permiso de horario y la entrada al parque son requisitos distintos."
+      "🏔️ Para una excursión a Rocky Mountain National Park, comprueba si tu fecha y sector requieren Timed Entry y si incluye Bear Lake Road. El permiso de horario y la entrada al parque son requisitos distintos.",
+      "Denver Museum of Nature & Science: en sus Free Days y Free Nights no hace falta ticket para la entrada general. El Gates Planetarium, el Sturm Infinity Theater y las exposiciones temporales requieren entradas aparte; un día gratuito no incluye automáticamente esas experiencias."
     ],
     "tips_en": [
       "🎫 Standard RTD fares: $2.75 for 3 hours or $5.50 for a day; airport travel needs the appropriate fare.",
@@ -600,7 +649,8 @@ const CITIES = [
       "🚆 The A Line links DEN and Union Station in about 37 minutes; add time to reach the platform.",
       "🚌 The 16th Street FreeRide shuttle is free; check its stops and current detours.",
       "🎵 Red Rocks allows free self-guided visits and parking on non-event days. On concert days the amphitheatre can close early; check daytime access, not just showtime.",
-      "🏔️ For Rocky Mountain National Park, check whether your date/area needs Timed Entry and whether it includes Bear Lake Road. A time reservation and park admission are separate requirements."
+      "🏔️ For Rocky Mountain National Park, check whether your date/area needs Timed Entry and whether it includes Bear Lake Road. A time reservation and park admission are separate requirements.",
+      "Denver Museum of Nature & Science: Free Days and Free Nights require no general admission ticket. Gates Planetarium, Sturm Infinity Theater and temporary exhibitions need separate tickets; a free day does not automatically include those experiences."
     ],
     "tips_pt": [
       "🎫 RTD regular: US$2,75 por 3 h ou US$5,50 por dia; aeroporto exige a tarifa correspondente.",
@@ -608,7 +658,8 @@ const CITIES = [
       "🚆 A A Line liga DEN a Union Station em cerca de 37 minutos; acrescente o tempo até a plataforma.",
       "🚌 O shuttle FreeRide da 16th Street é gratuito; confira os pontos e desvios do dia.",
       "🎵 O Red Rocks permite visita por conta própria e estacionamento gratuitos em dias sem evento. Em dias de show, o anfiteatro pode fechar cedo; confira o acesso diurno, não só o horário do espetáculo.",
-      "🏔️ Para Rocky Mountain National Park, confira se a data/área exige Timed Entry e se inclui Bear Lake Road. A reserva de horário e a entrada do parque são requisitos separados."
+      "🏔️ Para Rocky Mountain National Park, confira se a data/área exige Timed Entry e se inclui Bear Lake Road. A reserva de horário e a entrada do parque são requisitos separados.",
+      "Denver Museum of Nature & Science: nos Free Days e Free Nights não é preciso ingresso para a entrada geral. Gates Planetarium, Sturm Infinity Theater e exposições temporárias exigem ingressos separados; o dia gratuito não inclui automaticamente essas experiências."
     ]
   }
 ];
@@ -627,7 +678,7 @@ window.renderCityTip = function(text) {
   const match = text.match(/^\s*(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*)\s*/u);
   const clean = match ? text.slice(match[0].length) : text;
   const escaped = clean.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const icon = window.uiTipIcon?.(match ? match[1] : /Disney|Universal|Hogwarts/.test(clean) ? "ferris" : "bulb", 16) || "";
+  const icon = window.uiTipIcon?.(match ? match[1] : /Disney|Universal|Hogwarts|SeaWorld|LEGOLAND|Knott/.test(clean) ? "ferris" : /Kennedy|Intrepid|Udvar.Hazy|Boeing|Museum of Flight|Discovery/.test(clean) ? "plane" : /Sphere|Omni Theater/.test(clean) ? "film" : "bulb", 16) || "";
   return icon + " " + escaped;
 };
 window.renderCityGrid = function renderCityGrid() {
