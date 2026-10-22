@@ -965,21 +965,19 @@ async function handleTranslateText(body, env) {
   return json(result);
 }
 
-// Pide a Google Translate la versión "en" (que de paso detecta el idioma de origen),
-// guarda el texto original tal cual para su propio idioma, y solo llama a Google de
-// nuevo para los idiomas que todavía faltan (como mucho 3 llamadas, típicamente 2).
+// Pide a Google Translate las 3 versiones (es, en, pt) en paralelo en vez de en
+// serie: antes se esperaba una llamada para arrancar la siguiente (hasta 2-3
+// round trips seguidos); ahora las 3 salen a la vez, así la latencia total es la
+// de 1 sola llamada. Cuesta 1 llamada extra a la API en el peor caso, pero el
+// texto es corto (nombre de categoría) y además se cachea en Firestore, así que
+// solo paga ese costo una vez por texto único.
 async function translateViaGoogle(text, apiKey) {
-  const first = await callGoogleTranslate(text, "en", apiKey);
-  const detected = (first.detected || "es").toLowerCase().slice(0, 2);
-  const out = { es: null, en: null, pt: null };
-  if (detected in out) out[detected] = text;
-  if (out.en === null) out.en = first.text;
-  for (const lang of ["es", "pt"]) {
-    if (out[lang] !== null) continue;
-    const r = await callGoogleTranslate(text, lang, apiKey);
-    out[lang] = r.text;
-  }
-  return out;
+  const [es, en, pt] = await Promise.all([
+    callGoogleTranslate(text, "es", apiKey),
+    callGoogleTranslate(text, "en", apiKey),
+    callGoogleTranslate(text, "pt", apiKey)
+  ]);
+  return { es: es.text, en: en.text, pt: pt.text };
 }
 
 async function callGoogleTranslate(text, target, apiKey) {
