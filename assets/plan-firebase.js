@@ -332,7 +332,7 @@ async function startApp() {
   listenTripDocuments();
   initialPlanningCallbacks.clear();
   const fields={"hotel": ["_hotelFromFb", null], "days": ["_daysFromFb", "days"], "visited": ["_visitedFromFb", "visited"], "meals": ["_mealsFromFb", "meals"], "walmart": ["_wmDataFromFb", "data"], "wmChecked": ["_wmCheckedFromFb", "checked"], "shopping": ["_shopFromFb", null], "customParks": ["_customParksFromFb", "items"], "parquesExtra": ["_parquesExtraFromFb", null], "coordOverrides": ["_coordOverridesFromFb", null], "parques": ["_parquesFromFb", "state"], "budget": ["_budgetFromFb", null], "itinerario": ["_itinFromFb", null], "tips": ["_tipsFromFb", null], "parquesExcel": ["_parquesExcelFromFb", null], "reservations": ["_reservationsFromFb", null]};
-  const loading=window.PlanLoading.create(id=>fbGet(id,true),(id,data)=>{
+  const loading=window.PlanLoading.create(id=>fbGet(id,true).catch(e=>{(window._planLoadErrors=window._planLoadErrors||{})[id]=(e&&(e.code||e.message))||"error";throw e;}),(id,data)=>{
     if(generation!==planGeneration)return;
     const [name,field]=fields[id];
     if(data)window[name]=field?data[field]:data;

@@ -258,6 +258,7 @@ window.changeLanguage = lang => {
     if (t[k]) el.placeholder = t[k];
   });
   renderRoutePlanning();
+  try { renderStops(); } catch (e) {}
   if (window.taxieUpdateLang) window.taxieUpdateLang(lang);
 };
 

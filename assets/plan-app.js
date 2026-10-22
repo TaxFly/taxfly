@@ -2246,8 +2246,9 @@ function planPanelPending(section) {
   const error=required.some(id=>states[id]==="error");
   const message=window.I18N?.t(error?"No se pudo actualizar.":"Cargando…") || (error?"No se pudo actualizar.":"Cargando…");
   panel.dataset.planWaiting="true";panel.setAttribute("aria-busy",String(!error));
+  const detail=error?" ("+required.filter(id=>states[id]==="error").map(id=>id+(window._planLoadErrors?.[id]?": "+window._planLoadErrors[id]:"")).join(", ")+")":"";
   const retry=error?`<button type="button" class="wm-reset-btn" onclick="window.retryPlanningLoads?.()">${escapeHtml(window.I18N?.t("Reintentar")||"Reintentar")}</button>`:"";
-  panel.innerHTML=(section==="outlets"?outletTabsHTML():"")+`<div class="budget-note" role="status" style="min-height:180px">${escapeHtml(message)} ${retry}</div>`;
+  panel.innerHTML=(section==="outlets"?outletTabsHTML():"")+`<div class="budget-note" role="status" style="min-height:180px">${escapeHtml(message+detail)} ${retry}</div>`;
   return true;
 }
 window.planPanelPending=planPanelPending;
@@ -5973,6 +5974,16 @@ async function pkVerifyParkCoords(parkId) {
   renderParques();
   showMToast(`Corregidas ${found} de ${targets.length}`);
 }
+
+// Contenido creado por el usuario (comidas, supermercado, compras de outlets, notas del
+// itinerario): se vuelve a dibujar con el idioma nuevo, salvo que haya un formulario abierto.
+window.I18N?.onChange(() => {
+  const ae = document.activeElement;
+  if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && ae.closest("[id^='panel-']")) return;
+  for (const fn of [window.renderComidas, window.renderWalmart, window.renderOutlets, window.renderParques]) {
+    try { if (typeof fn === "function") fn(); } catch (e) {}
+  }
+});
 
 // Refresh only generated labels; keep forms, selected day and personal text intact.
 function refreshItineraryLabels() {

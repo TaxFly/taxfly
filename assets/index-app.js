@@ -1010,6 +1010,13 @@ const WI = {
   99: "🌪️"
 };
 
+const WX_ICON = {
+  0: "sun", 1: "cloudSun", 2: "cloudSun", 3: "cloud", 45: "fog", 48: "fog",
+  51: "rain", 53: "rain", 55: "rain", 61: "rain", 63: "rain", 65: "rain",
+  71: "snow", 73: "snow", 75: "snow", 80: "rain", 81: "rain", 82: "rain",
+  95: "zap", 96: "zap", 99: "zap"
+};
+
 const WIND_DIR = [ "N", "NE", "E", "SE", "S", "SO", "O", "NO" ];
 
 function sharedCacheGet(key, ttlMs) {
@@ -1044,11 +1051,11 @@ function renderWeather(r, lang) {
   if (!body) return;
   const wmoMap = lang === "en" ? WMO_EN : lang === "pt" ? WMO_PT : WMO;
   const desc = wmoMap[r.code] || wmoMap[0];
-  const icon = WI[r.code] || "🌡️";
+  const icon = window.uiIcon(WX_ICON[r.code] || "thermo", 44);
   const feelsLbl = lang === "en" ? "Feels like" : lang === "pt" ? "Sensação" : "Sensación";
   const humLbl = lang === "en" ? "Humidity" : lang === "pt" ? "Umidade" : "Humedad";
   const windLbl = lang === "en" ? "Wind" : lang === "pt" ? "Vento" : "Viento";
-  body.innerHTML = '<div class="ww-main">' + '<div class="ww-icon">' + icon + "</div>" + '<div class="ww-info">' + '<div class="ww-temp">' + r.tempF + "°<span>F / " + r.tempC + "°C</span></div>" + '<div class="ww-city">' + (r.displayName || "—") + "</div>" + '<div class="ww-desc">' + desc + "</div>" + "</div>" + "</div>" + '<div class="ww-extras">' + '<div class="ww-extra"><span>🌡️</span><span>' + feelsLbl + ": " + r.feelsF + "°F</span></div>" + '<div class="ww-extra"><span>💧</span><span>' + humLbl + ": " + r.humidity + "%</span></div>" + '<div class="ww-extra"><span>💨</span><span>' + windLbl + ": " + r.wind + " mph</span></div>" + "</div>";
+  body.innerHTML = '<div class="ww-main">' + '<div class="ww-icon">' + icon + "</div>" + '<div class="ww-info">' + '<div class="ww-temp">' + r.tempF + "°<span>F / " + r.tempC + "°C</span></div>" + '<div class="ww-city">' + (r.displayName || "—") + "</div>" + '<div class="ww-desc">' + desc + "</div>" + "</div>" + "</div>" + '<div class="ww-extras">' + '<div class="ww-extra"><span>' + window.uiIcon("thermo", 16) + '</span><span>' + feelsLbl + ": " + r.feelsF + "°F</span></div>" + '<div class="ww-extra"><span>' + window.uiIcon("droplet", 16) + '</span><span>' + humLbl + ": " + r.humidity + "%</span></div>" + '<div class="ww-extra"><span>' + window.uiIcon("wind", 16) + '</span><span>' + windLbl + ": " + r.wind + " mph</span></div>" + "</div>";
   const refreshBtn = document.querySelector(".ww-refresh");
   if (refreshBtn) refreshBtn.classList.remove("spinning");
 }
