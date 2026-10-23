@@ -405,6 +405,10 @@ function openDB() {
     r.onupgradeneeded = () => r.result.createObjectStore("kv");
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
+    // Without this, a second tab holding the DB open can leave this request stuck
+    // forever in the "blocked" state (neither onsuccess nor onerror ever fires),
+    // which is exactly the kind of thing that looks like "Cargando..." with no way out.
+    r.onblocked = () => rej(new Error("accesorios-camaras: indexedDB bloqueada por otra pestaña"));
   });
 }
 
@@ -1559,25 +1563,38 @@ window.addEventListener("storage", e => { if(e.key?.startsWith("trip-planning-ac
 render();
 
 function esperarFirebaseReady(timeoutMs) {
+  // Bug fixed here: the previous version stopped polling the instant
+  // window._misCosasReady existed, and just awaited it directly from then on —
+  // so if that promise never settled (e.g. hydrate()/Firestore hanging the way a
+  // blocked App Check call already does elsewhere in this app, per grupo.html),
+  // the caller's 8s timeout was silently defeated and the UI stayed on
+  // "Cargando tu lista…" forever instead of falling back to iniciarLocal().
+  // Now the timeout always wins the race, whichever branch is taken.
   return new Promise(resolve => {
+    let done = false;
+    const finish = v => { if (done) return; done = true; resolve(v); };
     const t0 = Date.now();
     (function poll() {
-      if (window._misCosasReady) {
-        window._misCosasReady.then(resolve).catch(() => resolve(null));
-        return;
-      }
-      if (Date.now() - t0 > timeoutMs) {
-        resolve(null);
-        return;
-      }
+      if (done) return;
+      if (window._misCosasReady) window._misCosasReady.then(finish).catch(() => finish(null));
+      if (Date.now() - t0 > timeoutMs) { finish(null); return; }
       setTimeout(poll, 50);
     })();
   });
 }
 
 (async () => {
-  const listo = await esperarFirebaseReady(8e3);
-  if (listo && listo.DB) iniciarNube(listo.DB); else iniciarLocal();
+  let listo = null;
+  try { listo = await esperarFirebaseReady(8e3); } catch (_) { listo = null; }
+  try {
+    if (listo && listo.DB) iniciarNube(listo.DB); else iniciarLocal();
+  } catch (e) {
+    // Belt and braces: if either path throws before it sets modo and calls
+    // render(), fall back to local mode rather than leaving "Cargando tu
+    // lista…" on screen with no way out.
+    console.error("mis-cosas: fallo al iniciar, cayendo a modo local", e);
+    try { iniciarLocal(); } catch (_) { modo = "local"; render(); }
+  }
 })();
 
 function updateMisFilterArrows() {

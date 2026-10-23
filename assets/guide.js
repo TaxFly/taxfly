@@ -24,13 +24,37 @@
   const root=document.createElement('dialog');root.className='tfg-root';root.id='taxfly-guide';root.setAttribute('data-notr','');root.setAttribute('aria-labelledby','tfg-title');root.setAttribute('aria-describedby','tfg-description');
   root.innerHTML='<div class="tfg-shade"></div><div class="tfg-spot" hidden></div><section class="tfg-card"></section>';document.body.appendChild(root);
   const card=root.querySelector('.tfg-card'),spot=root.querySelector('.tfg-spot');
-  const launch=document.createElement('button');launch.type='button';launch.id='taxfly-help-button';launch.className='tfg-launch';launch.setAttribute('data-notr','');launch.onclick=()=>openHub();
-  function mountLaunch(){
-    if(launch.isConnected)return;
-    const settings=$('#btnSettings');if(!settings)return;
-    if(settings.closest('nav'))settings.before(launch);
-    else {const tools=document.createElement('div');tools.className='tfg-header-actions';settings.before(tools);tools.append(launch,settings);}
+  // The companion belongs to the guide card; the header help button stays clear of chat.
+  const Pet=window.TaxflyMascot;let pet=null,petTimer=0;
+  // Floating "Guía de TaxUSA" launcher: mascot + label, bottom-right. Replaces the
+  // old question-mark icon that used to live inline in the nav next to the avatar.
+  const launch=document.createElement('button');launch.type='button';launch.id='taxfly-help-button';launch.className='tfg-launch-pill';launch.setAttribute('data-notr','');
+  launch.innerHTML='<span class="tfg-pill-pet" aria-hidden="true"></span><span class="tfg-pill-label"></span>';
+  launch.onclick=()=>openHub();
+  let launchPet=null;
+  // Known same-corner floating controls this launcher must never cover. Both were
+  // confirmed by a full-repo audit to be the only bottom-right / bottom-wide fixed
+  // controls in the app (mis-cosas.html's add button, rutas.html's day nav bar).
+  function blockers(){
+    return ['btnAdd','day-bottom-nav'].map(id=>document.getElementById(id)).filter(el=>{
+      if(!el||!el.isConnected)return false;
+      const cs=getComputedStyle(el);
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&el.getClientRects().length>0;
+    });
   }
+  function placeLaunch(){
+    if(!launch.isConnected)return;
+    let bottom=0;
+    for(const el of blockers()){const r=el.getBoundingClientRect();if(r.height)bottom=Math.max(bottom,window.innerHeight-r.top+8);}
+    if(bottom>0)launch.style.bottom=bottom+'px';else launch.style.removeProperty('bottom');
+  }
+  function mountLaunch(){
+    if(!launch.isConnected)document.body.appendChild(launch);
+    const label=launch.querySelector('.tfg-pill-label');if(label)label.textContent=t('guide');
+    if(Pet&&!launchPet){const host=launch.querySelector('.tfg-pill-pet');try{launchPet=Pet.create(host,{state:'idle',still:true});}catch(_){launchPet=null;}}
+    placeLaunch();
+  }
+  window.addEventListener('resize',placeLaunch);
   function dismissSettings(){
     if(!$('#settingsDrawer')?.classList.contains('open'))return;
     if(window.closeSettingsDrawer)window.closeSettingsDrawer();
@@ -38,12 +62,28 @@
     else window.toggleSettings?.();
   }
   mountLaunch();
+  const PET_STATE={welcome:'wave',hub:'idle',setup:'idle',review:'think',created:'cheer',complete:'cheer',message:'curious',tour:'point'};
+  function petScene(){
+    clearTimeout(petTimer);const host=card.querySelector('.tfg-pet');if(!Pet||!host)return;
+    try{
+      pet=pet||Pet.create(null,{state:'idle'});pet.mount(host);pet.setStill(false);pet.clearAim();pet.set(PET_STATE[phase]||'idle');
+      if(['welcome','created','complete'].includes(phase)){
+        const expected=phase;petTimer=setTimeout(()=>{if(root.open&&phase===expected)pet.hop(46);},260);
+      }
+      if(phase!=='tour')pet.talk(900);
+    }catch(_){pet?.destroy();pet=null;host.remove();}
+  }
+  function petAim(){
+    if(!pet||phase!=='tour'||!target?.isConnected)return;
+    const r=target.getBoundingClientRect();if(r.width)pet.pointAt(r.left+r.width/2,r.top+r.height/2);
+  }
   function button(action,label,primary=false){return `<button type="button" data-guide="${action}"${primary?' class="tfg-primary"':''}>${esc(t(label))}</button>`;}
   function item(id,label,small=''){return `<button type="button" class="tfg-item" data-tour="${id}">${icon(D.tours[id]?.icon||'bulb')}<span>${esc(label)}${small?`<small>${esc(small)}</small>`:''}</span>${icon('chevDown',15)}</button>`;}
   function shell(title,description,body='',actions=''){
     root.dataset.phase=phase;root.dataset.highlight='false';spot.hidden=true;target=null;card.style.cssText='';
-    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><h2 id="tfg-title" tabindex="-1">${esc(title)}</h2><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}`;
+    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-head">${Pet?'<div class="tfg-pet" aria-hidden="true"></div>':''}<h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}`;
     if(!root.open){returnFocus=document.activeElement;root.showModal();}
+    petScene();
     // Move focus when content changes, without letting automatic repositioning steal it.
     $('#tfg-title')?.focus({preventScroll:true});
   }
@@ -51,7 +91,7 @@
     if(busy)return;
     token++;if(save&&phase==='tour'&&tour){state.resume={section:tour,index};persist();}
     if(save&&phase==='welcome'){state.welcome=true;persist();}
-    restoreView();phase='';tour=null;target=null;
+    clearTimeout(petTimer);pet?.setStill(true);restoreView();phase='';tour=null;target=null;
     if(root.open)root.close();spot.hidden=true;returnFocus?.isConnected&&returnFocus.focus?.({preventScroll:true});renderHome();
   }
   function welcome(){syncScope();if(!ready())return false;phase='welcome';shell(t('welcome'),t(trips().length?'existing':'welcomeText'),' ',button('later','later')+button(trips().length?'home-tour':'setup',trips().length?'explore':'create',true));return true;}
@@ -80,7 +120,7 @@
   async function saveTrip(){
     if(busy||!ready()||!canEdit())return;
     const {fields,error}=C.tripFields(draft);if(error){setup();return;}
-    const c=context(),capturedScope=scope;busy=true;card.querySelectorAll('button').forEach(b=>b.disabled=true);$('#tfg-description').textContent=t('saving');root.setAttribute('aria-busy','true');
+    const c=context(),capturedScope=scope;busy=true;card.querySelectorAll('button').forEach(b=>b.disabled=true);$('#tfg-description').textContent=t('saving');root.setAttribute('aria-busy','true');pet?.set('think');
     try{
       const result=await window.TripContext.create(c.uid,c.profile,fields);
       if(capturedScope!==C.key(context()?.uid,context()?.profile)){syncScope();return;}
@@ -150,15 +190,34 @@
       }
     }
     shell(txt(step.title),txt(step.text),`<span class="tfg-step">${esc(t('step'))} ${index+1} ${esc(t('of'))} ${count}</span><div class="tfg-progress" role="progressbar" aria-label="${esc(t('guide'))}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index+1}"><span style="width:${(index+1)/count*100}%"></span></div><p class="tfg-notice" id="tfg-target-status" role="status">${esc(t('waiting'))}</p>`,(index?button('prev','back'):'')+button('pause','pause')+button('next',index===count-1?'finish':'next',true));
-    const started=Date.now();let prepared=false;
+    let prepared=false,settled=false,started=Date.now();
+    function notice(kind,text,retryable){
+      const n=$('#tfg-target-status');if(!n)return;
+      n.hidden=false;n.dataset.kind=kind;n.textContent=text;
+      if(retryable){
+        const b=document.createElement('button');b.type='button';b.textContent=t('retry');
+        b.style.cssText='margin-left:8px;border:0;background:transparent;color:inherit;text-decoration:underline;font:inherit;cursor:pointer;padding:0';
+        b.onclick=()=>{started=Date.now();settled=false;prepared=false;n.dataset.kind='';n.textContent=t('waiting');seek();};
+        n.appendChild(b);
+      }
+    }
     function seek(){
       if(seq!==token||!root.open||phase!=='tour')return;
       if(!prepared){try{prepared=applyView(step.view);}catch(_){prepared=false;}}
       const el=prepared?visibleElement(step.sel):null;
       const loading=file()==='planificacion.html'&&!window._appInited;
-      if(el&&!loading){target=el;$('#tfg-target-status').hidden=true;el.scrollIntoView({block:'center',behavior:'instant'});requestAnimationFrame(position);return;}
+      if(el&&!loading){target=el;const n=$('#tfg-target-status');if(n){n.hidden=true;n.dataset.kind='';}el.scrollIntoView({block:'center',behavior:'instant'});requestAnimationFrame(position);return;}
       if(Date.now()-started<6000){setTimeout(seek,120);return;}
-      $('#tfg-target-status').textContent=t('missing');
+      if(settled)return;settled=true;
+      // Distinguish *why* the step can't find its target instead of a single catch-all
+      // message, so the person knows whether to wait, that there is nothing to see yet,
+      // that their profile can't edit here, or that something actually broke.
+      if(!ready()||loading){notice('loading',t('waiting'),true);pet?.set('curious');return;}
+      if(!canEdit()){notice('denied',t('readOnly'));pet?.set('curious');return;}
+      const emptyHint=document.querySelector('.empty,[data-empty],#empty-state');
+      const emptyVisible=emptyHint&&!emptyHint.closest('[hidden]')&&getComputedStyle(emptyHint).display!=='none';
+      if(emptyVisible)notice('empty',t('emptySection'),true);else notice('error',t('errorSection'),true);
+      pet?.set('curious');
     }
     seek();
   }
@@ -172,6 +231,7 @@
     const ch=card.offsetHeight,cw=Math.min(380,w-32),below=r.bottom+14,above=r.top-ch-14;
     const y=below+ch<=h-12?below:above>=12?above:Math.max(12,h-ch-12);
     Object.assign(card.style,{position:'fixed',left:Math.max(16,Math.min(w-cw-16,r.left+r.width/2-cw/2))+'px',top:y+'px',width:cw+'px',maxHeight:(h-24)+'px'});
+    petAim();
   }
   function finish(){const id=tour;state.done=[...new Set([...state.done,id])];state.resume=null;persist();token++;tour=null;phase='complete';shell(t('complete'),t('completeText'),'',button('hub','more')+button('close','use',true));renderHome();}
   function renderHome(){
@@ -197,7 +257,7 @@
   function refresh(){syncScope();
     const settings=$('#settingsDrawer .sx-scroll');if(settings&&!$('#tfg-settings-help')){const help=document.createElement('button');help.id='tfg-settings-help';help.className='tfg-item';help.type='button';help.setAttribute('data-notr','');help.onclick=()=>{dismissSettings();openHub();};settings.appendChild(help);}
     if($('#tfg-settings-help'))$('#tfg-settings-help').innerHTML=icon('bulb',18)+`<span>${esc(t('guide'))}</span>`;
-    mountLaunch();launch.innerHTML=icon('helpCircle',20);launch.setAttribute('aria-label',t('guide'));launch.title=t('guide');renderHome();
+    mountLaunch();launch.setAttribute('aria-label',t('guide'));launch.title=t('guide');renderHome();
     if(root.open&&!busy){if(phase==='setup'){readDraft();setup();}else if(phase==='review')review();else if(phase==='hub')openHub();else if(phase==='welcome')welcome();else if(phase==='tour')renderStep();}
   }
   root.addEventListener('cancel',e=>{e.preventDefault();close();});
@@ -213,6 +273,11 @@
   // The native dialog traps keyboard focus; Escape pauses, including the welcome.
   let positioning=false;function queuePosition(){if(positioning||phase!=='tour')return;positioning=true;requestAnimationFrame(()=>{positioning=false;position();});}
   window.addEventListener('resize',queuePosition);window.addEventListener('scroll',queuePosition,true);window.visualViewport?.addEventListener('resize',queuePosition);
+  // Content that loads after the step is positioned (e.g. the weather card on tax.html
+  // filling in once fetchWeather() resolves) reflows the page without firing resize or
+  // scroll, which used to leave the highlight stuck over whatever ended up in its old
+  // spot. Watching body's box size catches that and re-measures the real target.
+  if(window.ResizeObserver){const ro=new ResizeObserver(()=>{queuePosition();placeLaunch();});ro.observe(document.body);}
   document.addEventListener('click',e=>{if(e.target.closest('.lang-opt,[data-lang]'))setTimeout(refresh,0);});
   document.addEventListener('click',e=>{if(e.target.closest('.tab,.plan-section-menu button,.plan-food-switch button'))setTimeout(renderHome,0);});
   window.addEventListener('storage',e=>{if(e.key==='appLang')refresh();if(e.key==='perfilActivoId'||e.key==='taxusa_offline_uid')syncScope();});
@@ -225,5 +290,5 @@
   },650);}
   window.TaxflyGuide={open:openHub,offerFirstTrip,start:id=>navigate(id),refresh};
   initialized=true;refresh();scheduleAuto();
-  let tries=0;const boot=setInterval(()=>{syncScope();renderHome();scheduleAuto();if(ready()||++tries>=40)clearInterval(boot);},1000);
+  let tries=0;const boot=setInterval(()=>{syncScope();renderHome();scheduleAuto();placeLaunch();if(ready()||++tries>=40)clearInterval(boot);},1000);
 })();

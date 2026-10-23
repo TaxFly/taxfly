@@ -16,7 +16,13 @@ body::before { background: transparent !important; }
 .taxfly-main-nav .more-dots{height:27px;display:flex;gap:3px;align-items:center;}
 .taxfly-main-nav .more-dot{width:3.5px;height:3.5px;border-radius:50%;background:currentColor;}
 .taxfly-main-nav.nav-bar>.btn-nav-more.open,.taxfly-main-nav.nav-bar>.btn-nav-more.is-current{background:var(--primary-dim,rgba(37,99,235,.12));color:var(--primary,#2563eb);}
-.taxfly-main-nav #btnSettings{width:36px!important;height:36px!important;min-width:36px!important;flex:none;margin-left:4px;align-self:center;border-radius:50%;}
+/* Single source of truth for the avatar/settings button once it's inside the shared
+   nav: every page used to rely on its own leftover class (.btn-nav-set, .icon-btn.av,
+   etc.) for cropping, so a profile photo could come out stretched or off-center
+   depending on which page you were on ("Mis cosas" included). Owning background-size/
+   position/overflow/border here — not just the box size — makes it identical everywhere. */
+.taxfly-main-nav #btnSettings{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;flex:none;margin-left:4px;align-self:center;padding:0!important;border-radius:50%!important;border:1.5px solid var(--border)!important;overflow:hidden!important;background-color:var(--surface)!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;}
+.taxfly-main-nav #btnSettings svg,.taxfly-main-nav #btnSettings i{width:18px;height:18px}
 .taxfly-main-nav .nav-dropdown{position:absolute;top:calc(100% + 10px);right:0;width:min(238px,calc(100vw - 40px));padding:6px;border:1.5px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:var(--shadow-lg);z-index:500;display:none;text-transform:none;letter-spacing:normal;}
 .taxfly-main-nav .nav-dropdown.show{display:block;}
 .taxfly-main-nav .dd-item{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:12px;text-align:left;text-decoration:none;color:var(--text);}
@@ -107,3 +113,9 @@ body::before { background: transparent !important; }
 .caps-name{display:flex;align-items:center;gap:6px;min-width:0;line-height:1.4}
 .caps-name .tf-category-icon{margin-right:0}
 .caps-row input{flex:0 0 auto;max-width:38%;min-width:76px;box-sizing:border-box}
+
+/* Leave room for both utility buttons on narrow navigation bars. */
+@media(max-width:599px){
+ .taxfly-main-nav.nav-bar>.btn-nav,.taxfly-main-nav.nav-bar>.btn-nav-more{min-height:64px}
+ .taxfly-main-nav.nav-bar>.btn-nav>span:last-child,.taxfly-main-nav.nav-bar .more-lbl{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center;line-height:1.25}
+}

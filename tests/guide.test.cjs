@@ -28,7 +28,7 @@ test('every guide and interface message has Spanish, English and Portuguese copy
  assert.doesNotMatch(read('assets/guide-data.js'),/\p{Extended_Pictographic}/u);
 });
 test('all signed-in screens load the same guide assets in dependency order and precache them',()=>{
- const assets=['guide-core.js','guide-data.js','guide-pages.js','guide.js'];
+ const assets=['guide-core.js','guide-data.js','guide-pages.js','mascot.js','guide.js'];
  for(const file of ['index.html','compras.html','planificacion.html','tickets.html','lugares.html','rutas.html','mis-cosas.html','grupo.html','tax.html','unidades.html']){
   const html=read(file);assert.ok(html.includes('assets/guide.css'));let last=-1;
   for(const name of assets){const at=html.indexOf('assets/'+name);assert.ok(at>last,file+name);last=at;}

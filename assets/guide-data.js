@@ -2,7 +2,7 @@
   'use strict';
   const copy={
     sectionHelp:['¿Primera vez en esta sección?','First time in this section?','Primeira vez nesta seção?'],
-    guide:['Guía de TaxFly','TaxFly guide','Guia do TaxFly'],close:['Cerrar guía','Close guide','Fechar guia'],later:['Ahora no','Not now','Agora não'],
+    guide:['Guía de TaxUSA','TaxUSA guide','Guia do TaxUSA'],close:['Cerrar guía','Close guide','Fechar guia'],later:['Ahora no','Not now','Agora não'],
     welcome:['Tu viaje empieza acá','Your trip starts here','Sua viagem começa aqui'],
     welcomeText:['Prepará lo esencial y descubrí las herramientas a tu ritmo. Podés salir y volver a esta guía cuando quieras.','Set up the essentials and discover the tools at your own pace. You can leave and return to this guide anytime.','Prepare o essencial e descubra as ferramentas no seu ritmo. Você pode sair e voltar ao guia quando quiser.'],
     existing:['Ya tenés viajes guardados. Te mostramos cómo aprovecharlos sin cambiar tus datos.','You already have saved trips. Discover how to use them without changing your data.','Você já tem viagens salvas. Veja como aproveitá-las sem alterar seus dados.'],
@@ -27,6 +27,9 @@
     use:['Usar esta sección','Use this section','Usar esta seção'],more:['Ver otras guías','See other guides','Ver outros guias'],
     waiting:['Esperando a que cargue esta sección…','Waiting for this section to load…','Aguardando esta seção carregar…'],
     missing:['Este bloque todavía no está disponible. Podés continuar la explicación o volver a la sección y reintentar desde Guía.','This area is not available yet. Continue the explanation, or return to the section and retry from Guide.','Este bloco ainda não está disponível. Continue a explicação ou volte à seção e tente novamente pelo Guia.'],
+    emptySection:['Esta sección todavía no tiene datos para mostrar. Podés continuar la explicación, salir y cargar algo acá, o reintentar.','This area has no data to show yet. Continue the explanation, exit to add something here, or retry.','Esta seção ainda não tem dados para mostrar. Continue a explicação, saia para adicionar algo aqui ou tente novamente.'],
+    errorSection:['No pudimos mostrar este elemento. Podés reintentar, continuar la explicación o salir y revisar la sección.','We could not show this item. Retry, continue the explanation, or exit and check the section.','Não foi possível mostrar este elemento. Tente novamente, continue a explicação ou saia e confira a seção.'],
+    retry:['Reintentar','Retry','Tentar novamente'],
     readOnly:['Este perfil puede consultar las guías. Para crear o editar viajes necesitás permiso de edición.','This profile can browse the guides. Editing permission is needed to create or edit trips.','Este perfil pode consultar os guias. Para criar ou editar viagens, é necessária permissão de edição.'],
     notReady:['Esperá a que terminen de cargar tu cuenta y tus viajes para crear uno nuevo.','Wait for your account and trips to finish loading before creating a new trip.','Aguarde o carregamento da conta e das viagens antes de criar uma nova.'],
     chooseTrip:['Mis viajes','My trips','Minhas viagens'],noDates:['Fechas para más adelante','Dates to be added later','Datas para depois']

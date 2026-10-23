@@ -96,7 +96,14 @@
     chevUp: '<path d="m6 15 6-6 6 6"/>',
     apple: '<path d="M12 7c-2-2-6-1-6 4 0 4 2 9 4 9 1 0 1-.5 2-.5s1 .5 2 .5c2 0 4-5 4-9 0-5-4-6-6-4Z"/><path d="M12 7c0-2 1-3 3-3"/>',
     shirt: '<path d="M8 3 3 6l2 3 3-1.2V21h8V7.8L19 9l2-3-5-3-2 2h-4Z"/>',
-    tooth: '<path d="M7 3.5c-2.5 0-4 2-4 4.5 0 2 1 3 1.5 5S5.5 20 7.5 20c1.8 0 1.5-4 4.5-4s2.7 4 4.5 4c2 0 2-4.5 3-6.5S21 10 21 8c0-2.5-1.5-4.5-4-4.5-2 0-3 1-5 1s-3-1-5-1Z"/>'
+    tooth: '<path d="M7 3.5c-2.5 0-4 2-4 4.5 0 2 1 3 1.5 5S5.5 20 7.5 20c1.8 0 1.5-4 4.5-4s2.7 4 4.5 4c2 0 2-4.5 3-6.5S21 10 21 8c0-2.5-1.5-4.5-4-4.5-2 0-3 1-5 1s-3-1-5-1Z"/>',
+    sunCloud: '<path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41"/><path d="M15.95 12.65a4 4 0 0 0-5.93-4.13"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/>',
+    fog: '<path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.24"/><path d="M16 17H7M17 21H9"/>',
+    drizzle: '<path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.24"/><path d="M8 19v1M8 14v1M16 19v1M16 14v1M12 21v1M12 16v1"/>',
+    snow: '<path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.24"/><path d="M8 15h.01M8 19h.01M12 17h.01M12 21h.01M16 15h.01M16 19h.01"/>',
+    storm: '<path d="M6 16.33A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.97"/><path d="m13 12-3 5h4l-3 5"/>',
+    wind: '<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>',
+    tornado: '<path d="M21 4H3M18 8H6M19 12H9M16 16h-6M11 20H9"/>'
   };
   window.UI_ICONS = ICONS;
   const svg = (name, size) => `<svg class="ui-ic" width="${size || 20}" height="${size || 20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.bulb}</svg>`;
@@ -244,7 +251,17 @@
     "🪑": "bed",
     "🎮": "play",
     "🎯": "search",
-    "🏬": "landmark"
+    "🏬": "landmark",
+    "☀": "sun",
+    "⛅": "sunCloud",
+    "🌫": "fog",
+    "🌦": "drizzle",
+    "🌨": "snow",
+    "❄": "snow",
+    "⛈": "storm",
+    "🌪": "tornado",
+    "💨": "wind",
+    "💧": "droplet"
   };
   window.uiTipIcon = (symbol, size=20) => svg(ICONS[symbol] ? symbol : EMOJI[norm(symbol)] || "bulb", size);
   const BY_HREF = [ [ /tax\.html/, "calculator", "blue" ], [ /compras\.html/, "bag", "violet" ], [ /itinerario\.html/, "pin", "green" ], [ /unidades\.html/, "bulb", "amber" ], [ /tickets\.html/, "file", "cyan" ], [ /grupo\.html/, "users", "indigo" ], [ /rutas\.html/, "map", "red" ], [ /Maps\//, "ferris", "teal" ], [ /index\.html|^\.?\/?$/, "home", "blue" ] ];
@@ -397,7 +414,7 @@
   }
   const LEAD_RE = /^(\s*)(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}[️‍\u{1F3FB}-\u{1F3FF}]*|[✓✕])(\s*)/u;
   const SKIP_TAGS = new Set([ "SCRIPT", "STYLE", "TEXTAREA", "OPTION", "SELECT", "TITLE", "INPUT", "NOSCRIPT" ]);
-  const ALWAYS = ".ios-step-icon,.crop-zoom-icon,.pc-emoji,.tip-icon,.btn-label,#sync-banner,#offlineBannerBody,#offline-group-banner span,#toast,.toast,#offline-toast,#offline-toast-msg,#sync-ok-toast,#export-toast,#reminder-toast,.park-emoji,.filter-btn,.subcat-btn,.member-chip,.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon,.h-thumb-placeholder,.cat-bar-name,.h-del,.act-del,.note-del,.member-del,.stop-row-del,.cart-item-del,.preview-remove,.close-scanner,.cam-close,.viewer-close,#ai-close,.ocr-btn-cancel,.rv-btn-close,.preview-pdf span";
+  const ALWAYS = ".ww-icon,.wc-icon,.ww-extra span,.wc-extra span,.ios-step-icon,.crop-zoom-icon,.pc-emoji,.tip-icon,.btn-label,#sync-banner,#offlineBannerBody,#offline-group-banner span,#toast,.toast,#offline-toast,#offline-toast-msg,#sync-ok-toast,#export-toast,#reminder-toast,.park-emoji,.filter-btn,.subcat-btn,.member-chip,.comp-store-emoji,.ai-chip,.t-icon,.group-emoji,.source-btn,.cam-capture,.viewer-btn,.action-btn,.cl-label,.frase-fonetica,.farma-tip,.badge-rx,.frases-tab,.stat-icon,.sheet-tag,.ocr-store-badge,.capture-btn,.cart-btn,.poo-badge,.code-badge,.slabel,.demo-chip,.calc-tab,.med-cat,.cat-icon,.h-thumb-placeholder,.cat-bar-name,.h-del,.act-del,.note-del,.member-del,.stop-row-del,.cart-item-del,.preview-remove,.close-scanner,.cam-close,.viewer-close,#ai-close,.ocr-btn-cancel,.rv-btn-close,.preview-pdf span";
   let staticEls = new WeakSet;
   const isStaticZone = el => {
     for (let n = el; n && n !== document.body; n = n.parentElement) {

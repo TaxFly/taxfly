@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .cat-grid{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
         .cat-btn{flex:1;min-width:0;padding:9px 6px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);font-size:.62rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
         .cat-btn .cat-icon{font-size:1.05rem;}
+        @media(max-width:420px){.cat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}.cat-btn{min-height:58px;white-space:normal;overflow-wrap:anywhere;padding:8px 4px}.cat-btn>span:last-child{max-width:100%;text-align:center}}
         .cat-btn.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
 
         
@@ -382,6 +383,7 @@ if ("serviceWorker" in navigator) {
 <script src="assets/guide-core.js" defer></script>
 <script src="assets/guide-data.js" defer></script>
 <script src="assets/guide-pages.js" defer></script>
+<script src="assets/mascot.js" defer></script>
 <script src="assets/guide.js" defer></script>
 </head>
 <body>
