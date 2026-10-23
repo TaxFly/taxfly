@@ -979,7 +979,6 @@ window.changeLanguage = lang => {
   if (typeof allGastos !== "undefined" && allGastos.length) renderDashboard(allGastos);
   try { renderBudgetCard(); renderCapsEditor(); } catch (e) {}
   try { if (typeof allGastos !== "undefined") renderGastosList(allGastos); } catch (e) {}
-  try { refreshAfterCatsChange(); } catch (e) {}
 };
 
 (function() {
@@ -1684,7 +1683,6 @@ window.saveEditGasto = async () => {
     return;
   }
   const patch = { nombre: nombre, valor: valor, cat: cat };
-  if (nombre !== g.nombre) patch.i18n = null; // el nombre cambió: se vuelve a traducir
   const before = { ...g };
   allGastos = allGastos.map(x => x.id === id ? { ...x, ...patch } : x);
   const cached = cargarGastosDesdeCache() || [];
@@ -1751,16 +1749,13 @@ const CAT_I18N_KEY = {
   "📦 Otros": "cat_other"
 };
 
-function stripCatEmoji(cat) {
-  return String(cat || "").replace(/^[\p{Extended_Pictographic}\u200d\ufe0f\s]+/u, "").trim();
-}
 function catColor(cat) {
-  return CAT_COLORS[cat] || CAT_COLORS[stripCatEmoji(cat)] || "#94a3b8";
+  return CAT_COLORS[cat] || "#94a3b8";
 }
 
 function catLabel(cat) {
   const lang = localStorage.getItem("appLang") || "es";
-  const key = CAT_I18N_KEY[cat] || CAT_I18N_KEY[stripCatEmoji(cat)];
+  const key = CAT_I18N_KEY[cat];
   return key && i18n[lang]?.[key] || cat;
 }
 function catLabelHtml(cat) {
@@ -2068,15 +2063,15 @@ function uiIconSvg(name) {
 
 function gastoItemHtml(g) {
   const cat = g.cat || "📦 Otros";
-  const customCat = customCats.find(c => c.name === cat || c.name === stripCatEmoji(cat));
+  const customCat = customCats.find(c => c.name === cat);
   const catIconHtml = customCat ? catIconSvg(customCat.icon) : uiIconSvg(autoCatIcon(cat));
-  const catDisplayLabel = customCat ? catLabel(cat) : catLabel(cat).replace(/^\S+\s*/, "");
+  const catDisplayLabel = customCat ? customCat.name : catLabel(cat).replace(/^\S+\s*/, "");
   const thumbHtml = g.thumb ? `<img class="h-thumb" src="${g.thumb}" alt="recibo" onclick="openReceiptViewer('${g.thumb}','${g.id}')">` : `<div class="h-thumb-placeholder">${catIconHtml}</div>`;
   const editLbl = esc(bt("aria_edit") + ": " + (g.nombre || ""));
   return `<div class="history-item" data-search-expense="${esc(g.id)}" style="border-left-color:${catColor(cat)}">
                 ${thumbHtml}
                 <div class="h-main" role="button" tabindex="0" aria-label="${editLbl}" onclick="editGasto('${g.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();editGasto('${g.id}')}">
-                    <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(window.trLabel ? trLabel(g, "nombre") : g.nombre)}${window.tfSyncBadge ? tfSyncBadge(g._pending || String(g.id).startsWith("local_") ? "pending" : "ok", true) : ""}</div>
+                    <div class="h-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.nombre)}${window.tfSyncBadge ? tfSyncBadge(g._pending || String(g.id).startsWith("local_") ? "pending" : "ok", true) : ""}</div>
                     <div style="font-size:.62rem;color:var(--text-dim);margin-top:1px;">${catDisplayLabel}</div>
                 </div>
                 <div class="h-right">
@@ -2084,31 +2079,6 @@ function gastoItemHtml(g) {
                     <button class="h-del" onclick="deleteGasto('${g.id}')" aria-label="${esc(bt("aria_delete"))}">✕</button>
                 </div>
             </div>`;
-}
-
-// Traduce en segundo plano los nombres de gastos sin traducir (mismo mecanismo que
-// Mis Cosas / Planificación): g.i18n.nombre = {es,en,pt}. Si falla, se ve el original.
-const _gastoTrTried = new Set();
-let _gastoTrRunning = false;
-async function backfillGastoNames(gastos) {
-  if (_gastoTrRunning || !window.trTranslate || window.trTranslate._tfPlaceholder) return;
-  if (!currentUser || !perfilId || !navigator.onLine) return;
-  const pend = (gastos || []).filter(g => g && g.nombre && !(g.i18n && g.i18n.nombre) && !String(g.id).startsWith("local_") && !_gastoTrTried.has(g.id)).slice(0, 25);
-  if (!pend.length) return;
-  _gastoTrRunning = true;
-  try {
-    for (const g of pend) {
-      _gastoTrTried.add(g.id);
-      const r = await window.trTranslate(g.nombre);
-      if (!r) continue;
-      const cur = allGastos.find(x => x.id === g.id);
-      if (!cur || cur.nombre !== g.nombre) continue; // se borró o editó mientras tanto
-      cur.i18n = { ...(cur.i18n || {}), nombre: r };
-      try { await updateDoc(doc(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos", g.id), { "i18n.nombre": r }); } catch (e) {}
-      try { guardarGastosEnCache(allGastos); } catch (e) {}
-      try { renderGastosList(allGastos); } catch (e) {}
-    }
-  } finally { _gastoTrRunning = false; }
 }
 
 function renderGastosList(gastos) {
@@ -2141,7 +2111,6 @@ function renderGastosList(gastos) {
     byKey[k].items.push(g);
   });
   c.innerHTML = groups.map(grp => `<section class="exp-day-card"><div class="exp-day-head"><span>${esc(dayLabel(grp.key, grp.ts))}</span><b>${amountLabel(grp.sub)}</b></div>` + grp.items.map(gastoItemHtml).join("") + `</section>`).join("");
-  setTimeout(() => backfillGastoNames(gastos), 0);
   updateBudgetDisplay(total);
   renderDashboard(gastos);
 }

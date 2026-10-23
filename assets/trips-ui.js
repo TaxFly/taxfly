@@ -154,6 +154,6 @@ onAuthStateChanged(getAuth(app),user=>{
   if(!user)return;uid=user.uid;profile=localStorage.getItem('perfilActivoId');if(!profile)return;
   window._taxflyTripUid=uid;window._taxflyTripProfile=profile;
   tc.hydrate(db,uid,profile,getDocs,collection,()=>{syncCard();if(dialog.open)renderDialog()}).then(()=>{
-    if(openFromHash||(!tc.readTrips(uid,profile).length&&tc.status(uid,profile).phase==='ready')){openFromHash=false;openManager()}
+    if(openFromHash){openFromHash=false;openManager()}else if(!tc.readTrips(uid,profile).length&&tc.status(uid,profile).phase==='ready'){if(!window.TaxflyGuide?.offerFirstTrip())openManager()}
   });
 });
