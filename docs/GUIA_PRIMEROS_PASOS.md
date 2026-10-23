@@ -1,41 +1,54 @@
-# Experiencia guiada de TaxFly
+# Guías de TaxUSA / TaxFly
 
-Versión integrada el 22 de octubre de 2026 sobre el ZIP de parques y atracciones v4.
+Versión 6, integrada el 22 de octubre de 2026.
 
-## Experiencia
+## Acceso permanente
 
-- Bienvenida opcional en Inicio después de cargar la cuenta y los viajes. Ofrece configurar el primer viaje o, si ya existen viajes, conocer la app. Cerrar o elegir «Ahora no» evita que se repita automáticamente en ese navegador para esa cuenta y perfil.
-- Asistente de dos pasos: datos del viaje y revisión antes de crear. Reutiliza `TripContext.create`, con nombre, primer destino y fechas opcionales. No usa datos de ejemplo ni crea gastos o reservas. Los destinos adicionales se administran desde Mis viajes.
-- Al crear el viaje se diferencia la sincronización confirmada del guardado local pendiente. Los siguientes accesos llevan a presupuesto, agenda y reservas.
-- Tarjeta opcional de primeros pasos en Inicio. Sus marcas «Guía vista» indican recorridos explicativos completados, no datos cargados. Se puede ocultar y desaparece al terminar las tres guías destacadas.
-- Quince recorridos, con 32 pasos en total, distribuidos por tarea: Inicio, presupuesto, gastos, agenda, reservas, outlets, comidas, supermercado, lugares, documentos, rutas, equipaje, grupo, calculadora y referencias.
-- En las secciones se ofrece una ayuda discreta sin abrir automáticamente un recorrido. Se puede descartar. Los recorridos se recuperan desde el botón Guía o desde Ajustes.
-- Español, inglés y portugués. Se conserva el texto ingresado si cambia el idioma durante la configuración.
-- Iconos SVG del catálogo compartido; temas claro y oscuro; adaptación a celular; movimiento reducido; diálogo nativo con teclado, foco controlado y Escape para pausar.
+El botón de ayuda es un signo de pregunta en SVG, junto a Ajustes en la cabecera o barra de navegación de cada pantalla. Se eliminó el acceso flotante inferior que se superponía con el chat de IA. Ambos accesos tienen funciones distintas y conservan su espacio. También se mantiene el acceso desde Ajustes cuando esa pantalla usa el panel compartido.
 
-## Continuidad y datos
+Abrir, repetir, pausar o retomar una guía está disponible aunque ya se haya completado. El recorrido no se limita a la primera visita.
 
-El avance se guarda localmente por versión, cuenta y perfil, separado del contenido del viaje. No se envía telemetría. Se pueden pausar y retomar los recorridos. La guía no se comparte automáticamente entre dispositivos.
+## Dos niveles de ayuda
 
-La guía espera los elementos visibles y evita señalar paneles que todavía están cargando. Si un elemento no aparece en seis segundos, muestra una alternativa para continuar o regresar a la sección. No confirma el guardado de un presupuesto, gasto o reserva por haber completado la explicación.
+1. **Conocer TaxUSA:** recorrido general de diez pasos que navega por Inicio, Calculadora, Gastos, Planificación, Documentos, Lugares, Rutas, Mis cosas, Grupo y Ayuda y referencias. El avance se conserva al cambiar de página. Atrás, pausa y reanudación funcionan sobre el recorrido completo.
+2. **Guías por pestaña:** explicaciones completas de cada pantalla. La pestaña actual aparece primero y las demás se pueden elegir desde el mismo menú. Cambian las subpestañas necesarias para mostrar cada bloque, sin ejecutar acciones de guardado, compras, borrado o IA.
 
-Crear un viaje requiere el permiso de edición que informa la app. Las guías de consulta siguen disponibles para perfiles de solo lectura. Esta integración no modifica la arquitectura de permisos preexistente ni las reglas del servidor.
+| Pestaña | Cobertura |
+| --- | --- |
+| Inicio | Viaje activo, accesos, presupuesto y preparación offline |
+| Calculadora | Precio individual, precio de etiqueta, categorías, estado/ciudad, ZIP y tasa manual, resultado, propina, guardar en Gastos, carrito y división de cuenta |
+| Gastos | Filtro de viaje, presupuesto, cotizaciones, carga y comprobantes, resumen y topes, talles y comparación |
+| Planificación | Agenda, atracciones, cronograma de outlets, lista de compras, comidas, supermercado, reservas y sus documentos/pagos |
+| Documentos | Viaje, agregar archivos, apertura, almacenamiento y vínculos |
+| Lugares | Ciudad y tips, actividades, búsqueda, notas y checklist |
+| Rutas | Punto de partida, importación desde Planificación, modos de entrada, paradas, generación y días |
+| Mis cosas | Viaje, secciones y bolsos, búsqueda/control y agregar elementos |
+| Grupo | Crear/unirse, gastos compartidos, balances y permisos |
+| Ayuda y referencias | Temperatura, otras medidas, farmacia y frases |
 
-## Archivos e instalación
+Hay 16 recorridos y 80 pasos en total: las diez guías por pestaña, el recorrido general y cinco ayudas específicas conservadas para accesos de tareas como presupuesto o primera reserva. El menú principal presenta el recorrido general y las diez pestañas.
 
-Copiar el contenido completo de `taxfly-main/` sobre el proyecto, incluyendo `sw.js`. Se conservan los tips, iconos y correcciones de Outlets de las versiones anteriores.
+## Bienvenida y continuidad
 
-- Nuevos: `assets/guide-core.js`, `assets/guide-data.js`, `assets/guide.js`, `assets/guide.css` y `tests/guide.test.cjs`.
-- Diez pantallas cargan la misma guía en orden de dependencias.
-- `assets/trips-ui.js` ofrece primero la bienvenida al crear el primer viaje desde Inicio y conserva el acceso habitual a Mis viajes.
-- `assets/profile-access.js` permite consultar la ayuda sin bloquear sus controles como si fueran ediciones; la creación verifica el permiso explícitamente.
-- Los cuatro recursos nuevos se incluyen en la precaché y se actualiza su versión.
+La bienvenida inicial sigue siendo opcional. El asistente de creación de viaje usa `TripContext.create`, con nombre, destino y fechas opcionales, y distingue guardado sincronizado de guardado local pendiente. No crea gastos ni reservas por ver una explicación.
+
+Las guías usan los tres idiomas: español, inglés y portugués. El progreso se guarda localmente por versión, cuenta y perfil; no se envía telemetría ni se sincroniza entre dispositivos. Ver una guía marca únicamente «Guía vista».
+
+Los recorridos que abren subpestañas restauran la vista inicial al cerrar cuando existe un adaptador de vista. No modifican campos para inventar datos de ejemplo. Si una sección no está disponible, muestran una explicación alternativa tras una espera limitada y permiten continuar o salir.
+
+Se mantienen el diálogo nativo, el control de foco, Escape para pausar, movimiento reducido, temas claro/oscuro y adaptación a celular. Las guías de consulta están disponibles para perfiles de solo lectura; crear un viaje verifica el permiso de edición. Las reglas de seguridad preexistentes del servidor no fueron modificadas.
+
+## Instalación
+
+Copiar todo el contenido de `taxfly-main/` sobre el proyecto, incluyendo `assets/guide-pages.js`, los demás recursos de guía y `sw.js`. La precaché incluye las cinco dependencias de la guía y su versión fue recalculada. Se conservan los tips, iconos y correcciones de Outlets anteriores.
 
 ## Validación
 
-- 53 pruebas relacionadas aprobadas, incluyendo separación de cuentas y perfiles, fechas, traducciones, inventario de tips, carga de Outlets y orden de dependencias.
-- Suite completa: 284 pruebas, 260 aprobadas y las mismas 24 fallidas del ZIP original, relativas a Europa y sus rutas o archivos ausentes.
-- Doce escenarios en Chromium con las plantillas reales de la app y servicios simulados: primera bienvenida, foco y Escape; creación única; sincronización pendiente; conservación de viajes existentes; pausa y reanudación; bienvenida EN y PT; perfil de consulta; parámetros desconocidos; recorrido de presupuesto; cambio de cuenta durante un guardado; cambio de idioma con formulario abierto; pantalla de 320 px y tema oscuro; normalización del paso de reanudación. Algunos escenarios reúnen varias comprobaciones. Cero errores de JavaScript observados.
-- Se inspeccionaron capturas de bienvenida y creación en celular, recorrido en escritorio y recorrido compacto con tema oscuro.
-- Estas pruebas de interfaz no verifican una sesión real de Firebase ni un despliegue en producción. El guardado usa la integración existente y no se publicaron cambios.
-- El ZIP final se verifica por CRC y se compara byte a byte con el proyecto después de extraerlo.
+- 54 pruebas relacionadas aprobadas.
+- Suite completa: 285 pruebas, 261 aprobadas y las mismas 24 fallidas que tenía el ZIP original, relativas a Europa y rutas/archivos ausentes.
+- 18 escenarios en Chromium con las plantillas y estilos reales y servicios simulados. Incluyen los escenarios anteriores de bienvenida, creación y sincronización pendiente, perfil de consulta, cambios de cuenta/idioma, pausa, parámetros y pantalla compacta.
+- Nuevas comprobaciones: botón junto a Ajustes sin superponerse al chat en 320, 390 y 1280 px; conservación al reconstruir el menú por idioma; separación del menú general/pestañas; Calculadora completa y repetición posterior; subpestañas de Gastos y Planificación; recorrido general entre las diez páginas con avance global. Cero errores de JavaScript observados.
+- Los recorridos de prueba no generaron compras ni gastos. Se comprobó la restauración de la vista de Calculadora después del recorrido.
+- Se inspeccionó la captura del nuevo acceso en celular.
+- No se verificó una sesión real de Firebase ni se publicó el proyecto.
+- El ZIP final se valida por CRC y comparación de todos los archivos extraídos con el proyecto original.

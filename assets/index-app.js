@@ -1039,7 +1039,6 @@ let weatherCache = {
   ts: 0
 };
 
-const wxTone = c => c <= 1 ? "#f59e0b" : c <= 48 ? "#94a3b8" : c <= 82 ? "#38bdf8" : "#a78bfa";
 function renderWeather(r, lang) {
   const body = document.getElementById("ww-body");
   if (!body) return;
@@ -1049,7 +1048,7 @@ function renderWeather(r, lang) {
   const feelsLbl = lang === "en" ? "Feels like" : lang === "pt" ? "Sensação" : "Sensación";
   const humLbl = lang === "en" ? "Humidity" : lang === "pt" ? "Umidade" : "Humedad";
   const windLbl = lang === "en" ? "Wind" : lang === "pt" ? "Vento" : "Viento";
-  body.innerHTML = '<div class="ww-main">' + '<div class="ww-icon" style="color:' + wxTone(r.code) + '">' + icon + "</div>" + '<div class="ww-info">' + '<div class="ww-temp">' + r.tempF + "°<span>F / " + r.tempC + "°C</span></div>" + '<div class="ww-city">' + (r.displayName || "—") + "</div>" + '<div class="ww-desc">' + desc + "</div>" + "</div>" + "</div>" + '<div class="ww-extras">' + '<div class="ww-extra"><span>🌡️</span><span>' + feelsLbl + ": " + r.feelsF + "°F</span></div>" + '<div class="ww-extra"><span>💧</span><span>' + humLbl + ": " + r.humidity + "%</span></div>" + '<div class="ww-extra"><span>💨</span><span>' + windLbl + ": " + r.wind + " mph</span></div>" + "</div>";
+  body.innerHTML = '<div class="ww-main">' + '<div class="ww-icon">' + icon + "</div>" + '<div class="ww-info">' + '<div class="ww-temp">' + r.tempF + "°<span>F / " + r.tempC + "°C</span></div>" + '<div class="ww-city">' + (r.displayName || "—") + "</div>" + '<div class="ww-desc">' + desc + "</div>" + "</div>" + "</div>" + '<div class="ww-extras">' + '<div class="ww-extra"><span>🌡️</span><span>' + feelsLbl + ": " + r.feelsF + "°F</span></div>" + '<div class="ww-extra"><span>💧</span><span>' + humLbl + ": " + r.humidity + "%</span></div>" + '<div class="ww-extra"><span>💨</span><span>' + windLbl + ": " + r.wind + " mph</span></div>" + "</div>";
   const refreshBtn = document.querySelector(".ww-refresh");
   if (refreshBtn) refreshBtn.classList.remove("spinning");
 }

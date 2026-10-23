@@ -1,11 +1,11 @@
 (function(root){
   'use strict';
   const VERSION=1;
-  const SECTIONS=['home','budget','expenses','planning','reservations','outlets','food','walmart','places','documents','routes','packing','group','tax','units'];
+  const SECTIONS=['home','budget','expenses','planning','reservations','outlets','food','walmart','places','documents','routes','packing','group','tax','units','overview'];
   const key=(uid,profile)=>'taxfly-guide::'+JSON.stringify([VERSION,uid,profile]);
   function clean(value){
     const s=value&&typeof value==='object'?value:{};
-    return {welcome:!!s.welcome,done:SECTIONS.filter(x=>Array.isArray(s.done)&&s.done.includes(x)),offers:SECTIONS.filter(x=>Array.isArray(s.offers)&&s.offers.includes(x)),resume:s.resume&&SECTIONS.includes(s.resume.section)&&Number.isInteger(s.resume.index)?{section:s.resume.section,index:Math.max(0,Math.min(10,s.resume.index))}:null};
+    return {welcome:!!s.welcome,done:SECTIONS.filter(x=>Array.isArray(s.done)&&s.done.includes(x)),offers:SECTIONS.filter(x=>Array.isArray(s.offers)&&s.offers.includes(x)),resume:s.resume&&SECTIONS.includes(s.resume.section)&&Number.isInteger(s.resume.index)?{section:s.resume.section,index:Math.max(0,Math.min(99,s.resume.index))}:null};
   }
   function tripFields(value){
     const name=String(value.name||'').trim().slice(0,80),city=String(value.city||'').trim().slice(0,80),state=String(value.state||'').trim().slice(0,80);

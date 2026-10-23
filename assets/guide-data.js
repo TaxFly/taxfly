@@ -2,7 +2,7 @@
   'use strict';
   const copy={
     sectionHelp:['¿Primera vez en esta sección?','First time in this section?','Primeira vez nesta seção?'],
-    guide:['Guía de TaxUSA','TaxUSA guide','Guia do TaxUSA'],close:['Cerrar guía','Close guide','Fechar guia'],later:['Ahora no','Not now','Agora não'],
+    guide:['Guía de TaxFly','TaxFly guide','Guia do TaxFly'],close:['Cerrar guía','Close guide','Fechar guia'],later:['Ahora no','Not now','Agora não'],
     welcome:['Tu viaje empieza acá','Your trip starts here','Sua viagem começa aqui'],
     welcomeText:['Prepará lo esencial y descubrí las herramientas a tu ritmo. Podés salir y volver a esta guía cuando quieras.','Set up the essentials and discover the tools at your own pace. You can leave and return to this guide anytime.','Prepare o essencial e descubra as ferramentas no seu ritmo. Você pode sair e voltar ao guia quando quiser.'],
     existing:['Ya tenés viajes guardados. Te mostramos cómo aprovecharlos sin cambiar tus datos.','You already have saved trips. Discover how to use them without changing your data.','Você já tem viagens salvas. Veja como aproveitá-las sem alterar seus dados.'],
@@ -33,7 +33,7 @@
   };
   const step=(sel,title,text)=>({sel,title,text});
   const tours={
-    home:{icon:'home',url:'index.html',name:['Conocer TaxUSA','Meet TaxUSA','Conhecer o TaxUSA'],steps:[
+    home:{icon:'home',url:'index.html',name:['Conocer TaxFly','Meet TaxFly','Conhecer o TaxFly'],steps:[
       step('#tf-trip-home',['Tu viaje activo','Your active trip','Sua viagem ativa'],['Verificá qué viaje está seleccionado antes de cargar información. Desde Mis viajes podés cambiarlo o editar sus destinos.','Check the selected trip before adding information. Use My trips to switch trips or edit destinations.','Confira a viagem selecionada antes de adicionar informações. Em Minhas viagens você pode trocar a viagem ou editar destinos.']),
       step('#sectionList',['Elegí tu próxima acción','Choose your next action','Escolha sua próxima ação'],['Empezá por Planificación para ordenar tus días, o por Documentos para reunir las reservas que ya tenés.','Start with Planning to organise your days, or Documents to gather the bookings you already have.','Comece pelo Planejamento para organizar os dias, ou por Documentos para reunir as reservas que já tem.']),
       step('.widget-budget',['Seguí tu presupuesto','Track your budget','Acompanhe seu orçamento'],['Este resumen lleva a Gastos. Ahí definís el presupuesto y registrás lo que vas pagando.','This summary opens Expenses. Set your budget and record payments there.','Este resumo abre Gastos. Lá você define o orçamento e registra pagamentos.']),
