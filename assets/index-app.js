@@ -1295,7 +1295,7 @@ window.changeProfile = () => {
   window.location.href = "profiles.html";
 };
 
-window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); window.location.replace("login.html"); });
+window.doLogout = () => signOut(auth).then(() => { window.taxflyClearOfflineUnlock(); for (const k of ["perfilActivoId","perfilActivoUid","perfilActivoNombre","perfilActivoFoto"]) localStorage.removeItem(k); window.location.replace("login.html"); });
 
 async function probeConnectivity() {
   const cached = sessionStorage.getItem("taxfly_connectivity");
@@ -1354,7 +1354,8 @@ onAuthStateChanged(auth, user => {
   if(!user){currentUser=null;homeGeneration++;homeStops.forEach(stop=>stop());homeReservationUnsub();homeEventStop();homeFinance=null;renderBudgetUI();}
   guardOfflineAuth(user, u => {
     currentUser = u;
-    if(!localStorage.getItem("perfilActivoId")){window.location.replace("profiles.html");return;}
+    // El perfil activo guardado tiene que ser de esta cuenta; si no, se va a crear/elegir perfil.
+    if(!localStorage.getItem("perfilActivoId")||localStorage.getItem("perfilActivoUid")!==u.uid){window.location.replace("profiles.html?auto=1");return;}
     window.taxflyOfflineStatus?.render(u.uid, localStorage.getItem("perfilActivoId"));
     const perfilNombre = localStorage.getItem("perfilActivoNombre");
     document.getElementById("userEmail").textContent = perfilNombre || u.email || "";

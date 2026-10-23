@@ -313,9 +313,8 @@ onAuthStateChanged(auth, async user => {
     profiles = account.perfiles || [];
     primaryProfileId = String(account.primaryProfileId || "");
     if (profiles.length === 0) {
-      profiles = [ { id: "p" + Date.now(), nombre: t.guest, foto: photos[0] } ];
-      primaryProfileId = profiles[0].id;
-      await setDoc(doc(db, "usuarios", uid), { perfiles: profiles, primaryProfileId }, { merge: true });
+      // Cuenta nueva (Google u otro método): no se inventa un perfil, la persona crea el suyo.
+      primaryProfileId = "";
     } else if (!profiles.some(p => p.id === primaryProfileId) && profiles.length === 1) {
       primaryProfileId = profiles[0].id;
       await setDoc(doc(db, "usuarios", uid), { primaryProfileId }, { merge: true });
@@ -328,7 +327,25 @@ onAuthStateChanged(auth, async user => {
     if (cached) profiles = cached;
   }
   render();
+  routeAfterLogin();
 });
+
+// Primer ingreso de la cuenta: sin perfiles se obliga a crear uno; con perfiles y venida desde el
+// inicio de sesión (?auto=1) se entra directo al último perfil usado en esta cuenta, y si no hay
+// uno válido se muestra el selector.
+let forceCreate = false;
+function routeAfterLogin() {
+  if (!profiles.length) {
+    forceCreate = true;
+    openEditor(null);
+    return;
+  }
+  if (new URLSearchParams(location.search).get("auto") !== "1") return;
+  let last = "";
+  try { last = localStorage.getItem("taxfly_last_profile_" + uid) || localStorage.getItem("perfilActivoId") || ""; } catch (e) {}
+  const p = profiles.find(x => x.id === last);
+  if (p) handleClick(p.id, p.nombre, p.foto);
+}
 
 function safeProfilePhoto(url) {
   if (typeof url !== "string") return photos[0];
@@ -455,6 +472,7 @@ window.handleClick = (id, nombre, fotoEnc) => {
   }
   const foto = safeProfilePhoto(fotoEnc);
   localStorage.setItem("perfilActivoId", id);
+  try { if (uid) { localStorage.setItem("perfilActivoUid", uid); localStorage.setItem("taxfly_last_profile_" + uid, id); } } catch (e) {}
   localStorage.setItem("perfilActivoNombre", nombre);
   localStorage.setItem("perfilActivoFoto", foto);
   let pending = null;
@@ -480,7 +498,10 @@ window.openEditor = id => {
   updatePreview();
   const grid = document.getElementById("photoGrid");
   grid.innerHTML = photos.map(url => `\n            <img src="${url}" alt="Foto de perfil" class="photo-option ${url === selectedPhoto ? "selected" : ""}"\n                 onclick="selectPhoto('${url}')">\n        `).join("");
+  const cancelBtn = document.getElementById("btnCancel");
+  if (cancelBtn) cancelBtn.style.display = (!id && forceCreate && !profiles.length) ? "none" : "";
   document.getElementById("editModal").classList.add("show");
+  if (!id && forceCreate && !profiles.length) setTimeout(() => document.getElementById("nameInput")?.focus(), 60);
 };
 
 window.selectPhoto = url => {
@@ -493,13 +514,17 @@ function updatePreview() {
   document.getElementById("previewAvatar").style.backgroundImage = `url('${selectedPhoto}')`;
 }
 
-window.closeModal = () => document.getElementById("editModal").classList.remove("show");
+window.closeModal = () => {
+  if (forceCreate && !profiles.length) return;
+  document.getElementById("editModal").classList.remove("show");
+};
 
 window.doLogout = async () => {
   try {
     await signOut(auth);
     window.taxflyClearOfflineUnlock();
     localStorage.removeItem("perfilActivoId");
+    localStorage.removeItem("perfilActivoUid");
     localStorage.removeItem("perfilActivoNombre");
     localStorage.removeItem("perfilActivoFoto");
     window.location.replace("login.html");

@@ -97,3 +97,13 @@ test('the guide card scrolls inside itself, never covers the target and the masc
  for(const name of used)assert.ok(poses.includes(name),name);
  assert.match(guide,/function stepMood/);assert.match(guide,/function react\(/);
 });
+
+test('first login forces profile creation, later logins go to the last profile of that account',()=>{
+ const prof=read('assets/profiles-app.js'),index=read('assets/index-app.js');
+ assert.doesNotMatch(prof,/nombre: t\.guest, foto: photos\[0\] \} \];\n\s+primaryProfileId = profiles\[0\]\.id/);
+ assert.match(prof,/function routeAfterLogin\(\)/);assert.match(prof,/forceCreate = true;\s+openEditor\(null\)/);
+ assert.match(prof,/taxfly_last_profile_/);assert.match(prof,/get\("auto"\) !== "1"/);
+ assert.match(prof,/perfilActivoUid/);
+ assert.match(index,/perfilActivoUid"\)!==u\.uid\)\{window\.location\.replace\("profiles\.html\?auto=1"\)/);
+ assert.match(index,/window\.doLogout = \(\) => signOut\(auth\)\.then\(\(\) => \{[^}]*perfilActivoId/);
+});
