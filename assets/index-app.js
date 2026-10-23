@@ -1212,6 +1212,7 @@ function renderSections() {
   const heading = { es:["Tu viaje","Planificación","Mis cosas"], en:["Your trip","Planning","My things"], pt:["Sua viagem","Planejamento","Minhas coisas"] }[lang] || ["Tu viaje","Planificación","Mis cosas"];
   document.getElementById("homePlanHeading").textContent = heading[0];
   list.replaceChildren();
+  list.removeAttribute("aria-busy");
   const cards = [
     {href:"tax.html", icon:"calculator", tone:"blue", name:lang === "en" ? "Calculator" : "Calculadora"},
     {href:"compras.html", icon:"bag", tone:"violet", name:sections.find(s=>s.href==="compras.html")?.name || "Gastos"},

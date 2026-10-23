@@ -30,7 +30,7 @@
   // old question-mark icon that used to live inline in the nav next to the avatar.
   const launch=document.createElement('button');launch.type='button';launch.id='taxfly-help-button';launch.className='tfg-launch-pill';launch.setAttribute('data-notr','');
   launch.innerHTML='<span class="tfg-pill-pet" aria-hidden="true"></span><span class="tfg-pill-label"></span>';
-  launch.onclick=()=>openHub();
+  launch.onclick=()=>openCurrent();
   let launchPet=null;
   // Known same-corner floating controls this launcher must never cover. Both were
   // confirmed by a full-repo audit to be the only bottom-right / bottom-wide fixed
@@ -79,9 +79,9 @@
   }
   function button(action,label,primary=false){return `<button type="button" data-guide="${action}"${primary?' class="tfg-primary"':''}>${esc(t(label))}</button>`;}
   function item(id,label,small=''){return `<button type="button" class="tfg-item" data-tour="${id}">${icon(D.tours[id]?.icon||'bulb')}<span>${esc(label)}${small?`<small>${esc(small)}</small>`:''}</span>${icon('chevDown',15)}</button>`;}
-  function shell(title,description,body='',actions=''){
+  function shell(title,description,body='',actions='',foot=''){
     root.dataset.phase=phase;root.dataset.highlight='false';spot.hidden=true;target=null;card.style.cssText='';
-    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-head">${Pet?'<div class="tfg-pet" aria-hidden="true"></div>':''}<h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}`;
+    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-head">${Pet?'<div class="tfg-pet" aria-hidden="true"></div>':''}<h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}${foot}`;
     if(!root.open){returnFocus=document.activeElement;root.showModal();}
     petScene();
     // Move focus when content changes, without letting automatic repositioning steal it.
@@ -130,17 +130,30 @@
       shell(t('ready'),t(result.synced===false?'pending':'saved'),`<div class="tfg-summary"><strong>${esc(result.trip.name)}</strong><span>${esc(fields.destinations[0].city)}, ${esc(fields.destinations[0].state)}</span></div><div class="tfg-list" style="margin-top:14px">${item('budget',t('budgetAction'))}${item('planning',t('planAction'))}${item('reservations',t('reservationAction'))}</div>`,button('finish-setup','use'));
     }catch(_){if(capturedScope!==C.key(context()?.uid,context()?.profile)){syncScope();return;}busy=false;root.removeAttribute('aria-busy');review();$('#tfg-error').textContent=t('saveError');}
   }
+  const PAGE_MAP={'index.html':'home','compras.html':'expenses','tickets.html':'documents','lugares.html':'places','rutas.html':'routes','mis-cosas.html':'packing','grupo.html':'group','tax.html':'tax','unidades.html':'units','planificacion.html':'planning'};
   function currentSection(){
-    const map={'index.html':'home','compras.html':'expenses','tickets.html':'documents','lugares.html':'places','rutas.html':'routes','mis-cosas.html':'packing','grupo.html':'group','tax.html':'tax','unidades.html':'units'};
+    const map=PAGE_MAP;
     if(file()==='planificacion.html'){const active=$('.section-panel.active, .panel.active');const s=new URLSearchParams(location.search).get('section');const section=active?.id?.replace('panel-','')||s,sections={reservas:'reservations',outlets:'outlets',comidas:'food',walmart:'walmart',lugares:'places'};return Object.hasOwn(sections,section)?sections[section]:'planning';}
     return map[file()]||'home';
   }
   function pageSection(){return file()==='planificacion.html'?'planning':currentSection();}
+  // Entering the guide from a tab always starts with that tab's own guide; the hub
+  // (other guides + the general tour) stays one tap away from the guide itself.
+  function openCurrent(){
+    syncScope();if(busy)return;
+    const id=Object.hasOwn(PAGE_MAP,file())?pageSection():'';
+    if(id&&hasTour(id)){navigate(id,state.resume?.section===id);return;}
+    openHub();
+  }
   function applyView(view){
     if(!view)return true;
     if(view.kind==='calc'){if(!window.switchCalcTab)return false;window.switchCalcTab(view.tab);}
     if(view.kind==='expense'){if(!window.showSec)return false;window.showSec(view.tab);if(view.tab==='gastos')window.toggleExp?.(true);}
     if(view.kind==='place'){if(!window.switchTab)return false;window.switchTab(view.tab);}
+    if(view.kind==='group'){
+      const panel=$('#s-grupo'),btn=document.querySelector('.tab-btn[onclick*="\''+view.tab+'\'"]');
+      if(panel&&getComputedStyle(panel).display!=='none'&&btn&&window.switchTab)window.switchTab(view.tab,btn);
+    }
     if(view.kind==='unit'){if(!window.toggleGroup)return false;if(!$('#'+view.group)?.classList.contains('open'))window.toggleGroup(view.group);}
     if(view.kind==='plan'){
       if(!window._appInited||!window.switchSection)return false;
@@ -159,12 +172,13 @@
       const sub=$('#panel-'+section+' .outlets-stab.active')?.getAttribute('onclick')||'';
       return {kind:'plan',section,tab:sub.match(/\('([^']+)'\)/)?.[1]};
     }
+    if(file()==='grupo.html')return {kind:'group',tab:document.querySelector('.tab-panel.active')?.id.replace('tab-','')||'gastos'};
     if(file()==='unidades.html')return {kind:'unit',group:$('.conv-group.open')?.id||'grp-temp'};
     return null;
   }
   function restoreView(){const view=originalView;originalView=null;if(view){try{applyView(view);if(view.kind==='expense')window.toggleExp?.(view.exp);}catch(_){}}}
   function samePage(id){const u=new URL(D.tours[id].url,location.href);if(u.pathname!==location.pathname&&!(home()&&u.pathname.endsWith('/index.html')))return false;
-    return file()!=='planificacion.html'||currentSection()===id;
+    return file()!=='planificacion.html'||id==='planning'||currentSection()===id;
   }
   function navigate(id,resume=false){
     if(!hasTour(id))return;
@@ -172,13 +186,15 @@
     const u=new URL(D.tours[id].url,location.href);u.searchParams.set('guide',id);if(resume)u.searchParams.set('guideStep',String(state.resume?.index||0));
     close(false);location.assign(u.href);
   }
-  function visibleElement(selector){return [...document.querySelectorAll(selector)].find(el=>!el.closest('[hidden]')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&getComputedStyle(el).display!=='none'&&el.getAttribute('aria-busy')!=='true'&&el.dataset.planWaiting!=='true');}
+  function visibleElement(selector,allowBusy){return [...document.querySelectorAll(selector)].find(el=>!el.closest('[hidden]')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&getComputedStyle(el).display!=='none'&&(allowBusy||el.getAttribute('aria-busy')!=='true')&&el.dataset.planWaiting!=='true');}
   function startTour(id,start=0){
     if(!hasTour(id))return;
     dismissSettings();
     if(!originalView)originalView=captureView();
     state.welcome=true;phase='tour';tour=id;index=Math.min(start,D.tours[id].steps.length-1);renderStep();
   }
+  // The general tour is the concatenation of every tab guide: these ranges let people jump between tabs.
+  function overviewMap(){let at=0;return D.pages.map(id=>{const n=D.tours[id].steps.length,r={id,start:at,end:at+n-1};at+=n;return r;});}
   function renderStep(){
     const seq=++token,step=D.tours[tour].steps[index],count=D.tours[tour].steps.length;
     state.resume={section:tour,index};persist();
@@ -189,7 +205,9 @@
         close(false);location.assign(destination.href);return;
       }
     }
-    shell(txt(step.title),txt(step.text),`<span class="tfg-step">${esc(t('step'))} ${index+1} ${esc(t('of'))} ${count}</span><div class="tfg-progress" role="progressbar" aria-label="${esc(t('guide'))}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index+1}"><span style="width:${(index+1)/count*100}%"></span></div><p class="tfg-notice" id="tfg-target-status" role="status">${esc(t('waiting'))}</p>`,(index?button('prev','back'):'')+button('pause','pause')+button('next',index===count-1?'finish':'next',true));
+    const map=tour==='overview'?overviewMap():null,cur=map?map.findIndex(r=>index>=r.start&&index<=r.end):-1;
+    const jump=map&&cur>=0?`<div class="tfg-jump"><label class="tfg-jump-label">${esc(t('jumpTo'))}<select data-jump>${map.map((r,i)=>`<option value="${r.start}"${i===cur?' selected':''}>${i+1}. ${esc(txt(D.tours[r.id].name))}</option>`).join('')}</select></label><button type="button" class="tfg-dismiss" data-guide="skip-tab">${esc(t(cur===map.length-1?'finish':'skipTab'))}</button></div>`:'';
+    shell(txt(step.title),txt(step.text),`<span class="tfg-step">${esc(t('step'))} ${index+1} ${esc(t('of'))} ${count}</span><div class="tfg-progress" role="progressbar" aria-label="${esc(t('guide'))}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index+1}"><span style="width:${(index+1)/count*100}%"></span></div>${jump}<p class="tfg-notice" id="tfg-target-status" role="status" hidden></p>`,(index?button('prev','back'):'')+button('pause','pause')+button('next',index===count-1?'finish':'next',true),`<div class="tfg-foot"><button type="button" class="tfg-dismiss" data-guide="hub">${esc(t('more'))}</button></div>`);
     let prepared=false,settled=false,started=Date.now();
     function notice(kind,text,retryable){
       const n=$('#tfg-target-status');if(!n)return;
@@ -204,19 +222,22 @@
     function seek(){
       if(seq!==token||!root.open||phase!=='tour')return;
       if(!prepared){try{prepared=applyView(step.view);}catch(_){prepared=false;}}
-      const el=prepared?visibleElement(step.sel):null;
+      const waited=Date.now()-started;
+      // A target still flagged busy (skeletons, background sync) is good enough after a moment.
+      const el=prepared?visibleElement(step.sel,waited>1200):null;
       const loading=file()==='planificacion.html'&&!window._appInited;
-      if(el&&!loading){target=el;const n=$('#tfg-target-status');if(n){n.hidden=true;n.dataset.kind='';}el.scrollIntoView({block:'center',behavior:'instant'});requestAnimationFrame(position);return;}
-      if(Date.now()-started<6000){setTimeout(seek,120);return;}
+      if(el&&!loading){target=el;const n=$('#tfg-target-status');if(n){n.hidden=true;n.textContent='';n.dataset.kind='';}el.scrollIntoView({block:'center',behavior:'instant'});requestAnimationFrame(position);return;}
+      // Stay silent at first; only mention the wait if it really drags on.
+      if(waited>1500&&!settled){const n=$('#tfg-target-status');if(n&&!n.textContent){n.hidden=false;n.dataset.kind='loading';n.textContent=t('waiting');}}
+      if(waited<(step.optional?400:4500)){setTimeout(seek,100);return;}
       if(settled)return;settled=true;
-      // Distinguish *why* the step can't find its target instead of a single catch-all
-      // message, so the person knows whether to wait, that there is nothing to see yet,
-      // that their profile can't edit here, or that something actually broke.
+      // Nothing to highlight: the explanation stays on screen, centred, without a red error.
+      if(step.optional){const n=$('#tfg-target-status');if(n){n.hidden=true;n.textContent='';}return;}
       if(!ready()||loading){notice('loading',t('waiting'),true);pet?.set('curious');return;}
       if(!canEdit()){notice('denied',t('readOnly'));pet?.set('curious');return;}
       const emptyHint=document.querySelector('.empty,[data-empty],#empty-state');
       const emptyVisible=emptyHint&&!emptyHint.closest('[hidden]')&&getComputedStyle(emptyHint).display!=='none';
-      if(emptyVisible)notice('empty',t('emptySection'),true);else notice('error',t('errorSection'),true);
+      notice('empty',t(emptyVisible?'emptySection':'notShown'),true);
       pet?.set('curious');
     }
     seek();
@@ -255,7 +276,7 @@
     welcome();return true;
   }
   function refresh(){syncScope();
-    const settings=$('#settingsDrawer .sx-scroll');if(settings&&!$('#tfg-settings-help')){const help=document.createElement('button');help.id='tfg-settings-help';help.className='tfg-item';help.type='button';help.setAttribute('data-notr','');help.onclick=()=>{dismissSettings();openHub();};settings.appendChild(help);}
+    const settings=$('#settingsDrawer .sx-scroll');if(settings&&!$('#tfg-settings-help')){const help=document.createElement('button');help.id='tfg-settings-help';help.className='tfg-item';help.type='button';help.setAttribute('data-notr','');help.onclick=()=>{dismissSettings();openCurrent();};settings.appendChild(help);}
     if($('#tfg-settings-help'))$('#tfg-settings-help').innerHTML=icon('bulb',18)+`<span>${esc(t('guide'))}</span>`;
     mountLaunch();launch.setAttribute('aria-label',t('guide'));launch.title=t('guide');renderHome();
     if(root.open&&!busy){if(phase==='setup'){readDraft();setup();}else if(phase==='review')review();else if(phase==='hub')openHub();else if(phase==='welcome')welcome();else if(phase==='tour')renderStep();}
@@ -267,9 +288,11 @@
     if(act==='close'||act==='pause'||act==='later'){if(phase==='setup')readDraft();close();}
     else if(act==='hub')openHub();else if(act==='setup')setup();else if(act==='save')saveTrip();
     else if(act==='home-tour')navigate('overview');else if(act==='resume'&&state.resume)navigate(state.resume.section,true);
+    else if(act==='skip-tab'&&tour==='overview'){const m=overviewMap(),i=m.findIndex(r=>index>=r.start&&index<=r.end);if(i<0||i===m.length-1)finish();else{index=m[i+1].start;renderStep();}}
     else if(act==='prev'){index--;renderStep();}else if(act==='next'){if(index===D.tours[tour].steps.length-1)finish();else{index++;renderStep();}}
     else if(act==='finish-setup'){close(false);location.assign(new URL('index.html',location.href).href);}
   });
+  root.addEventListener('change',e=>{const sel=e.target.closest?.('[data-jump]');if(!sel||busy||phase!=='tour'||tour!=='overview')return;const to=Number(sel.value);if(Number.isInteger(to)&&to>=0&&to<D.tours.overview.steps.length){index=to;renderStep();}});
   // The native dialog traps keyboard focus; Escape pauses, including the welcome.
   let positioning=false;function queuePosition(){if(positioning||phase!=='tour')return;positioning=true;requestAnimationFrame(()=>{positioning=false;position();});}
   window.addEventListener('resize',queuePosition);window.addEventListener('scroll',queuePosition,true);window.visualViewport?.addEventListener('resize',queuePosition);
@@ -285,10 +308,10 @@
   function scheduleAuto(){clearTimeout(autoTimer);autoTimer=setTimeout(()=>{
     if(!ready()||root.open||$('dialog[open]'))return;
     const params=new URLSearchParams(location.search),id=params.get('guide');
-    if(hasTour(id)){const requested=Math.max(0,Math.min(10,Math.trunc(Number(params.get('guideStep'))||0)));params.delete('guide');params.delete('guideStep');history.replaceState(null,'',location.pathname+(params.size?'?'+params:'')+location.hash);startTour(id,requested);}
+    if(hasTour(id)){const requested=Math.max(0,Math.min(99,Math.trunc(Number(params.get('guideStep'))||0)));params.delete('guide');params.delete('guideStep');history.replaceState(null,'',location.pathname+(params.size?'?'+params:'')+location.hash);startTour(id,requested);}
     else if(home())offerFirstTrip();
   },650);}
-  window.TaxflyGuide={open:openHub,offerFirstTrip,start:id=>navigate(id),refresh};
+  window.TaxflyGuide={open:openCurrent,hub:openHub,offerFirstTrip,start:id=>navigate(id),refresh};
   initialized=true;refresh();scheduleAuto();
   let tries=0;const boot=setInterval(()=>{syncScope();renderHome();scheduleAuto();placeLaunch();if(ready()||++tries>=40)clearInterval(boot);},1000);
 })();

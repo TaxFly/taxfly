@@ -22,7 +22,7 @@ test('every guide and interface message has Spanish, English and Portuguese copy
  assert.deepEqual(Object.keys(tours).sort(),[...G.SECTIONS].sort());
  for(const [key,words] of Object.entries(copy))assert.ok(words.length===3&&words.every(s=>typeof s==='string'&&s.trim()),key);
  for(const [id,tour] of Object.entries(tours)){
-  assert.ok(tour.steps.length>=1&&tour.steps.length<=20,id);assert.ok(tour.name.length===3);
+  assert.ok(tour.steps.length>=1&&tour.steps.length<=(id==='overview'?99:20),id);assert.ok(tour.name.length===3);
   assert.ok(!tour.url.includes('://'));for(const step of tour.steps){assert.equal(step.title.length,3);assert.equal(step.text.length,3);}
  }
  assert.doesNotMatch(read('assets/guide-data.js'),/\p{Extended_Pictographic}/u);
@@ -35,12 +35,40 @@ test('all signed-in screens load the same guide assets in dependency order and p
  }
  for(const name of ['guide.css',...assets])assert.ok(read('sw.js').includes('./assets/'+name));
 });
-test('overview covers every page and individual page guides cover the complete calculator and major subtabs',()=>{
+test('overview walks through every step of every tab guide, subtabs included',()=>{
  const window={};for(const file of ['guide-data.js','guide-pages.js'])vm.runInNewContext(read('assets/'+file),{window});const {tours,pages}=window.TaxflyGuideData;
- assert.equal(pages.length,10);assert.equal(tours.overview.steps.length,10);
- assert.deepEqual(Array.from(tours.overview.steps,s=>s.url),Array.from(pages,id=>tours[id].url));
- assert.equal(tours.tax.steps.length,10);assert.ok(tours.tax.steps.some(s=>s.sel==='#split-toggle-lbl'));assert.ok(tours.tax.steps.some(s=>s.view?.tab==='cart'));
- for(const tab of ['gastos','resumen','talles','comparador'])assert.ok(tours.expenses.steps.some(s=>s.view?.tab===tab));
- for(const section of ['parques','outlets','comidas','walmart','reservas'])assert.ok(tours.planning.steps.some(s=>s.view?.section===section));
- for(const tour of Object.values(tours))for(const step of tour.steps)if(step.view)assert.ok(['calc','expense','place','unit','plan'].includes(step.view.kind));
+ assert.equal(pages.length,10);
+ const expected=pages.flatMap(id=>tours[id].steps.map(s=>[s.sel,tours[id].url]));
+ assert.equal(JSON.stringify(Array.from(tours.overview.steps,s=>[s.sel,s.url])),JSON.stringify(expected));
+ assert.ok(tours.overview.steps.length<=99,'resume index is bounded to 99');
+ for(const step of tours.overview.steps)assert.match(step.title[0],/ · /);
+ // every subtab is part of the general tour
+ const views=new Set(tours.overview.steps.map(s=>s.view&&JSON.stringify(s.view)).filter(Boolean));
+ for(const v of [{kind:'calc',tab:'individual'},{kind:'calc',tab:'cart'},{kind:'expense',tab:'gastos'},{kind:'expense',tab:'resumen'},{kind:'expense',tab:'talles'},{kind:'expense',tab:'comparador'},{kind:'place',tab:'lugares'},{kind:'place',tab:'actividades'},{kind:'place',tab:'notas'},{kind:'group',tab:'gastos'},{kind:'group',tab:'balances'},{kind:'group',tab:'resumen'},{kind:'unit',group:'grp-weight'},{kind:'unit',group:'grp-oz'},{kind:'unit',group:'grp-liquid'},{kind:'unit',group:'grp-length'}])assert.ok(views.has(JSON.stringify(v)),JSON.stringify(v));
+ for(const sec of ['parques','outlets','comidas','walmart','reservas','lugares'])assert.ok(tours.overview.steps.some(s=>s.view?.section===sec),sec);
+ for(const tab of ['itinerario','atracciones'])assert.ok(tours.overview.steps.some(s=>s.view?.section==='parques'&&s.view?.tab===tab),tab);
+ for(const tab of ['cronograma','lista'])assert.ok(tours.overview.steps.some(s=>s.view?.section==='outlets'&&s.view?.tab===tab),tab);
+ assert.equal(tours.tax.steps.length,10);assert.ok(tours.tax.steps.some(s=>s.sel==='#split-toggle-lbl'));
+ for(const tour of Object.values(tours))for(const step of tour.steps)if(step.view)assert.ok(['calc','expense','place','unit','plan','group'].includes(step.view.kind));
+});
+test('the home tour does not depend on the self-dismissing offline card',()=>{
+ const window={};for(const file of ['guide-data.js','guide-pages.js'])vm.runInNewContext(read('assets/'+file),{window});
+ assert.ok(window.TaxflyGuideData.tours.home.steps.find(s=>s.sel==='#offline-readiness').optional);
+});
+test('guide opens the current tab guide first, no glow behind the mascot, and home sections stop reporting busy',()=>{
+ const guide=read('assets/guide.js'),css=read('assets/guide.css'),home=read('assets/index-app.js');
+ assert.match(guide,/launch\.onclick=\(\)=>openCurrent\(\)/);
+ assert.match(guide,/help\.onclick=\(\)=>\{dismissSettings\(\);openCurrent\(\);\}/);
+ assert.match(guide,/open:openCurrent,hub:openHub/);
+ assert.doesNotMatch(css.match(/\.tfg-pet\{[^}]*\}/)[0],/gradient|shadow/);
+ assert.match(home,/list\.removeAttribute\(["']aria-busy["']\)/);
+ assert.doesNotMatch(guide,/errorSection/);
+});
+test('the general tour lets people jump or skip between tabs',()=>{
+ const guide=read('assets/guide.js'),css=read('assets/guide.css');
+ assert.match(guide,/data-jump/);assert.match(guide,/act==='skip-tab'/);assert.match(guide,/function overviewMap\(\)/);assert.match(css,/\.tfg-jump\{/);
+ const window={};for(const file of ['guide-data.js','guide-pages.js'])vm.runInNewContext(read('assets/'+file),{window});
+ const {tours,pages}=window.TaxflyGuideData;let at=0;
+ for(const id of pages){assert.equal(tours.overview.steps[at].url,tours[id].url);at+=tours[id].steps.length;}
+ assert.equal(at,tours.overview.steps.length);
 });

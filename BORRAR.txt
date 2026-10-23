@@ -1,0 +1,7 @@
+Borrá estos archivos de tu proyecto (restos de TaxEurope, ya eliminado):
+assets/app-routes.js
+assets/europe.css
+tests/app-routes.test.cjs
+tests/europe.test.cjs
+tests/europe-ui.test.cjs
+tests/europe-workspace.test.cjs

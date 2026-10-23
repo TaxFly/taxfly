@@ -44,7 +44,7 @@
 /* The mascot decorates the guide without reducing the reading width. */
 .tfg-head{display:flex;align-items:center;gap:14px;margin:6px 0 14px}
 .tfg-head #tfg-title{flex:1;min-width:0;margin:0;overflow-wrap:anywhere}
-.tfg-pet{flex:none;width:112px;pointer-events:none;background:radial-gradient(ellipse at 50% 60%,#dbeafe38,transparent 70%)}
+.tfg-pet{flex:none;width:112px;pointer-events:none}
 .tfg-pet:empty{display:none}.tfg-pet .tfm{display:block;width:100%;height:auto;overflow:visible}
 .tfg-root[data-phase=tour] .tfg-pet{width:88px}
 .tfg-item{width:100%;box-sizing:border-box}.tfg-item>svg{flex:none}
@@ -71,3 +71,6 @@
 .tfg-launch-pill span.tfg-pill-label{white-space:nowrap}
 @media(max-width:380px){.tfg-launch-pill span.tfg-pill-label{display:none}.tfg-launch-pill{padding:9px;gap:0}}
 @media(prefers-reduced-motion:reduce){.tfg-launch-pill{transition:bottom .18s ease}}
+
+.tfg-foot{display:flex;justify-content:center;margin-top:6px}.tfg-foot .tfg-dismiss{padding:8px 12px}
+.tfg-jump{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 12px}.tfg-jump-label{display:grid;gap:4px;flex:1;min-width:150px;font-size:11px;font-weight:750;color:var(--tfg-text-sub)}.tfg-jump select{min-height:40px;padding:8px;border:1px solid var(--tfg-border);border-radius:10px;background:var(--tfg-input-bg);color:var(--tfg-text);font:inherit;font-size:13px}
