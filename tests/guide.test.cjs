@@ -75,7 +75,7 @@ test('the general tour lets people jump or skip between tabs',()=>{
 test('the guide card is measured at its final width, locks page scroll and hides the launcher',()=>{
  const guide=read('assets/guide.js'),css=read('assets/guide.css');
  const pos=guide.slice(guide.indexOf('function position()'),guide.indexOf('function finish()'));
- assert.ok(pos.indexOf("width:cw+'px'")<pos.indexOf('card.offsetHeight'),'width is applied before measuring height');
+ assert.ok(pos.indexOf("width:width+'px'")<pos.indexOf('card.offsetHeight'),'width is applied before measuring height');assert.match(pos,/widths/);
  assert.match(pos,/room\.right>=cw/);assert.match(pos,/room\.left>=cw/);
  assert.match(guide,/lock\(true\)/);assert.match(guide,/lock\(false\)/);assert.match(guide,/addEventListener\('wheel',stopScroll/);
  assert.match(css,/html\.tfg-lock/);
@@ -85,7 +85,7 @@ test('the guide card scrolls inside itself, never covers the target and the masc
  const guide=read('assets/guide.js'),css=read('assets/guide.css');
  const pos=guide.slice(guide.indexOf('function position()'),guide.indexOf('function finish()'));
  // Reading the height must not touch max-height (that used to reset the text scroll on every scroll event).
- assert.doesNotMatch(pos.slice(0,pos.indexOf('const box=')),/maxHeight/);
+ assert.doesNotMatch(pos.slice(0,pos.indexOf('if(!place){\n      const xc')),/maxHeight/);
  assert.match(pos,/scrollHeight-sc\.clientHeight/);
  assert.match(guide,/card\.contains\(e\.target\)\)return/);
  assert.match(pos,/dockSide/);assert.match(pos,/window\.scrollBy/);

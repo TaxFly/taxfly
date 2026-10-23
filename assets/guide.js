@@ -279,29 +279,40 @@
     if(phase!=='tour'||!target?.isConnected)return;
     const w=window.innerWidth,h=window.innerHeight;let raw=target.getBoundingClientRect();
     if(!raw.width||!raw.height){spot.hidden=true;root.dataset.highlight='false';return;}
-    const gap=12,pad=10,narrow=w<640,cw=narrow?w-2*pad:Math.min(380,w-32),clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-    // Apply the final width first: the height depends on it.
-    if(card.style.width!==cw+'px')Object.assign(card.style,{position:'fixed',left:'0px',top:'0px',width:cw+'px'});
-    // Natural height = card height + whatever the text area hides. Reading it never
-    // changes max-height, so the text area keeps its own scroll position.
-    const sc=card.querySelector('.tfg-scroll'),ch=card.offsetHeight+(sc?sc.scrollHeight-sc.clientHeight:0);
+    const gap=12,pad=10,narrow=w<640,clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+    // Phones use the full width. Larger screens try 380 → 480 → 600 px (a bit more on very
+    // large viewports): a wider card needs fewer lines, so it can fit without scrolling.
+    const k=w>=2400?1.2:1,widths=narrow?[w-2*pad]:[...new Set([380,480,600].map(v=>Math.min(Math.round(v*k),w-32)))];
     const box=()=>{const q=target.getBoundingClientRect();return {l:q.left-5,t:q.top-5,r:q.right+5,b:q.bottom+5};};
-    let bx=box(),place=null;
+    let bx=box(),place=null,cw=widths[0],ch=0;
     const cx=(bx.l+bx.r)/2,room={below:h-bx.b-gap-pad,above:bx.t-gap-pad,right:w-bx.r-gap-pad,left:bx.l-gap-pad};
-    const tall=Math.min(ch,h-2*pad),xc=clamp(cx-cw/2,pad,w-cw-pad),yc=clamp(bx.t,pad,h-tall-pad);
-    // 1) a free side where the whole card fits, 2) the roomiest side if it still shows enough text.
-    if(room.below>=ch)place={x:xc,y:bx.b+gap,hh:ch};
-    else if(room.above>=ch)place={x:xc,y:bx.t-gap-ch,hh:ch};
-    else if(!narrow&&room.right>=cw)place={x:bx.r+gap,y:yc,hh:tall};
-    else if(!narrow&&room.left>=cw)place={x:bx.l-gap-cw,y:yc,hh:tall};
-    else{
-      const need=Math.min(ch,Math.round(h*.4)),best=room.below>=room.above?'below':'above';
+    const measure=width=>{
+      cw=width;
+      // Apply the final width first: the height depends on it.
+      if(card.style.width!==width+'px')Object.assign(card.style,{position:'fixed',left:'0px',top:'0px',width:width+'px'});
+      // Natural height = card height + whatever the text area hides. Reading it never
+      // changes max-height, so the text area keeps its own scroll position.
+      const sc=card.querySelector('.tfg-scroll');ch=card.offsetHeight+(sc?sc.scrollHeight-sc.clientHeight:0);
+    };
+    const fit=()=>{
+      const tall=Math.min(ch,h-2*pad),xc=clamp(cx-cw/2,pad,w-cw-pad),yc=clamp(bx.t,pad,h-tall-pad);
+      if(room.below>=ch)return {x:xc,y:bx.b+gap,hh:ch};
+      if(room.above>=ch)return {x:xc,y:bx.t-gap-ch,hh:ch};
+      if(!narrow&&room.right>=cw)return {x:bx.r+gap,y:yc,hh:tall};
+      if(!narrow&&room.left>=cw)return {x:bx.l-gap-cw,y:yc,hh:tall};
+      return null;
+    };
+    // 1) the narrowest width where the whole card fits in a free spot.
+    for(const width of widths){measure(width);place=fit();if(place)break;}
+    // 2) the widest card in the roomiest side if it still shows enough text.
+    if(!place){
+      const xc=clamp(cx-cw/2,pad,w-cw-pad),need=Math.min(ch,Math.round(h*.4)),best=room.below>=room.above?'below':'above';
       if(room[best]>=need)place=best==='below'?{x:xc,y:bx.b+gap,hh:room.below}:{x:xc,y:bx.t-gap-room.above,hh:room.above};
     }
     if(!place){
       // No clear spot: dock the card at the top or bottom edge as a sheet that scrolls
       // inside itself, and move the page so the highlighted block sits in the free band.
-      const cardH=Math.min(ch,Math.round(h*(narrow?.46:.5))),sy=window.scrollY,maxY=Math.max(0,document.documentElement.scrollHeight-h);
+      const cardH=Math.min(ch,Math.round(h*(narrow?.55:.6))),sy=window.scrollY,maxY=Math.max(0,document.documentElement.scrollHeight-h);
       const plan=side=>{
         const lo=side==='bottom'?pad:cardH+pad+gap,hi=side==='bottom'?h-cardH-pad-gap:h-pad,bh=bx.b-bx.t;
         const want=bh<=hi-lo?lo+(hi-lo-bh)/2:lo,dy=clamp(bx.t-want,-sy,maxY-sy);

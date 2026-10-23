@@ -110,3 +110,11 @@ html.tfg-lock,html.tfg-lock body{overflow:hidden!important;scrollbar-gutter:stab
 .tfg-root[data-phase=tour] .tfg-more{margin:0 0 8px}
 @media(max-width:640px){.tfg-root[data-phase=tour] .tfg-card{padding:12px 14px 14px}.tfg-root[data-phase=tour] .tfg-pet{width:52px}}
 @media(max-height:560px){.tfg-root[data-phase=tour] .tfg-pet{width:44px}}
+
+/* Tour card: no header row. The close button floats in the corner and the controls take less height. */
+.tfg-root[data-phase=tour] .tfg-top{position:absolute;top:8px;right:8px;z-index:3}
+.tfg-root[data-phase=tour] .tfg-kicker{display:none}
+.tfg-root[data-phase=tour] .tfg-head{padding-right:34px}
+.tfg-root[data-phase=tour] .tfg-meta{margin:8px 0 6px}
+.tfg-root[data-phase=tour] .tfg-more>summary{padding:7px 12px}
+.tfg-root[data-phase=tour] .tfg-actions button{min-height:38px}
