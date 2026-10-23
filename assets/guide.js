@@ -25,12 +25,42 @@
   root.innerHTML='<div class="tfg-shade"></div><div class="tfg-spot" hidden></div><section class="tfg-card"></section>';document.body.appendChild(root);
   const card=root.querySelector('.tfg-card'),spot=root.querySelector('.tfg-spot');
   const launch=document.createElement('button');launch.type='button';launch.className='tfg-launch';launch.setAttribute('data-notr','');launch.onclick=()=>openHub();document.body.appendChild(launch);
+  // Mascota animada (assets/mascot.js). Si no cargó, la guía funciona igual sin ella.
+  const Pet=window.TaxflyMascot;let pet=null,mini=null,miniTimer=0;
+  const PET_STATE={welcome:'wave',hub:'idle',setup:'idle',review:'think',created:'cheer',complete:'cheer',message:'think',tour:'point'};
+  function petScene(){
+    if(!Pet)return;const host=card.querySelector('.tfg-pet');if(!host)return;
+    try{
+      pet=pet||Pet.create(null,{state:'idle'});pet.mount(host);pet.set(PET_STATE[phase]||'idle');
+      if(phase==='welcome'||phase==='created'||phase==='complete')setTimeout(()=>{if(root.open&&pet)pet.hop(phase==='welcome'?46:60);},260);
+      if(phase!=='tour')pet.talk(phase==='message'?0:1100);
+    }catch(_){pet=null;host.remove();}
+  }
+  function petAim(){
+    if(!pet||phase!=='tour'||!target?.isConnected)return;
+    const r=target.getBoundingClientRect();if(r.width)pet.pointAt(r.left+r.width/2,r.top+r.height/2);
+  }
+  function miniMount(){
+    if(!Pet)return;const host=launch.querySelector('.tfg-mini');if(!host)return;
+    try{
+      if(!mini){
+        mini=Pet.create(null,{state:'idle'});
+        const hi=()=>{if(!root.open)mini.play('wave',1700);};
+        launch.addEventListener('pointerenter',hi);launch.addEventListener('focus',hi);
+        clearInterval(miniTimer);
+        // Mientras no completó ningún recorrido, llama la atención de vez en cuando
+        miniTimer=setInterval(()=>{if(!root.open&&!document.hidden&&!state.done.length){mini.play('wave',1800);mini.hop(26);}},32000);
+      }
+      mini.mount(host);
+    }catch(_){mini=null;host.remove();}
+  }
   function button(action,label,primary=false){return `<button type="button" data-guide="${action}"${primary?' class="tfg-primary"':''}>${esc(t(label))}</button>`;}
   function item(id,label,small=''){return `<button type="button" class="tfg-item" data-tour="${id}">${icon(D.tours[id]?.icon||'bulb')}<span>${esc(label)}${small?`<small>${esc(small)}</small>`:''}</span>${icon('chevDown',15)}</button>`;}
   function shell(title,description,body='',actions=''){
     root.dataset.phase=phase;root.dataset.highlight='false';spot.hidden=true;target=null;card.style.cssText='';
-    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><h2 id="tfg-title" tabindex="-1">${esc(title)}</h2><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}`;
+    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-head"><div class="tfg-pet" aria-hidden="true"></div><h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}`;
     if(!root.open){returnFocus=document.activeElement;root.showModal();}
+    petScene();
     // Move focus when content changes, without letting automatic repositioning steal it.
     $('#tfg-title')?.focus({preventScroll:true});
   }
@@ -38,7 +68,7 @@
     if(busy)return;
     token++;if(save&&phase==='tour'&&tour){state.resume={section:tour,index};persist();}
     if(save&&phase==='welcome'){state.welcome=true;persist();}
-    phase='';tour=null;target=null;
+    phase='';tour=null;target=null;pet?.set('idle');
     if(root.open)root.close();spot.hidden=true;returnFocus?.isConnected&&returnFocus.focus?.({preventScroll:true});renderHome();
   }
   function welcome(){syncScope();if(!ready())return false;phase='welcome';shell(t('welcome'),t(trips().length?'existing':'welcomeText'),' ',button('later','later')+button(trips().length?'home-tour':'setup',trips().length?'explore':'create',true));return true;}
@@ -121,6 +151,7 @@
     const ch=card.offsetHeight,cw=Math.min(380,w-32),below=r.bottom+14,above=r.top-ch-14;
     const y=below+ch<=h-12?below:above>=12?above:Math.max(12,h-ch-12);
     Object.assign(card.style,{position:'fixed',left:Math.max(16,Math.min(w-cw-16,r.left+r.width/2-cw/2))+'px',top:y+'px',width:cw+'px',maxHeight:(h-24)+'px'});
+    requestAnimationFrame(petAim);
   }
   function finish(){const id=tour;state.done=[...new Set([...state.done,id])];state.resume=null;persist();token++;tour=null;phase='complete';shell(t('complete'),t('completeText'),'',button('hub','more')+button('close','use',true));renderHome();}
   function renderHome(){
@@ -146,7 +177,7 @@
   function refresh(){syncScope();
     const settings=$('#settingsDrawer .sx-scroll');if(settings&&!$('#tfg-settings-help')){const help=document.createElement('button');help.id='tfg-settings-help';help.className='tfg-item';help.type='button';help.setAttribute('data-notr','');help.onclick=()=>{window.toggleSettings?.();openHub();};settings.appendChild(help);}
     if($('#tfg-settings-help'))$('#tfg-settings-help').innerHTML=icon('bulb',18)+`<span>${esc(t('guide'))}</span>`;
-    launch.innerHTML=icon('bulb',18)+`<span>${esc(t('guide'))}</span>`;launch.setAttribute('aria-label',t('guide'));renderHome();
+    launch.innerHTML=(Pet?'<span class="tfg-mini" aria-hidden="true"></span>':icon('bulb',18))+`<span>${esc(t('guide'))}</span>`;launch.setAttribute('aria-label',t('guide'));miniMount();renderHome();
     if(root.open&&!busy){if(phase==='setup'){readDraft();setup();}else if(phase==='review')review();else if(phase==='hub')openHub();else if(phase==='welcome')welcome();else if(phase==='tour')renderStep();}
   }
   root.addEventListener('cancel',e=>{e.preventDefault();close();});

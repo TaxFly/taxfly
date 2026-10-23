@@ -23,3 +23,14 @@
 .tfg-item>svg:last-child{transform:rotate(-90deg)}
 
 .tfg-step{font-size:11px;font-weight:750;color:var(--text-sub,#64748b)}
+
+/* Mascota animada en la guía */
+.tfg-head{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
+.tfg-head h2{flex:1;margin:0;min-width:0}
+.tfg-pet{flex:none;width:96px;pointer-events:none}
+.tfg-pet:empty{display:none}
+.tfg-root[data-phase=tour] .tfg-pet{width:74px}
+.tfg-pet .tfm,.tfg-mini .tfm{display:block;width:100%;height:auto;overflow:visible}
+.tfg-mini{flex:none;display:block;width:42px;margin:-10px 2px -6px -4px;pointer-events:none}
+.tfg-launch{overflow:visible}
+@media(max-width:640px){.tfg-pet{width:84px}.tfg-root[data-phase=tour] .tfg-pet{width:66px}}

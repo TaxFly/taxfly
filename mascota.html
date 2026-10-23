@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mascota TaxFly · prueba de animaciones</title>
+<style>
+:root{--bg:#fff4e0;--card:#fff;--ink:#14213d;--sub:#64748b;--line:#e2e8f0;--blue:#2f6bff}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1220;--card:#111a2e;--ink:#e8eefc;--sub:#9fb0cf;--line:#22304d}}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;padding:20px}
+main{width:min(560px,100%);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 18px 60px #0f172a1f}
+h1{font-size:20px;margin:0 0 2px}p{margin:0 0 14px;color:var(--sub);font-size:13px}
+#stage{display:grid;place-items:center;height:330px;border-radius:16px;background:linear-gradient(#eaf1ff,#f7fbff);margin-bottom:14px;position:relative;overflow:hidden}
+@media(prefers-color-scheme:dark){#stage{background:linear-gradient(#16233f,#0e1830)}}
+#pet{width:270px}
+#target{position:absolute;right:16px;top:16px;padding:8px 12px;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;font-size:13px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+button{font:inherit;font-weight:700;font-size:13px;padding:9px 13px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--blue)}button[aria-pressed=true]{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tfm{display:block;width:100%;height:auto}
+</style>
+</head>
+<body>
+<main>
+  <h1>Mascota TaxFly</h1>
+  <p>Página de prueba de las animaciones (no forma parte de la app).</p>
+  <div id="stage"><div id="target">Acá te lo muestro</div><div id="pet"></div></div>
+  <div class="row" id="states">
+    <button data-s="idle">Quieto</button><button data-s="wave">Saludar</button><button data-s="point">Señalar</button><button data-s="cheer">Festejar</button><button data-s="think">Pensar</button>
+  </div>
+  <div class="row">
+    <button id="talk">Hablar</button><button id="hop">Saltar</button><button id="follow" aria-pressed="false">Señalar el mouse</button>
+  </div>
+</main>
+<script src="assets/mascot.js"></script>
+<script>
+const pet=TaxflyMascot.create(document.getElementById('pet'),{state:'wave'});
+setTimeout(()=>pet.hop(50),300);
+document.getElementById('states').onclick=e=>{const s=e.target.dataset.s;if(!s)return;
+  if(s==='point'){const r=document.getElementById('target').getBoundingClientRect();pet.set('point');pet.pointAt(r.left+r.width/2,r.top+r.height/2);}else pet.set(s);};
+document.getElementById('talk').onclick=()=>pet.talk(2200);
+document.getElementById('hop').onclick=()=>pet.hop(60);
+const follow=document.getElementById('follow');let on=false;
+follow.onclick=()=>{on=!on;follow.setAttribute('aria-pressed',on);if(!on){pet.set('idle');pet.clearAim();}};
+addEventListener('pointermove',e=>{if(on)pet.pointAt(e.clientX,e.clientY);});
+</script>
+</body>
+</html>
