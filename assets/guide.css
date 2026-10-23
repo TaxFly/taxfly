@@ -57,7 +57,7 @@
    a bottom-right FAB — #btnAdd in mis-cosas.html — or a bottom nav bar —
    #day-bottom-nav in rutas.html — guide.js lifts the pill above them at runtime). */
 .tfg-launch-pill{
-  position:fixed;right:16px;z-index:140;display:inline-flex;align-items:center;gap:8px;
+  position:fixed;right:20px;z-index:140;display:inline-flex;align-items:center;gap:8px;
   padding:9px 16px 9px 9px;border:1px solid var(--tfg-border);border-radius:999px;
   background:var(--tfg-surface);color:var(--tfg-text);box-shadow:0 10px 28px -10px #0005;
   font:700 13px 'DM Sans',inherit;cursor:pointer;transition:transform .15s,box-shadow .15s,bottom .18s ease;
@@ -87,12 +87,13 @@ html.tfg-lock,html.tfg-lock body{overflow:hidden!important;scrollbar-gutter:stab
 
 /* Card layout: header, controls and buttons stay put; only the explanation scrolls. */
 .tfg-top,.tfg-actions,.tfg-foot,.tfg-pinned,.tfg-meta,.tfg-more{flex:none}
-.tfg-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;margin:0 -8px;padding:0 8px;scrollbar-width:thin;
+.tfg-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;margin:0 -8px;padding:0 8px;scrollbar-width:none;-ms-overflow-style:none;
   background:
     linear-gradient(var(--tfg-surface) 30%,#0000) top/100% 16px no-repeat local,
     linear-gradient(#0000,var(--tfg-surface) 70%) bottom/100% 16px no-repeat local,
     radial-gradient(farthest-side at 50% 0,#0003,#0000) top/100% 8px no-repeat scroll,
     radial-gradient(farthest-side at 50% 100%,#0003,#0000) bottom/100% 8px no-repeat scroll}
+.tfg-scroll::-webkit-scrollbar{display:none;width:0;height:0}
 .tfg-scroll>:last-child{margin-bottom:0}
 .tfg-meta{display:flex;align-items:center;gap:10px;margin:10px 0 8px}
 .tfg-meta .tfg-step{white-space:nowrap}.tfg-meta .tfg-progress{flex:1;margin:0}

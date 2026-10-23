@@ -304,15 +304,12 @@
     };
     // 1) the narrowest width where the whole card fits in a free spot.
     for(const width of widths){measure(width);place=fit();if(place)break;}
-    // 2) the widest card in the roomiest side if it still shows enough text.
-    if(!place){
-      const xc=clamp(cx-cw/2,pad,w-cw-pad),need=Math.min(ch,Math.round(h*.4)),best=room.below>=room.above?'below':'above';
-      if(room[best]>=need)place=best==='below'?{x:xc,y:bx.b+gap,hh:room.below}:{x:xc,y:bx.t-gap-room.above,hh:room.above};
-    }
     if(!place){
       // No clear spot: dock the card at the top or bottom edge as a sheet that scrolls
       // inside itself, and move the page so the highlighted block sits in the free band.
-      const cardH=Math.min(ch,Math.round(h*(narrow?.55:.6))),sy=window.scrollY,maxY=Math.max(0,document.documentElement.scrollHeight-h);
+      // Use as much of the viewport as we reasonably can, so the step text is visible
+      // without an internal scroll in the overwhelming majority of cases.
+      const cardH=Math.min(ch,Math.round(h*(narrow?.72:.8))),sy=window.scrollY,maxY=Math.max(0,document.documentElement.scrollHeight-h);
       const plan=side=>{
         const lo=side==='bottom'?pad:cardH+pad+gap,hi=side==='bottom'?h-cardH-pad-gap:h-pad,bh=bx.b-bx.t;
         const want=bh<=hi-lo?lo+(hi-lo-bh)/2:lo,dy=clamp(bx.t-want,-sy,maxY-sy);
