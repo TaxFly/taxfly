@@ -1466,6 +1466,7 @@ window.fetchWeather = async function(city) {
   }
 };
 
+const wxTone = c => c <= 1 ? "#f59e0b" : c <= 48 ? "#94a3b8" : c <= 82 ? "#38bdf8" : "#a78bfa";
 function renderWeather(r, city, lang) {
   const body = document.getElementById("wc-body");
   const lbl = document.getElementById("wc-label");
@@ -1478,7 +1479,7 @@ function renderWeather(r, city, lang) {
   const windLbl = lang === "en" ? "Wind" : lang === "pt" ? "Vento" : "Viento";
   const lblTxt = lang === "en" ? "Weather at destination" : lang === "pt" ? "Clima no destino" : "Clima en destino";
   if (lbl) lbl.textContent = lblTxt;
-  body.innerHTML = '<div class="wc-main">' + '<div class="wc-icon">' + icon + "</div>" + '<div class="wc-info">' + '<div class="wc-temp">' + r.tempF + "°<span>F / " + r.tempC + "°C</span></div>" + '<div class="wc-city">' + r.displayName + "</div>" + '<div class="wc-desc">' + desc + "</div>" + "</div>" + "</div>" + '<div class="wc-extras">' + '<div class="wc-extra"><span>🌡️</span><span>' + feelsLbl + ": " + r.feelsF + "°F</span></div>" + '<div class="wc-extra"><span>💧</span><span>' + humLbl + ": " + r.humidity + "%</span></div>" + '<div class="wc-extra"><span>💨</span><span>' + windLbl + ": " + r.wind + " mph " + r.windDir + "</span></div>" + "</div>";
+  body.innerHTML = '<div class="wc-main">' + '<div class="wc-icon" style="color:' + wxTone(r.code) + '">' + icon + "</div>" + '<div class="wc-info">' + '<div class="wc-temp">' + r.tempF + "°<span>F / " + r.tempC + "°C</span></div>" + '<div class="wc-city">' + r.displayName + "</div>" + '<div class="wc-desc">' + desc + "</div>" + "</div>" + "</div>" + '<div class="wc-extras">' + '<div class="wc-extra"><span>🌡️</span><span>' + feelsLbl + ": " + r.feelsF + "°F</span></div>" + '<div class="wc-extra"><span>💧</span><span>' + humLbl + ": " + r.humidity + "%</span></div>" + '<div class="wc-extra"><span>💨</span><span>' + windLbl + ": " + r.wind + " mph " + r.windDir + "</span></div>" + "</div>";
 }
 
 let splitPeople = 2;
