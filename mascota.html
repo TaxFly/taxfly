@@ -1,48 +1,808 @@
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mascota TaxFly · prueba de animaciones</title>
-<style>
-:root{--bg:#fff4e0;--card:#fff;--ink:#14213d;--sub:#64748b;--line:#e2e8f0;--blue:#2f6bff}
-@media(prefers-color-scheme:dark){:root{--bg:#0b1220;--card:#111a2e;--ink:#e8eefc;--sub:#9fb0cf;--line:#22304d}}
-*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;padding:20px}
-main{width:min(560px,100%);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 18px 60px #0f172a1f}
-h1{font-size:20px;margin:0 0 2px}p{margin:0 0 14px;color:var(--sub);font-size:13px}
-#stage{display:grid;place-items:center;height:330px;border-radius:16px;background:linear-gradient(#eaf1ff,#f7fbff);margin-bottom:14px;position:relative;overflow:hidden}
-@media(prefers-color-scheme:dark){#stage{background:linear-gradient(#16233f,#0e1830)}}
-#pet{width:270px}
-#target{position:absolute;right:16px;top:16px;padding:8px 12px;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;font-size:13px}
-.row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
-button{font:inherit;font-weight:700;font-size:13px;padding:9px 13px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
-button:hover{border-color:var(--blue)}button[aria-pressed=true]{background:var(--blue);color:#fff;border-color:var(--blue)}
-.tfm{display:block;width:100%;height:auto}
-</style>
-</head>
-<body>
-<main>
-  <h1>Mascota TaxFly</h1>
-  <p>Página de prueba de las animaciones (no forma parte de la app).</p>
-  <div id="stage"><div id="target">Acá te lo muestro</div><div id="pet"></div></div>
-  <div class="row" id="states">
-    <button data-s="idle">Quieto</button><button data-s="wave">Saludar</button><button data-s="point">Señalar</button><button data-s="cheer">Festejar</button><button data-s="think">Pensar</button>
-  </div>
-  <div class="row">
-    <button id="talk">Hablar</button><button id="hop">Saltar</button><button id="follow" aria-pressed="false">Señalar el mouse</button>
-  </div>
-</main>
-<script src="assets/mascot.js"></script>
-<script>
-const pet=TaxflyMascot.create(document.getElementById('pet'),{state:'wave'});
-setTimeout(()=>pet.hop(50),300);
-document.getElementById('states').onclick=e=>{const s=e.target.dataset.s;if(!s)return;
-  if(s==='point'){const r=document.getElementById('target').getBoundingClientRect();pet.set('point');pet.pointAt(r.left+r.width/2,r.top+r.height/2);}else pet.set(s);};
-document.getElementById('talk').onclick=()=>pet.talk(2200);
-document.getElementById('hop').onclick=()=>pet.hop(60);
-const follow=document.getElementById('follow');let on=false;
-follow.onclick=()=>{on=!on;follow.setAttribute('aria-pressed',on);if(!on){pet.set('idle');pet.clearAim();}};
-addEventListener('pointermove',e=>{if(on)pet.pointAt(e.clientX,e.clientY);});
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TaxUSA · Mascota 3D</title><style>
+:root{--ink:#14213d;--sub:#65718a;--blue:#2f6bff;--line:#e2e7f0;--surface:#fff;--text:#14213d;--text-sub:#65718a;--border:#dfe5ef;--primary:#2f6bff}*{box-sizing:border-box}body{margin:0;background:#f7f5ef;color:var(--ink);font:15px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}button,input{font:inherit}button{cursor:pointer}header{display:flex;align-items:center;justify-content:space-between;padding:22px 6vw;border-bottom:1px solid #14213d10;background:#ffffffa0}header strong{font-size:26px;letter-spacing:-1.1px}header strong span{color:var(--blue)}header small{font-size:12px;color:var(--sub)}main{max-width:1180px;margin:38px auto;padding:0 24px}.intro{display:grid;grid-template-columns:1fr 1.1fr;gap:54px;align-items:center}.eyebrow{color:var(--blue);font-size:11px;letter-spacing:.16em;font-weight:800}h1{font-size:clamp(36px,5vw,64px);line-height:1.05;letter-spacing:-2.8px;margin:18px 0}h1 span{color:var(--blue)}.copy p{color:var(--sub);max-width:420px;font-size:16px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0}.pills span{border:1px solid #d8dfeb;padding:5px 10px;border-radius:20px;color:#536078;font-size:11px}.primary{background:var(--blue)!important;color:white!important;border-color:var(--blue)!important}.btn{border:1px solid #ccd7eb;padding:12px 17px;border-radius:12px;background:white;font-weight:700;color:var(--ink);font-size:13px}.studio{background:white;border:1px solid var(--line);border-radius:30px;box-shadow:0 24px 60px #14213d08;overflow:hidden}.studio-top{display:flex;justify-content:space-between;padding:18px 22px;font-size:11px;font-weight:750;color:var(--sub)}.dot{display:inline-block;background:#37ab78;width:7px;height:7px;border-radius:50%;margin-right:6px}.stage{position:relative;height:440px;background:radial-gradient(ellipse at 45% 40%,#edf3ff 0,#fafbff 58%,white 85%);touch-action:pan-y;cursor:grab}.stage:active{cursor:grabbing}#pet{width:min(430px,100%);margin:auto}.tfm{display:block;width:100%;height:auto}#target{position:absolute;top:28px;right:20px;border:1px solid #b9cef9;background:#edf3ff;color:#2f6bff;padding:8px 12px;border-radius:12px;font-size:11px;font-weight:700;z-index:1}.stage-tip{text-align:center;font-size:11px;color:#8a95aa;margin:0 0 18px}.controls{border-top:1px solid var(--line);padding:18px 20px}.states,.extras{display:flex;flex-wrap:wrap;gap:7px}.states button,.extras button{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:10px;font-size:12px;color:var(--ink);font-weight:650}.states button[aria-pressed=true]{background:#14213d;color:#fff;border-color:#14213d}.extras{margin-top:12px}.face-label{font-size:10px;color:#8a95aa;letter-spacing:.07em;margin:15px 0 7px}.extras button{background:#f6f8fc;border-color:transparent}.extras button[aria-pressed=true]{color:#2f6bff;background:#eaf1ff}.lower{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}.tile{background:#fff;border:1px solid var(--line);padding:22px;border-radius:18px}.tile small{font-size:10px;letter-spacing:.1em;color:#8a95aa}.tile h2{font-size:16px;margin:8px 0}.tile p{font-size:12px;color:var(--sub);margin:0}.note{font-size:11px;color:#8a95aa;margin-bottom:30px}.note strong{font-weight:600}button:focus-visible,.stage:focus-visible{outline:3px solid #80a9ff;outline-offset:3px}@media(max-width:760px){.intro{grid-template-columns:1fr;gap:22px}main{margin:25px auto;padding:0 16px}h1{font-size:42px}.copy p{font-size:14px}.pills{margin:16px 0}.stage{height:340px}#pet{width:350px;max-width:100%}.lower{grid-template-columns:1fr;gap:10px;margin-top:20px}header{padding:16px 20px}header small{font-size:10px}.studio{border-radius:22px}.copy .btn{width:100%}}
+</style><style>.tfg-launch{position:fixed;left:16px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:70;display:flex;align-items:center;gap:7px;min-height:44px;padding:10px 14px;border:1px solid var(--border,#cbd5e1);border-radius:24px;background:var(--surface,#fff);color:var(--text,#15213b);box-shadow:0 4px 18px #0f172a20;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.tfg-root{position:fixed;inset:0;width:100%;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:var(--text,#15213b);font-family:inherit;overflow:hidden}
+.tfg-root[open]{display:flex;align-items:center;justify-content:center}.tfg-root::backdrop{background:transparent}
+.tfg-shade{position:absolute;inset:0;background:#07142c99}.tfg-root[data-phase=tour] .tfg-shade{background:#07142c99}
+.tfg-root[data-highlight=true] .tfg-shade{background:transparent}
+.tfg-spot{position:fixed;border:2px solid #60a5fa;border-radius:12px;box-shadow:0 0 0 9999px #07142cb8;pointer-events:none;z-index:1}
+.tfg-card{position:relative;z-index:2;box-sizing:border-box;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;background:var(--surface,#fff);border:1px solid var(--border,#dbe3ef);border-radius:22px;box-shadow:0 24px 80px #02061744;padding:26px;overscroll-behavior:contain;animation:tfg-in .18s ease-out}
+.tfg-card h2{font-size:clamp(21px,4vw,27px);line-height:1.2;letter-spacing:-.5px;margin:12px 0}.tfg-card p{font-size:14px;line-height:1.65;color:var(--text-sub,#64748b);margin:0 0 17px}.tfg-card button,.tfg-card input{font:inherit}
+.tfg-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.tfg-kicker{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:var(--primary,#2563eb)}
+.tfg-close{width:36px;height:36px;display:grid;place-items:center;background:transparent;border:0;border-radius:10px;color:inherit;cursor:pointer;flex:none}.tfg-close:hover{background:var(--surface-2,#f1f5f9)}
+.tfg-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:20px}.tfg-actions button{flex:1;min-height:44px;padding:11px 14px;border:1px solid var(--border,#cbd5e1);background:var(--surface,#fff);color:inherit;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer}.tfg-actions .tfg-primary{background:var(--primary,#2563eb);border-color:var(--primary,#2563eb);color:white}.tfg-card button:disabled{opacity:.55;cursor:wait}
+.tfg-card :focus-visible,.tfg-launch:focus-visible{outline:3px solid #60a5fa;outline-offset:3px}
+.tfg-list{display:grid;gap:9px}.tfg-item{display:flex;align-items:center;gap:12px;text-align:start;border:1px solid var(--border,#dbe3ef);border-radius:13px;padding:13px;background:var(--surface-2,#f8fafc);color:inherit;cursor:pointer;min-height:52px}.tfg-item:hover{border-color:var(--primary,#2563eb)}.tfg-item>span{flex:1;font-size:13px;font-weight:750}.tfg-item small{display:block;margin-top:3px;font-size:11px;font-weight:500;color:var(--text-sub,#64748b)}
+.tfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tfg-field{display:grid;gap:7px;font-size:12px;font-weight:750;margin:13px 0}.tfg-field input{box-sizing:border-box;width:100%;min-height:44px;padding:11px;border:1px solid var(--border,#cbd5e1);border-radius:10px;background:var(--input-bg,var(--surface,#fff));color:inherit;font-size:14px}.tfg-error{font-size:13px;line-height:1.5;color:var(--danger,#b91c1c);margin-top:12px}.tfg-error:empty{display:none}
+.tfg-summary{display:grid;gap:9px;padding:16px;border:1px solid var(--border,#dbe3ef);border-radius:14px;background:var(--surface-2,#f8fafc)}.tfg-summary strong{font-size:16px}.tfg-summary span{font-size:13px;color:var(--text-sub,#64748b)}.tfg-progress{height:4px;border-radius:8px;overflow:hidden;background:var(--border,#dbe3ef);margin:15px 0}.tfg-progress>span{display:block;height:100%;background:var(--primary,#2563eb)}
+.tfg-notice{font-size:12px!important;border-left:3px solid #60a5fa;padding-left:10px}.tfg-root[data-phase=tour] .tfg-card{width:min(380px,calc(100vw - 32px))}.tfg-home{margin:12px 0 18px;padding:16px;border:1px solid var(--border,#dbe3ef);border-radius:16px;background:var(--surface,#fff);color:var(--text,#15213b)}.tfg-home .tfg-item{flex:1}.tfg-home strong{font-size:15px}.tfg-home p{font-size:12px;line-height:1.5;color:var(--text-sub,#64748b);margin:6px 0 12px}.tfg-home-actions{display:flex;flex-wrap:wrap;gap:8px}
+@keyframes tfg-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.tfg-launch{bottom:calc(82px + env(safe-area-inset-bottom));left:12px;padding:10px 12px}.tfg-card{padding:20px;border-radius:18px}.tfg-grid{gap:9px}.tfg-home-actions{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.tfg-card{animation:none}.tfg-root *{scroll-behavior:auto!important}}
+.tfg-section-help{max-width:680px;margin:12px auto;padding:12px 16px}.tfg-section-help .tfg-home-actions{margin-top:8px;align-items:center;flex-direction:row}.tfg-dismiss{border:0;background:transparent;color:var(--text-sub,#64748b);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:12px}
+@media(max-width:720px){.tfg-section-help{margin:12px 16px}}
+.tfg-card #tfg-title:focus{outline:none}.tfg-item{font-family:inherit}.tfg-launch,.tfg-dismiss{font-family:inherit;font-size:13px;font-weight:700}.tfg-home-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.tfg-home-head .tfg-close{width:28px;height:28px}#tfg-settings-help{width:100%;margin:14px 0}
+.tfg-item>svg:last-child{transform:rotate(-90deg)}
+
+.tfg-step{font-size:11px;font-weight:750;color:var(--text-sub,#64748b)}
+
+/* Mascota animada en la guía */
+.tfg-head{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
+.tfg-head h2{flex:1;margin:0;min-width:0}
+.tfg-pet{flex:none;width:96px;pointer-events:none}
+.tfg-pet:empty{display:none}
+.tfg-root[data-phase=tour] .tfg-pet{width:74px}
+.tfg-pet .tfm,.tfg-mini .tfm{display:block;width:100%;height:auto;overflow:visible}
+.tfg-mini{flex:none;display:block;width:42px;margin:-10px 2px -6px -4px;pointer-events:none}
+.tfg-launch{overflow:visible}
+@media(max-width:640px){.tfg-pet{width:84px}.tfg-root[data-phase=tour] .tfg-pet{width:66px}}
+
+/* Real 3D canvas with the same layout contract as the SVG fallback. */
+.tfm-3d{aspect-ratio:1;background:radial-gradient(ellipse 25% 2% at 50% 87%,#14213d24,transparent 100%)}
+.tfg-launch[hidden]{display:none}
+
+/* Give the companion enough room for its articulated 3D gestures. */
+.tfg-head{gap:14px}.tfg-pet{width:118px}.tfg-root[data-phase=tour] .tfg-pet{width:96px}
+@media(max-width:640px){.tfg-head{gap:10px}.tfg-pet{width:104px}.tfg-root[data-phase=tour] .tfg-pet{width:90px}}
+</style><style>#tfg-section-help{display:none}</style></head><body><header><strong>TaxUSA<span>.</span></strong><small>Tu compañero de viaje · 3D</small></header><main><div class="intro"><section class="copy"><span class="eyebrow">EL MISMO PERSONAJE. UNA NUEVA DIMENSIÓN.</span><h1>Ahora tiene<br><span>vida propia.</span></h1><p>Su cara también habla: piensa, se alegra, siente curiosidad y festeja con vos. Te acompaña usando sus mismas manos y una expresión para cada momento.</p><div class="pills"><span>Geometría 3D real</span><span>Sin descargas externas</span><span>Movimiento reducido</span></div><button class="btn primary" id="guide-demo">Probar en la guía</button></section><section class="studio"><div class="studio-top"><span><i class="dot"></i>MASCOTA TAXUSA</span><span id="mode">3D interactivo</span></div><div class="stage" id="stage" tabindex="0" role="group" aria-label="Vista de la mascota 3D. Arrastrá para girar o usá las flechas del teclado."><div id="target">Te lo muestro acá</div><div id="pet"></div></div><p class="stage-tip">Arrastrá para girarla · Flechas para girar con teclado</p><div class="controls"><div class="states" id="states"><button data-s="idle" aria-pressed="false">Espera</button><button data-s="wave" aria-pressed="true">Saludar</button><button data-s="point" aria-pressed="false">Señalar</button><button data-s="cheer" aria-pressed="false">Festejar</button><button data-s="think" aria-pressed="false">Pensar</button></div><div class="face-label">También puede sentirse…</div><div class="states" id="emotions"><button data-s="happy" aria-pressed="false">Contento</button><button data-s="curious" aria-pressed="false">Curioso</button><button data-s="surprised" aria-pressed="false">Sorprendido</button><button data-s="sad" aria-pressed="false">Triste</button><button data-s="sleepy" aria-pressed="false">Con sueño</button></div><div class="extras"><button id="talk">Hablar</button><button id="hop">Saltar</button><button id="follow" aria-pressed="false">Seguir el cursor</button><button id="pause" aria-pressed="false">Pausar</button><button id="reset">Restablecer vista</button><button id="download">Descargar modelo 3D</button></div></div></section></div><div class="lower"><section class="tile" id="demo-trip"><small>01 / TU VIAJE</small><h2>Todo empieza con un destino.</h2><p>La mascota te recibe y presenta cada paso.</p></section><section class="tile" id="demo-budget"><small>02 / PRESUPUESTO</small><h2>Encontrá lo que necesitás.</h2><p>El brazo se orienta hacia el bloque destacado.</p></section><section class="tile" id="demo-plan"><small>03 / PLANIFICACIÓN</small><h2>Cada avance se celebra.</h2><p>Completá el recorrido para ver el festejo.</p></section></div><p class="note">Demostración con datos ficticios. <strong>Tu guía conserva sus recorridos y textos.</strong> Si el dispositivo no admite 3D, aparece la versión 2D.</p></main>
+<script>/* TaxFly · mascota animada (rig SVG + motor de animación sin dependencias).
+   Dibujo original: pin azul "Taxie-pin". Estados: idle, wave, point, cheer, think (+ talk, hop).
+   Uso: const m = TaxflyMascot.create(hostEl, {state:'idle'}); m.set('wave'); m.pointAt(x,y); m.talk(1500); m.hop(); */
+(function(root){
+  'use strict';
+  if(root.TaxflyMascot)return;
+  const NS='http://www.w3.org/2000/svg';
+  const COL={dark:'#10090D',navy:'#14213D',gold:'#FFC857',blue:'#2F6BFF',shadow:'#10090D'};
+  const D={"body":"M1784.26 407.582C1801.64 405.612 1825.45 407.125 1842.73 409.55C1916.72 419.922 1983.61 459.119 2028.84 518.599C2075.42 580.718 2092.04 655.535 2081.33 732.008C2058.45 895.304 1881.49 1092.57 1753.14 1187.94C1739.77 1173.91 1711.05 1134.45 1699.78 1118.26C1631.05 1019.47 1578.32 922.886 1543.52 807.564C1549.88 799.63 1558.36 791.334 1565.76 784.312C1578.09 772.598 1594.82 763.134 1599.42 745.717C1602.2 735.021 1600.54 723.656 1594.82 714.198C1588.71 704.415 1578.96 697.46 1567.71 694.86C1550.04 690.678 1536.55 698.095 1522.27 707.01C1519.76 630.116 1538.1 562.217 1589.55 503.231C1639.16 446.737 1709.22 412.32 1784.26 407.582Z","ring":"M1812.75 520.443C1880.88 512.931 1942.23 561.975 1949.91 630.084C1957.59 698.193 1908.7 759.668 1840.61 767.514C1772.28 775.387 1710.55 726.286 1702.84 657.941C1695.13 589.596 1744.39 527.982 1812.75 520.443Z","ringIn":"M1823.5 524.12C1889.31 522.503 1944.13 574.226 1946.33 640.019C1948.54 705.813 1897.31 761.09 1831.54 763.884C1764.93 766.713 1708.79 714.687 1706.56 648.056C1704.33 581.426 1756.85 525.758 1823.5 524.12Z","eyeL":"M1797.31 804.001C1829.47 803.673 1828.63 859.669 1807.64 870.409L1804.46 872.029C1779.89 873.05 1777.05 839.207 1782.2 821.509C1784.76 812.725 1789.31 807.981 1797.31 804.001Z","eyeLIn":"M1799.4 808.003C1819.27 809.953 1820.14 838.107 1816.04 852.495C1813.37 861.862 1810.68 863.267 1803.27 868.361C1780.16 866.244 1776.58 821.256 1799.4 808.003Z","eyeR":"M1898.18 803.994C1927.34 804.562 1931.33 859.479 1904.34 872.686C1879.76 872.578 1877.26 839.373 1882.65 821.393C1885.26 812.669 1890.16 807.845 1898.18 803.994Z","eyeRIn":"M1900.29 808.257C1901.7 808.546 1903.09 808.89 1904.46 809.289C1922.05 814.496 1924.81 857.943 1902.45 868.907C1885.84 864.71 1882.8 845.571 1885.26 831.012C1887.1 820.11 1889.85 812.381 1900.29 808.257Z","smile":"M1750.57 874.742C1752.43 874.572 1752.06 874.739 1754.01 875.359L1753.89 876.91C1751.18 879.67 1748.01 881 1744.56 882.822C1770.83 942.83 1825.59 925.809 1832.34 932.944L1831.25 934.301C1826.22 935.782 1820.68 935.112 1815.38 934.866C1779.05 932.432 1756.09 918.199 1740.76 884.844C1737.67 886.344 1732.86 889.026 1729.41 888.342L1729.72 887.028C1736.29 881.574 1742.99 878.572 1750.57 874.742Z","armL":"M1550.29 698.252C1588.56 692.465 1613.09 739.202 1585 761.583C1527.4 807.481 1493.17 864.178 1475.16 935.084C1472.86 944.167 1471.43 954.306 1469.37 963.915C1455.37 954.174 1450.13 952.913 1433.74 950.212C1422.03 949.724 1409.33 948.848 1397.9 951.839C1393.47 952.998 1385.43 958.94 1381.44 957.021C1381.61 949.99 1383.92 938.454 1385.25 931.31C1392.81 889.143 1407.94 848.69 1429.88 811.899C1443.56 788.626 1469.94 757.045 1490.04 738.44C1493.64 735.111 1496.44 733.954 1499.88 731.246C1502.03 729.556 1504.88 725.186 1507.52 723.032C1519.53 713.263 1535.26 702.133 1550.29 698.252Z","footL":"M1554.85 1357.78C1538.27 1340.23 1521.8 1322.56 1505.45 1304.79C1488.4 1286.36 1460.48 1263.7 1467.84 1235.98C1469.36 1230.4 1472.16 1225.25 1476.02 1220.94C1481.74 1214.44 1522.27 1184.76 1529.93 1180.24C1545.57 1198.13 1580.49 1231.04 1598.53 1248.51C1592.81 1250.19 1578.44 1255.24 1575.02 1259.8L1576.16 1260.91C1580 1261.37 1596.87 1250.65 1613.5 1250.09C1629.87 1249.52 1645.78 1255.59 1657.6 1266.93C1678.83 1287.19 1684.18 1321.98 1662.2 1343.63C1655.79 1349.87 1647.79 1354.24 1639.08 1356.29C1627.06 1359.18 1570.55 1357.86 1554.85 1357.78Z","footR":"M1836.61 1255.16L1853.29 1255.32C1866.08 1256.21 1905.3 1256.57 1918.65 1255.75L1935.15 1255.9C1932.71 1260.14 1921.95 1275.25 1923.34 1279.02C1923.96 1279 1924.58 1278.98 1925.2 1278.96C1930.9 1272.84 1936.59 1267.71 1943.8 1263.71C1958.54 1255.56 1975.91 1253.57 1992.11 1258.19C2007.44 1262.69 2020.34 1273.13 2027.93 1287.18C2034.51 1299.17 2035.97 1313.29 2032 1326.37C2026.84 1343.14 2013.75 1357.24 1995.2 1357.81C1972.8 1358.5 1950.21 1357.67 1927.77 1357.7C1904.89 1357.72 1882 1358.02 1859.12 1357.92C1843.58 1357.68 1829.99 1351.11 1822.77 1336.96C1814.01 1319.76 1821.22 1303.69 1826.52 1286.77C1829.8 1276.2 1833.16 1265.67 1836.61 1255.16Z","armR":"M2097.76 699.336C2118.07 699.031 2147.42 699.558 2167.43 699.77C2182.89 699.933 2293.48 698.727 2295.55 700.825C2294.41 704.97 2288.67 709.074 2287.29 712.314C2278.3 733.433 2277.03 755.202 2284.38 777.059C2286.24 782.599 2285.88 784.247 2289.58 789.052L2288.65 790.522L2284.25 791.087C2253.46 789.449 2219.2 790.38 2188.25 790.17C2149.15 789.904 2109.83 789.887 2070.77 791.661C2080.69 770.867 2087.03 724.307 2088.83 701.247C2091.19 699.236 2094.52 699.531 2097.76 699.336Z","legR":"M1836.29 1122.71C1844.38 1115.85 1900.56 1058.49 1901.61 1058.18C1910.35 1061.31 1927.89 1081.63 1934.71 1089.37C1977.73 1138.11 1965.03 1202.61 1936.65 1254.99C1931.02 1254.75 1924 1254.06 1918.65 1255.75C1905.3 1256.57 1866.08 1256.21 1853.29 1255.32L1854.09 1254.6C1847.94 1254.06 1842.57 1253.87 1836.39 1253.72C1842.55 1240.07 1845.73 1223.76 1849.43 1209.25C1859.18 1171.04 1865.74 1151.86 1836.29 1122.71Z","legL":"M1529.93 1180.24C1544.85 1167.41 1562.64 1154.65 1576.5 1140.88C1591.27 1126.2 1605.53 1109.28 1618.87 1093.25C1629.96 1079.94 1637.91 1062.77 1648.52 1049.6C1651.44 1051.08 1660.38 1067.49 1663.29 1071.82C1678.9 1095.02 1694.81 1120.12 1711.99 1142.11C1690.81 1177.62 1652.96 1208.9 1620.72 1233.89C1616.5 1237.17 1603.04 1247.42 1598.53 1248.51C1580.49 1231.04 1545.57 1198.13 1529.93 1180.24Z","handL":"M1417.76 953.465C1463.31 953.378 1472.37 969.86 1499.06 1002.07C1504.56 1008.72 1511.11 1019.22 1508.06 1028.11C1505.13 1036.67 1491.5 1047.28 1482.1 1043.86C1473.52 1040.58 1480.6 1026.69 1477.85 1019.82L1476.28 1019.82C1475.2 1022.36 1475.2 1026.3 1474.86 1029.16C1472.93 1045.44 1473.88 1053.04 1463.87 1066.47C1442.91 1090.45 1402.48 1090.65 1379.66 1069.48C1359.34 1050.82 1364.51 1034.6 1366.82 1011.49C1370.86 970.988 1371.21 955.741 1417.76 953.465Z","handP":"M2302.66 698.866C2352.23 697.381 2406.04 699.291 2455.91 699.37C2477.88 699.405 2481.47 736.794 2454.48 738.681C2430.68 740.345 2406.04 739.393 2382.02 739.415C2385.44 747.243 2386.16 750.84 2391.45 757.541L2392.15 757.085L2391.37 757.149L2392.07 755.956L2390.98 756.567L2390.76 756.195L2391.87 754.716C2391.43 751.661 2388.99 745.997 2387.78 742.893L2419.67 743.069C2420.02 749.964 2420.01 753.96 2419.59 760.848C2404.22 804.173 2342.3 796.965 2334.56 753.168C2333.83 749.077 2334.91 740.369 2332.81 737.395L2331.25 738.06C2329.09 743.21 2330.61 752.179 2331.41 757.659C2313.3 771.55 2323.36 768.237 2316.7 785.539C2314.11 792.272 2310.2 787.605 2306.51 802.561C2305.08 801.344 2303.67 800.098 2302.29 798.822C2275.64 774.071 2278.44 724.902 2302.66 698.866Z","f1":"M2331.94 761.726C2333.3 762.724 2333.46 762.809 2334.11 764.443C2340.03 779.415 2352.6 789.232 2368.27 792.487C2379.01 794.72 2385.2 793.224 2395.81 791.178C2391.51 799.714 2390.17 802.388 2382.63 808.812L2381.91 809.23C2350.24 828.099 2301.41 789.365 2331.94 761.726Z","f2":"M2356.1 821.748C2341.39 827.106 2320.71 820.398 2312.47 806.57C2309.03 800.797 2311.91 793.466 2317.69 790.481C2321.04 788.749 2324.21 800.34 2327.12 801.682C2333.95 810.008 2340.22 811.163 2348.7 815.764C2352.69 816.827 2367.73 818.494 2356.1 821.748Z","mitt":"M983.842 227.401C1015.66 226.718 1042 251.846 1045.2 283.06C1047.41 309.739 1041.33 345.644 1024.47 367.078C999.256 399.136 950.29 397.417 920.584 373.53C912.511 365.851 909.904 360.281 906.584 349.929C897.293 342.001 864.804 317.621 866.218 308.51C873.88 259.154 920.55 306.657 929.608 314.434C931.963 291.675 926.587 266.707 942.152 248.036C953.451 234.482 966.82 229.309 983.842 227.401Z"};
+  // Articulaciones (coordenadas del dibujo original)
+  const SH_R={x:2030,y:740}, SH_L={x:1565,y:722}, HIP_R={x:1905,y:1075}, HIP_L={x:1650,y:1070}, TIP={x:1748,y:1180}, CENTER={x:1910,y:860};
+  const ARM_LEN=245;
+  const VB={x:1290,y:250,w:1250,h:1170};
+  const reduce=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(_){return false;}};
+
+  function el(name,attrs,kids){
+    const n=document.createElementNS(NS,name);
+    if(attrs)for(const k in attrs)n.setAttribute(k,attrs[k]);
+    if(kids)for(const c of kids)n.appendChild(c);
+    return n;
+  }
+  // Pieza con contorno: copia oscura engrosada debajo + relleno encima (se ve igual en cualquier renderer)
+  function part(d,fill,ow){
+    ow=ow||9;
+    return el('g',null,[
+      el('path',{d:d,fill:COL.dark,stroke:COL.dark,'stroke-width':ow,'stroke-linejoin':'round','stroke-linecap':'round'}),
+      el('path',{d:d,fill:fill})
+    ]);
+  }
+  const rot=(a,p)=>'rotate('+a.toFixed(2)+' '+p.x+' '+p.y+')';
+  const scl=(sx,sy,p)=>'translate('+p.x+' '+p.y+') scale('+sx.toFixed(4)+' '+sy.toFixed(4)+') translate('+(-p.x)+' '+(-p.y)+')';
+
+  let UID=0;
+  function build(){
+    const cid='tfm-clip-'+(++UID);
+    const svg=el('svg',{viewBox:VB.x+' '+VB.y+' '+VB.w+' '+VB.h,class:'tfm','aria-hidden':'true',focusable:'false'});
+    svg.style.overflow='visible';
+    const defs=el('defs',null,[el('clipPath',{id:cid},[el('path',{d:D.body})])]);
+    const shadow=el('ellipse',{cx:1750,cy:1392,rx:330,ry:26,fill:COL.shadow,opacity:'.16'});
+    const flip=el('g'), hop=el('g'), body=el('g');
+    // Piernas (detrás del cuerpo) con un tramo extra oculto bajo el cuerpo para que no se abra hueco al moverlas
+    const legR=el('g',null,[
+      el('g',{'clip-path':'url(#'+cid+')'},[el('line',{x1:1895,y1:1090,x2:1890,y2:990,stroke:COL.navy,'stroke-width':140,'stroke-linecap':'round'})]),
+      part(D.legR,COL.navy), part(D.footR,COL.gold)]);
+    const legL=el('g',null,[
+      el('g',{'clip-path':'url(#'+cid+')'},[el('line',{x1:1675,y1:1085,x2:1712,y2:1000,stroke:COL.navy,'stroke-width':140,'stroke-linecap':'round'})]),
+      part(D.legL,COL.navy), part(D.footL,COL.gold)]);
+    // Brazo derecho (detrás del cuerpo). Sistema local: hombro en (0,0), brazo hacia +x
+    const T0='translate('+(-SH_R.x)+' '+(-SH_R.y)+')';
+    const armR=el('g'), armRin=el('g');
+    const ln=(x1,x2,w,c)=>el('line',{x1:x1,y1:0,x2:x2,y2:0,stroke:c,'stroke-width':w,'stroke-linecap':'round'});
+    armRin.appendChild(ln(-70,60,100,COL.dark));armRin.appendChild(ln(-70,60,90,COL.navy));
+    const fore=el('g',null,[ln(30,ARM_LEN-8,100,COL.dark),ln(30,ARM_LEN-8,90,COL.navy)]);
+    armRin.appendChild(fore);
+    const handPoint=el('g',{transform:T0},[part(D.armR,COL.navy,0),part(D.handP,COL.gold,8),part(D.f1,COL.gold,8),part(D.f2,COL.gold,8)]);
+    handPoint.firstChild.firstChild.setAttribute('opacity','0');
+    const handMitt=el('g',{transform:'translate('+(ARM_LEN-12)+' 0) rotate(90) translate(-970 -378)'},[part(D.mitt,COL.gold,8)]);
+    const handRelax=el('g',{transform:'translate('+(ARM_LEN-8)+' 0) rotate(-90) translate(-1435 -958)'},[part(D.handL,COL.gold,8)]);
+    armRin.appendChild(handPoint);armRin.appendChild(handMitt);armRin.appendChild(handRelax);
+    armR.appendChild(armRin);
+    // Cuerpo + cara
+    const torso=part(D.body,COL.blue,10);
+    const ring=el('g',null,[el('path',{d:D.ring,fill:COL.dark}),el('path',{d:D.ringIn,fill:COL.navy})]);
+    const eyeL=el('g',null,[el('path',{d:D.eyeL,fill:COL.dark}),el('path',{d:D.eyeLIn,fill:COL.navy})]);
+    const eyeR=el('g',null,[el('path',{d:D.eyeR,fill:COL.dark}),el('path',{d:D.eyeRIn,fill:COL.navy})]);
+    const smile=el('path',{d:D.smile,fill:COL.dark});
+    const mouth=el('ellipse',{cx:1818,cy:905,rx:30,ry:2,fill:COL.dark});
+    const tongue=el('ellipse',{cx:1818,cy:918,rx:17,ry:1,fill:'#FF7A8A'});
+    const mouthG=el('g',{opacity:'0'},[mouth,tongue]);
+    const face=el('g',null,[ring,eyeL,eyeR,smile,mouthG]);
+    // Brazo izquierdo (delante del cuerpo). Sistema local: hombro en el origen del dibujo trasladado
+    const armL=el('g'), armLin=el('g',{transform:'translate('+(-SH_L.x)+' '+(-SH_L.y)+')'},[part(D.armL,COL.navy,9),part(D.handL,COL.gold,8)]);
+    armL.appendChild(armLin);
+    // Parche del hombro izquierdo: en el dibujo original el brazo tapaba ese pedazo del cuerpo
+    const patch=el('g',null,[
+      el('path',{d:'M1519 704 Q1523 768 1546 810',fill:'none',stroke:COL.dark,'stroke-width':8,'stroke-linecap':'butt'}),
+      el('path',{d:'M1519 688 L1640 688 L1640 840 L1552 822 Q1524 770 1519 688Z',fill:COL.blue})]);
+    body.appendChild(legR);body.appendChild(legL);body.appendChild(armR);body.appendChild(torso);body.appendChild(patch);body.appendChild(face);body.appendChild(armL);
+    hop.appendChild(body);flip.appendChild(hop);
+    svg.appendChild(defs);svg.appendChild(shadow);svg.appendChild(flip);
+    return {svg,shadow,flip,hop,body,legR,legL,armR,armRin,fore,handPoint,handMitt,handRelax,ring,eyeL,eyeR,smile,mouthG,mouth,tongue,armL,face};
+  }
+
+  const POSES={
+    idle :{ar:82, hand:'relax',al:2,  tilt:0, ly:0,   lx:0,  legs:1},
+    wave :{ar:-62,hand:'mitt', al:2,  tilt:-2,ly:-.1, lx:0,  legs:1},
+    point:{ar:-8, hand:'point',al:3,  tilt:-3,ly:0,   lx:.4, legs:1},
+    cheer:{ar:-66,hand:'mitt',al:148,tilt:0, ly:-.2, lx:0,  legs:1.4},
+    think:{ar:82, hand:'relax',al:2,  tilt:7, ly:-.8, lx:-.6,legs:.6}
+  };
+  const lerp=(a,b,k)=>a+(b-a)*k;
+  const damp=(cur,tgt,rate,dt)=>cur+(tgt-cur)*(1-Math.exp(-rate*dt));
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+  const live=new Set();let raf=0,last=0,acc=0;
+  function tick(now){
+    raf=0;
+    if(!live.size)return;
+    const dt=Math.min(.05,(now-last)/1000||.016);last=now;acc+=dt;
+    if(document.hidden){raf=requestAnimationFrame(tick);return;}
+    let seen=0;
+    for(const m of live){if(!m.el.isConnected){live.delete(m);continue;}if(!m.el.getClientRects().length)continue;seen++;m.step(dt);}
+    if(seen)raf=requestAnimationFrame(tick);
+  }
+  function wake(){if(!raf&&live.size){last=performance.now();raf=requestAnimationFrame(tick);}}
+
+  function create(host,opts){
+    opts=opts||{};
+    const R=build(),svg=R.svg;
+    const S={
+      t:0,state:'idle',base:'idle',cur:Object.assign({},POSES.idle),hand:'relax',handPop:0,
+      ar:82,al:2,tilt:0,lx:0,ly:0,flip:1,flipT:1,
+      blinkAt:1.2+Math.random()*2,blink:-1,talkUntil:-1,talkOn:0,mouth:0,
+      hopT:-1,hopH:0,timer:null,aim:null,lookTarget:null,still:!!opts.still||reduce()
+    };
+    const api={el:svg,rig:R};
+    function applyHand(h){
+      if(h==='point')h='relax';
+      R.handPoint.setAttribute('visibility',h==='point'?'visible':'hidden');
+      R.handMitt.setAttribute('visibility',h==='mitt'?'visible':'hidden');
+      R.handRelax.setAttribute('visibility',h==='relax'?'visible':'hidden');
+      // la pieza del brazo recto ya viene dentro de handPoint; para las otras manos usamos el rectángulo base
+      R.fore.setAttribute('visibility',h==='point'?'hidden':'visible');
+    }
+    api.set=function(name,opts2){
+      if(!POSES[name])name='idle';
+      S.state=name;if(!opts2||opts2.base!==false)S.base=name;
+      if(S.hand!==POSES[name].hand){S.hand=POSES[name].hand;S.handPop=1;applyHand(S.hand);}
+      if(name!=='point'){S.aim=null;S.lookTarget=null;S.flipT=1;}
+      if(S.still){settle();}
+      wake();return api;
+    };
+    // Estado temporal que vuelve al de base (ej. saludar al pasar el mouse)
+    api.play=function(name,ms){
+      clearTimeout(S.timer);api.set(name,{base:false});
+      S.timer=setTimeout(()=>api.set(S.base),ms||1600);return api;
+    };
+    api.talk=function(ms){S.talkUntil=S.t+(ms||1400)/1000;wake();return api;};
+    api.hop=function(h){if(S.still)return api;S.hopT=0;S.hopH=h||70;wake();return api;};
+    api.look=function(nx,ny){S.lookTarget=nx==null?null:{x:clamp(nx,-1,1),y:clamp(ny,-1,1)};wake();return api;};
+    // Apunta el brazo hacia un punto de la pantalla (coordenadas de cliente)
+    api.pointAt=function(cx,cy){
+      const r=svg.getBoundingClientRect();if(!r.width)return api;
+      const k=r.width/VB.w,px=r.left+(SH_R.x-VB.x)*k,py=r.top+(SH_R.y-VB.y)*k;
+      const ccx=r.left+(CENTER.x-VB.x)*k;
+      const dx=cx-ccx;
+      S.flipT=dx<0?-1:1;
+      const fx=(cx-(S.flipT<0?r.left+(2*CENTER.x-SH_R.x-VB.x)*k:px))*S.flipT, fy=cy-py;
+      S.aim=clamp(Math.atan2(fy,Math.max(10,Math.abs(fx)))*180/Math.PI,-78,72);
+      S.lookTarget={x:clamp(dx/260,-1,1),y:clamp((cy-(r.top+r.height*.4))/260,-1,1)};
+      if(S.state!=='point')api.set('point');
+      if(S.still)settle();
+      wake();return api;
+    };
+    api.clearAim=function(){S.aim=null;S.lookTarget=null;S.flipT=1;return api;};
+    api.mount=function(h){if(h&&svg.parentNode!==h){h.replaceChildren(svg);}wake();return api;};
+    api.destroy=function(){live.delete(api);clearTimeout(S.timer);svg.remove();};
+    api.state=()=>S.state;
+
+    function settle(){for(let i=0;i<40;i++)api.step(.05);}
+    api.step=function(dt){
+      S.t+=dt;const t=S.t,P=POSES[S.state],c=S.cur;
+      const still=S.still;
+      // suavizado hacia la pose objetivo
+      const tgtAr=S.aim!=null&&S.state==='point'?S.aim:P.ar;
+      c.ar=damp(c.ar,tgtAr,still?60:9,dt);c.al=damp(c.al,P.al,still?60:8,dt);c.tilt=damp(c.tilt,P.tilt,6,dt);
+      c.legs=damp(c.legs,P.legs,4,dt);
+      const lt=S.lookTarget||{x:P.lx,y:P.ly};
+      S.lx=damp(S.lx,lt.x,7,dt);S.ly=damp(S.ly,lt.y,7,dt);
+      S.flip=damp(S.flip,S.flipT,still?60:14,dt);
+      S.handPop=Math.max(0,S.handPop-dt*4);
+      // capa procedural
+      const osc=still?0:1;
+      let ar=c.ar,al=c.al;
+      if(S.state==='wave')ar+=osc*16*Math.sin(t*9);
+      else if(S.state==='cheer'){ar+=osc*9*Math.sin(t*11);al+=osc*9*Math.sin(t*11+1.3);}
+      else if(S.state==='point')ar+=osc*2.4*Math.sin(t*4);
+      else{ar+=osc*2.5*Math.sin(t*1.7);al+=osc*3.5*Math.sin(t*1.7+1);}
+      const breath=still?0:Math.sin(t*2.1)*.012;
+      const sway=(still?0:Math.sin(t*1.3)*1.1)+c.tilt;
+      // salto con anticipación y aplastamiento
+      let hy=0,sx=1,sy=1,sh=1;
+      if(S.hopT>=0){
+        S.hopT+=dt;const T=S.hopT,A=.14,U=.52,L=.16;
+        if(T<A){const p=T/A;sy=1-.09*p;sx=1+.06*p;}
+        else if(T<A+U){const p=(T-A)/U;hy=-S.hopH*4*p*(1-p);sy=1+.035*Math.sin(p*Math.PI);sx=1-.02*Math.sin(p*Math.PI);sh=1-.3*Math.sin(p*Math.PI);}
+        else if(T<A+U+L){const p=(T-A-U)/L;sy=1-.07*Math.sin(p*Math.PI);sx=1+.05*Math.sin(p*Math.PI);}
+        else S.hopT=-1;
+      }
+      if(S.state==='cheer'&&!still&&S.hopT<0&&Math.sin(t*3.2)>.985)S.hopT=0,S.hopH=34;
+      sy*=1+breath;sx*=1-breath*.6;
+      // parpadeo
+      if(!still){
+        if(S.blink<0&&t>=S.blinkAt){S.blink=0;}
+        if(S.blink>=0){S.blink+=dt;if(S.blink>.16){S.blink=-1;S.blinkAt=t+1.8+Math.random()*3.2;}}
+      }
+      const bk=S.blink<0?0:Math.sin(clamp(S.blink/.16,0,1)*Math.PI);
+      // boca al hablar
+      const talking=S.t<S.talkUntil&&!still;
+      const mo=talking?(.35+.65*Math.abs(Math.sin(t*17)*Math.cos(t*6.3))):0;
+      S.mouth=damp(S.mouth,mo,30,dt);
+      // ---- aplicar ----
+      R.flip.setAttribute('transform',scl(S.flip,1,CENTER)+(S.flipT<0&&Math.abs(S.flip)<.02?'':''));
+      R.hop.setAttribute('transform','translate(0 '+hy.toFixed(1)+')');
+      R.shadow.setAttribute('transform',scl(sh,sh,{x:1750,y:1392}));
+      R.shadow.setAttribute('opacity',(.16*(hy<0?(1+hy/260):1)).toFixed(3));
+      R.body.setAttribute('transform',scl(sx,sy,TIP)+' '+rot(sway,TIP));
+      const stepA=still?0:Math.sin(t*2.1)*1.3*c.legs;
+      R.legR.setAttribute('transform',rot(stepA+(hy<0?-5:0),HIP_R));
+      R.legL.setAttribute('transform',rot(-stepA+(hy<0?5:0),HIP_L));
+      R.armR.setAttribute('transform','translate('+SH_R.x+' '+SH_R.y+') rotate('+ar.toFixed(2)+')'+(S.handPop>0?' scale('+(1+.06*Math.sin(S.handPop*Math.PI)).toFixed(3)+')':''));
+      R.armL.setAttribute('transform','translate('+SH_L.x+' '+SH_L.y+') rotate('+al.toFixed(2)+')');
+      R.ring.setAttribute('transform','translate('+(S.lx*16).toFixed(1)+' '+(S.ly*12).toFixed(1)+')');
+      const ey=1-.92*bk,ex=S.lx*8,eyy=S.ly*6;
+      R.eyeL.setAttribute('transform','translate('+ex.toFixed(1)+' '+eyy.toFixed(1)+') '+scl(1,ey,{x:1803,y:838}));
+      R.eyeR.setAttribute('transform','translate('+ex.toFixed(1)+' '+eyy.toFixed(1)+') '+scl(1,ey,{x:1903,y:838}));
+      const open=S.mouth>.06;
+      R.smile.setAttribute('opacity',open?'0':'1');
+      R.mouthG.setAttribute('opacity',open?'1':'0');
+      if(open){R.mouth.setAttribute('ry',(3+S.mouth*20).toFixed(1));R.tongue.setAttribute('ry',(1+S.mouth*9).toFixed(1));R.tongue.setAttribute('cy',(905+S.mouth*9).toFixed(1));}
+      R.face.setAttribute('transform','translate('+(S.lx*6).toFixed(1)+' '+(S.ly*5).toFixed(1)+')');
+    };
+    applyHand('relax');
+    api.set(opts.state||'idle');
+    if(host)api.mount(host);
+    api.step(.001);
+    if(!S.still){live.add(api);wake();}
+    api.setStill=function(v){S.still=!!v||reduce();if(S.still){live.delete(api);settle();}else{live.add(api);wake();}};
+    return api;
+  }
+  root.TaxflyMascot={create,POSES:Object.keys(POSES),_COL:COL};
+  if(typeof module!=='undefined')module.exports=root.TaxflyMascot;
+})(typeof window!=='undefined'?window:globalThis);
+
+/* TaxFly: procedural 3D character. WebGL, articulated meshes, no external downloads.
+   The original SVG implementation above remains the fallback. */
+(function(root){
+ 'use strict';
+ const fallback=root.TaxflyMascot, TAU=Math.PI*2, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const states=['idle','wave','point','cheer','think','happy','curious','surprised','sad','sleepy'];
+ const colors={blue:[.184,.420,1],navy:[.045,.075,.16],gold:[1,.66,.14],eye:[.018,.027,.055],white:[1,1,1]};
+ const ident=()=>[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+ function mul(a,b){const o=new Array(16).fill(0);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o;}
+ function matrix(p,r,s){const [x,y,z]=r.map(v=>v/2),cx=Math.cos(x),sx=Math.sin(x),cy=Math.cos(y),sy=Math.sin(y),cz=Math.cos(z),sz=Math.sin(z);
+ const q=[sx*cy*cz+cx*sy*sz,cx*sy*cz-sx*cy*sz,cx*cy*sz+sx*sy*cz,cx*cy*cz-sx*sy*sz];return trs(p,q,s);}
+ function trs(p,q,s){const [x,y,z,w]=q,x2=x+x,y2=y+y,z2=z+z,xx=x*x2,xy=x*y2,xz=x*z2,yy=y*y2,yz=y*z2,zz=z*z2,wx=w*x2,wy=w*y2,wz=w*z2;
+ return [(1-yy-zz)*s[0],(xy+wz)*s[0],(xz-wy)*s[0],0,(xy-wz)*s[1],(1-xx-zz)*s[1],(yz+wx)*s[1],0,(xz+wy)*s[2],(yz-wx)*s[2],(1-xx-yy)*s[2],0,...p,1];}
+ function quaternion(r){const [x,y,z]=r.map(v=>v/2),cx=Math.cos(x),sx=Math.sin(x),cy=Math.cos(y),sy=Math.sin(y),cz=Math.cos(z),sz=Math.sin(z);return[sx*cy*cz+cx*sy*sz,cx*sy*cz-sx*cy*sz,cx*cy*sz+sx*sy*cz,cx*cy*cz-sx*sy*sz];}
+ function perspective(aspect){const f=1/Math.tan(36*Math.PI/360),n=.1,z=50;return [f/aspect,0,0,0,0,f,0,0,0,0,(z+n)/(n-z),-1,0,0,2*z*n/(n-z),0];}
+ const norm=v=>{const l=Math.hypot(...v)||1;return v.map(a=>a/l)};
+ const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+ function mesh(){return{p:[],n:[],i:[]};}
+ function vertex(g,p,n){g.p.push(...p);g.n.push(...n);return g.p.length/3-1;}
+ function sphere(){const g=mesh(),A=24,B=16;for(let y=0;y<=B;y++){const v=y/B*Math.PI;for(let x=0;x<=A;x++){const a=x/A*TAU,p=[Math.sin(v)*Math.cos(a),Math.cos(v),Math.sin(v)*Math.sin(a)];vertex(g,p,p)}}for(let y=0;y<B;y++)for(let x=0;x<A;x++){const a=y*(A+1)+x,b=a+A+1;g.i.push(a,b,a+1,b,b+1,a+1)}return g;}
+ function tube(points,radius,segments=10){const g=mesh();for(let j=0;j<points.length;j++){const p=points[j],a=points[Math.max(0,j-1)],b=points[Math.min(points.length-1,j+1)],t=norm(b.map((v,k)=>v-a[k])),u=norm(cross(t,Math.abs(t[2])<.8?[0,0,1]:[0,1,0])),v=cross(t,u);for(let k=0;k<=segments;k++){const a=k/segments*TAU,n=u.map((z,i)=>z*Math.cos(a)+v[i]*Math.sin(a));vertex(g,p.map((z,i)=>z+n[i]*radius),n)}}for(let j=0;j<points.length-1;j++)for(let k=0;k<segments;k++){const a=j*(segments+1)+k,b=a+segments+1;g.i.push(a,a+1,b,b,a+1,b+1)}return g;}
+ function pin(){const g=mesh(),outline=[];const curves=[[[0,-.98],[.30,-.62],[.83,.04],[.83,.55]],[[.83,.55],[.83,1.59],[-.83,1.59],[-.83,.55]],[[-.83,.55],[-.83,.04],[-.30,-.62],[0,-.98]]];for(const c of curves)for(let i=0;i<24;i++){const t=i/24,u=1-t;outline.push([0,1].map(k=>u*u*u*c[0][k]+3*u*u*t*c[1][k]+3*u*t*t*c[2][k]+t*t*t*c[3][k]));}
+ const N=outline.length,center=[0,.40];
+ // Rounded bevel through six rings: true depth rather than a shaded flat image.
+ const rings=[[.86,-.29],[.96,-.25],[1,-.14],[1,.13],[.97,.24],[.90,.30]];
+ for(let j=0;j<rings.length;j++){const [s,z]=rings[j];for(let i=0;i<N;i++){const p=outline[i],prev=outline[(i+N-1)%N],next=outline[(i+1)%N],out=norm([next[1]-prev[1],prev[0]-next[0],0]);const tilt=j===0?-1:j===1?-.65:j===2?-.2:j===3?.2:j===4?.7:1;const n=norm([out[0]*(1-Math.abs(tilt)*.7),out[1]*(1-Math.abs(tilt)*.7),tilt]);vertex(g,[center[0]+(p[0]-center[0])*s,center[1]+(p[1]-center[1])*s,z],n)}}
+ for(let j=0;j<rings.length-1;j++)for(let i=0;i<N;i++){const a=j*N+i,b=j*N+(i+1)%N;g.i.push(a,b,a+N,b,b+N,a+N)}
+ // Separate flat front/back vertices keep the face normals clean.
+ for(const front of [false,true]){const j=front?rings.length-1:0,[s,z]=rings[j],c=vertex(g,[...center,z],[0,0,front?1:-1]);const off=g.p.length/3;for(const p of outline)vertex(g,[(p[0]-center[0])*s,(p[1]-center[1])*s+center[1],z],[0,0,front?1:-1]);for(let i=0;i<N;i++){const a=off+i,b=off+(i+1)%N;g.i.push(c,front?a:b,front?b:a)}}return g;}
+ const geo={sphere:sphere(),pin:pin()};
+ function node(name,p=[0,0,0],s=[1,1,1],geometry=null,color=null,r=[0,0,0]){return{name,p:[...p],s:[...s],r:[...r],g:geometry,c:color,kids:[]};}
+ function buildModel(){const rig={},scene=node('Taxfly'),body=node('Body',[0,1.55,0]);scene.kids.push(body);rig.scene=scene;rig.body=body;
+ const add=(par,name,p,s,g,c,r)=>{const n=node(name,p,s,g,c,r);par.kids.push(n);rig[name]=n;return n;};
+ add(body,'Pin',[0,0,0],[1,1,1],geo.pin,colors.blue);
+ // Inset navy badge and rounded lip, both actual geometry.
+ add(body,'Badge',[0,.74,.305],[.305,.305,.037],geo.sphere,colors.navy);
+ const ring=[];for(let i=0;i<=64;i++){const a=i/64*TAU;ring.push([Math.cos(a)*.308,.74+Math.sin(a)*.308,.309]);}
+ add(body,'BadgeRim',[0,0,0],[1,1,1],tube(ring,.018,8),[.10,.22,.52]);
+ const face=add(body,'Face',[0,0,.025],[1,1,1]);rig.faceNodes=['Face'];
+ const facePart=(name,p,s,g,c)=>{rig.faceNodes.push(name);return add(face,name,p,s,g,c);};
+ for(const [label,x]of [['L',-.17],['R',.17]]){
+  facePart('Eye'+label,[x,.12,.314],[.060,.095,.025],geo.sphere,colors.eye);
+  facePart('Eye'+label+'Light',[x-.014,.153,.339],[.017,.025,.007],geo.sphere,colors.white);
+  const arc=[],brow=[];for(let i=0;i<=16;i++){const u=i/16;arc.push([-.065+.13*u,.034*Math.sin(Math.PI*u),0]);brow.push([-.085+.17*u,.022*Math.sin(Math.PI*u),0]);}
+  facePart('JoyEye'+label,[x,.12,.335],[.001,.001,.001],tube(arc,.014,8),colors.eye);
+  facePart('Brow'+label,[x,.28,.33],[1,1,1],tube(brow,.012,8),colors.navy);
+  facePart('Cheek'+label,[x*1.73,-.045,.314],[.035,.012,.006],geo.sphere,[.80,.34,.49]);
+ }
+ const smile=[];for(let i=0;i<=20;i++){const u=i/20;smile.push([-.16+.32*u,-.08*Math.sin(Math.PI*u),0]);}
+ facePart('Smile',[0,-.11,.325],[1,1,1],tube(smile,.012,8),colors.eye);
+ const open=facePart('OpenMouth',[0,-.15,.328],[.001,.001,.001]);
+ add(open,'Mouth',[0,0,0],[.135,.105,.018],geo.sphere,colors.eye);
+ add(open,'Teeth',[0,.054,.020],[.105,.022,.008],geo.sphere,[1,.97,.91]);
+ add(open,'Tongue',[0,-.054,.021],[.065,.032,.007],geo.sphere,[1,.35,.49]);
+ // Alternate mouth shapes: a small O and a soft downturned curve.
+ facePart('RoundMouth',[0,-.14,.326],[.001,.001,.001],geo.sphere,colors.eye);
+ for(const side of [-1,1]){const label=side<0?'L':'R',hip=add(body,'Hip'+label,[side*.32,-.57,-.025],[1,1,1]);
+ add(hip,'Leg'+label,[0,-.32,0],[.095,.35,.095],geo.sphere,colors.navy);
+ add(hip,'Boot'+label,[side*.035,-.66,.095],[.22,.13,.30],geo.sphere,colors.gold);
+ const arm=add(body,'Arm'+label,[side*.67,.37,-.01],[1,1,1]);
+ add(arm,'Upper'+label,[side*.23,0,0],[.27,.095,.095],geo.sphere,colors.navy);
+ const elbow=add(arm,'Elbow'+label,[side*.42,0,0],[1,1,1]);
+ add(elbow,'Fore'+label,[side*.18,0,0],[.23,.09,.09],geo.sphere,colors.navy);
+ const hand=add(elbow,'Hand'+label,[side*.39,0,.025],[1,1,1]);
+ add(hand,'Glove'+label,[0,0,0],[.17,.16,.115],geo.sphere,colors.gold);
+ add(hand,'Thumb'+label,[-side*.08,-.13,.015],[.075,.11,.075],geo.sphere,colors.gold,[0,0,side*.5]);
+ }
+ return rig;}
+ function pose(rig,state,t,opts={}){const still=!!opts.still,osc=still?0:1,look=opts.look||[0,0],aim=opts.aim||[1,.25],view=opts.view||[0,0];
+ const body=rig.body;body.p=[0,1.55+(osc*Math.sin(t*2.2)*.015),0];body.s=[1,1,1];body.r=[-.05+look[1]*.04+view[1],-.25+look[0]*.22+view[0],osc*Math.sin(t*1.35)*.025];
+ const cheer=state==='cheer',wave=state==='wave',point=state==='point',think=state==='think';
+ // Arms stay on their own side of the pin. L is the screen-left shoulder in the default view.
+ // Pointing never flips a limb through the torso; elevation is limited to the outward hemisphere.
+ const left=point&&aim[0]<0;
+ const elevation=clamp(Math.atan2(aim[1],Math.abs(aim[0])||.001),-1.32,1.40);
+ rig.ArmR.r=[0,0,wave?1.15+osc*.22*Math.sin(t*9):cheer?1.05+osc*.13*Math.sin(t*10):point&&!left?elevation:think?-1.78:-1.12+osc*.035*Math.sin(t*1.7)];
+ rig.ArmL.r=[0,0,point&&left?-elevation:cheer?-1.12+osc*.13*Math.sin(t*10+1):1.12+osc*.03*Math.sin(t*1.7+1)];
+ rig.ElbowR.r=[0,0,wave?.18:think?-1.10:point&&!left?0:-.22];
+ rig.ElbowL.r=[0,0,point&&left?0:cheer?-.18:.15];
+ // The front joint plane keeps raised arms and the thinking hand clear of the blue shell.
+ rig.ArmR.p[2]=think?.55:(wave||cheer||point)?.38:.10;
+ rig.ArmL.p[2]=(cheer||point)?.38:.10;
+ rig.HandR.r=[0,0,wave?osc*.18*Math.sin(t*10):0];rig.HandL.r=[0,0,0];
+ if(think)body.r[2]=-.10;
+ if(state==='curious')body.r[2]=.12;if(state==='sad'){body.r[0]+=.10;body.r[2]=-.055;}if(state==='sleepy')body.r[2]=.08+osc*.025*Math.sin(t*.8);
+ if(state==='surprised')body.r[0]-=.08;
+ if(cheer){body.r[1]+=osc*.15*Math.sin(t*3);body.r[2]=osc*.045*Math.sin(t*6);}
+ const hop=opts.hop||0;if(hop>0){body.p[1]+=hop;body.s=[1-.035*hop,1+.06*hop,1];}
+ rig.HipL.r=[0,0,osc*.025*Math.sin(t*2)+(hop>0?-.13:0)];rig.HipR.r=[0,0,-osc*.025*Math.sin(t*2)+(hop>0?.13:0)];
+ applyFace(rig,state,t,{still,look,talk:opts.talk});
+
+ }
+
+ const EXPRESSIONS={
+  idle:{eyes:[1,1],brows:[-.04,.04],browY:[.275,.275],smile:1,curve:.8,open:0,blush:.30},
+  wave:{eyes:[1.18,1.18],brows:[-.10,.10],browY:[.32,.32],smile:1.08,curve:1,open:.50,blush:.72},
+  point:{eyes:[.93,.93],brows:[-.11,.11],browY:[.275,.275],smile:.85,curve:.65,open:0,blush:.25},
+  cheer:{eyes:[.9,.9],joy:true,brows:[-.12,.12],browY:[.315,.315],smile:1.15,curve:1,open:1,blush:1},
+  think:{eyes:[1,.62],brows:[.20,-.24],browY:[.335,.265],smile:.45,curve:.06,open:0,blush:.18,gaze:[-.026,.025]},
+  happy:{eyes:[1,1],joy:true,brows:[-.07,.07],browY:[.30,.30],smile:1.15,curve:1.25,open:.35,blush:.90},
+  curious:{eyes:[1.20,.87],brows:[.13,-.12],browY:[.34,.29],smile:.68,curve:.7,open:0,blush:.38,gaze:[.02,.025]},
+  surprised:{eyes:[1.40,1.40],brows:[-.04,.04],browY:[.35,.35],smile:.3,curve:0,open:0,round:true,blush:.24},
+  sad:{eyes:[.78,.78],brows:[.30,-.30],browY:[.29,.29],smile:.75,curve:-.65,open:0,blush:.20,gaze:[0,-.018]},
+  sleepy:{eyes:[.32,.28],brows:[-.03,.03],browY:[.25,.25],smile:.7,curve:.25,open:0,blush:.32,gaze:[0,-.012]}
+ };
+ function applyFace(rig,state,t,opts={}){
+  const e=EXPRESSIONS[state]||EXPRESSIONS.idle,still=opts.still,look=opts.look||[0,0],osc=still?0:1;
+  const cycle=t%4.3,blink=still?1:cycle>4.12?Math.max(.06,Math.abs((cycle-4.21)/.09)):1;
+  const gaze=e.gaze||[osc*Math.sin(t*.6)*.007,osc*Math.sin(t*.9)*.003];
+  const gx=look[0]*.022+gaze[0],gy=-look[1]*.015+gaze[1];
+  rig.Face.p=[gx*.25,gy*.20,.025];
+  for(const [i,side]of ['L','R'].entries()){
+   const x=side==='L'?-.17:.17,eye=rig['Eye'+side],light=rig['Eye'+side+'Light'];
+   const joy=!!e.joy;eye.p=[x+gx,.12+gy,.314];eye.s=joy?[.001,.001,.001]:[state==='surprised'?.068:.060,.095*e.eyes[i]*blink,.025];
+   light.p=[x+gx-.014,.12+gy+.033*e.eyes[i]*blink,.339];light.s=joy?[.001,.001,.001]:[.017,.025*e.eyes[i]*blink,.007];
+   eye.r=[0,0,state==='think'?(side==='L'?.06:-.12):0];
+   rig['JoyEye'+side].p=[x+gx,.12+gy,.335];rig['JoyEye'+side].s=joy?[1,1,1]:[.001,.001,.001];
+   rig['Brow'+side].p=[x,e.browY[i]+osc*.004*Math.sin(t*1.8+i),.33];rig['Brow'+side].r=[0,0,e.brows[i]];
+   rig['Cheek'+side].s=[.028+.045*e.blush,.010+.017*e.blush,.006];
+  }
+  const talking=!!opts.talk&&!still,syllable=talking?.35+.50*Math.abs(Math.sin(t*15)*Math.cos(t*5)):0;
+  const openness=Math.max(e.open,syllable),round=e.round&&!talking;
+  rig.Smile.p=[state==='think'?-.035:0,-.11,.325];rig.Smile.s=openness>.08||round?[.001,.001,.001]:[e.smile,e.curve||.02,1];rig.Smile.r=[0,0,state==='think'?.12:0];
+  rig.OpenMouth.s=openness>.08&&!round?[e.smile,.45+openness*.65,1]:[.001,.001,.001];
+  rig.RoundMouth.s=round?[.060,.085,.018]:[.001,.001,.001];
+ }
+ const VS=`attribute vec3 aPosition;attribute vec3 aNormal;uniform mat4 uModel;uniform mat4 uVP;uniform mat3 uNormal;varying vec3 vNormal;varying vec3 vWorld;void main(){vec4 w=uModel*vec4(aPosition,1.);vWorld=w.xyz;vNormal=normalize(uNormal*aNormal);gl_Position=uVP*w;}`;
+ const FS=`precision mediump float;varying vec3 vNormal;varying vec3 vWorld;uniform vec3 uColor;void main(){vec3 n=normalize(vNormal),v=normalize(vec3(0.,1.55,6.2)-vWorld);vec3 key=normalize(vec3(-3.,5.,6.));float k=max(dot(n,key),0.);float fill=max(dot(n,normalize(vec3(4.,1.,3.))),0.);float rim=pow(1.-max(dot(n,v),0.),3.);float spec=pow(max(dot(n,normalize(key+v)),0.),48.);vec3 c=uColor*(.44+.55*k+.14*fill)+vec3(.12,.16,.25)*rim+vec3(.40)*spec;c=pow(max(c,vec3(0.)),vec3(.92));gl_FragColor=vec4(c,1.);}`;
+ function normalMatrix(m){const a=[m[0],m[1],m[2]],b=[m[4],m[5],m[6]],c=[m[8],m[9],m[10]],bc=cross(b,c),ca=cross(c,a),ab=cross(a,b),d=a.reduce((v,x,i)=>v+x*bc[i],0)||1;return [...bc,...ca,...ab].map(x=>x/d);}
+ function renderer(canvas){const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false,powerPreference:'low-power'});if(!gl)throw Error('WebGL unavailable');
+ const shader=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;};
+ const p=gl.createProgram(),vs=shader(gl.VERTEX_SHADER,VS),fs=shader(gl.FRAGMENT_SHADER,FS);gl.attachShader(p,vs);gl.attachShader(p,fs);gl.linkProgram(p);gl.deleteShader(vs);gl.deleteShader(fs);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));
+ gl.useProgram(p);gl.enable(gl.DEPTH_TEST);gl.clearColor(0,0,0,0);
+ const loc={};for(const k of ['uModel','uVP','uColor','uNormal'])loc[k]=gl.getUniformLocation(p,k);for(const k of ['aPosition','aNormal'])loc[k]=gl.getAttribLocation(p,k);
+ const buffers=new Map();
+ function draw(n,parent,vp){const m=mul(parent,matrix(n.p,n.r,n.s));if(n.g){let b=buffers.get(n.g);if(!b){b={};for(const [key,data,target]of [['p',new Float32Array(n.g.p),gl.ARRAY_BUFFER],['n',new Float32Array(n.g.n),gl.ARRAY_BUFFER],['i',new Uint16Array(n.g.i),gl.ELEMENT_ARRAY_BUFFER]]){b[key]=gl.createBuffer();gl.bindBuffer(target,b[key]);gl.bufferData(target,data,gl.STATIC_DRAW)}buffers.set(n.g,b)}
+ for(const [k,key]of [['aPosition','p'],['aNormal','n']]){gl.bindBuffer(gl.ARRAY_BUFFER,b[key]);gl.enableVertexAttribArray(loc[k]);gl.vertexAttribPointer(loc[k],3,gl.FLOAT,false,0,0)}gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,b.i);gl.uniformMatrix4fv(loc.uModel,false,new Float32Array(m));gl.uniformMatrix4fv(loc.uVP,false,new Float32Array(vp));gl.uniformMatrix3fv(loc.uNormal,false,new Float32Array(normalMatrix(m)));gl.uniform3fv(loc.uColor,n.c);gl.drawElements(gl.TRIANGLES,n.g.i.length,gl.UNSIGNED_SHORT,0);}
+ for(const child of n.kids)draw(child,m,vp);}
+ return{render(scene){const rect=canvas.getBoundingClientRect(),width=rect.width;if(!width)return;const dpr=Math.min(root.devicePixelRatio||1,2),w=Math.max(1,Math.round(width*dpr)),h=Math.max(1,Math.round((rect.height||width)*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);const view=ident();view[13]=-1.55;view[14]=-6.2;draw(scene,ident(),mul(perspective(w/h),view));},destroy(){for(const b of buffers.values())for(const key of ['p','n','i'])gl.deleteBuffer(b[key]);gl.deleteProgram(p);gl.getExtension('WEBGL_lose_context')?.loseContext();}};
+ }
+ const instances=new Set();let raf=0,last=0;
+ function wake(){if(!raf&&!document.hidden&&instances.size){last=performance.now();raf=requestAnimationFrame(tick);}}
+ function tick(now){raf=0;const dt=Math.min(.05,(now-last)/1000||.016);last=now;let animated=false;for(const api of instances){if(!api.el.isConnected||!api.el.getClientRects().length||api.el.closest('dialog:not([open])'))continue;api.step(dt);if(!api.paused())animated=true;}if(animated&&!document.hidden)raf=requestAnimationFrame(tick);}
+ function create(host,options={}){const canvas=document.createElement('canvas');canvas.className='tfm tfm-3d';canvas.setAttribute('aria-hidden','true');canvas.style.cssText='display:block;width:100%;aspect-ratio:1;height:auto;';let draw;try{draw=renderer(canvas);}catch(e){return fallback.create(host,options)}
+ const rig=buildModel(),motion=root.matchMedia?.('(prefers-reduced-motion: reduce)'),S={state:'idle',base:'idle',t:0,still:!!options.still||!!motion?.matches,manualStill:!!options.still,talk:0,hopStart:-9,hopHeight:.35,aim:[1,.25],look:[0,0],view:[0,0],curR:-1.12,curL:1.12,timer:null};let dead=false,ro;
+ function render(dt=0){if(dead)return;S.t+=S.still?0:dt;const phase=(S.t-S.hopStart)/.8;let hop=!S.still&&phase>=0&&phase<=1?S.hopHeight*Math.sin(Math.PI*phase):0;
+ if(S.state==='cheer'&&!S.still&&S.t-S.hopStart>1.8)S.hopStart=S.t,hop=0;
+ const previousFace=rig.faceNodes.map(name=>({p:[...rig[name].p],r:[...rig[name].r],s:[...rig[name].s]}));
+ pose(rig,S.state,S.t,{still:S.still,aim:S.aim,look:S.look,view:S.view,hop,talk:S.t<S.talk});
+ const fk=S.still?1:1-Math.exp(-dt*12);rig.faceNodes.forEach((name,i)=>{for(const field of ['p','r','s'])rig[name][field]=rig[name][field].map((v,j)=>previousFace[i][field][j]+(v-previousFace[i][field][j])*fk);});
+ const k=S.still?1:1-Math.exp(-dt*12);S.curR+=(rig.ArmR.r[2]-S.curR)*k;S.curL+=(rig.ArmL.r[2]-S.curL)*k;rig.ArmR.r[2]=S.curR;rig.ArmL.r[2]=S.curL;
+ draw.render(rig.scene);}
+ const api={el:canvas,rig,renderer:'webgl',state:()=>S.state,paused:()=>S.still,step:render,
+ set(name,opts){if(dead)return api;S.state=states.includes(name)?name:'idle';if(opts?.base!==false){clearTimeout(S.timer);S.base=S.state}if(name!=='point'){S.aim=[1,.25];S.look=[0,0]}render();wake();return api;},
+ play(name,ms=1600){clearTimeout(S.timer);api.set(name,{base:false});S.timer=setTimeout(()=>api.set(S.base),ms);return api;},
+ talk(ms=1400){S.talk=S.t+Math.max(0,ms)/1000;render();wake();return api;},hop(height=60){if(!S.still){S.hopStart=S.t;S.hopHeight=clamp(height/180,0,.65);wake()}return api;},
+ look(x,y){S.look=x==null?[0,0]:[clamp(x,-1,1),clamp(y,-1,1)];render();wake();return api;},
+ pointAt(x,y){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return api;
+ const dx=x-r.left-r.width*.5,band=Math.max(8,r.width*.055);
+ // Hysteresis prevents rapid hand changes when the pointer passes above the head.
+ const previous=S.aim[0]<0?-1:1,side=dx>band?1:dx<-band?-1:previous;
+ const shoulderX=r.left+r.width*(.5+side*.165),shoulderY=r.top+r.height*.407;
+ const outward=Math.max(r.width*.03,(x-shoulderX)*side),dy=shoulderY-y;
+ S.aim=[side*outward,dy];S.look=[clamp(dx/240,-1,1),clamp((y-(r.top+r.height*.45))/240,-1,1)];
+ if(S.state!=='point')api.set('point');render();wake();return api;},
+ clearAim(){S.aim=[1,.25];S.look=[0,0];render();wake();return api;},
+ mount(h){if(h&&canvas.parentNode!==h)h.replaceChildren(canvas);render();wake();return api;},
+ setStill(v){S.manualStill=!!v;S.still=S.manualStill||!!motion?.matches;render();wake();return api;},
+ orbit(yaw,pitch=0){S.view=[yaw,clamp(pitch,-.5,.5)];render();wake();return api;},
+ exportGLB(){return exportGLB();},
+ destroy(){if(dead)return;dead=true;instances.delete(api);clearTimeout(S.timer);ro?.disconnect();motion?.removeEventListener?.('change',onMotion);draw.destroy();canvas.remove();},
+ };
+ const onMotion=()=>{S.still=S.manualStill||!!motion.matches;render();wake()};motion?.addEventListener?.('change',onMotion);
+ canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(!dead){const h=canvas.parentNode,state=S.state;api.destroy();const back=fallback.create(h,{state,still:S.still});for(const key of ['set','play','talk','hop','look','pointAt','clearAim','mount','setStill','destroy','state'])api[key]=back[key].bind(back);api.el=back.el;api.renderer='svg';}});
+ instances.add(api);if(root.ResizeObserver){ro=new ResizeObserver(()=>{render();wake()});ro.observe(canvas)}api.set(options.state||'idle');if(host)api.mount(host);return api;
+ }
+ document.addEventListener('visibilitychange',wake);
+ function exportGLB(){const rig=buildModel();pose(rig,'idle',0,{still:true});const nodes=[],objects=[],meshes=[],materials=[],accessors=[],views=[],parts=[];let offset=0;const gm=new Map(),cm=new Map();
+ function data(array,type,size,target){const pad=(4-offset%4)%4;if(pad){parts.push(new Uint8Array(pad));offset+=pad;}const index=views.length;views.push({buffer:0,byteOffset:offset,byteLength:array.byteLength,...(target?{target}:{})});parts.push(new Uint8Array(array.buffer,array.byteOffset,array.byteLength));offset+=array.byteLength;const a={bufferView:index,componentType:type,count:array.length/size,type:{1:'SCALAR',3:'VEC3',4:'VEC4'}[size]};if(size===3||size===1){a.min=Array(size).fill(Infinity);a.max=Array(size).fill(-Infinity);for(let i=0;i<array.length;i++){a.min[i%size]=Math.min(a.min[i%size],array[i]);a.max[i%size]=Math.max(a.max[i%size],array[i]);}}accessors.push(a);return accessors.length-1;}
+ function walk(n){const id=nodes.length;objects.push(n);const out={name:n.name,translation:[...n.p],rotation:quaternion(n.r),scale:[...n.s]};nodes.push(out);
+ if(n.g){const key=n.c.join(',');if(!cm.has(key)){cm.set(key,materials.length);materials.push({name:key, pbrMetallicRoughness:{baseColorFactor:[...n.c,1],metallicFactor:.04,roughnessFactor:.36},doubleSided:true});}
+ const mkey=n.g;let attributes=gm.get(mkey);if(!attributes){attributes={POSITION:data(new Float32Array(n.g.p),5126,3,34962),NORMAL:data(new Float32Array(n.g.n),5126,3,34962),indices:data(new Uint16Array(n.g.i),5123,1,34963)};gm.set(mkey,attributes)}out.mesh=meshes.length;meshes.push({name:n.name,primitives:[{attributes:{POSITION:attributes.POSITION,NORMAL:attributes.NORMAL},indices:attributes.indices,material:cm.get(key)}]});}
+ if(n.kids.length)out.children=n.kids.map(walk);return id;}
+ walk(rig.scene);const base=objects.map(n=>({translation:[...n.p],rotation:quaternion(n.r),scale:[...n.s]}));const animations=[];
+ for(const clip of [...states,'point_left','point_up','point_down']){const state=clip.startsWith('point_')?'point':clip;const aim=clip==='point_left'?[-1,.25]:clip==='point_up'?[.03,1]:clip==='point_down'?[.03,-1]:[1,.25];const duration=3,frames=91,times=Float32Array.from({length:frames},(_,i)=>i/30),timeIndex=data(times,5126,1),tracks=objects.map(()=>({translation:[],rotation:[],scale:[]}));
+ for(let i=0;i<frames;i++){const t=times[i],hop=state==='cheer'?.3*Math.max(0,Math.sin((t%1.25)/1.25*Math.PI)):0;pose(rig,state,t,{hop,aim});objects.forEach((n,j)=>{tracks[j].translation.push(...n.p);tracks[j].rotation.push(...quaternion(n.r));tracks[j].scale.push(...n.s)})}
+ const samplers=[],channels=[];tracks.forEach((track,j)=>{for(const [path,values]of Object.entries(track)){const size=path==='rotation'?4:3;if(values.every((v,i)=>Math.abs(v-base[j][path][i%size])<1e-5))continue;const out=data(new Float32Array(values),5126,size);channels.push({sampler:samplers.length,target:{node:j,path}});samplers.push({input:timeIndex,output:out,interpolation:'LINEAR'});}});animations.push({name:clip,samplers,channels});
+ }
+ const endpad=(4-offset%4)%4;if(endpad){parts.push(new Uint8Array(endpad));offset+=endpad;}const bin=new Uint8Array(offset);let at=0;for(const p of parts){bin.set(p,at);at+=p.length;}
+ const doc={asset:{version:'2.0',generator:'TaxFly procedural mascot'},scene:0,scenes:[{name:'TaxFly',nodes:[0]}],nodes,meshes,materials,animations,buffers:[{byteLength:offset}],bufferViews:views,accessors};let json=new TextEncoder().encode(JSON.stringify(doc));const jsonLength=Math.ceil(json.length/4)*4,total=12+8+jsonLength+8+bin.length,buffer=new ArrayBuffer(total),dv=new DataView(buffer),u=new Uint8Array(buffer);dv.setUint32(0,0x46546c67,true);dv.setUint32(4,2,true);dv.setUint32(8,total,true);dv.setUint32(12,jsonLength,true);dv.setUint32(16,0x4e4f534a,true);u.fill(32,20,20+jsonLength);u.set(json,20);dv.setUint32(20+jsonLength,bin.length,true);dv.setUint32(24+jsonLength,0x004e4942,true);u.set(bin,28+jsonLength);return buffer;
+ }
+ root.TaxflyMascot={create,POSES:states,_COL:fallback?._COL,renderer:'webgl',exportGLB,buildModel};
+ if(typeof module!=='undefined')module.exports=root.TaxflyMascot;
+})(typeof window!=='undefined'?window:globalThis);
 </script>
-</body>
-</html>
+<script>
+window._taxflyTripUid='preview-3d';window._taxflyTripProfile='preview';window.TripContext={status:()=>({phase:'ready'}),readTrips:()=>[{name:'Viaje de prueba'}]};window.taxflyProfileCan=()=>false;
+const pet=TaxflyMascot.create(document.getElementById('pet'),{state:'wave'});window.previewPet=pet;
+if(pet.renderer!=='webgl'){document.getElementById('mode').textContent='Respaldo 2D';document.querySelector('.stage-tip').textContent='El 3D no está disponible en este dispositivo. Mostrando el respaldo 2D.';}
+const states=document.getElementById('states'),stage=document.getElementById('stage'),follow=document.getElementById('follow');let on=false,yaw=0,pitch=0,drag=null,paused=false;
+function select(s){pet.set(s);for(const b of document.querySelectorAll('[data-s]'))b.setAttribute('aria-pressed',b.dataset.s===s);if(s==='point'){const r=document.getElementById('target').getBoundingClientRect();pet.pointAt(r.left+r.width/2,r.top+r.height/2);}}
+states.onclick=document.getElementById('emotions').onclick=e=>{if(e.target.dataset.s){on=false;follow.setAttribute('aria-pressed','false');select(e.target.dataset.s);}};
+document.getElementById('talk').onclick=()=>pet.talk(2200);document.getElementById('hop').onclick=()=>pet.hop(70);
+follow.onclick=()=>{on=!on;follow.setAttribute('aria-pressed',on);if(!on)select('idle');};
+window.addEventListener('pointermove',e=>{if(on){pet.pointAt(e.clientX,e.clientY);for(const b of document.querySelectorAll('[data-s]'))b.setAttribute('aria-pressed',b.dataset.s==='point');}});
+stage.addEventListener('pointerdown',e=>{if(e.isPrimary){drag=[e.clientX,e.clientY,yaw,pitch];stage.setPointerCapture(e.pointerId);}});
+stage.addEventListener('pointermove',e=>{if(drag){yaw=drag[2]+(e.clientX-drag[0])*.012;pitch=Math.max(-.5,Math.min(.5,drag[3]+(e.clientY-drag[1])*.006));pet.orbit?.(yaw,pitch);}});
+stage.addEventListener('pointerup',()=>drag=null);stage.addEventListener('pointercancel',()=>drag=null);
+stage.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();if(e.key==='ArrowLeft')yaw-=.15;if(e.key==='ArrowRight')yaw+=.15;if(e.key==='ArrowUp')pitch-=.08;if(e.key==='ArrowDown')pitch+=.08;pet.orbit?.(yaw,pitch);}});
+document.getElementById('reset').onclick=()=>{yaw=pitch=0;pet.orbit?.(0,0);};document.getElementById('pause').onclick=e=>{paused=!paused;pet.setStill(paused);e.target.setAttribute('aria-pressed',paused);e.target.textContent=paused?'Reanudar':'Pausar';};
+document.getElementById('download').onclick=()=>{const data=TaxflyMascot.exportGLB(),url=URL.createObjectURL(new Blob([data],{type:'model/gltf-binary'})),a=document.createElement('a');a.href=url;a.download='Taxfly-mascota-3D.glb';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+</script>
+<script>(function(root){
+  'use strict';
+  const VERSION=1;
+  const SECTIONS=['home','budget','expenses','planning','reservations','outlets','food','walmart','places','documents','routes','packing','group','tax','units'];
+  const key=(uid,profile)=>'taxfly-guide::'+JSON.stringify([VERSION,uid,profile]);
+  function clean(value){
+    const s=value&&typeof value==='object'?value:{};
+    return {welcome:!!s.welcome,done:SECTIONS.filter(x=>Array.isArray(s.done)&&s.done.includes(x)),offers:SECTIONS.filter(x=>Array.isArray(s.offers)&&s.offers.includes(x)),resume:s.resume&&SECTIONS.includes(s.resume.section)&&Number.isInteger(s.resume.index)?{section:s.resume.section,index:Math.max(0,Math.min(10,s.resume.index))}:null};
+  }
+  function tripFields(value){
+    const name=String(value.name||'').trim().slice(0,80),city=String(value.city||'').trim().slice(0,80),state=String(value.state||'').trim().slice(0,80);
+    const date=v=>!v||/^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v;
+    if(!name||!city||!state)return {error:'required'};
+    if(!date(value.startDate)||!date(value.endDate)||value.startDate&&value.endDate&&value.endDate<value.startDate)return {error:'datesError'};
+    return {fields:{name,destinations:[{city,state}],startDate:value.startDate||'',endDate:value.endDate||''}};
+  }
+  const api={VERSION,SECTIONS,key,clean,tripFields};root.TaxflyGuideCore=api;if(typeof module!=='undefined')module.exports=api;
+})(typeof window!=='undefined'?window:globalThis);
+</script>
+<script>(function(){
+  'use strict';
+  const copy={
+    sectionHelp:['¿Primera vez en esta sección?','First time in this section?','Primeira vez nesta seção?'],
+    guide:['Guía de TaxUSA','TaxUSA guide','Guia do TaxUSA'],close:['Cerrar guía','Close guide','Fechar guia'],later:['Ahora no','Not now','Agora não'],
+    welcome:['Tu viaje empieza acá','Your trip starts here','Sua viagem começa aqui'],
+    welcomeText:['Prepará lo esencial y descubrí las herramientas a tu ritmo. Podés salir y volver a esta guía cuando quieras.','Set up the essentials and discover the tools at your own pace. You can leave and return to this guide anytime.','Prepare o essencial e descubra as ferramentas no seu ritmo. Você pode sair e voltar ao guia quando quiser.'],
+    existing:['Ya tenés viajes guardados. Te mostramos cómo aprovecharlos sin cambiar tus datos.','You already have saved trips. Discover how to use them without changing your data.','Você já tem viagens salvas. Veja como aproveitá-las sem alterar seus dados.'],
+    create:['Configurar mi primer viaje','Set up my first trip','Configurar minha primeira viagem'],explore:['Conocer la app','Explore the app','Conhecer o app'],
+    hub:['¿Qué querés hacer?','What would you like to do?','O que você quer fazer?'],hubText:['Elegí una guía breve. Cada recorrido se puede pausar y retomar.','Choose a short guide. Each tour can be paused and resumed.','Escolha um guia breve. Cada tour pode ser pausado e retomado.'],
+    setup:['Crear un viaje paso a paso','Create a trip step by step','Criar uma viagem passo a passo'],
+    setupText:['Elegí un nombre y tu primer destino. Después podés sumar más ciudades y editar estos datos.','Choose a name and your first destination. You can add more cities and edit these details later.','Escolha um nome e o primeiro destino. Depois você pode adicionar cidades e editar os dados.'],
+    name:['Nombre del viaje','Trip name','Nome da viagem'],city:['Ciudad','City','Cidade'],state:['Estado o región','State or region','Estado ou região'],
+    from:['Desde (opcional)','From (optional)','De (opcional)'],until:['Hasta (opcional)','Until (optional)','Até (opcional)'],review:['Revisar viaje','Review trip','Revisar viagem'],
+    reviewText:['Revisá estos datos antes de crear el viaje. El presupuesto y las reservas se agregan después.','Review these details before creating the trip. Add your budget and reservations afterwards.','Revise os dados antes de criar a viagem. O orçamento e as reservas são adicionados depois.'],
+    save:['Crear este viaje','Create this trip','Criar esta viagem'],saving:['Guardando viaje…','Saving trip…','Salvando viagem…'],
+    required:['Completá nombre, ciudad y estado o región.','Enter a name, city and state or region.','Preencha nome, cidade e estado ou região.'],
+    datesError:['Revisá las fechas: la vuelta debe ser igual o posterior a la salida.','Check your dates: the end must be on or after the start.','Confira as datas: o fim deve ser igual ou posterior ao início.'],
+    saveError:['No pudimos confirmar el guardado. Revisá Mis viajes antes de volver a intentarlo.','We could not confirm the save. Check My trips before trying again.','Não foi possível confirmar o salvamento. Confira Minhas viagens antes de tentar novamente.'],
+    ready:['Tu viaje está creado','Your trip is created','Sua viagem foi criada'],saved:['Guardado y sincronizado. Elegí tu próximo paso.','Saved and synced. Choose your next step.','Salvo e sincronizado. Escolha seu próximo passo.'],
+    pending:['Guardado en este dispositivo; la sincronización está pendiente. No hace falta crear el viaje de nuevo.','Saved on this device; sync is pending. You do not need to create the trip again.','Salvo neste dispositivo; a sincronização está pendente. Não é preciso criar a viagem novamente.'],
+    nextSteps:['Primeros pasos','First steps','Primeiros passos'],nextText:['Elegí por dónde empezar. Podés volver a estas guías cuando quieras.','Choose where to start. You can return to these guides anytime.','Escolha por onde começar. Você pode voltar aos guias quando quiser.'],
+    budgetAction:['Definir mi presupuesto','Set my budget','Definir meu orçamento'],planAction:['Organizar mi primer día','Plan my first day','Organizar meu primeiro dia'],reservationAction:['Cargar mi primera reserva','Add my first reservation','Adicionar minha primeira reserva'],
+    back:['Atrás','Back','Voltar'],next:['Siguiente','Next','Próximo'],finish:['Terminar guía','Finish guide','Concluir guia'],pause:['Pausar','Pause','Pausar'],resume:['Retomar guía','Resume guide','Retomar guia'],
+    step:['Paso','Step','Passo'],of:['de','of','de'],done:['Guía vista','Guide viewed','Guia visto'],
+    complete:['Ya conocés lo esencial','You know the essentials','Você já conhece o essencial'],completeText:['Cerrá esta guía y probá la sección a tu ritmo. Podés volver a consultarla cuando quieras.','Close this guide and try the section at your own pace. You can return anytime.','Feche este guia e experimente a seção no seu ritmo. Você pode voltar quando quiser.'],
+    use:['Usar esta sección','Use this section','Usar esta seção'],more:['Ver otras guías','See other guides','Ver outros guias'],
+    waiting:['Esperando a que cargue esta sección…','Waiting for this section to load…','Aguardando esta seção carregar…'],
+    missing:['Este bloque todavía no está disponible. Podés continuar la explicación o volver a la sección y reintentar desde Guía.','This area is not available yet. Continue the explanation, or return to the section and retry from Guide.','Este bloco ainda não está disponível. Continue a explicação ou volte à seção e tente novamente pelo Guia.'],
+    readOnly:['Este perfil puede consultar las guías. Para crear o editar viajes necesitás permiso de edición.','This profile can browse the guides. Editing permission is needed to create or edit trips.','Este perfil pode consultar os guias. Para criar ou editar viagens, é necessária permissão de edição.'],
+    notReady:['Esperá a que terminen de cargar tu cuenta y tus viajes para crear uno nuevo.','Wait for your account and trips to finish loading before creating a new trip.','Aguarde o carregamento da conta e das viagens antes de criar uma nova.'],
+    chooseTrip:['Mis viajes','My trips','Minhas viagens'],noDates:['Fechas para más adelante','Dates to be added later','Datas para depois']
+  };
+  const step=(sel,title,text)=>({sel,title,text});
+  const tours={
+    home:{icon:'home',url:'index.html',name:['Conocer TaxUSA','Meet TaxUSA','Conhecer o TaxUSA'],steps:[
+      step('#tf-trip-home',['Tu viaje activo','Your active trip','Sua viagem ativa'],['Verificá qué viaje está seleccionado antes de cargar información. Desde Mis viajes podés cambiarlo o editar sus destinos.','Check the selected trip before adding information. Use My trips to switch trips or edit destinations.','Confira a viagem selecionada antes de adicionar informações. Em Minhas viagens você pode trocar a viagem ou editar destinos.']),
+      step('#sectionList',['Elegí tu próxima acción','Choose your next action','Escolha sua próxima ação'],['Empezá por Planificación para ordenar tus días, o por Documentos para reunir las reservas que ya tenés.','Start with Planning to organise your days, or Documents to gather the bookings you already have.','Comece pelo Planejamento para organizar os dias, ou por Documentos para reunir as reservas que já tem.']),
+      step('.widget-budget',['Seguí tu presupuesto','Track your budget','Acompanhe seu orçamento'],['Este resumen lleva a Gastos. Ahí definís el presupuesto y registrás lo que vas pagando.','This summary opens Expenses. Set your budget and record payments there.','Este resumo abre Gastos. Lá você define o orçamento e registra pagamentos.']),
+      step('#offline-readiness',['Prepará el viaje para salir','Prepare before heading out','Prepare a viagem antes de sair'],['Revisá qué datos están disponibles en este dispositivo antes de depender de la app sin conexión.','Check which data is available on this device before relying on the app offline.','Confira quais dados estão disponíveis neste dispositivo antes de depender do app sem conexão.'])]},
+    budget:{icon:'wallet',url:'compras.html',name:['Presupuesto','Budget','Orçamento'],steps:[
+      step('#budget-card',['El presupuesto de tu viaje','Your trip budget','O orçamento da viagem'],['Comprobá el viaje seleccionado. El presupuesto total y el disponible se muestran en esta tarjeta.','Check the selected trip. This card shows the total budget and remaining amount.','Confira a viagem selecionada. Este cartão mostra o orçamento total e o valor disponível.']),
+      step('#budget-set-row, #btn-change-budget',['Definí o cambiá el monto','Set or change the amount','Defina ou altere o valor'],['Usá Cambiar si ya existe un presupuesto. Ingresá el monto en USD y confirmalo con Guardar; abrir esta guía no modifica el valor.','Use Change if a budget already exists. Enter the USD amount and confirm with Save; opening this guide does not change it.','Use Alterar se já houver orçamento. Digite o valor em USD e confirme em Salvar; abrir este guia não altera o valor.']),
+      step('#bc-hint',['Revisá el resultado','Check the result','Confira o resultado'],['Después de guardar, comprobá el monto en la tarjeta y cualquier aviso de sincronización antes de salir.','After saving, check the amount in the card and any sync messages before leaving.','Depois de salvar, confira o valor no cartão e os avisos de sincronização antes de sair.'])]},
+    expenses:{icon:'receipt',url:'compras.html',name:['Registrar gastos','Record expenses','Registrar gastos'],steps:[
+      step('#nombre',['Identificá el gasto','Name the expense','Identifique o gasto'],['Cargá un nombre que después puedas reconocer. Verificá el viaje al que se asignará.','Use a name you can recognise later. Check which trip the expense will belong to.','Use um nome fácil de reconhecer depois. Confira a viagem à qual o gasto será atribuído.']),
+      step('#valor',['Ingresá el importe','Enter the amount','Informe o valor'],['Revisá importe y categoría antes de guardar. Para un ticket escaneado también conviene comprobar lo detectado.','Check the amount and category before saving. Review detected values when scanning a receipt too.','Confira valor e categoria antes de salvar. Revise também os valores detectados ao digitalizar um recibo.']),
+      step('[onclick="addGasto()"]',['Guardá y comprobá','Save and check','Salve e confira'],['Confirmá con Guardar gasto y buscá el registro en la lista. Revisá también cómo cambió tu disponible.','Confirm with Save expense and find it in the list. Check how your remaining budget changed too.','Confirme em Salvar gasto e encontre o registro na lista. Confira também a mudança no orçamento disponível.'])]},
+    planning:{icon:'calendar',url:'planificacion.html?section=parques',name:['Agenda y actividades','Schedule and activities','Agenda e atividades'],steps:[
+      step('#trip-manager',['Empezá por el viaje correcto','Start with the right trip','Comece pela viagem correta'],['Verificá el viaje y el destino antes de organizar sus días.','Check the trip and destination before organising its days.','Confira a viagem e o destino antes de organizar os dias.']),
+      step('#panel-parques',['Armá tu agenda','Build your schedule','Monte sua agenda'],['Usá la agenda para organizar los días y sus actividades. Podés empezar con una sola visita y completar el resto después.','Use the schedule to organise days and activities. Start with a single visit and add the rest later.','Use a agenda para organizar dias e atividades. Comece com uma visita e complete o restante depois.']),
+      step('#nav-reservas',['Separá las reservas','Keep bookings organised','Organize as reservas'],['Vuelos, alojamiento y otras reservas tienen su propia sección. La agenda ordena lo que vas a hacer durante el viaje.','Flights, stays and other bookings have their own section. The schedule organises what you plan to do during the trip.','Voos, hospedagem e outras reservas têm sua própria seção. A agenda organiza as atividades da viagem.'])]},
+    reservations:{icon:'ticket',url:'planificacion.html?section=reservas',name:['Reservas','Bookings','Reservas'],steps:[
+      step('#panel-reservas',['Reuní tus reservas','Gather your bookings','Reúna suas reservas'],['Agregá una reserva y elegí su tipo. Cargá los datos confirmados por el proveedor.','Add a booking and choose its type. Enter the details confirmed by the provider.','Adicione uma reserva e escolha o tipo. Preencha os dados confirmados pelo fornecedor.']),
+      step('#panel-reservas',['Revisá fechas y horarios','Check dates and times','Confira datas e horários'],['Verificá las fechas, los horarios locales y el localizador. Guardar una reserva acá no hace una compra al proveedor.','Check dates, local times and the confirmation code. Saving a booking here does not purchase anything from the provider.','Confira datas, horários locais e código da reserva. Salvar aqui não realiza uma compra com o fornecedor.']),
+      step('#panel-reservas',['Vinculá su documento','Link the document','Vincule o documento'],['Cuando tengas el comprobante, podés adjuntarlo o vincularlo desde Documentos para encontrarlo junto a la reserva.','Once you have the confirmation, attach it or link it from Documents to find it with the booking.','Quando tiver o comprovante, anexe ou vincule por Documentos para encontrá-lo junto à reserva.'])]},
+    documents:{icon:'file',url:'tickets.html',name:['Documentos','Documents','Documentos'],steps:[
+      step('#trip-filter-docs',['Ubicá el documento','Choose the right trip','Escolha a viagem correta'],['Comprobá el filtro de viaje antes de agregar un documento.','Check the trip filter before adding a document.','Confira o filtro de viagem antes de adicionar um documento.']),
+      step('.btn-add',['Agregá un documento','Add a document','Adicione um documento'],['Abrí Nuevo documento, poné un nombre reconocible y seleccioná el tipo y archivo.','Open New document, enter a recognisable name, and choose its type and file.','Abra Novo documento, informe um nome fácil de reconhecer e escolha o tipo e o arquivo.']),
+      step('#doc-list, #empty-state',['Comprobá que se pueda abrir','Check that it opens','Confira se abre'],['Después de guardar, abrilo desde la lista. Revisá su disponibilidad sin conexión antes de salir.','After saving, open it from the list. Check offline availability before heading out.','Depois de salvar, abra pela lista. Confira a disponibilidade offline antes de sair.'])]},
+    places:{icon:'pin',url:'lugares.html',name:['Lugares y tips','Places and tips','Lugares e dicas'],steps:[
+      step('#citySelector',['Elegí la ciudad','Choose the city','Escolha a cidade'],['Cambiá la ciudad para consultar sus referencias, parques y consejos locales.','Switch cities to see local references, parks and advice.','Troque a cidade para ver referências, parques e dicas locais.']),
+      step('#tip-text, #inline-transport-nonOrlando',['Consejos para decidir','Advice for decisions','Dicas para decidir'],['Los tips ayudan a preparar traslados y visitas. Revisá las condiciones oficiales al reservar, porque pueden cambiar.','Tips help plan transport and visits. Check official conditions when booking, as they can change.','As dicas ajudam a planejar trajetos e visitas. Confira as condições oficiais ao reservar, pois podem mudar.']),
+      step('#tab-notas',['Guardá tus propias notas','Keep your own notes','Guarde suas anotações'],['Usá Notas para recordar decisiones y datos propios del viaje.','Use Notes for your own trip decisions and details.','Use Notas para registrar decisões e informações da viagem.'])]},
+    routes:{icon:'map',url:'rutas.html',name:['Preparar rutas','Prepare routes','Preparar rotas'],steps:[
+      step('#hotel-input',['Definí desde dónde salís','Set your starting point','Defina o ponto de partida'],['Indicá el punto de partida para que el recorrido tenga sentido para tu alojamiento y tu día.','Set the starting point so the route fits your accommodation and day.','Informe o ponto de partida para adequar o trajeto à hospedagem e ao dia.']),
+      step('#stops-list',['Ordená las paradas','Organise stops','Organize as paradas'],['Revisá qué lugares incluís y sus direcciones antes de generar la ruta.','Check included places and their addresses before generating the route.','Confira os lugares e endereços antes de gerar a rota.']),
+      step('#btn-gen',['Revisá la propuesta','Review the proposal','Revise a proposta'],['Comprobá horarios y tiempos reales de traslado. Si una función usa IA, consultá su costo o créditos antes de ejecutarla.','Check opening hours and actual travel times. If a feature uses AI, check its cost or credits before running it.','Confira horários e tempos reais de deslocamento. Se uma função usa IA, consulte o custo ou créditos antes de executá-la.'])]}
+  };
+  const simple=[
+    ['outlets','bag','planificacion.html?section=outlets','#panel-outlets',['Compras y outlets','Shopping and outlets','Compras e outlets'],['Alterná entre el cronograma de paradas y tu lista de compras. Revisá el día seleccionado antes de editar.','Switch between the stop schedule and shopping list. Check the selected day before editing.','Alterne entre o cronograma de paradas e a lista de compras. Confira o dia selecionado antes de editar.']],
+    ['food','utensils','planificacion.html?section=comidas','#panel-comidas',['Comidas','Meals','Refeições'],['Organizá las comidas por día y revisá que coincidan con tus actividades y traslados.','Plan meals by day and check they fit your activities and travel.','Organize as refeições por dia e confira se combinam com atividades e trajetos.']],
+    ['walmart','cart','planificacion.html?section=walmart','#panel-walmart',['Lista de supermercado','Grocery list','Lista de supermercado'],['Prepará lo que necesitás y marcá lo comprado durante la visita. Revisá las cantidades antes de salir.','Prepare what you need and check items off during your visit. Review quantities before leaving.','Prepare o que precisa e marque os itens comprados durante a visita. Confira as quantidades antes de sair.']],
+    ['packing','briefcase','mis-cosas.html','main, .main',['Equipaje y listas','Packing and lists','Bagagem e listas'],['Separá lo que llevás de lo que todavía tenés que preparar. Revisá la lista antes de cada salida.','Separate packed items from those still to prepare. Check the list before heading out.','Separe os itens prontos dos que ainda precisa preparar. Confira a lista antes de sair.']],
+    ['group','users','grupo.html','main, .main, .container',['Gastos del grupo','Group expenses','Gastos do grupo'],['Agregá a los integrantes y registrá quién pagó cada gasto compartido. Revisá los saldos antes de compensarlos.','Add members and record who paid each shared expense. Check balances before settling up.','Adicione os integrantes e registre quem pagou cada gasto compartilhado. Confira os saldos antes de acertar.']],
+    ['tax','calculator','tax.html','#state-select',['Calculadora de impuestos','Tax calculator','Calculadora de impostos'],['Elegí la ubicación y la categoría de la compra. El cálculo es una estimación: comprobá el total real en caja.','Choose the purchase location and category. The calculation is an estimate: check the actual checkout total.','Escolha o local e a categoria da compra. O cálculo é uma estimativa: confira o total real no caixa.']],
+    ['units','scale','unidades.html','#grp-temp',['Ayuda y referencias','Help and references','Ajuda e referências'],['Encontrá conversiones y referencias útiles durante el viaje. Abrí el grupo que necesites para consultar sus herramientas.','Find useful conversions and references during your trip. Open the group you need to use its tools.','Encontre conversões e referências úteis durante a viagem. Abra o grupo desejado para usar as ferramentas.']]
+  ];
+  for(const [id,icon,url,sel,name,text] of simple)tours[id]={icon,url,name,steps:[step(sel,name,text)]};
+  window.TaxflyGuideData={copy,tours};
+})();
+</script>
+<script>
+TaxflyGuideData.tours.home.url=location.href;TaxflyGuideData.tours.home.steps=[{sel:'#demo-trip',title:['¡Hola! Vamos paso a paso','Hello!','Olá!'],text:['Soy tu compañero de viaje. Te ayudo a encontrar cada herramienta.','Let me show you around.','Vamos passo a passo.']},{sel:'#demo-budget',title:['Por acá está tu presupuesto','Your budget','Seu orçamento'],text:['El gesto acompaña al bloque que estás viendo. Podés pausar la guía cuando quieras.','You can pause anytime.','Você pode pausar quando quiser.']},{sel:'#demo-plan',title:['Ya estás listo para planificar','Ready to plan','Tudo pronto'],text:['Terminá este recorrido para ver cómo festejamos.','Finish the tour to celebrate.','Conclua para comemorar.']}];
+</script>
+<script>(function(){
+  'use strict';
+  const C=window.TaxflyGuideCore,D=window.TaxflyGuideData;if(!C||!D||window.TaxflyGuide)return;
+  const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const memory=new Map();let scope='',state=C.clean(),phase='',tour=null,index=0,token=0,busy=false,returnFocus=null,target=null,draft={},autoTimer=null,initialized=false;
+  const file=()=>location.pathname.split('/').pop()||'index.html';
+  const home=()=>file()==='index.html';
+  const lang=()=>{try{return {en:1,pt:2}[localStorage.getItem('appLang')]||0;}catch(_){return 0;}};
+  const txt=value=>Array.isArray(value)?value[lang()]||value[0]:value;
+  const t=key=>txt(D.copy[key]||key);
+  const hasTour=id=>C.SECTIONS.includes(id)&&Object.hasOwn(D.tours,id);
+  const icon=(name,size=20)=>window.uiIcon?.(name,size)||`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 4 3c-1 0-1 1-1 2m0 3h.01"/></svg>`;
+  function context(){const uid=window._taxflyTripUid,profile=window._taxflyTripProfile||localStorage.getItem('perfilActivoId');return uid&&profile?{uid,profile}:null;}
+  function trips(){const c=context();return c?window.TripContext?.readTrips(c.uid,c.profile)||[]:[];}
+  function ready(){const c=context();if(!c||!window.TripContext)return false;const s=window.TripContext.status(c.uid,c.profile);return s.phase==='ready'||s.hasData;}
+  function canEdit(){return window.taxflyProfileCan?.('edit')!==false;}
+  function persist(){if(!scope)return;const value=JSON.stringify(state);memory.set(scope,value);try{localStorage.setItem(scope,value);}catch(_){}}
+  function syncScope(){
+    const c=context(),next=c?C.key(c.uid,c.profile):'';if(next===scope)return;
+    busy=false;root.removeAttribute('aria-busy');close(false);scope=next;draft={};let value=memory.get(scope);try{value=localStorage.getItem(scope)||value;}catch(_){}
+    try{state=C.clean(JSON.parse(value||'null'));}catch(_){state=C.clean();}
+    renderHome();
+  }
+  const root=document.createElement('dialog');root.className='tfg-root';root.id='taxfly-guide';root.setAttribute('data-notr','');root.setAttribute('aria-labelledby','tfg-title');root.setAttribute('aria-describedby','tfg-description');
+  root.innerHTML='<div class="tfg-shade"></div><div class="tfg-spot" hidden></div><section class="tfg-card"></section>';document.body.appendChild(root);
+  const card=root.querySelector('.tfg-card'),spot=root.querySelector('.tfg-spot');
+  const launch=document.createElement('button');launch.type='button';launch.className='tfg-launch';launch.setAttribute('data-notr','');launch.onclick=()=>openHub();document.body.appendChild(launch);
+  // Mascota animada (assets/mascot.js). Si no cargó, la guía funciona igual sin ella.
+  const Pet=window.TaxflyMascot;let pet=null,mini=null,miniTimer=0;
+  const PET_STATE={welcome:'wave',hub:'idle',setup:'idle',review:'think',created:'cheer',complete:'cheer',message:'think',tour:'point'};
+  function petScene(){
+    if(!Pet)return;const host=card.querySelector('.tfg-pet');if(!host)return;
+    try{
+      pet=pet||Pet.create(null,{state:'idle'});pet.mount(host);pet.set(PET_STATE[phase]||'idle');
+      if(phase==='welcome'||phase==='created'||phase==='complete')setTimeout(()=>{if(root.open&&pet)pet.hop(phase==='welcome'?46:60);},260);
+      if(phase!=='tour'&&phase!=='message')pet.talk(1100);
+    }catch(_){pet=null;host.remove();}
+  }
+  function petAim(){
+    if(!pet||phase!=='tour'||!target?.isConnected)return;
+    const r=target.getBoundingClientRect();if(r.width)pet.pointAt(r.left+r.width/2,r.top+r.height/2);
+  }
+  function miniMount(){
+    if(!Pet)return;const host=launch.querySelector('.tfg-mini');if(!host)return;
+    try{
+      if(!mini){
+        mini=Pet.create(null,{state:'idle'});
+        const hi=()=>{if(!root.open)mini.play('wave',1700);};
+        launch.addEventListener('pointerenter',hi);launch.addEventListener('focus',hi);
+        clearInterval(miniTimer);
+        // Mientras no completó ningún recorrido, llama la atención de vez en cuando
+        miniTimer=setInterval(()=>{if(!root.open&&!document.hidden&&!state.done.length){mini.play('wave',1800);mini.hop(26);}},32000);
+      }
+      mini.mount(host);
+    }catch(_){mini=null;host.remove();}
+  }
+  function button(action,label,primary=false){return `<button type="button" data-guide="${action}"${primary?' class="tfg-primary"':''}>${esc(t(label))}</button>`;}
+  function item(id,label,small=''){return `<button type="button" class="tfg-item" data-tour="${id}">${icon(D.tours[id]?.icon||'bulb')}<span>${esc(label)}${small?`<small>${esc(small)}</small>`:''}</span>${icon('chevDown',15)}</button>`;}
+  function shell(title,description,body='',actions=''){
+    root.dataset.phase=phase;root.dataset.highlight='false';spot.hidden=true;target=null;card.style.cssText='';
+    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-head"><div class="tfg-pet" aria-hidden="true"></div><h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}`;
+    if(!root.open){returnFocus=document.activeElement;root.showModal();launch.hidden=true;mini?.setStill(true);}
+    petScene();
+    // Move focus when content changes, without letting automatic repositioning steal it.
+    $('#tfg-title')?.focus({preventScroll:true});
+  }
+  function close(save=true){
+    if(busy)return;
+    token++;if(save&&phase==='tour'&&tour){state.resume={section:tour,index};persist();}
+    if(save&&phase==='welcome'){state.welcome=true;persist();}
+    phase='';tour=null;target=null;pet?.set('idle');
+    if(root.open)root.close();launch.hidden=false;mini?.setStill(false);spot.hidden=true;returnFocus?.isConnected&&returnFocus.focus?.({preventScroll:true});renderHome();
+  }
+  function welcome(){syncScope();if(!ready())return false;phase='welcome';shell(t('welcome'),t(trips().length?'existing':'welcomeText'),' ',button('later','later')+button(trips().length?'home-tour':'setup',trips().length?'explore':'create',true));return true;}
+  function openHub(){
+    syncScope();token++;phase='hub';
+    const current=currentSection(),ids=[current,...Object.keys(D.tours)].filter((v,i,a)=>a.indexOf(v)===i);
+    let body='<div class="tfg-list">';
+    if(state.resume)body+=`<button type="button" class="tfg-item" data-guide="resume">${icon('calendar')}<span>${esc(t('resume'))}<small>${esc(txt(D.tours[state.resume.section].name))}</small></span></button>`;
+    if(ready()&&!trips().length&&canEdit())body+=`<button type="button" class="tfg-item" data-guide="setup">${icon('plane')}<span>${esc(t('setup'))}</span></button>`;
+    body+=ids.map(id=>item(id,txt(D.tours[id].name),state.done.includes(id)?t('done'):'')).join('')+'</div>';
+    shell(t('hub'),t('hubText'),body);
+  }
+  function readDraft(){const f=card.querySelector('form');if(f)for(const input of f.querySelectorAll('input'))draft[input.name]=input.value;}
+  function setup(){
+    syncScope();if(!ready()||!canEdit()){phase='message';shell(t('setup'),t(!ready()?'notReady':'readOnly'),'',button('hub','more'));return;}
+    state.welcome=true;persist();
+    phase='setup';
+    const field=(key,type='text',required=false)=>`<label class="tfg-field">${esc(t(key))}<input name="${key==='from'?'startDate':key==='until'?'endDate':key}" type="${type}"${required?' required maxlength="80"':''} value="${esc(draft[key==='from'?'startDate':key==='until'?'endDate':key]||'')}" autocomplete="off"></label>`;
+    shell(t('setup'),t('setupText'),`<form id="tfg-trip-form">${field('name','text',true)}<div class="tfg-grid">${field('city','text',true)}${field('state','text',true)}</div><div class="tfg-grid">${field('from','date')}${field('until','date')}</div><div class="tfg-error" role="alert" id="tfg-error"></div><div class="tfg-actions">${button('hub','later')}<button type="submit" class="tfg-primary">${esc(t('review'))}</button></div></form>`);
+    card.querySelector('form').onsubmit=e=>{e.preventDefault();readDraft();const r=C.tripFields(draft);if(r.error){$('#tfg-error').textContent=t(r.error);return;}review();};
+  }
+  function review(){phase='review';const {fields,error}=C.tripFields(draft);if(error){setup();return;}
+    shell(t('review'),t('reviewText'),`<div class="tfg-summary"><strong>${esc(fields.name)}</strong><span>${esc(fields.destinations[0].city)}, ${esc(fields.destinations[0].state)}</span><span>${esc([fields.startDate,fields.endDate].filter(Boolean).join(' → ')||t('noDates'))}</span></div><div class="tfg-error" role="alert" id="tfg-error"></div>`,button('setup','back')+button('save','save',true));
+  }
+  async function saveTrip(){
+    if(busy||!ready()||!canEdit())return;
+    const {fields,error}=C.tripFields(draft);if(error){setup();return;}
+    const c=context(),capturedScope=scope;busy=true;card.querySelectorAll('button').forEach(b=>b.disabled=true);$('#tfg-description').textContent=t('saving');root.setAttribute('aria-busy','true');pet?.set('think');
+    try{
+      const result=await window.TripContext.create(c.uid,c.profile,fields);
+      if(capturedScope!==C.key(context()?.uid,context()?.profile)){syncScope();return;}
+      busy=false;root.removeAttribute('aria-busy');
+      if(!result?.trip)throw Error('unconfirmed');
+      state.welcome=true;state.resume=null;persist();phase='created';
+      shell(t('ready'),t(result.synced===false?'pending':'saved'),`<div class="tfg-summary"><strong>${esc(result.trip.name)}</strong><span>${esc(fields.destinations[0].city)}, ${esc(fields.destinations[0].state)}</span></div><div class="tfg-list" style="margin-top:14px">${item('budget',t('budgetAction'))}${item('planning',t('planAction'))}${item('reservations',t('reservationAction'))}</div>`,button('finish-setup','use'));
+    }catch(_){if(capturedScope!==C.key(context()?.uid,context()?.profile)){syncScope();return;}busy=false;root.removeAttribute('aria-busy');review();$('#tfg-error').textContent=t('saveError');}
+  }
+  function currentSection(){
+    const map={'index.html':'home','compras.html':'expenses','tickets.html':'documents','lugares.html':'places','rutas.html':'routes','mis-cosas.html':'packing','grupo.html':'group','tax.html':'tax','unidades.html':'units'};
+    if(file()==='planificacion.html'){const active=$('.section-panel.active, .panel.active');const s=new URLSearchParams(location.search).get('section');const section=active?.id?.replace('panel-','')||s,sections={reservas:'reservations',outlets:'outlets',comidas:'food',walmart:'walmart',lugares:'places'};return Object.hasOwn(sections,section)?sections[section]:'planning';}
+    return map[file()]||'home';
+  }
+  function samePage(id){const u=new URL(D.tours[id].url,location.href);if(u.pathname!==location.pathname&&!(home()&&u.pathname.endsWith('/index.html')))return false;
+    return file()!=='planificacion.html'||currentSection()===id;
+  }
+  function navigate(id,resume=false){
+    if(!hasTour(id))return;
+    if(samePage(id)){startTour(id,resume?state.resume?.index||0:0);return;}
+    const u=new URL(D.tours[id].url,location.href);u.searchParams.set('guide',id);if(resume)u.searchParams.set('guideStep',String(state.resume?.index||0));
+    close(false);location.assign(u.href);
+  }
+  function visibleElement(selector){return [...document.querySelectorAll(selector)].find(el=>!el.closest('[hidden]')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&getComputedStyle(el).display!=='none'&&el.getAttribute('aria-busy')!=='true'&&el.dataset.planWaiting!=='true');}
+  function startTour(id,start=0){
+    if(!hasTour(id))return;
+    if($('#settingsDrawer')?.classList.contains('open'))window.toggleSettings?.();
+    state.welcome=true;phase='tour';tour=id;index=Math.min(start,D.tours[id].steps.length-1);renderStep();
+  }
+  function renderStep(){
+    const seq=++token,step=D.tours[tour].steps[index],count=D.tours[tour].steps.length;
+    state.resume={section:tour,index};persist();
+    shell(txt(step.title),txt(step.text),`<span class="tfg-step">${esc(t('step'))} ${index+1} ${esc(t('of'))} ${count}</span><div class="tfg-progress" role="progressbar" aria-label="${esc(t('guide'))}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index+1}"><span style="width:${(index+1)/count*100}%"></span></div><p class="tfg-notice" id="tfg-target-status" role="status">${esc(t('waiting'))}</p>`,(index?button('prev','back'):'')+button('pause','pause')+button('next',index===count-1?'finish':'next',true));
+    const started=Date.now();
+    function seek(){
+      if(seq!==token||!root.open||phase!=='tour')return;
+      const el=visibleElement(step.sel);
+      const loading=file()==='planificacion.html'&&!window._appInited;
+      if(el&&!loading){target=el;$('#tfg-target-status').hidden=true;el.scrollIntoView({block:'center',behavior:'instant'});requestAnimationFrame(position);return;}
+      if(Date.now()-started<6000){setTimeout(seek,120);return;}
+      $('#tfg-target-status').textContent=t('missing');
+    }
+    seek();
+  }
+  function position(){
+    if(phase!=='tour'||!target?.isConnected)return;
+    const r=target.getBoundingClientRect(),w=window.innerWidth,h=window.innerHeight;
+    if(!r.width||!r.height){spot.hidden=true;root.dataset.highlight='false';return;}
+    root.dataset.highlight='true';spot.hidden=false;
+    const left=Math.max(4,r.left-5),top=Math.max(4,r.top-5),right=Math.min(w-4,r.right+5),bottom=Math.min(h-4,r.bottom+5);
+    Object.assign(spot.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});
+    const ch=card.offsetHeight,cw=Math.min(380,w-32),below=r.bottom+14,above=r.top-ch-14;
+    const y=below+ch<=h-12?below:above>=12?above:Math.max(12,h-ch-12);
+    Object.assign(card.style,{position:'fixed',left:Math.max(16,Math.min(w-cw-16,r.left+r.width/2-cw/2))+'px',top:y+'px',width:cw+'px',maxHeight:(h-24)+'px'});
+    requestAnimationFrame(petAim);
+  }
+  function finish(){const id=tour;state.done=[...new Set([...state.done,id])];state.resume=null;persist();token++;tour=null;phase='complete';shell(t('complete'),t('completeText'),'',button('hub','more')+button('close','use',true));renderHome();}
+  function renderHome(){
+    if(!initialized)return;
+    if(!home()){
+      const id=currentSection();let banner=$('#tfg-section-help');
+      if(!ready()||state.done.includes(id)||state.offers.includes(id)){banner?.remove();return;}
+      if(!banner){banner=document.createElement('aside');banner.id='tfg-section-help';banner.className='tfg-home tfg-section-help';banner.setAttribute('data-notr','');const header=$('header');if(!header)return;header.after(banner);}
+      banner.innerHTML=`<strong>${esc(t('sectionHelp'))}</strong><div class="tfg-home-actions">${item(id,txt(D.tours[id].name))}<button type="button" class="tfg-dismiss">${esc(t('later'))}</button></div>`;
+      banner.onclick=e=>{if(e.target.closest('[data-tour]'))navigate(id);else if(e.target.closest('.tfg-dismiss')){state.offers=[...new Set([...state.offers,id])];persist();banner.remove();}};
+      return;
+    }
+    let box=$('#tfg-first-steps');if(!ready()||!trips().length){box?.remove();return;}
+    if(state.offers.includes('home')||['budget','planning','documents'].every(id=>state.done.includes(id))){box?.remove();return;}
+    if(!box){box=document.createElement('section');box.id='tfg-first-steps';box.className='tfg-home';box.setAttribute('data-notr','');const anchor=$('#homePlanHeading')||$('#sectionList');if(!anchor)return;anchor.before(box);}
+    box.innerHTML=`<div class="tfg-home-head"><strong>${esc(t('nextSteps'))}</strong><button type="button" class="tfg-close" data-dismiss-home aria-label="${esc(t('later'))}">${icon('x',16)}</button></div><p>${esc(t('nextText'))}</p><div class="tfg-home-actions">${item('budget',t('budgetAction'),state.done.includes('budget')?t('done'):'')}${item('planning',t('planAction'),state.done.includes('planning')?t('done'):'')}${item('documents',txt(D.tours.documents.name),state.done.includes('documents')?t('done'):'')}</div>`;
+    box.onclick=e=>{if(e.target.closest('[data-dismiss-home]')){state.offers=[...new Set([...state.offers,'home'])];persist();box.remove();return;}const id=e.target.closest('[data-tour]')?.dataset.tour;if(id)navigate(id);};
+  }
+  function offerFirstTrip(){
+    syncScope();if(!home()||!ready()||state.welcome||root.open||$('dialog[open]:not(#taxfly-guide)'))return false;
+    welcome();return true;
+  }
+  function refresh(){syncScope();
+    const settings=$('#settingsDrawer .sx-scroll');if(settings&&!$('#tfg-settings-help')){const help=document.createElement('button');help.id='tfg-settings-help';help.className='tfg-item';help.type='button';help.setAttribute('data-notr','');help.onclick=()=>{window.toggleSettings?.();openHub();};settings.appendChild(help);}
+    if($('#tfg-settings-help'))$('#tfg-settings-help').innerHTML=icon('bulb',18)+`<span>${esc(t('guide'))}</span>`;
+    launch.innerHTML=(Pet?'<span class="tfg-mini" aria-hidden="true"></span>':icon('bulb',18))+`<span>${esc(t('guide'))}</span>`;launch.setAttribute('aria-label',t('guide'));miniMount();renderHome();
+    if(root.open&&!busy){if(phase==='setup'){readDraft();setup();}else if(phase==='review')review();else if(phase==='hub')openHub();else if(phase==='welcome')welcome();else if(phase==='tour')renderStep();}
+  }
+  root.addEventListener('cancel',e=>{e.preventDefault();close();});
+  root.addEventListener('click',e=>{
+    if(busy)return;const id=e.target.closest('[data-tour]')?.dataset.tour;if(id){navigate(id);return;}
+    const act=e.target.closest('[data-guide]')?.dataset.guide;
+    if(act==='close'||act==='pause'||act==='later'){if(phase==='setup')readDraft();close();}
+    else if(act==='hub')openHub();else if(act==='setup')setup();else if(act==='save')saveTrip();
+    else if(act==='home-tour')navigate('home');else if(act==='resume'&&state.resume)navigate(state.resume.section,true);
+    else if(act==='prev'){index--;renderStep();}else if(act==='next'){if(index===D.tours[tour].steps.length-1)finish();else{index++;renderStep();}}
+    else if(act==='finish-setup'){close(false);location.assign(new URL('index.html',location.href).href);}
+  });
+  // The native dialog traps keyboard focus; Escape pauses, including the welcome.
+  let positioning=false;function queuePosition(){if(positioning||phase!=='tour')return;positioning=true;requestAnimationFrame(()=>{positioning=false;position();});}
+  window.addEventListener('resize',queuePosition);window.addEventListener('scroll',queuePosition,true);window.visualViewport?.addEventListener('resize',queuePosition);
+  document.addEventListener('click',e=>{if(e.target.closest('.lang-opt,[data-lang]'))setTimeout(refresh,0);});
+  document.addEventListener('click',e=>{if(e.target.closest('.tab,.plan-section-menu button,.plan-food-switch button'))setTimeout(renderHome,0);});
+  window.addEventListener('storage',e=>{if(e.key==='appLang')refresh();if(e.key==='perfilActivoId'||e.key==='taxusa_offline_uid')syncScope();});
+  for(const name of ['taxfly:tripchange','taxfly:tripstatus'])window.addEventListener(name,()=>{syncScope();renderHome();scheduleAuto();});
+  function scheduleAuto(){clearTimeout(autoTimer);autoTimer=setTimeout(()=>{
+    if(!ready()||root.open||$('dialog[open]'))return;
+    const params=new URLSearchParams(location.search),id=params.get('guide');
+    if(hasTour(id)){const requested=Math.max(0,Math.min(10,Math.trunc(Number(params.get('guideStep'))||0)));params.delete('guide');params.delete('guideStep');history.replaceState(null,'',location.pathname+(params.size?'?'+params:'')+location.hash);startTour(id,requested);}
+    else if(home())offerFirstTrip();
+  },650);}
+  window.TaxflyGuide={open:openHub,offerFirstTrip,start:id=>navigate(id),refresh};
+  initialized=true;refresh();scheduleAuto();
+  let tries=0;const boot=setInterval(()=>{syncScope();renderHome();scheduleAuto();if(ready()||++tries>=40)clearInterval(boot);},1000);
+})();
+</script>
+<script>document.getElementById('guide-demo').onclick=()=>TaxflyGuide.start('home');</script></body></html>

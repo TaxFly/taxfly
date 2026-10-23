@@ -34,3 +34,11 @@
 .tfg-mini{flex:none;display:block;width:42px;margin:-10px 2px -6px -4px;pointer-events:none}
 .tfg-launch{overflow:visible}
 @media(max-width:640px){.tfg-pet{width:84px}.tfg-root[data-phase=tour] .tfg-pet{width:66px}}
+
+/* Real 3D canvas with the same layout contract as the SVG fallback. */
+.tfm-3d{aspect-ratio:1;background:radial-gradient(ellipse 25% 2% at 50% 87%,#14213d24,transparent 100%)}
+.tfg-launch[hidden]{display:none}
+
+/* Give the companion enough room for its articulated 3D gestures. */
+.tfg-head{gap:14px}.tfg-pet{width:118px}.tfg-root[data-phase=tour] .tfg-pet{width:96px}
+@media(max-width:640px){.tfg-head{gap:10px}.tfg-pet{width:104px}.tfg-root[data-phase=tour] .tfg-pet{width:90px}}

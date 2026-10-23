@@ -115,6 +115,7 @@
     };
     const api={el:svg,rig:R};
     function applyHand(h){
+      if(h==='point')h='relax';
       R.handPoint.setAttribute('visibility',h==='point'?'visible':'hidden');
       R.handMitt.setAttribute('visibility',h==='mitt'?'visible':'hidden');
       R.handRelax.setAttribute('visibility',h==='relax'?'visible':'hidden');
@@ -229,4 +230,199 @@
   }
   root.TaxflyMascot={create,POSES:Object.keys(POSES),_COL:COL};
   if(typeof module!=='undefined')module.exports=root.TaxflyMascot;
+})(typeof window!=='undefined'?window:globalThis);
+
+/* TaxFly: procedural 3D character. WebGL, articulated meshes, no external downloads.
+   The original SVG implementation above remains the fallback. */
+(function(root){
+ 'use strict';
+ const fallback=root.TaxflyMascot, TAU=Math.PI*2, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const states=['idle','wave','point','cheer','think','happy','curious','surprised','sad','sleepy'];
+ const colors={blue:[.184,.420,1],navy:[.045,.075,.16],gold:[1,.66,.14],eye:[.018,.027,.055],white:[1,1,1]};
+ const ident=()=>[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+ function mul(a,b){const o=new Array(16).fill(0);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o;}
+ function matrix(p,r,s){const [x,y,z]=r.map(v=>v/2),cx=Math.cos(x),sx=Math.sin(x),cy=Math.cos(y),sy=Math.sin(y),cz=Math.cos(z),sz=Math.sin(z);
+ const q=[sx*cy*cz+cx*sy*sz,cx*sy*cz-sx*cy*sz,cx*cy*sz+sx*sy*cz,cx*cy*cz-sx*sy*sz];return trs(p,q,s);}
+ function trs(p,q,s){const [x,y,z,w]=q,x2=x+x,y2=y+y,z2=z+z,xx=x*x2,xy=x*y2,xz=x*z2,yy=y*y2,yz=y*z2,zz=z*z2,wx=w*x2,wy=w*y2,wz=w*z2;
+ return [(1-yy-zz)*s[0],(xy+wz)*s[0],(xz-wy)*s[0],0,(xy-wz)*s[1],(1-xx-zz)*s[1],(yz+wx)*s[1],0,(xz+wy)*s[2],(yz-wx)*s[2],(1-xx-yy)*s[2],0,...p,1];}
+ function quaternion(r){const [x,y,z]=r.map(v=>v/2),cx=Math.cos(x),sx=Math.sin(x),cy=Math.cos(y),sy=Math.sin(y),cz=Math.cos(z),sz=Math.sin(z);return[sx*cy*cz+cx*sy*sz,cx*sy*cz-sx*cy*sz,cx*cy*sz+sx*sy*cz,cx*cy*cz-sx*sy*sz];}
+ function perspective(aspect){const f=1/Math.tan(36*Math.PI/360),n=.1,z=50;return [f/aspect,0,0,0,0,f,0,0,0,0,(z+n)/(n-z),-1,0,0,2*z*n/(n-z),0];}
+ const norm=v=>{const l=Math.hypot(...v)||1;return v.map(a=>a/l)};
+ const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+ function mesh(){return{p:[],n:[],i:[]};}
+ function vertex(g,p,n){g.p.push(...p);g.n.push(...n);return g.p.length/3-1;}
+ function sphere(){const g=mesh(),A=24,B=16;for(let y=0;y<=B;y++){const v=y/B*Math.PI;for(let x=0;x<=A;x++){const a=x/A*TAU,p=[Math.sin(v)*Math.cos(a),Math.cos(v),Math.sin(v)*Math.sin(a)];vertex(g,p,p)}}for(let y=0;y<B;y++)for(let x=0;x<A;x++){const a=y*(A+1)+x,b=a+A+1;g.i.push(a,b,a+1,b,b+1,a+1)}return g;}
+ function tube(points,radius,segments=10){const g=mesh();for(let j=0;j<points.length;j++){const p=points[j],a=points[Math.max(0,j-1)],b=points[Math.min(points.length-1,j+1)],t=norm(b.map((v,k)=>v-a[k])),u=norm(cross(t,Math.abs(t[2])<.8?[0,0,1]:[0,1,0])),v=cross(t,u);for(let k=0;k<=segments;k++){const a=k/segments*TAU,n=u.map((z,i)=>z*Math.cos(a)+v[i]*Math.sin(a));vertex(g,p.map((z,i)=>z+n[i]*radius),n)}}for(let j=0;j<points.length-1;j++)for(let k=0;k<segments;k++){const a=j*(segments+1)+k,b=a+segments+1;g.i.push(a,a+1,b,b,a+1,b+1)}return g;}
+ function pin(){const g=mesh(),outline=[];const curves=[[[0,-.98],[.30,-.62],[.83,.04],[.83,.55]],[[.83,.55],[.83,1.59],[-.83,1.59],[-.83,.55]],[[-.83,.55],[-.83,.04],[-.30,-.62],[0,-.98]]];for(const c of curves)for(let i=0;i<24;i++){const t=i/24,u=1-t;outline.push([0,1].map(k=>u*u*u*c[0][k]+3*u*u*t*c[1][k]+3*u*t*t*c[2][k]+t*t*t*c[3][k]));}
+ const N=outline.length,center=[0,.40];
+ // Rounded bevel through six rings: true depth rather than a shaded flat image.
+ const rings=[[.86,-.29],[.96,-.25],[1,-.14],[1,.13],[.97,.24],[.90,.30]];
+ for(let j=0;j<rings.length;j++){const [s,z]=rings[j];for(let i=0;i<N;i++){const p=outline[i],prev=outline[(i+N-1)%N],next=outline[(i+1)%N],out=norm([next[1]-prev[1],prev[0]-next[0],0]);const tilt=j===0?-1:j===1?-.65:j===2?-.2:j===3?.2:j===4?.7:1;const n=norm([out[0]*(1-Math.abs(tilt)*.7),out[1]*(1-Math.abs(tilt)*.7),tilt]);vertex(g,[center[0]+(p[0]-center[0])*s,center[1]+(p[1]-center[1])*s,z],n)}}
+ for(let j=0;j<rings.length-1;j++)for(let i=0;i<N;i++){const a=j*N+i,b=j*N+(i+1)%N;g.i.push(a,b,a+N,b,b+N,a+N)}
+ // Separate flat front/back vertices keep the face normals clean.
+ for(const front of [false,true]){const j=front?rings.length-1:0,[s,z]=rings[j],c=vertex(g,[...center,z],[0,0,front?1:-1]);const off=g.p.length/3;for(const p of outline)vertex(g,[(p[0]-center[0])*s,(p[1]-center[1])*s+center[1],z],[0,0,front?1:-1]);for(let i=0;i<N;i++){const a=off+i,b=off+(i+1)%N;g.i.push(c,front?a:b,front?b:a)}}return g;}
+ const geo={sphere:sphere(),pin:pin()};
+ function node(name,p=[0,0,0],s=[1,1,1],geometry=null,color=null,r=[0,0,0]){return{name,p:[...p],s:[...s],r:[...r],g:geometry,c:color,kids:[]};}
+ function buildModel(){const rig={},scene=node('Taxfly'),body=node('Body',[0,1.55,0]);scene.kids.push(body);rig.scene=scene;rig.body=body;
+ const add=(par,name,p,s,g,c,r)=>{const n=node(name,p,s,g,c,r);par.kids.push(n);rig[name]=n;return n;};
+ add(body,'Pin',[0,0,0],[1,1,1],geo.pin,colors.blue);
+ // Inset navy badge and rounded lip, both actual geometry.
+ add(body,'Badge',[0,.74,.305],[.305,.305,.037],geo.sphere,colors.navy);
+ const ring=[];for(let i=0;i<=64;i++){const a=i/64*TAU;ring.push([Math.cos(a)*.308,.74+Math.sin(a)*.308,.309]);}
+ add(body,'BadgeRim',[0,0,0],[1,1,1],tube(ring,.018,8),[.10,.22,.52]);
+ const face=add(body,'Face',[0,0,.025],[1,1,1]);rig.faceNodes=['Face'];
+ const facePart=(name,p,s,g,c)=>{rig.faceNodes.push(name);return add(face,name,p,s,g,c);};
+ for(const [label,x]of [['L',-.17],['R',.17]]){
+  facePart('Eye'+label,[x,.12,.314],[.060,.095,.025],geo.sphere,colors.eye);
+  facePart('Eye'+label+'Light',[x-.014,.153,.339],[.017,.025,.007],geo.sphere,colors.white);
+  const arc=[],brow=[];for(let i=0;i<=16;i++){const u=i/16;arc.push([-.065+.13*u,.034*Math.sin(Math.PI*u),0]);brow.push([-.085+.17*u,.022*Math.sin(Math.PI*u),0]);}
+  facePart('JoyEye'+label,[x,.12,.335],[.001,.001,.001],tube(arc,.014,8),colors.eye);
+  facePart('Brow'+label,[x,.28,.33],[1,1,1],tube(brow,.012,8),colors.navy);
+  facePart('Cheek'+label,[x*1.73,-.045,.314],[.035,.012,.006],geo.sphere,[.80,.34,.49]);
+ }
+ const smile=[];for(let i=0;i<=20;i++){const u=i/20;smile.push([-.16+.32*u,-.08*Math.sin(Math.PI*u),0]);}
+ facePart('Smile',[0,-.11,.325],[1,1,1],tube(smile,.012,8),colors.eye);
+ const open=facePart('OpenMouth',[0,-.15,.328],[.001,.001,.001]);
+ add(open,'Mouth',[0,0,0],[.135,.105,.018],geo.sphere,colors.eye);
+ add(open,'Teeth',[0,.054,.020],[.105,.022,.008],geo.sphere,[1,.97,.91]);
+ add(open,'Tongue',[0,-.054,.021],[.065,.032,.007],geo.sphere,[1,.35,.49]);
+ // Alternate mouth shapes: a small O and a soft downturned curve.
+ facePart('RoundMouth',[0,-.14,.326],[.001,.001,.001],geo.sphere,colors.eye);
+ for(const side of [-1,1]){const label=side<0?'L':'R',hip=add(body,'Hip'+label,[side*.32,-.57,-.025],[1,1,1]);
+ add(hip,'Leg'+label,[0,-.32,0],[.095,.35,.095],geo.sphere,colors.navy);
+ add(hip,'Boot'+label,[side*.035,-.66,.095],[.22,.13,.30],geo.sphere,colors.gold);
+ const arm=add(body,'Arm'+label,[side*.67,.37,-.01],[1,1,1]);
+ add(arm,'Upper'+label,[side*.23,0,0],[.27,.095,.095],geo.sphere,colors.navy);
+ const elbow=add(arm,'Elbow'+label,[side*.42,0,0],[1,1,1]);
+ add(elbow,'Fore'+label,[side*.18,0,0],[.23,.09,.09],geo.sphere,colors.navy);
+ const hand=add(elbow,'Hand'+label,[side*.39,0,.025],[1,1,1]);
+ add(hand,'Glove'+label,[0,0,0],[.17,.16,.115],geo.sphere,colors.gold);
+ add(hand,'Thumb'+label,[-side*.08,-.13,.015],[.075,.11,.075],geo.sphere,colors.gold,[0,0,side*.5]);
+ }
+ return rig;}
+ function pose(rig,state,t,opts={}){const still=!!opts.still,osc=still?0:1,look=opts.look||[0,0],aim=opts.aim||[1,.25],view=opts.view||[0,0];
+ const body=rig.body;body.p=[0,1.55+(osc*Math.sin(t*2.2)*.015),0];body.s=[1,1,1];body.r=[-.05+look[1]*.04+view[1],-.25+look[0]*.22+view[0],osc*Math.sin(t*1.35)*.025];
+ const cheer=state==='cheer',wave=state==='wave',point=state==='point',think=state==='think';
+ // Arms stay on their own side of the pin. L is the screen-left shoulder in the default view.
+ // Pointing never flips a limb through the torso; elevation is limited to the outward hemisphere.
+ const left=point&&aim[0]<0;
+ const elevation=clamp(Math.atan2(aim[1],Math.abs(aim[0])||.001),-1.32,1.40);
+ rig.ArmR.r=[0,0,wave?1.15+osc*.22*Math.sin(t*9):cheer?1.05+osc*.13*Math.sin(t*10):point&&!left?elevation:think?-1.78:-1.12+osc*.035*Math.sin(t*1.7)];
+ rig.ArmL.r=[0,0,point&&left?-elevation:cheer?-1.12+osc*.13*Math.sin(t*10+1):1.12+osc*.03*Math.sin(t*1.7+1)];
+ rig.ElbowR.r=[0,0,wave?.18:think?-1.10:point&&!left?0:-.22];
+ rig.ElbowL.r=[0,0,point&&left?0:cheer?-.18:.15];
+ // The front joint plane keeps raised arms and the thinking hand clear of the blue shell.
+ rig.ArmR.p[2]=think?.55:(wave||cheer||point)?.38:.10;
+ rig.ArmL.p[2]=(cheer||point)?.38:.10;
+ rig.HandR.r=[0,0,wave?osc*.18*Math.sin(t*10):0];rig.HandL.r=[0,0,0];
+ if(think)body.r[2]=-.10;
+ if(state==='curious')body.r[2]=.12;if(state==='sad'){body.r[0]+=.10;body.r[2]=-.055;}if(state==='sleepy')body.r[2]=.08+osc*.025*Math.sin(t*.8);
+ if(state==='surprised')body.r[0]-=.08;
+ if(cheer){body.r[1]+=osc*.15*Math.sin(t*3);body.r[2]=osc*.045*Math.sin(t*6);}
+ const hop=opts.hop||0;if(hop>0){body.p[1]+=hop;body.s=[1-.035*hop,1+.06*hop,1];}
+ rig.HipL.r=[0,0,osc*.025*Math.sin(t*2)+(hop>0?-.13:0)];rig.HipR.r=[0,0,-osc*.025*Math.sin(t*2)+(hop>0?.13:0)];
+ applyFace(rig,state,t,{still,look,talk:opts.talk});
+
+ }
+
+ const EXPRESSIONS={
+  idle:{eyes:[1,1],brows:[-.04,.04],browY:[.275,.275],smile:1,curve:.8,open:0,blush:.30},
+  wave:{eyes:[1.18,1.18],brows:[-.10,.10],browY:[.32,.32],smile:1.08,curve:1,open:.50,blush:.72},
+  point:{eyes:[.93,.93],brows:[-.11,.11],browY:[.275,.275],smile:.85,curve:.65,open:0,blush:.25},
+  cheer:{eyes:[.9,.9],joy:true,brows:[-.12,.12],browY:[.315,.315],smile:1.15,curve:1,open:1,blush:1},
+  think:{eyes:[1,.62],brows:[.20,-.24],browY:[.335,.265],smile:.45,curve:.06,open:0,blush:.18,gaze:[-.026,.025]},
+  happy:{eyes:[1,1],joy:true,brows:[-.07,.07],browY:[.30,.30],smile:1.15,curve:1.25,open:.35,blush:.90},
+  curious:{eyes:[1.20,.87],brows:[.13,-.12],browY:[.34,.29],smile:.68,curve:.7,open:0,blush:.38,gaze:[.02,.025]},
+  surprised:{eyes:[1.40,1.40],brows:[-.04,.04],browY:[.35,.35],smile:.3,curve:0,open:0,round:true,blush:.24},
+  sad:{eyes:[.78,.78],brows:[.30,-.30],browY:[.29,.29],smile:.75,curve:-.65,open:0,blush:.20,gaze:[0,-.018]},
+  sleepy:{eyes:[.32,.28],brows:[-.03,.03],browY:[.25,.25],smile:.7,curve:.25,open:0,blush:.32,gaze:[0,-.012]}
+ };
+ function applyFace(rig,state,t,opts={}){
+  const e=EXPRESSIONS[state]||EXPRESSIONS.idle,still=opts.still,look=opts.look||[0,0],osc=still?0:1;
+  const cycle=t%4.3,blink=still?1:cycle>4.12?Math.max(.06,Math.abs((cycle-4.21)/.09)):1;
+  const gaze=e.gaze||[osc*Math.sin(t*.6)*.007,osc*Math.sin(t*.9)*.003];
+  const gx=look[0]*.022+gaze[0],gy=-look[1]*.015+gaze[1];
+  rig.Face.p=[gx*.25,gy*.20,.025];
+  for(const [i,side]of ['L','R'].entries()){
+   const x=side==='L'?-.17:.17,eye=rig['Eye'+side],light=rig['Eye'+side+'Light'];
+   const joy=!!e.joy;eye.p=[x+gx,.12+gy,.314];eye.s=joy?[.001,.001,.001]:[state==='surprised'?.068:.060,.095*e.eyes[i]*blink,.025];
+   light.p=[x+gx-.014,.12+gy+.033*e.eyes[i]*blink,.339];light.s=joy?[.001,.001,.001]:[.017,.025*e.eyes[i]*blink,.007];
+   eye.r=[0,0,state==='think'?(side==='L'?.06:-.12):0];
+   rig['JoyEye'+side].p=[x+gx,.12+gy,.335];rig['JoyEye'+side].s=joy?[1,1,1]:[.001,.001,.001];
+   rig['Brow'+side].p=[x,e.browY[i]+osc*.004*Math.sin(t*1.8+i),.33];rig['Brow'+side].r=[0,0,e.brows[i]];
+   rig['Cheek'+side].s=[.028+.045*e.blush,.010+.017*e.blush,.006];
+  }
+  const talking=!!opts.talk&&!still,syllable=talking?.35+.50*Math.abs(Math.sin(t*15)*Math.cos(t*5)):0;
+  const openness=Math.max(e.open,syllable),round=e.round&&!talking;
+  rig.Smile.p=[state==='think'?-.035:0,-.11,.325];rig.Smile.s=openness>.08||round?[.001,.001,.001]:[e.smile,e.curve||.02,1];rig.Smile.r=[0,0,state==='think'?.12:0];
+  rig.OpenMouth.s=openness>.08&&!round?[e.smile,.45+openness*.65,1]:[.001,.001,.001];
+  rig.RoundMouth.s=round?[.060,.085,.018]:[.001,.001,.001];
+ }
+ const VS=`attribute vec3 aPosition;attribute vec3 aNormal;uniform mat4 uModel;uniform mat4 uVP;uniform mat3 uNormal;varying vec3 vNormal;varying vec3 vWorld;void main(){vec4 w=uModel*vec4(aPosition,1.);vWorld=w.xyz;vNormal=normalize(uNormal*aNormal);gl_Position=uVP*w;}`;
+ const FS=`precision mediump float;varying vec3 vNormal;varying vec3 vWorld;uniform vec3 uColor;void main(){vec3 n=normalize(vNormal),v=normalize(vec3(0.,1.55,6.2)-vWorld);vec3 key=normalize(vec3(-3.,5.,6.));float k=max(dot(n,key),0.);float fill=max(dot(n,normalize(vec3(4.,1.,3.))),0.);float rim=pow(1.-max(dot(n,v),0.),3.);float spec=pow(max(dot(n,normalize(key+v)),0.),48.);vec3 c=uColor*(.44+.55*k+.14*fill)+vec3(.12,.16,.25)*rim+vec3(.40)*spec;c=pow(max(c,vec3(0.)),vec3(.92));gl_FragColor=vec4(c,1.);}`;
+ function normalMatrix(m){const a=[m[0],m[1],m[2]],b=[m[4],m[5],m[6]],c=[m[8],m[9],m[10]],bc=cross(b,c),ca=cross(c,a),ab=cross(a,b),d=a.reduce((v,x,i)=>v+x*bc[i],0)||1;return [...bc,...ca,...ab].map(x=>x/d);}
+ function renderer(canvas){const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false,powerPreference:'low-power'});if(!gl)throw Error('WebGL unavailable');
+ const shader=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;};
+ const p=gl.createProgram(),vs=shader(gl.VERTEX_SHADER,VS),fs=shader(gl.FRAGMENT_SHADER,FS);gl.attachShader(p,vs);gl.attachShader(p,fs);gl.linkProgram(p);gl.deleteShader(vs);gl.deleteShader(fs);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));
+ gl.useProgram(p);gl.enable(gl.DEPTH_TEST);gl.clearColor(0,0,0,0);
+ const loc={};for(const k of ['uModel','uVP','uColor','uNormal'])loc[k]=gl.getUniformLocation(p,k);for(const k of ['aPosition','aNormal'])loc[k]=gl.getAttribLocation(p,k);
+ const buffers=new Map();
+ function draw(n,parent,vp){const m=mul(parent,matrix(n.p,n.r,n.s));if(n.g){let b=buffers.get(n.g);if(!b){b={};for(const [key,data,target]of [['p',new Float32Array(n.g.p),gl.ARRAY_BUFFER],['n',new Float32Array(n.g.n),gl.ARRAY_BUFFER],['i',new Uint16Array(n.g.i),gl.ELEMENT_ARRAY_BUFFER]]){b[key]=gl.createBuffer();gl.bindBuffer(target,b[key]);gl.bufferData(target,data,gl.STATIC_DRAW)}buffers.set(n.g,b)}
+ for(const [k,key]of [['aPosition','p'],['aNormal','n']]){gl.bindBuffer(gl.ARRAY_BUFFER,b[key]);gl.enableVertexAttribArray(loc[k]);gl.vertexAttribPointer(loc[k],3,gl.FLOAT,false,0,0)}gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,b.i);gl.uniformMatrix4fv(loc.uModel,false,new Float32Array(m));gl.uniformMatrix4fv(loc.uVP,false,new Float32Array(vp));gl.uniformMatrix3fv(loc.uNormal,false,new Float32Array(normalMatrix(m)));gl.uniform3fv(loc.uColor,n.c);gl.drawElements(gl.TRIANGLES,n.g.i.length,gl.UNSIGNED_SHORT,0);}
+ for(const child of n.kids)draw(child,m,vp);}
+ return{render(scene){const rect=canvas.getBoundingClientRect(),width=rect.width;if(!width)return;const dpr=Math.min(root.devicePixelRatio||1,2),w=Math.max(1,Math.round(width*dpr)),h=Math.max(1,Math.round((rect.height||width)*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);const view=ident();view[13]=-1.55;view[14]=-6.2;draw(scene,ident(),mul(perspective(w/h),view));},destroy(){for(const b of buffers.values())for(const key of ['p','n','i'])gl.deleteBuffer(b[key]);gl.deleteProgram(p);gl.getExtension('WEBGL_lose_context')?.loseContext();}};
+ }
+ const instances=new Set();let raf=0,last=0;
+ function wake(){if(!raf&&!document.hidden&&instances.size){last=performance.now();raf=requestAnimationFrame(tick);}}
+ function tick(now){raf=0;const dt=Math.min(.05,(now-last)/1000||.016);last=now;let animated=false;for(const api of instances){if(!api.el.isConnected||!api.el.getClientRects().length||api.el.closest('dialog:not([open])'))continue;api.step(dt);if(!api.paused())animated=true;}if(animated&&!document.hidden)raf=requestAnimationFrame(tick);}
+ function create(host,options={}){const canvas=document.createElement('canvas');canvas.className='tfm tfm-3d';canvas.setAttribute('aria-hidden','true');canvas.style.cssText='display:block;width:100%;aspect-ratio:1;height:auto;';let draw;try{draw=renderer(canvas);}catch(e){return fallback.create(host,options)}
+ const rig=buildModel(),motion=root.matchMedia?.('(prefers-reduced-motion: reduce)'),S={state:'idle',base:'idle',t:0,still:!!options.still||!!motion?.matches,manualStill:!!options.still,talk:0,hopStart:-9,hopHeight:.35,aim:[1,.25],look:[0,0],view:[0,0],curR:-1.12,curL:1.12,timer:null};let dead=false,ro;
+ function render(dt=0){if(dead)return;S.t+=S.still?0:dt;const phase=(S.t-S.hopStart)/.8;let hop=!S.still&&phase>=0&&phase<=1?S.hopHeight*Math.sin(Math.PI*phase):0;
+ if(S.state==='cheer'&&!S.still&&S.t-S.hopStart>1.8)S.hopStart=S.t,hop=0;
+ const previousFace=rig.faceNodes.map(name=>({p:[...rig[name].p],r:[...rig[name].r],s:[...rig[name].s]}));
+ pose(rig,S.state,S.t,{still:S.still,aim:S.aim,look:S.look,view:S.view,hop,talk:S.t<S.talk});
+ const fk=S.still?1:1-Math.exp(-dt*12);rig.faceNodes.forEach((name,i)=>{for(const field of ['p','r','s'])rig[name][field]=rig[name][field].map((v,j)=>previousFace[i][field][j]+(v-previousFace[i][field][j])*fk);});
+ const k=S.still?1:1-Math.exp(-dt*12);S.curR+=(rig.ArmR.r[2]-S.curR)*k;S.curL+=(rig.ArmL.r[2]-S.curL)*k;rig.ArmR.r[2]=S.curR;rig.ArmL.r[2]=S.curL;
+ draw.render(rig.scene);}
+ const api={el:canvas,rig,renderer:'webgl',state:()=>S.state,paused:()=>S.still,step:render,
+ set(name,opts){if(dead)return api;S.state=states.includes(name)?name:'idle';if(opts?.base!==false){clearTimeout(S.timer);S.base=S.state}if(name!=='point'){S.aim=[1,.25];S.look=[0,0]}render();wake();return api;},
+ play(name,ms=1600){clearTimeout(S.timer);api.set(name,{base:false});S.timer=setTimeout(()=>api.set(S.base),ms);return api;},
+ talk(ms=1400){S.talk=S.t+Math.max(0,ms)/1000;render();wake();return api;},hop(height=60){if(!S.still){S.hopStart=S.t;S.hopHeight=clamp(height/180,0,.65);wake()}return api;},
+ look(x,y){S.look=x==null?[0,0]:[clamp(x,-1,1),clamp(y,-1,1)];render();wake();return api;},
+ pointAt(x,y){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return api;
+ const dx=x-r.left-r.width*.5,band=Math.max(8,r.width*.055);
+ // Hysteresis prevents rapid hand changes when the pointer passes above the head.
+ const previous=S.aim[0]<0?-1:1,side=dx>band?1:dx<-band?-1:previous;
+ const shoulderX=r.left+r.width*(.5+side*.165),shoulderY=r.top+r.height*.407;
+ const outward=Math.max(r.width*.03,(x-shoulderX)*side),dy=shoulderY-y;
+ S.aim=[side*outward,dy];S.look=[clamp(dx/240,-1,1),clamp((y-(r.top+r.height*.45))/240,-1,1)];
+ if(S.state!=='point')api.set('point');render();wake();return api;},
+ clearAim(){S.aim=[1,.25];S.look=[0,0];render();wake();return api;},
+ mount(h){if(h&&canvas.parentNode!==h)h.replaceChildren(canvas);render();wake();return api;},
+ setStill(v){S.manualStill=!!v;S.still=S.manualStill||!!motion?.matches;render();wake();return api;},
+ orbit(yaw,pitch=0){S.view=[yaw,clamp(pitch,-.5,.5)];render();wake();return api;},
+ exportGLB(){return exportGLB();},
+ destroy(){if(dead)return;dead=true;instances.delete(api);clearTimeout(S.timer);ro?.disconnect();motion?.removeEventListener?.('change',onMotion);draw.destroy();canvas.remove();},
+ };
+ const onMotion=()=>{S.still=S.manualStill||!!motion.matches;render();wake()};motion?.addEventListener?.('change',onMotion);
+ canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(!dead){const h=canvas.parentNode,state=S.state;api.destroy();const back=fallback.create(h,{state,still:S.still});for(const key of ['set','play','talk','hop','look','pointAt','clearAim','mount','setStill','destroy','state'])api[key]=back[key].bind(back);api.el=back.el;api.renderer='svg';}});
+ instances.add(api);if(root.ResizeObserver){ro=new ResizeObserver(()=>{render();wake()});ro.observe(canvas)}api.set(options.state||'idle');if(host)api.mount(host);return api;
+ }
+ document.addEventListener('visibilitychange',wake);
+ function exportGLB(){const rig=buildModel();pose(rig,'idle',0,{still:true});const nodes=[],objects=[],meshes=[],materials=[],accessors=[],views=[],parts=[];let offset=0;const gm=new Map(),cm=new Map();
+ function data(array,type,size,target){const pad=(4-offset%4)%4;if(pad){parts.push(new Uint8Array(pad));offset+=pad;}const index=views.length;views.push({buffer:0,byteOffset:offset,byteLength:array.byteLength,...(target?{target}:{})});parts.push(new Uint8Array(array.buffer,array.byteOffset,array.byteLength));offset+=array.byteLength;const a={bufferView:index,componentType:type,count:array.length/size,type:{1:'SCALAR',3:'VEC3',4:'VEC4'}[size]};if(size===3||size===1){a.min=Array(size).fill(Infinity);a.max=Array(size).fill(-Infinity);for(let i=0;i<array.length;i++){a.min[i%size]=Math.min(a.min[i%size],array[i]);a.max[i%size]=Math.max(a.max[i%size],array[i]);}}accessors.push(a);return accessors.length-1;}
+ function walk(n){const id=nodes.length;objects.push(n);const out={name:n.name,translation:[...n.p],rotation:quaternion(n.r),scale:[...n.s]};nodes.push(out);
+ if(n.g){const key=n.c.join(',');if(!cm.has(key)){cm.set(key,materials.length);materials.push({name:key, pbrMetallicRoughness:{baseColorFactor:[...n.c,1],metallicFactor:.04,roughnessFactor:.36},doubleSided:true});}
+ const mkey=n.g;let attributes=gm.get(mkey);if(!attributes){attributes={POSITION:data(new Float32Array(n.g.p),5126,3,34962),NORMAL:data(new Float32Array(n.g.n),5126,3,34962),indices:data(new Uint16Array(n.g.i),5123,1,34963)};gm.set(mkey,attributes)}out.mesh=meshes.length;meshes.push({name:n.name,primitives:[{attributes:{POSITION:attributes.POSITION,NORMAL:attributes.NORMAL},indices:attributes.indices,material:cm.get(key)}]});}
+ if(n.kids.length)out.children=n.kids.map(walk);return id;}
+ walk(rig.scene);const base=objects.map(n=>({translation:[...n.p],rotation:quaternion(n.r),scale:[...n.s]}));const animations=[];
+ for(const clip of [...states,'point_left','point_up','point_down']){const state=clip.startsWith('point_')?'point':clip;const aim=clip==='point_left'?[-1,.25]:clip==='point_up'?[.03,1]:clip==='point_down'?[.03,-1]:[1,.25];const duration=3,frames=91,times=Float32Array.from({length:frames},(_,i)=>i/30),timeIndex=data(times,5126,1),tracks=objects.map(()=>({translation:[],rotation:[],scale:[]}));
+ for(let i=0;i<frames;i++){const t=times[i],hop=state==='cheer'?.3*Math.max(0,Math.sin((t%1.25)/1.25*Math.PI)):0;pose(rig,state,t,{hop,aim});objects.forEach((n,j)=>{tracks[j].translation.push(...n.p);tracks[j].rotation.push(...quaternion(n.r));tracks[j].scale.push(...n.s)})}
+ const samplers=[],channels=[];tracks.forEach((track,j)=>{for(const [path,values]of Object.entries(track)){const size=path==='rotation'?4:3;if(values.every((v,i)=>Math.abs(v-base[j][path][i%size])<1e-5))continue;const out=data(new Float32Array(values),5126,size);channels.push({sampler:samplers.length,target:{node:j,path}});samplers.push({input:timeIndex,output:out,interpolation:'LINEAR'});}});animations.push({name:clip,samplers,channels});
+ }
+ const endpad=(4-offset%4)%4;if(endpad){parts.push(new Uint8Array(endpad));offset+=endpad;}const bin=new Uint8Array(offset);let at=0;for(const p of parts){bin.set(p,at);at+=p.length;}
+ const doc={asset:{version:'2.0',generator:'TaxFly procedural mascot'},scene:0,scenes:[{name:'TaxFly',nodes:[0]}],nodes,meshes,materials,animations,buffers:[{byteLength:offset}],bufferViews:views,accessors};let json=new TextEncoder().encode(JSON.stringify(doc));const jsonLength=Math.ceil(json.length/4)*4,total=12+8+jsonLength+8+bin.length,buffer=new ArrayBuffer(total),dv=new DataView(buffer),u=new Uint8Array(buffer);dv.setUint32(0,0x46546c67,true);dv.setUint32(4,2,true);dv.setUint32(8,total,true);dv.setUint32(12,jsonLength,true);dv.setUint32(16,0x4e4f534a,true);u.fill(32,20,20+jsonLength);u.set(json,20);dv.setUint32(20+jsonLength,bin.length,true);dv.setUint32(24+jsonLength,0x004e4942,true);u.set(bin,28+jsonLength);return buffer;
+ }
+ root.TaxflyMascot={create,POSES:states,_COL:fallback?._COL,renderer:'webgl',exportGLB,buildModel};
+ if(typeof module!=='undefined')module.exports=root.TaxflyMascot;
 })(typeof window!=='undefined'?window:globalThis);

@@ -33,7 +33,7 @@
     try{
       pet=pet||Pet.create(null,{state:'idle'});pet.mount(host);pet.set(PET_STATE[phase]||'idle');
       if(phase==='welcome'||phase==='created'||phase==='complete')setTimeout(()=>{if(root.open&&pet)pet.hop(phase==='welcome'?46:60);},260);
-      if(phase!=='tour')pet.talk(phase==='message'?0:1100);
+      if(phase!=='tour'&&phase!=='message')pet.talk(1100);
     }catch(_){pet=null;host.remove();}
   }
   function petAim(){
@@ -59,7 +59,7 @@
   function shell(title,description,body='',actions=''){
     root.dataset.phase=phase;root.dataset.highlight='false';spot.hidden=true;target=null;card.style.cssText='';
     card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-head"><div class="tfg-pet" aria-hidden="true"></div><h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}`;
-    if(!root.open){returnFocus=document.activeElement;root.showModal();}
+    if(!root.open){returnFocus=document.activeElement;root.showModal();launch.hidden=true;mini?.setStill(true);}
     petScene();
     // Move focus when content changes, without letting automatic repositioning steal it.
     $('#tfg-title')?.focus({preventScroll:true});
@@ -69,7 +69,7 @@
     token++;if(save&&phase==='tour'&&tour){state.resume={section:tour,index};persist();}
     if(save&&phase==='welcome'){state.welcome=true;persist();}
     phase='';tour=null;target=null;pet?.set('idle');
-    if(root.open)root.close();spot.hidden=true;returnFocus?.isConnected&&returnFocus.focus?.({preventScroll:true});renderHome();
+    if(root.open)root.close();launch.hidden=false;mini?.setStill(false);spot.hidden=true;returnFocus?.isConnected&&returnFocus.focus?.({preventScroll:true});renderHome();
   }
   function welcome(){syncScope();if(!ready())return false;phase='welcome';shell(t('welcome'),t(trips().length?'existing':'welcomeText'),' ',button('later','later')+button(trips().length?'home-tour':'setup',trips().length?'explore':'create',true));return true;}
   function openHub(){
@@ -96,7 +96,7 @@
   async function saveTrip(){
     if(busy||!ready()||!canEdit())return;
     const {fields,error}=C.tripFields(draft);if(error){setup();return;}
-    const c=context(),capturedScope=scope;busy=true;card.querySelectorAll('button').forEach(b=>b.disabled=true);$('#tfg-description').textContent=t('saving');root.setAttribute('aria-busy','true');
+    const c=context(),capturedScope=scope;busy=true;card.querySelectorAll('button').forEach(b=>b.disabled=true);$('#tfg-description').textContent=t('saving');root.setAttribute('aria-busy','true');pet?.set('think');
     try{
       const result=await window.TripContext.create(c.uid,c.profile,fields);
       if(capturedScope!==C.key(context()?.uid,context()?.profile)){syncScope();return;}
