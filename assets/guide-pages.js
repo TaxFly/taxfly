@@ -11,6 +11,7 @@
     explore:['Conocer TaxUSA','Explore TaxUSA','Conhecer o TaxUSA'],
     wholePage:['Recorrido completo de esta pestaña','Complete tour of this tab','Tour completo desta aba'],
     pagePart:['Pantalla','Screen','Tela'],
+    moreOptions:['Saltar o ir a otra pestaña','Skip or jump to another tab','Pular ou ir para outra aba'],
     skipTab:['Saltar esta pestaña','Skip this tab','Pular esta aba'],
     jumpTo:['Ir a una pestaña','Jump to a tab','Ir para uma aba'],
     notShown:['Este elemento no se puede resaltar en este momento, pero la explicación sigue valiendo. Podés continuar o reintentar.','This item cannot be highlighted right now, but the explanation still applies. Continue or retry.','Este item não pode ser destacado agora, mas a explicação continua valendo. Continue ou tente novamente.']

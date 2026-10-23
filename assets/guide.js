@@ -2,7 +2,7 @@
   'use strict';
   const C=window.TaxflyGuideCore,D=window.TaxflyGuideData;if(!C||!D||window.TaxflyGuide)return;
   const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const memory=new Map();let scope='',state=C.clean(),phase='',tour=null,index=0,token=0,busy=false,returnFocus=null,target=null,draft={},autoTimer=null,initialized=false,originalView=null;
+  const memory=new Map();let jumpOpen=false,scope='',state=C.clean(),phase='',tour=null,index=0,token=0,busy=false,returnFocus=null,target=null,draft={},autoTimer=null,initialized=false,originalView=null;
   const file=()=>location.pathname.split('/').pop()||'index.html';
   const home=()=>file()==='index.html';
   const lang=()=>{try{return {en:1,pt:2}[localStorage.getItem('appLang')]||0;}catch(_){return 0;}};
@@ -79,10 +79,12 @@
   }
   function button(action,label,primary=false){return `<button type="button" data-guide="${action}"${primary?' class="tfg-primary"':''}>${esc(t(label))}</button>`;}
   function item(id,label,small=''){return `<button type="button" class="tfg-item" data-tour="${id}">${icon(D.tours[id]?.icon||'bulb')}<span>${esc(label)}${small?`<small>${esc(small)}</small>`:''}</span>${icon('chevDown',15)}</button>`;}
+  function lock(on){document.documentElement.classList.toggle('tfg-lock',on);launch.style.visibility=on?'hidden':'';}
   function shell(title,description,body='',actions='',foot=''){
     root.dataset.phase=phase;root.dataset.highlight='false';spot.hidden=true;target=null;card.style.cssText='';
     card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-head">${Pet?'<div class="tfg-pet" aria-hidden="true"></div>':''}<h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}${foot}`;
     if(!root.open){returnFocus=document.activeElement;root.showModal();}
+    lock(true);
     petScene();
     // Move focus when content changes, without letting automatic repositioning steal it.
     $('#tfg-title')?.focus({preventScroll:true});
@@ -92,7 +94,7 @@
     token++;if(save&&phase==='tour'&&tour){state.resume={section:tour,index};persist();}
     if(save&&phase==='welcome'){state.welcome=true;persist();}
     clearTimeout(petTimer);pet?.setStill(true);restoreView();phase='';tour=null;target=null;
-    if(root.open)root.close();spot.hidden=true;returnFocus?.isConnected&&returnFocus.focus?.({preventScroll:true});renderHome();
+    if(root.open)root.close();lock(false);spot.hidden=true;returnFocus?.isConnected&&returnFocus.focus?.({preventScroll:true});renderHome();
   }
   function welcome(){syncScope();if(!ready())return false;phase='welcome';shell(t('welcome'),t(trips().length?'existing':'welcomeText'),' ',button('later','later')+button(trips().length?'home-tour':'setup',trips().length?'explore':'create',true));return true;}
   function openHub(){
@@ -206,8 +208,10 @@
       }
     }
     const map=tour==='overview'?overviewMap():null,cur=map?map.findIndex(r=>index>=r.start&&index<=r.end):-1;
-    const jump=map&&cur>=0?`<div class="tfg-jump"><label class="tfg-jump-label">${esc(t('jumpTo'))}<select data-jump>${map.map((r,i)=>`<option value="${r.start}"${i===cur?' selected':''}>${i+1}. ${esc(txt(D.tours[r.id].name))}</option>`).join('')}</select></label><button type="button" class="tfg-dismiss" data-guide="skip-tab">${esc(t(cur===map.length-1?'finish':'skipTab'))}</button></div>`:'';
-    shell(txt(step.title),txt(step.text),`<span class="tfg-step">${esc(t('step'))} ${index+1} ${esc(t('of'))} ${count}</span><div class="tfg-progress" role="progressbar" aria-label="${esc(t('guide'))}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index+1}"><span style="width:${(index+1)/count*100}%"></span></div>${jump}<p class="tfg-notice" id="tfg-target-status" role="status" hidden></p>`,(index?button('prev','back'):'')+button('pause','pause')+button('next',index===count-1?'finish':'next',true),`<div class="tfg-foot"><button type="button" class="tfg-dismiss" data-guide="hub">${esc(t('more'))}</button></div>`);
+    const hubBtn=`<button type="button" class="tfg-mini" data-guide="hub">${esc(t('more'))}</button>`;
+    const jump=map&&cur>=0?`<details class="tfg-more"${jumpOpen?' open':''}><summary>${esc(t('moreOptions'))}</summary><div class="tfg-more-body"><label class="tfg-jump-label">${esc(t('jumpTo'))}<select data-jump>${map.map((r,i)=>`<option value="${r.start}"${i===cur?' selected':''}>${i+1}. ${esc(txt(D.tours[r.id].name))}</option>`).join('')}</select></label><div class="tfg-more-actions"><button type="button" class="tfg-mini" data-guide="skip-tab">${esc(t(cur===map.length-1?'finish':'skipTab'))}</button>${hubBtn}</div></div></details>`:'';
+    const foot=map?'':`<div class="tfg-foot">${hubBtn.replace('tfg-mini','tfg-dismiss')}</div>`;
+    shell(txt(step.title),txt(step.text),`<span class="tfg-step">${esc(t('step'))} ${index+1} ${esc(t('of'))} ${count}</span><div class="tfg-progress" role="progressbar" aria-label="${esc(t('guide'))}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index+1}"><span style="width:${(index+1)/count*100}%"></span></div>${jump}<p class="tfg-notice" id="tfg-target-status" role="status" hidden></p>`,(index?button('prev','back'):'')+button('pause','pause')+button('next',index===count-1?'finish':'next',true),foot);
     let prepared=false,settled=false,started=Date.now();
     function notice(kind,text,retryable){
       const n=$('#tfg-target-status');if(!n)return;
@@ -226,7 +230,7 @@
       // A target still flagged busy (skeletons, background sync) is good enough after a moment.
       const el=prepared?visibleElement(step.sel,waited>1200):null;
       const loading=file()==='planificacion.html'&&!window._appInited;
-      if(el&&!loading){target=el;const n=$('#tfg-target-status');if(n){n.hidden=true;n.textContent='';n.dataset.kind='';}el.scrollIntoView({block:'center',behavior:'instant'});requestAnimationFrame(position);return;}
+      if(el&&!loading){target=el;const n=$('#tfg-target-status');if(n){n.hidden=true;n.textContent='';n.dataset.kind='';}{const tall=el.getBoundingClientRect().height>innerHeight*.5;if(tall)el.style.scrollMarginTop='96px';el.scrollIntoView({block:tall?'start':'center',behavior:'instant'});if(tall)el.style.removeProperty('scroll-margin-top');}requestAnimationFrame(position);return;}
       // Stay silent at first; only mention the wait if it really drags on.
       if(waited>1500&&!settled){const n=$('#tfg-target-status');if(n&&!n.textContent){n.hidden=false;n.dataset.kind='loading';n.textContent=t('waiting');}}
       if(waited<(step.optional?400:4500)){setTimeout(seek,100);return;}
@@ -249,9 +253,23 @@
     root.dataset.highlight='true';spot.hidden=false;
     const left=Math.max(4,r.left-5),top=Math.max(4,r.top-5),right=Math.min(w-4,r.right+5),bottom=Math.min(h-4,r.bottom+5);
     Object.assign(spot.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});
-    const ch=card.offsetHeight,cw=Math.min(380,w-32),below=r.bottom+14,above=r.top-ch-14;
-    const y=below+ch<=h-12?below:above>=12?above:Math.max(12,h-ch-12);
-    Object.assign(card.style,{position:'fixed',left:Math.max(16,Math.min(w-cw-16,r.left+r.width/2-cw/2))+'px',top:y+'px',width:cw+'px',maxHeight:(h-24)+'px'});
+    const gap=14,pad=12,cw=Math.min(380,w-32);
+    // Apply the final width first: the height depends on it.
+    Object.assign(card.style,{position:'fixed',left:'0px',top:'0px',width:cw+'px',maxHeight:(h-2*pad)+'px'});
+    const ch=card.offsetHeight,clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+    const room={below:h-bottom-gap-pad,above:top-gap-pad,right:w-right-gap-pad,left:left-gap-pad};
+    let x=clamp(r.left+r.width/2-cw/2,16,w-cw-16),y,max=h-2*pad;
+    if(room.below>=ch)y=bottom+gap;
+    else if(room.above>=ch)y=top-ch-gap;
+    else if(room.right>=cw){x=right+gap;y=clamp(top,pad,h-ch-pad);}
+    else if(room.left>=cw){x=left-gap-cw;y=clamp(top,pad,h-ch-pad);}
+    else{
+      // Not enough room anywhere: use the roomier side and let the card scroll inside itself.
+      const below=room.below>=room.above,space=below?room.below:room.above;
+      if(space>=160){max=space;const hh=Math.min(ch,space);y=below?bottom+gap:top-gap-hh;}
+      else y=h-Math.min(ch,max)-pad;
+    }
+    Object.assign(card.style,{left:x+'px',top:y+'px',maxHeight:max+'px'});
     petAim();
   }
   function finish(){const id=tour;state.done=[...new Set([...state.done,id])];state.resume=null;persist();token++;tour=null;phase='complete';shell(t('complete'),t('completeText'),'',button('hub','more')+button('close','use',true));renderHome();}
@@ -281,6 +299,9 @@
     mountLaunch();launch.setAttribute('aria-label',t('guide'));launch.title=t('guide');renderHome();
     if(root.open&&!busy){if(phase==='setup'){readDraft();setup();}else if(phase==='review')review();else if(phase==='hub')openHub();else if(phase==='welcome')welcome();else if(phase==='tour')renderStep();}
   }
+  // The page behind the guide must not move: the highlighted element has to stay where it is.
+  const stopScroll=e=>{if(!e.target.closest?.('.tfg-card'))e.preventDefault();};
+  root.addEventListener('wheel',stopScroll,{passive:false});root.addEventListener('touchmove',stopScroll,{passive:false});
   root.addEventListener('cancel',e=>{e.preventDefault();close();});
   root.addEventListener('click',e=>{
     if(busy)return;const id=e.target.closest('[data-tour]')?.dataset.tour;if(id){navigate(id);return;}
@@ -292,6 +313,7 @@
     else if(act==='prev'){index--;renderStep();}else if(act==='next'){if(index===D.tours[tour].steps.length-1)finish();else{index++;renderStep();}}
     else if(act==='finish-setup'){close(false);location.assign(new URL('index.html',location.href).href);}
   });
+  root.addEventListener('toggle',e=>{if(e.target.matches?.('.tfg-more'))jumpOpen=e.target.open;},true);
   root.addEventListener('change',e=>{const sel=e.target.closest?.('[data-jump]');if(!sel||busy||phase!=='tour'||tour!=='overview')return;const to=Number(sel.value);if(Number.isInteger(to)&&to>=0&&to<D.tours.overview.steps.length){index=to;renderStep();}});
   // The native dialog traps keyboard focus; Escape pauses, including the welcome.
   let positioning=false;function queuePosition(){if(positioning||phase!=='tour')return;positioning=true;requestAnimationFrame(()=>{positioning=false;position();});}

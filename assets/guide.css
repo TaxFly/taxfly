@@ -73,4 +73,14 @@
 @media(prefers-reduced-motion:reduce){.tfg-launch-pill{transition:bottom .18s ease}}
 
 .tfg-foot{display:flex;justify-content:center;margin-top:6px}.tfg-foot .tfg-dismiss{padding:8px 12px}
-.tfg-jump{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 12px}.tfg-jump-label{display:grid;gap:4px;flex:1;min-width:150px;font-size:11px;font-weight:750;color:var(--tfg-text-sub)}.tfg-jump select{min-height:40px;padding:8px;border:1px solid var(--tfg-border);border-radius:10px;background:var(--tfg-input-bg);color:var(--tfg-text);font:inherit;font-size:13px}
+html.tfg-lock,html.tfg-lock body{overflow:hidden!important;scrollbar-gutter:stable}
+.tfg-more{margin:0 0 12px;border:1px solid var(--tfg-border);border-radius:12px;background:var(--tfg-surface-2)}
+.tfg-more>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;font-size:12px;font-weight:750;color:var(--tfg-text-sub);cursor:pointer;list-style:none}
+.tfg-more>summary::-webkit-details-marker{display:none}
+.tfg-more>summary::after{content:"";flex:none;width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-3px}
+.tfg-more[open]>summary::after{transform:rotate(-135deg);margin-top:3px}
+.tfg-more-body{display:grid;gap:10px;padding:0 12px 12px}
+.tfg-jump-label{display:grid;gap:4px;font-size:11px;font-weight:750;color:var(--tfg-text-sub)}
+.tfg-jump-label select{box-sizing:border-box;width:100%;min-width:0;min-height:40px;padding:8px;border:1px solid var(--tfg-border);border-radius:10px;background:var(--tfg-input-bg);color:var(--tfg-text);font:inherit;font-size:13px}
+.tfg-more-actions{display:flex;gap:8px}.tfg-more-actions .tfg-mini{flex:1;min-width:0;min-height:40px;padding:8px 10px;border:1px solid var(--tfg-border);border-radius:10px;background:var(--tfg-surface);color:var(--tfg-text);font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.tfg-more-actions .tfg-mini:hover{border-color:var(--tfg-primary);color:var(--tfg-primary)}

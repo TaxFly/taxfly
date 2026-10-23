@@ -66,9 +66,17 @@ test('guide opens the current tab guide first, no glow behind the mascot, and ho
 });
 test('the general tour lets people jump or skip between tabs',()=>{
  const guide=read('assets/guide.js'),css=read('assets/guide.css');
- assert.match(guide,/data-jump/);assert.match(guide,/act==='skip-tab'/);assert.match(guide,/function overviewMap\(\)/);assert.match(css,/\.tfg-jump\{/);
+ assert.match(guide,/data-jump/);assert.match(guide,/act==='skip-tab'/);assert.match(guide,/function overviewMap\(\)/);assert.match(css,/\.tfg-more>summary/);
  const window={};for(const file of ['guide-data.js','guide-pages.js'])vm.runInNewContext(read('assets/'+file),{window});
  const {tours,pages}=window.TaxflyGuideData;let at=0;
  for(const id of pages){assert.equal(tours.overview.steps[at].url,tours[id].url);at+=tours[id].steps.length;}
  assert.equal(at,tours.overview.steps.length);
+});
+test('the guide card is measured at its final width, locks page scroll and hides the launcher',()=>{
+ const guide=read('assets/guide.js'),css=read('assets/guide.css');
+ const pos=guide.slice(guide.indexOf('function position()'),guide.indexOf('function finish()'));
+ assert.ok(pos.indexOf("width:cw+'px'")<pos.indexOf('card.offsetHeight'),'width is applied before measuring height');
+ assert.match(pos,/room\.right>=cw/);assert.match(pos,/room\.left>=cw/);
+ assert.match(guide,/lock\(true\)/);assert.match(guide,/lock\(false\)/);assert.match(guide,/addEventListener\('wheel',stopScroll/);
+ assert.match(css,/html\.tfg-lock/);
 });
