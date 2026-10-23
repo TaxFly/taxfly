@@ -19,7 +19,7 @@
 .tfg-shade{position:absolute;inset:0;background:#07142c99}.tfg-root[data-phase=tour] .tfg-shade{background:#07142c99}
 .tfg-root[data-highlight=true] .tfg-shade{background:transparent}
 .tfg-spot{position:fixed;border:2px solid #60a5fa;border-radius:12px;box-shadow:0 0 0 9999px #07142cb8;pointer-events:none;z-index:1;transition:left .18s ease,top .18s ease,width .18s ease,height .18s ease}
-.tfg-card{position:relative;z-index:2;box-sizing:border-box;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;background:var(--tfg-surface);border:1px solid var(--tfg-border);border-radius:22px;box-shadow:0 24px 80px #02061744;padding:26px;overscroll-behavior:contain;animation:tfg-in .18s ease-out}
+.tfg-card{position:relative;z-index:2;box-sizing:border-box;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);display:flex;flex-direction:column;overflow:hidden;background:var(--tfg-surface);border:1px solid var(--tfg-border);border-radius:22px;box-shadow:0 24px 80px #02061744;padding:26px;overscroll-behavior:contain;animation:tfg-in .18s ease-out}
 .tfg-card h2{font-size:clamp(21px,4vw,27px);line-height:1.2;letter-spacing:-.5px;margin:12px 0}.tfg-card p{font-size:14px;line-height:1.65;color:var(--tfg-text-sub);margin:0 0 17px}.tfg-card button,.tfg-card input{font:inherit}
 .tfg-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.tfg-kicker{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:var(--tfg-primary)}
 .tfg-close{width:36px;height:36px;display:grid;place-items:center;background:transparent;border:0;border-radius:10px;color:inherit;cursor:pointer;flex:none}.tfg-close:hover{background:var(--tfg-surface-2)}
@@ -84,3 +84,29 @@ html.tfg-lock,html.tfg-lock body{overflow:hidden!important;scrollbar-gutter:stab
 .tfg-jump-label select{box-sizing:border-box;width:100%;min-width:0;min-height:40px;padding:8px;border:1px solid var(--tfg-border);border-radius:10px;background:var(--tfg-input-bg);color:var(--tfg-text);font:inherit;font-size:13px}
 .tfg-more-actions{display:flex;gap:8px}.tfg-more-actions .tfg-mini{flex:1;min-width:0;min-height:40px;padding:8px 10px;border:1px solid var(--tfg-border);border-radius:10px;background:var(--tfg-surface);color:var(--tfg-text);font:inherit;font-size:12px;font-weight:800;cursor:pointer}
 .tfg-more-actions .tfg-mini:hover{border-color:var(--tfg-primary);color:var(--tfg-primary)}
+
+/* Card layout: header, controls and buttons stay put; only the explanation scrolls. */
+.tfg-top,.tfg-actions,.tfg-foot,.tfg-pinned,.tfg-meta,.tfg-more{flex:none}
+.tfg-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;margin:0 -8px;padding:0 8px;scrollbar-width:thin;
+  background:
+    linear-gradient(var(--tfg-surface) 30%,#0000) top/100% 16px no-repeat local,
+    linear-gradient(#0000,var(--tfg-surface) 70%) bottom/100% 16px no-repeat local,
+    radial-gradient(farthest-side at 50% 0,#0003,#0000) top/100% 8px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%,#0003,#0000) bottom/100% 8px no-repeat scroll}
+.tfg-scroll>:last-child{margin-bottom:0}
+.tfg-meta{display:flex;align-items:center;gap:10px;margin:10px 0 8px}
+.tfg-meta .tfg-step{white-space:nowrap}.tfg-meta .tfg-progress{flex:1;margin:0}
+
+/* Tour cards are compact so they hide as little of the page as possible. */
+.tfg-root[data-phase=tour] .tfg-card{padding:14px 16px 16px;border-radius:18px}
+.tfg-root[data-phase=tour] .tfg-head{margin:2px 0 6px;gap:10px}
+.tfg-root[data-phase=tour] .tfg-card h2{font-size:clamp(17px,3.6vw,20px);margin:0}
+.tfg-root[data-phase=tour] .tfg-card p{font-size:13px;line-height:1.55;margin:0 0 10px}
+.tfg-root[data-phase=tour] .tfg-pet{width:60px}
+.tfg-root[data-phase=tour] .tfg-close{width:30px;height:30px}
+.tfg-root[data-phase=tour] .tfg-actions{margin-top:10px;gap:8px}
+.tfg-root[data-phase=tour] .tfg-actions button{min-height:40px;padding:8px 10px;font-size:12.5px}
+.tfg-root[data-phase=tour] .tfg-foot{margin-top:2px}
+.tfg-root[data-phase=tour] .tfg-more{margin:0 0 8px}
+@media(max-width:640px){.tfg-root[data-phase=tour] .tfg-card{padding:12px 14px 14px}.tfg-root[data-phase=tour] .tfg-pet{width:52px}}
+@media(max-height:560px){.tfg-root[data-phase=tour] .tfg-pet{width:44px}}

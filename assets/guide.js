@@ -31,7 +31,9 @@
   const launch=document.createElement('button');launch.type='button';launch.id='taxfly-help-button';launch.className='tfg-launch-pill';launch.setAttribute('data-notr','');
   launch.innerHTML='<span class="tfg-pill-pet" aria-hidden="true"></span><span class="tfg-pill-label"></span>';
   launch.onclick=()=>openCurrent();
-  let launchPet=null;
+  let launchPet=null,launchTimer=0;
+  const greet=()=>{if(!launchPet)return;clearTimeout(launchTimer);try{launchPet.setStill(false);launchPet.play('wave',1400);}catch(_){}launchTimer=setTimeout(()=>launchPet?.setStill(true),1500);};
+  launch.addEventListener('pointerenter',greet);launch.addEventListener('focus',greet);
   // Known same-corner floating controls this launcher must never cover. Both were
   // confirmed by a full-repo audit to be the only bottom-right / bottom-wide fixed
   // controls in the app (mis-cosas.html's add button, rutas.html's day nav bar).
@@ -62,7 +64,29 @@
     else window.toggleSettings?.();
   }
   mountLaunch();
-  const PET_STATE={welcome:'wave',hub:'idle',setup:'idle',review:'think',created:'cheer',complete:'cheer',message:'curious',tour:'point'};
+  const PET_STATE={welcome:'wave',hub:'happy',setup:'curious',review:'think',created:'cheer',complete:'cheer',message:'curious',tour:'point'};
+  // Short reactions on top of the base pose. While one plays, the arm does not
+  // chase the target; once it ends the mascot goes back to pointing at it.
+  let moodUntil=0,moodTimer=0,sleepTimer=0;
+  const MOODS=[[/escane|\bIA\b|análisis|compar|calcul|equivalen|convert|cotiz/i,'think'],[/guard|sincroniz|cre[aá]|agreg|registr|compart/i,'happy'],[/importante|ojo|aviso|cuidado|tope|límite|impuesto/i,'surprised']];
+  function stepMood(step,i,count){
+    if(step.mood)return step.mood;
+    if(count>1&&i===count-1)return 'cheer';
+    if(i===0)return 'wave';
+    const text=String(step.title?.[0]||'')+' '+String(step.text?.[0]||'');
+    return MOODS.find(([re])=>re.test(text))?.[1]||'';
+  }
+  function react(name,ms=1700){
+    if(!pet||!name)return;
+    clearTimeout(moodTimer);moodUntil=Date.now()+ms;
+    try{pet.play(name,ms);if(name==='cheer'||name==='happy')pet.hop(name==='cheer'?52:34);pet.talk(Math.min(900,ms));}catch(_){}
+    moodTimer=setTimeout(()=>{moodUntil=0;petAim();},ms+60);
+  }
+  function wakePet(){
+    clearTimeout(sleepTimer);if(!root.open||!pet)return;
+    if(pet.state()==='sleepy'){if(phase==='tour'){pet.set('point');petAim();}else pet.set(PET_STATE[phase]||'idle');}
+    sleepTimer=setTimeout(()=>{if(root.open&&pet&&!busy&&Date.now()>=moodUntil)pet.set('sleepy');},40000);
+  }
   function petScene(){
     clearTimeout(petTimer);const host=card.querySelector('.tfg-pet');if(!Pet||!host)return;
     try{
@@ -71,18 +95,19 @@
         const expected=phase;petTimer=setTimeout(()=>{if(root.open&&phase===expected)pet.hop(46);},260);
       }
       if(phase!=='tour')pet.talk(900);
+      wakePet();
     }catch(_){pet?.destroy();pet=null;host.remove();}
   }
   function petAim(){
-    if(!pet||phase!=='tour'||!target?.isConnected)return;
+    if(!pet||phase!=='tour'||!target?.isConnected||Date.now()<moodUntil)return;
     const r=target.getBoundingClientRect();if(r.width)pet.pointAt(r.left+r.width/2,r.top+r.height/2);
   }
   function button(action,label,primary=false){return `<button type="button" data-guide="${action}"${primary?' class="tfg-primary"':''}>${esc(t(label))}</button>`;}
   function item(id,label,small=''){return `<button type="button" class="tfg-item" data-tour="${id}">${icon(D.tours[id]?.icon||'bulb')}<span>${esc(label)}${small?`<small>${esc(small)}</small>`:''}</span>${icon('chevDown',15)}</button>`;}
   function lock(on){document.documentElement.classList.toggle('tfg-lock',on);launch.style.visibility=on?'hidden':'';}
-  function shell(title,description,body='',actions='',foot=''){
+  function shell(title,description,body='',actions='',foot='',pinned=''){
     root.dataset.phase=phase;root.dataset.highlight='false';spot.hidden=true;target=null;card.style.cssText='';
-    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-head">${Pet?'<div class="tfg-pet" aria-hidden="true"></div>':''}<h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}${actions?`<div class="tfg-actions">${actions}</div>`:''}${foot}`;
+    card.innerHTML=`<div class="tfg-top"><span class="tfg-kicker">${icon('bulb',17)} ${esc(t('guide'))}</span><button type="button" class="tfg-close" data-guide="close" aria-label="${esc(t('close'))}"${busy?' disabled':''}>${icon('x',18)}</button></div><div class="tfg-scroll"><div class="tfg-head">${Pet?'<div class="tfg-pet" aria-hidden="true"></div>':''}<h2 id="tfg-title" tabindex="-1">${esc(title)}</h2></div><p id="tfg-description">${esc(description)}</p>${body}</div>${pinned}${actions?`<div class="tfg-actions">${actions}</div>`:''}${foot}`;
     if(!root.open){returnFocus=document.activeElement;root.showModal();}
     lock(true);
     petScene();
@@ -93,7 +118,7 @@
     if(busy)return;
     token++;if(save&&phase==='tour'&&tour){state.resume={section:tour,index};persist();}
     if(save&&phase==='welcome'){state.welcome=true;persist();}
-    clearTimeout(petTimer);pet?.setStill(true);restoreView();phase='';tour=null;target=null;
+    clearTimeout(petTimer);clearTimeout(moodTimer);clearTimeout(sleepTimer);moodUntil=0;pet?.setStill(true);restoreView();phase='';tour=null;target=null;
     if(root.open)root.close();lock(false);spot.hidden=true;returnFocus?.isConnected&&returnFocus.focus?.({preventScroll:true});renderHome();
   }
   function welcome(){syncScope();if(!ready())return false;phase='welcome';shell(t('welcome'),t(trips().length?'existing':'welcomeText'),' ',button('later','later')+button(trips().length?'home-tour':'setup',trips().length?'explore':'create',true));return true;}
@@ -130,7 +155,7 @@
       if(!result?.trip)throw Error('unconfirmed');
       state.welcome=true;state.resume=null;persist();phase='created';
       shell(t('ready'),t(result.synced===false?'pending':'saved'),`<div class="tfg-summary"><strong>${esc(result.trip.name)}</strong><span>${esc(fields.destinations[0].city)}, ${esc(fields.destinations[0].state)}</span></div><div class="tfg-list" style="margin-top:14px">${item('budget',t('budgetAction'))}${item('planning',t('planAction'))}${item('reservations',t('reservationAction'))}</div>`,button('finish-setup','use'));
-    }catch(_){if(capturedScope!==C.key(context()?.uid,context()?.profile)){syncScope();return;}busy=false;root.removeAttribute('aria-busy');review();$('#tfg-error').textContent=t('saveError');}
+    }catch(_){if(capturedScope!==C.key(context()?.uid,context()?.profile)){syncScope();return;}busy=false;root.removeAttribute('aria-busy');review();$('#tfg-error').textContent=t('saveError');pet?.set('sad');}
   }
   const PAGE_MAP={'index.html':'home','compras.html':'expenses','tickets.html':'documents','lugares.html':'places','rutas.html':'routes','mis-cosas.html':'packing','grupo.html':'group','tax.html':'tax','unidades.html':'units','planificacion.html':'planning'};
   function currentSection(){
@@ -211,7 +236,10 @@
     const hubBtn=`<button type="button" class="tfg-mini" data-guide="hub">${esc(t('more'))}</button>`;
     const jump=map&&cur>=0?`<details class="tfg-more"${jumpOpen?' open':''}><summary>${esc(t('moreOptions'))}</summary><div class="tfg-more-body"><label class="tfg-jump-label">${esc(t('jumpTo'))}<select data-jump>${map.map((r,i)=>`<option value="${r.start}"${i===cur?' selected':''}>${i+1}. ${esc(txt(D.tours[r.id].name))}</option>`).join('')}</select></label><div class="tfg-more-actions"><button type="button" class="tfg-mini" data-guide="skip-tab">${esc(t(cur===map.length-1?'finish':'skipTab'))}</button>${hubBtn}</div></div></details>`:'';
     const foot=map?'':`<div class="tfg-foot">${hubBtn.replace('tfg-mini','tfg-dismiss')}</div>`;
-    shell(txt(step.title),txt(step.text),`<span class="tfg-step">${esc(t('step'))} ${index+1} ${esc(t('of'))} ${count}</span><div class="tfg-progress" role="progressbar" aria-label="${esc(t('guide'))}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index+1}"><span style="width:${(index+1)/count*100}%"></span></div>${jump}<p class="tfg-notice" id="tfg-target-status" role="status" hidden></p>`,(index?button('prev','back'):'')+button('pause','pause')+button('next',index===count-1?'finish':'next',true),foot);
+    dockSide=null;
+    const meta=`<div class="tfg-meta"><span class="tfg-step">${esc(t('step'))} ${index+1} ${esc(t('of'))} ${count}</span><div class="tfg-progress" role="progressbar" aria-label="${esc(t('guide'))}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index+1}"><span style="width:${(index+1)/count*100}%"></span></div></div>${jump}`;
+    shell(txt(step.title),txt(step.text),`<p class="tfg-notice" id="tfg-target-status" role="status" hidden></p>`,(index?button('prev','back'):'')+button('pause','pause')+button('next',index===count-1?'finish':'next',true),foot,meta);
+    react(stepMood(step,index,count));
     let prepared=false,settled=false,started=Date.now();
     function notice(kind,text,retryable){
       const n=$('#tfg-target-status');if(!n)return;
@@ -246,30 +274,48 @@
     }
     seek();
   }
+  let dockSide=null;
   function position(){
     if(phase!=='tour'||!target?.isConnected)return;
-    const r=target.getBoundingClientRect(),w=window.innerWidth,h=window.innerHeight;
-    if(!r.width||!r.height){spot.hidden=true;root.dataset.highlight='false';return;}
-    root.dataset.highlight='true';spot.hidden=false;
-    const left=Math.max(4,r.left-5),top=Math.max(4,r.top-5),right=Math.min(w-4,r.right+5),bottom=Math.min(h-4,r.bottom+5);
-    Object.assign(spot.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});
-    const gap=14,pad=12,cw=Math.min(380,w-32);
+    const w=window.innerWidth,h=window.innerHeight;let raw=target.getBoundingClientRect();
+    if(!raw.width||!raw.height){spot.hidden=true;root.dataset.highlight='false';return;}
+    const gap=12,pad=10,narrow=w<640,cw=narrow?w-2*pad:Math.min(380,w-32),clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
     // Apply the final width first: the height depends on it.
-    Object.assign(card.style,{position:'fixed',left:'0px',top:'0px',width:cw+'px',maxHeight:(h-2*pad)+'px'});
-    const ch=card.offsetHeight,clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-    const room={below:h-bottom-gap-pad,above:top-gap-pad,right:w-right-gap-pad,left:left-gap-pad};
-    let x=clamp(r.left+r.width/2-cw/2,16,w-cw-16),y,max=h-2*pad;
-    if(room.below>=ch)y=bottom+gap;
-    else if(room.above>=ch)y=top-ch-gap;
-    else if(room.right>=cw){x=right+gap;y=clamp(top,pad,h-ch-pad);}
-    else if(room.left>=cw){x=left-gap-cw;y=clamp(top,pad,h-ch-pad);}
+    if(card.style.width!==cw+'px')Object.assign(card.style,{position:'fixed',left:'0px',top:'0px',width:cw+'px'});
+    // Natural height = card height + whatever the text area hides. Reading it never
+    // changes max-height, so the text area keeps its own scroll position.
+    const sc=card.querySelector('.tfg-scroll'),ch=card.offsetHeight+(sc?sc.scrollHeight-sc.clientHeight:0);
+    const box=()=>{const q=target.getBoundingClientRect();return {l:q.left-5,t:q.top-5,r:q.right+5,b:q.bottom+5};};
+    let bx=box(),place=null;
+    const cx=(bx.l+bx.r)/2,room={below:h-bx.b-gap-pad,above:bx.t-gap-pad,right:w-bx.r-gap-pad,left:bx.l-gap-pad};
+    const tall=Math.min(ch,h-2*pad),xc=clamp(cx-cw/2,pad,w-cw-pad),yc=clamp(bx.t,pad,h-tall-pad);
+    // 1) a free side where the whole card fits, 2) the roomiest side if it still shows enough text.
+    if(room.below>=ch)place={x:xc,y:bx.b+gap,hh:ch};
+    else if(room.above>=ch)place={x:xc,y:bx.t-gap-ch,hh:ch};
+    else if(!narrow&&room.right>=cw)place={x:bx.r+gap,y:yc,hh:tall};
+    else if(!narrow&&room.left>=cw)place={x:bx.l-gap-cw,y:yc,hh:tall};
     else{
-      // Not enough room anywhere: use the roomier side and let the card scroll inside itself.
-      const below=room.below>=room.above,space=below?room.below:room.above;
-      if(space>=160){max=space;const hh=Math.min(ch,space);y=below?bottom+gap:top-gap-hh;}
-      else y=h-Math.min(ch,max)-pad;
+      const need=Math.min(ch,Math.round(h*.4)),best=room.below>=room.above?'below':'above';
+      if(room[best]>=need)place=best==='below'?{x:xc,y:bx.b+gap,hh:room.below}:{x:xc,y:bx.t-gap-room.above,hh:room.above};
     }
-    Object.assign(card.style,{left:x+'px',top:y+'px',maxHeight:max+'px'});
+    if(!place){
+      // No clear spot: dock the card at the top or bottom edge as a sheet that scrolls
+      // inside itself, and move the page so the highlighted block sits in the free band.
+      const cardH=Math.min(ch,Math.round(h*(narrow?.46:.5))),sy=window.scrollY,maxY=Math.max(0,document.documentElement.scrollHeight-h);
+      const plan=side=>{
+        const lo=side==='bottom'?pad:cardH+pad+gap,hi=side==='bottom'?h-cardH-pad-gap:h-pad,bh=bx.b-bx.t;
+        const want=bh<=hi-lo?lo+(hi-lo-bh)/2:lo,dy=clamp(bx.t-want,-sy,maxY-sy);
+        return {side,dy,loss:Math.max(0,lo-(bx.t-dy))+Math.max(0,(bx.b-dy)-hi)};
+      };
+      if(!dockSide){const down=plan('bottom'),up=plan('top');dockSide=down.loss<up.loss?'bottom':up.loss<down.loss?'top':((bx.t+bx.b)/2<h/2?'bottom':'top');}
+      const chosen=plan(dockSide);
+      if(Math.abs(chosen.dy)>=1){window.scrollBy({top:chosen.dy,left:0,behavior:'instant'});bx=box();}
+      place={x:Math.round((w-cw)/2),y:dockSide==='bottom'?h-cardH-pad:pad,hh:cardH};
+    }
+    root.dataset.highlight='true';spot.hidden=false;
+    const left=Math.max(4,bx.l),top=Math.max(4,bx.t),right=Math.min(w-4,bx.r),bottom=Math.min(h-4,bx.b);
+    Object.assign(spot.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});
+    Object.assign(card.style,{left:Math.round(place.x)+'px',top:Math.round(place.y)+'px',maxHeight:Math.ceil(place.hh)+'px'});
     petAim();
   }
   function finish(){const id=tour;state.done=[...new Set([...state.done,id])];state.resume=null;persist();token++;tour=null;phase='complete';shell(t('complete'),t('completeText'),'',button('hub','more')+button('close','use',true));renderHome();}
@@ -303,6 +349,7 @@
   const stopScroll=e=>{if(!e.target.closest?.('.tfg-card'))e.preventDefault();};
   root.addEventListener('wheel',stopScroll,{passive:false});root.addEventListener('touchmove',stopScroll,{passive:false});
   root.addEventListener('cancel',e=>{e.preventDefault();close();});
+  for(const name of ['pointerdown','keydown','wheel'])root.addEventListener(name,wakePet,{passive:true});
   root.addEventListener('click',e=>{
     if(busy)return;const id=e.target.closest('[data-tour]')?.dataset.tour;if(id){navigate(id);return;}
     const act=e.target.closest('[data-guide]')?.dataset.guide;
@@ -317,7 +364,7 @@
   root.addEventListener('change',e=>{const sel=e.target.closest?.('[data-jump]');if(!sel||busy||phase!=='tour'||tour!=='overview')return;const to=Number(sel.value);if(Number.isInteger(to)&&to>=0&&to<D.tours.overview.steps.length){index=to;renderStep();}});
   // The native dialog traps keyboard focus; Escape pauses, including the welcome.
   let positioning=false;function queuePosition(){if(positioning||phase!=='tour')return;positioning=true;requestAnimationFrame(()=>{positioning=false;position();});}
-  window.addEventListener('resize',queuePosition);window.addEventListener('scroll',queuePosition,true);window.visualViewport?.addEventListener('resize',queuePosition);
+  window.addEventListener('resize',()=>{dockSide=null;queuePosition();});window.addEventListener('scroll',e=>{if(card.contains(e.target))return;queuePosition();},true);window.visualViewport?.addEventListener('resize',queuePosition);
   // Content that loads after the step is positioned (e.g. the weather card on tax.html
   // filling in once fetchWeather() resolves) reflows the page without firing resize or
   // scroll, which used to leave the highlight stuck over whatever ended up in its old

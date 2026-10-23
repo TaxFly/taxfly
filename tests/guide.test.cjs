@@ -80,3 +80,20 @@ test('the guide card is measured at its final width, locks page scroll and hides
  assert.match(guide,/lock\(true\)/);assert.match(guide,/lock\(false\)/);assert.match(guide,/addEventListener\('wheel',stopScroll/);
  assert.match(css,/html\.tfg-lock/);
 });
+
+test('the guide card scrolls inside itself, never covers the target and the mascot reacts',()=>{
+ const guide=read('assets/guide.js'),css=read('assets/guide.css');
+ const pos=guide.slice(guide.indexOf('function position()'),guide.indexOf('function finish()'));
+ // Reading the height must not touch max-height (that used to reset the text scroll on every scroll event).
+ assert.doesNotMatch(pos.slice(0,pos.indexOf('const box=')),/maxHeight/);
+ assert.match(pos,/scrollHeight-sc\.clientHeight/);
+ assert.match(guide,/card\.contains\(e\.target\)\)return/);
+ assert.match(pos,/dockSide/);assert.match(pos,/window\.scrollBy/);
+ assert.match(guide,/class="tfg-scroll"/);assert.match(css,/\.tfg-scroll\{[^}]*overflow-y:auto/);
+ assert.match(css,/\.tfg-card\{[^}]*overflow:hidden/);
+ // Expressions: every pose used must exist in the mascot engine.
+ const poses=[...read('assets/mascot.js').match(/const POSES=\{[^\n]*/)[0].matchAll(/(\w+):\{ar:/g)].map(m=>m[1]);
+ const used=[...guide.matchAll(/'(wave|cheer|think|happy|curious|surprised|sad|sleepy|point)'/g)].map(m=>m[1]);
+ for(const name of used)assert.ok(poses.includes(name),name);
+ assert.match(guide,/function stepMood/);assert.match(guide,/function react\(/);
+});
