@@ -356,6 +356,8 @@ const i18n = {
     cart_open: "VER",
     cart_close: "OCULTAR",
     cart_hint: "Sumá cada producto del súper y mirá el total con tax al final, sin salir de la app.",
+    cart_has_discount: "¿Tenía descuento?",
+    cart_savings: "Ahorraste",
     cart_exempt: "Sin tax",
     cart_empty: "Todavía no agregaste productos.",
     cart_subtotal: "Subtotal",
@@ -365,6 +367,14 @@ const i18n = {
     cart_save: "Guardar en Gastos",
     tab_individual: "Precio Individual",
     tab_cart: "Carrito",
+    tab_discount: "Descuento",
+    disc_hint: "Calculá el % de descuento, o cuánto vas a pagar con un % dado.",
+    disc_mode_pct: "¿Qué % es?",
+    disc_mode_final: "¿Cuánto pago?",
+    disc_original: "PRECIO ORIGINAL",
+    disc_final: "PRECIO FINAL (CON DESCUENTO)",
+    disc_pct: "% DE DESCUENTO",
+    disc_savings: "Ahorrás",
     food_prepared: "Preparada / Restaurante",
     food_grocery: "Súper (sin preparar)",
     food_staple: "Alimento básico",
@@ -444,6 +454,8 @@ const i18n = {
     cart_open: "SHOW",
     cart_close: "HIDE",
     cart_hint: "Add each item from the store and see the total with tax at the end, without leaving the app.",
+    cart_has_discount: "Was it discounted?",
+    cart_savings: "You saved",
     cart_exempt: "Tax free",
     cart_empty: "No items added yet.",
     cart_subtotal: "Subtotal",
@@ -453,6 +465,14 @@ const i18n = {
     cart_save: "Save to Expenses",
     tab_individual: "Individual Price",
     tab_cart: "Cart",
+    tab_discount: "Discount",
+    disc_hint: "Calculate the discount %, or how much you'll pay given a %.",
+    disc_mode_pct: "What % is it?",
+    disc_mode_final: "What do I pay?",
+    disc_original: "ORIGINAL PRICE",
+    disc_final: "FINAL PRICE (DISCOUNTED)",
+    disc_pct: "DISCOUNT %",
+    disc_savings: "You save",
     food_prepared: "Prepared / Restaurant",
     food_grocery: "Grocery (unprepared)",
     food_staple: "Grocery staple",
@@ -532,6 +552,8 @@ const i18n = {
     cart_open: "VER",
     cart_close: "OCULTAR",
     cart_hint: "Some cada produto do mercado e veja o total com imposto no final, sem sair do app.",
+    cart_has_discount: "Tinha desconto?",
+    cart_savings: "Você economizou",
     cart_exempt: "Sem imposto",
     cart_empty: "Ainda não adicionou produtos.",
     cart_subtotal: "Subtotal",
@@ -541,6 +563,14 @@ const i18n = {
     cart_save: "Salvar em Gastos",
     tab_individual: "Preço Individual",
     tab_cart: "Carrinho",
+    tab_discount: "Desconto",
+    disc_hint: "Calcule o % de desconto, ou quanto vai pagar com um % dado.",
+    disc_mode_pct: "Que % é?",
+    disc_mode_final: "Quanto pago?",
+    disc_original: "PREÇO ORIGINAL",
+    disc_final: "PREÇO FINAL (COM DESCONTO)",
+    disc_pct: "% DE DESCONTO",
+    disc_savings: "Você economiza",
     food_prepared: "Preparada / Restaurante",
     food_grocery: "Supermercado (sem preparar)",
     food_staple: "Alimento básico",
@@ -2052,23 +2082,70 @@ window.onload = () => {
 };
 
 window.switchCalcTab = tab => {
-  const tabIndividual = document.getElementById("tab-individual");
-  const tabCart = document.getElementById("tab-cart");
-  const panelIndividual = document.getElementById("panel-individual");
-  const panelCart = document.getElementById("panel-cart");
-  if (tab === "cart") {
-    tabCart.classList.add("active");
-    tabIndividual.classList.remove("active");
-    panelCart.classList.add("active");
-    panelIndividual.classList.remove("active");
-    renderCart();
-  } else {
-    tabIndividual.classList.add("active");
-    tabCart.classList.remove("active");
-    panelIndividual.classList.add("active");
-    panelCart.classList.remove("active");
-  }
+  const tabs = { individual: "tab-individual", cart: "tab-cart", discount: "tab-discount" };
+  const panels = { individual: "panel-individual", cart: "panel-cart", discount: "panel-discount" };
+  Object.keys(tabs).forEach(key => {
+    const isActive = key === tab;
+    document.getElementById(tabs[key])?.classList.toggle("active", isActive);
+    document.getElementById(panels[key])?.classList.toggle("active", isActive);
+  });
+  if (tab === "cart") renderCart();
+  if (tab === "discount") renderDiscount();
 };
+
+let discMode = "pct";
+
+window.setDiscMode = mode => {
+  discMode = mode;
+  document.getElementById("disc-mode-pct")?.classList.toggle("active", mode === "pct");
+  document.getElementById("disc-mode-final")?.classList.toggle("active", mode === "final");
+  const finalGroup = document.getElementById("disc-final-group");
+  const pctGroup = document.getElementById("disc-pct-group");
+  if (finalGroup) finalGroup.style.display = mode === "pct" ? "block" : "none";
+  if (pctGroup) pctGroup.style.display = mode === "final" ? "block" : "none";
+  renderDiscount();
+};
+
+function renderDiscount() {
+  const summary = document.getElementById("disc-summary");
+  const lbl = document.getElementById("disc-result-lbl");
+  const val = document.getElementById("disc-result-val");
+  const savingsVal = document.getElementById("disc-savings-val");
+  if (!summary) return;
+  const lang = localStorage.getItem("appLang") || "es";
+  const fmt = n => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const L = (es, en, pt) => ({ es, en, pt })[lang] || es;
+  const original = parseFloat(document.getElementById("disc-original-input")?.value);
+  if (!(original > 0)) {
+    summary.style.display = "none";
+    return;
+  }
+  if (discMode === "pct") {
+    const final = parseFloat(document.getElementById("disc-final-input")?.value);
+    if (!(final >= 0) || final > original) {
+      summary.style.display = "none";
+      return;
+    }
+    const pct = (original - final) / original * 100;
+    const savings = original - final;
+    lbl.innerText = L("% de descuento", "Discount %", "% de desconto");
+    val.innerText = `-${pct.toFixed(1)}%`;
+    savingsVal.innerText = fmt(savings);
+    summary.style.display = "block";
+  } else {
+    const pct = parseFloat(document.getElementById("disc-pct-input")?.value);
+    if (!(pct >= 0) || pct > 100) {
+      summary.style.display = "none";
+      return;
+    }
+    const savings = original * pct / 100;
+    const final = original - savings;
+    lbl.innerText = L("Precio final", "Final price", "Preço final");
+    val.innerText = fmt(final);
+    savingsVal.innerText = fmt(savings);
+    summary.style.display = "block";
+  }
+}
 
 let cartItems = [];
 
@@ -2081,6 +2158,29 @@ let cartFoodCandy = false;
 let cartMedMode = "otc";
 
 let cartManualTaxActive = false;
+
+let cartDiscountActive = false;
+
+window.toggleCartDiscount = () => {
+  cartDiscountActive = document.getElementById("cart-discount-toggle")?.checked || false;
+  const row = document.getElementById("cart-discount-row");
+  if (row) row.style.display = cartDiscountActive ? "flex" : "none";
+  const origInput = document.getElementById("cart-discount-original-input");
+  if (cartDiscountActive) { origInput?.focus(); } else if (origInput) { origInput.value = ""; updateCartDiscountPreview(); }
+};
+
+function updateCartDiscountPreview() {
+  const preview = document.getElementById("cart-discount-pct-preview");
+  if (!preview) return;
+  const orig = parseFloat(document.getElementById("cart-discount-original-input")?.value);
+  const price = parseFloat(document.getElementById("cart-price-input")?.value);
+  if (cartDiscountActive && orig > 0 && price >= 0 && price < orig) {
+    const pct = (orig - price) / orig * 100;
+    preview.innerText = `-${pct.toFixed(0)}%`;
+  } else {
+    preview.innerText = "";
+  }
+}
 
 const CART_CAT_META = {
   general: {
@@ -2197,14 +2297,20 @@ window.addCartItem = () => {
   }
   const mode = cartCurrentCategory === "food" ? cartFoodMode : cartCurrentCategory === "med" ? cartMedMode : null;
   const isCandy = cartCurrentCategory === "food" && cartFoodMode === "grocery" ? cartFoodCandy : false;
+  const origInput = document.getElementById("cart-discount-original-input");
+  const originalPrice = cartDiscountActive ? parseFloat(origInput?.value) : NaN;
+  const hasDiscount = cartDiscountActive && originalPrice > price;
   cartItems.push({
     id: Date.now() + Math.random(),
     price: price,
     category: cartCurrentCategory,
     mode: mode,
-    isCandy: isCandy
+    isCandy: isCandy,
+    originalPrice: hasDiscount ? originalPrice : null
   });
   input.value = "";
+  if (origInput) origInput.value = "";
+  updateCartDiscountPreview();
   renderCart();
   input.focus();
 };
@@ -2230,7 +2336,12 @@ window.clearCart = () => {
   const msgs = { es: "Carrito vaciado", en: "Cart cleared", pt: "Carrinho esvaziado" };
   tfDeleteWithUndo({
     message: msgs[lang] || msgs.es,
-    remove: () => { cartItems = []; renderCart(); },
+    remove: () => {
+      cartItems = [];
+      const discToggle = document.getElementById("cart-discount-toggle");
+      if (discToggle) { discToggle.checked = false; window.toggleCartDiscount(); }
+      renderCart();
+    },
     restore: () => { cartItems = prev; renderCart(); },
     commit: () => {}
   });
@@ -2261,12 +2372,23 @@ function renderCart() {
     const catIcon = it.isCandy ? "🍬" : meta.icon;
     const itemRate = getCartItemTaxRate(it, state, localRate);
     const exempt = itemRate === 0;
-    return `\n        <div class="cart-item">\n            <div class="cart-item-info">\n                <span class="cart-item-price">${fmt(it.price)}</span>\n                <span class="cart-item-tag" style="${exempt ? "" : "color:var(--text-dim);background:var(--input-bg);"}">${catIcon} ${catLabel}${exempt ? " · " + i18n[lang].cart_exempt : ` · ${itemRate}%`}</span>\n            </div>\n            <button class="cart-item-del" onclick="removeCartItem(${it.id})">✕</button>\n        </div>`;
+    const discPct = it.originalPrice ? Math.round((it.originalPrice - it.price) / it.originalPrice * 100) : 0;
+    const discTag = it.originalPrice ? `<span class="cart-item-tag" style="color:var(--success);background:rgba(16,185,129,.1);">🏷️ -${discPct}%</span>` : "";
+    return `\n        <div class="cart-item">\n            <div class="cart-item-info">\n                <span class="cart-item-price">${fmt(it.price)}</span>\n                ${discTag}\n                <span class="cart-item-tag" style="${exempt ? "" : "color:var(--text-dim);background:var(--input-bg);"}">${catIcon} ${catLabel}${exempt ? " · " + i18n[lang].cart_exempt : ` · ${itemRate}%`}</span>\n            </div>\n            <button class="cart-item-del" onclick="removeCartItem(${it.id})">✕</button>\n        </div>`;
   }).join("");
   const subtotal = cartItems.reduce((s, it) => s + it.price, 0);
   const taxAmt = cartItems.reduce((s, it) => s + it.price * getCartItemTaxRate(it, state, localRate) / 100, 0);
   const total = subtotal + taxAmt;
   const blendedPct = subtotal > 0 ? taxAmt / subtotal * 100 : 0;
+  const savings = cartItems.reduce((s, it) => s + (it.originalPrice ? it.originalPrice - it.price : 0), 0);
+  const savingsRow = document.getElementById("cart-savings-row");
+  if (savings > 0) {
+    if (savingsRow) savingsRow.style.display = "flex";
+    const savingsEl = document.getElementById("cart-savings-amt");
+    if (savingsEl) savingsEl.innerText = `${fmt(savings)}`;
+  } else if (savingsRow) {
+    savingsRow.style.display = "none";
+  }
   document.getElementById("cart-subtotal").innerText = `${fmt(subtotal)}`;
   document.getElementById("cart-tax-lbl").innerText = `${i18n[lang].cart_tax} (~${blendedPct.toFixed(2)}%)`;
   document.getElementById("cart-tax-amt").innerText = `${fmt(taxAmt)}`;
@@ -2353,6 +2475,7 @@ window.saveCartAsExpense = async () => {
   const subtotal = cartItems.reduce((s, it) => s + it.price, 0);
   const taxAmt = cartItems.reduce((s, it) => s + it.price * getCartItemTaxRate(it, state, localRate) / 100, 0);
   const total = parseFloat((subtotal + taxAmt).toFixed(2));
+  const savings = parseFloat(cartItems.reduce((s, it) => s + (it.originalPrice ? it.originalPrice - it.price : 0), 0).toFixed(2));
   const fmt = n => n.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
@@ -2365,6 +2488,7 @@ window.saveCartAsExpense = async () => {
     thumb: "",
     tripId: currentUser && perfilId ? window.TripContext.assign(currentUser.uid, perfilId) : "orlando"
   };
+  if (savings > 0) gastoData.ahorro = savings;
   try {
     if (firebaseOk && currentUser && perfilId && navigator.onLine) {
       await addDoc(collection(db, "usuarios", currentUser.uid, "perfiles", perfilId, "gastos"), gastoData);
@@ -2384,13 +2508,20 @@ window.saveCartAsExpense = async () => {
       });
       localStorage.setItem(key, JSON.stringify(pending));
     }
+    const savingsSuffix = savings > 0 ? {
+      es: ` (ahorraste ${fmt(savings)})`,
+      en: ` (you saved ${fmt(savings)})`,
+      pt: ` (você economizou ${fmt(savings)})`
+    } : { es: "", en: "", pt: "" };
     const okMsgs = {
-      es: `Guardado en Gastos: ${fmt(total)} en ${store}.`,
-      en: `Saved to Expenses: ${fmt(total)} at ${store}.`,
-      pt: `Salvo em Gastos: ${fmt(total)} em ${store}.`
+      es: `Guardado en Gastos: ${fmt(total)} en ${store}.${savingsSuffix.es}`,
+      en: `Saved to Expenses: ${fmt(total)} at ${store}.${savingsSuffix.en}`,
+      pt: `Salvo em Gastos: ${fmt(total)} em ${store}.${savingsSuffix.pt}`
     };
     if (window.showAlert) window.showAlert(okMsgs[lang] || okMsgs.es); else if (window.tfToast) window.tfToast(okMsgs[lang] || okMsgs.es);
     cartItems = [];
+    const discToggle = document.getElementById("cart-discount-toggle");
+    if (discToggle) { discToggle.checked = false; window.toggleCartDiscount(); }
     renderCart();
   } catch (e) {
     const errMsgs = {

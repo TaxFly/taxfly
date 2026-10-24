@@ -86,6 +86,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .calc-tabs{display:flex;gap:8px;margin-bottom:14px;}
         .calc-tab{flex:1;padding:13px 8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--input-bg);font-size:.72rem;font-weight:800;color:var(--text-sub);cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;text-transform:uppercase;letter-spacing:.3px;}
         .calc-tab.active{border-color:var(--primary);background:var(--primary-dim);color:var(--primary);}
+        @media(max-width:420px){.calc-tab{font-size:.6rem;padding:11px 4px;gap:3px;letter-spacing:.1px;}}
         .calc-panel{display:none;}
         .calc-panel.active{display:block;}
 
@@ -443,6 +444,7 @@ if ("serviceWorker" in navigator) {
     <div class="calc-tabs">
         <button class="calc-tab active" id="tab-individual" onclick="switchCalcTab('individual')">🏷️ <span data-i18n="tab_individual">Precio Individual</span></button>
         <button class="calc-tab" id="tab-cart" onclick="switchCalcTab('cart')">🛒 <span data-i18n="tab_cart">Carrito</span></button>
+        <button class="calc-tab" id="tab-discount" onclick="switchCalcTab('discount')">%️⃣ <span data-i18n="tab_discount">Descuento</span></button>
     </div>
 
     <div class="calc-panel active" id="panel-individual">
@@ -600,8 +602,17 @@ if ("serviceWorker" in navigator) {
         <button id="cart-toggle-manual-tax" onclick="toggleCartManualTax()" style="background:none;border:none;color:var(--text-dim);font-size:.65rem;font-weight:700;cursor:pointer;padding:2px 0 14px;text-decoration:none;display:block;">✏️ <span data-i18n="btn_manual_tax">Ingresar tax manualmente</span></button>
 
         <div class="cart-add-row">
-            <input type="text" id="cart-price-input" placeholder="0.00" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}" enterkeyhint="done" data-num>
+            <input type="text" id="cart-price-input" placeholder="0.00" inputmode="decimal" oninput="updateCartDiscountPreview()" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}" enterkeyhint="done" data-num>
             <button class="cart-add-btn" onclick="addCartItem()" aria-label="Agregar">+</button>
+        </div>
+
+        <label class="cart-exempt-toggle" id="cart-discount-toggle-row" style="margin:-6px 0 10px;cursor:pointer;">
+            <input type="checkbox" id="cart-discount-toggle" onchange="toggleCartDiscount()">
+            <span data-i18n="cart_has_discount">¿Tenía descuento?</span>
+        </label>
+        <div class="cart-add-row" id="cart-discount-row" style="display:none;">
+            <input type="text" id="cart-discount-original-input" placeholder="Precio original" inputmode="decimal" oninput="updateCartDiscountPreview()" onkeydown="if(event.key==='Enter'){event.preventDefault();addCartItem();}" enterkeyhint="done" data-num>
+            <span id="cart-discount-pct-preview" style="flex-shrink:0;font-size:.68rem;font-weight:800;color:var(--success);min-width:44px;text-align:right;"></span>
         </div>
 
         <div class="cart-list" id="cart-list">
@@ -609,6 +620,7 @@ if ("serviceWorker" in navigator) {
         </div>
 
         <div class="cart-summary" id="cart-summary" style="display:none;">
+            <div class="cart-summary-row" id="cart-savings-row" style="display:none;color:var(--success);"><span data-i18n="cart_savings">Ahorraste</span><span id="cart-savings-amt">$0.00</span></div>
             <div class="cart-summary-row"><span data-i18n="cart_subtotal">Subtotal</span><span id="cart-subtotal">$0.00</span></div>
             <div class="cart-summary-row"><span id="cart-tax-lbl" data-i18n="cart_tax">Tax</span><span id="cart-tax-amt">$0.00</span></div>
             <div class="cart-total"><span data-i18n="cart_total">TOTAL</span><span id="cart-total">$0.00</span></div>
@@ -617,6 +629,32 @@ if ("serviceWorker" in navigator) {
         <div class="cart-actions" id="cart-actions" style="display:none;">
             <button class="cart-btn cart-btn-clear" onclick="clearCart()">🗑️ <span data-i18n="cart_clear">Vaciar</span></button>
             <button class="cart-btn cart-btn-save" onclick="saveCartAsExpense()">💾 <span data-i18n="cart_save">Guardar en Gastos</span></button>
+        </div>
+    </div>
+    </div>
+
+    <div class="calc-panel" id="panel-discount">
+    <div class="cart-card">
+        <div style="font-size:.68rem;font-weight:600;color:var(--text-dim);margin-bottom:14px;line-height:1.4;" data-i18n="disc_hint">Calculá el % de descuento, o cuánto vas a pagar con un % dado.</div>
+        <div class="subcat-grid show" style="grid-template-columns:1fr 1fr;margin-bottom:14px;">
+            <button class="subcat-btn active" id="disc-mode-pct" onclick="setDiscMode('pct')" data-i18n="disc_mode_pct">¿Qué % es?</button>
+            <button class="subcat-btn" id="disc-mode-final" onclick="setDiscMode('final')" data-i18n="disc_mode_final">¿Cuánto pago?</button>
+        </div>
+        <div class="input-group">
+            <span class="slabel" data-i18n="disc_original">PRECIO ORIGINAL</span>
+            <input type="text" id="disc-original-input" placeholder="0.00" inputmode="decimal" oninput="renderDiscount()" enterkeyhint="done" data-num>
+        </div>
+        <div class="input-group" id="disc-final-group">
+            <span class="slabel" data-i18n="disc_final">PRECIO FINAL (CON DESCUENTO)</span>
+            <input type="text" id="disc-final-input" placeholder="0.00" inputmode="decimal" oninput="renderDiscount()" enterkeyhint="done" data-num>
+        </div>
+        <div class="input-group" id="disc-pct-group" style="display:none;">
+            <span class="slabel" data-i18n="disc_pct">% DE DESCUENTO</span>
+            <input type="text" id="disc-pct-input" placeholder="0" inputmode="decimal" oninput="renderDiscount()" enterkeyhint="done" data-num>
+        </div>
+        <div class="cart-summary" id="disc-summary" style="display:none;">
+            <div class="cart-summary-row"><span id="disc-result-lbl">% de descuento</span><span id="disc-result-val">0%</span></div>
+            <div class="cart-total"><span data-i18n="disc_savings">Ahorrás</span><span id="disc-savings-val">$0.00</span></div>
         </div>
     </div>
     </div>
