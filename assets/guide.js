@@ -258,7 +258,17 @@
       // A target still flagged busy (skeletons, background sync) is good enough after a moment.
       const el=prepared?visibleElement(step.sel,waited>1200):null;
       const loading=file()==='planificacion.html'&&!window._appInited;
-      if(el&&!loading){target=el;const n=$('#tfg-target-status');if(n){n.hidden=true;n.textContent='';n.dataset.kind='';}{const tall=el.getBoundingClientRect().height>innerHeight*.5;if(tall)el.style.scrollMarginTop='96px';el.scrollIntoView({block:tall?'start':'center',behavior:'instant'});if(tall)el.style.removeProperty('scroll-margin-top');}requestAnimationFrame(position);return;}
+      if(el&&!loading){
+        target=el;const n=$('#tfg-target-status');if(n){n.hidden=true;n.textContent='';n.dataset.kind='';}
+        const reveal=()=>{const tall=el.getBoundingClientRect().height>innerHeight*.5;if(tall)el.style.scrollMarginTop='96px';el.scrollIntoView({block:tall?'start':'center',behavior:'instant'});if(tall)el.style.removeProperty('scroll-margin-top');requestAnimationFrame(position);};
+        reveal();
+        // The target can sit right after content that is still loading (a grid of cards, a
+        // list fetched async). That content growing pushes the target further down the page;
+        // redo the scroll + position a few times right after it first appears so the card
+        // keeps following it, instead of relying on a single scroll taken too early.
+        for(const delay of [250,600,1200,2000])setTimeout(()=>{if(seq===token&&target===el)reveal();},delay);
+        return;
+      }
       // Stay silent at first; only mention the wait if it really drags on.
       if(waited>1500&&!settled){const n=$('#tfg-target-status');if(n&&!n.textContent){n.hidden=false;n.dataset.kind='loading';n.textContent=t('waiting');}}
       if(waited<(step.optional?400:4500)){setTimeout(seek,100);return;}
@@ -320,6 +330,11 @@
       if(Math.abs(chosen.dy)>=1){window.scrollBy({top:chosen.dy,left:0,behavior:'instant'});bx=box();}
       place={x:Math.round((w-cw)/2),y:dockSide==='bottom'?h-cardH-pad:pad,hh:cardH};
     }
+    // Safety net: room.above/below is measured from the target's edges without checking
+    // those edges are still inside the viewport (e.g. content above the target grew and
+    // pushed it past the bottom). Clamp here so the card can never render off-screen,
+    // regardless of which branch above produced it.
+    place.hh=Math.min(place.hh,h-2*pad);place.y=clamp(place.y,pad,h-place.hh-pad);
     root.dataset.highlight='true';spot.hidden=false;
     const left=Math.max(4,bx.l),top=Math.max(4,bx.t),right=Math.min(w-4,bx.r),bottom=Math.min(h-4,bx.b);
     Object.assign(spot.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});

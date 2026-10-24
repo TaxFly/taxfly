@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         
         .menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:1000;backdrop-filter:blur(4px);}
-        .settings-drawer{position:fixed;top:0;right:-300px;width:290px;height:100%;background:var(--surface);z-index:1001;transition:.3s ease;padding:28px 20px;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.15);border-left:1px solid var(--border);overflow-y:auto;}
+        .settings-drawer{position:fixed;top:0;right:-300px;width:290px;height:100%;background:var(--surface);z-index:1001;transition:.3s ease;padding:28px 20px;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.15);border-left:1px solid var(--border);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
         .settings-drawer.open{right:0;}
         .drawer-header{font-size:1.1rem;font-weight:900;color:var(--primary);margin-bottom:4px;}
         .drawer-email{font-size:.75rem;color:var(--text-dim);font-weight:600;margin-bottom:20px;}
