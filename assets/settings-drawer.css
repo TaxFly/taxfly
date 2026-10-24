@@ -39,7 +39,7 @@
 #settingsDrawer .sx-lang .lang-opt{flex:1;min-width:0;padding:6px 4px;margin:0;font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 #settingsDrawer .sx-row:has(> .sx-lang){flex-wrap:wrap;row-gap:8px}
 #settingsDrawer .sx-row:has(> .sx-lang) > .sx-lbl{flex:0 0 auto;min-width:max-content;overflow:visible;text-overflow:clip}
-#settingsDrawer .sx-row:has(> .sx-lang) > .sx-lang{flex:1 1 180px;min-width:180px;margin-left:auto}
+#settingsDrawer .sx-row:has(> .sx-lang) > .sx-lang{flex:1 1 140px;min-width:140px;margin-left:auto}
 #settingsDrawer .sx-sw{width:42px;height:24px;border-radius:24px;background:var(--border);position:relative;flex-shrink:0;transition:.2s;}
 #settingsDrawer .sx-sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:.2s;}
 #settingsDrawer .sx-sw.on{background:var(--primary);}

@@ -21,4 +21,4 @@
 #settingsDrawer .sx-row .sx-lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #settingsDrawer .sx-row:has(> .sx-lang){flex-wrap:wrap;row-gap:8px}
 #settingsDrawer .sx-row:has(> .sx-lang) > .sx-lbl{flex:0 0 auto;min-width:max-content;overflow:visible;text-overflow:clip}
-#settingsDrawer .sx-row:has(> .sx-lang) > .sx-lang{flex:1 1 180px;min-width:180px;margin-left:auto}
+#settingsDrawer .sx-row:has(> .sx-lang) > .sx-lang{flex:1 1 140px;min-width:140px;margin-left:auto}
