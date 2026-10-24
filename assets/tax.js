@@ -2106,6 +2106,8 @@ window.setDiscMode = mode => {
   renderDiscount();
 };
 
+window.renderDiscount = renderDiscount;
+
 function renderDiscount() {
   const summary = document.getElementById("disc-summary");
   const lbl = document.getElementById("disc-result-lbl");
@@ -2168,6 +2170,8 @@ window.toggleCartDiscount = () => {
   const origInput = document.getElementById("cart-discount-original-input");
   if (cartDiscountActive) { origInput?.focus(); } else if (origInput) { origInput.value = ""; updateCartDiscountPreview(); }
 };
+
+window.updateCartDiscountPreview = updateCartDiscountPreview;
 
 function updateCartDiscountPreview() {
   const preview = document.getElementById("cart-discount-pct-preview");
@@ -2346,6 +2350,8 @@ window.clearCart = () => {
     commit: () => {}
   });
 };
+
+window.renderCart = renderCart;
 
 function renderCart() {
   updateTaxRuleNote();
