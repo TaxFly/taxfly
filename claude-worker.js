@@ -932,6 +932,63 @@ function translateTextHash(s) {
   return "t_" + h.toString(36);
 }
 
+// Nombres propios que Google Translate traduce mal porque también son
+// palabras comunes del idioma (ej. "American" → "estadounidense",
+// "United" → "unido"). Mismo listado de aerolíneas que reservationAirlines
+// en assets/plan-reservations.js, para que "Houston – Orlando (United)" o
+// "Orlando – Miami (American)" no pierdan el nombre de la aerolínea.
+// Ordenado de más largo a más corto para que un alias compuesto (ej.
+// "American Airlines") se detecte antes que su forma corta ("American").
+const TRANSLATE_PROTECTED_TERMS = [
+  "Aerolíneas Argentinas", "Aerolineas Argentinas", "American Airlines",
+  "United Airlines", "Delta Air Lines", "Delta Airlines", "LATAM Airlines",
+  "Copa Airlines", "Gol Linhas Aereas", "Azul Linhas Aereas", "Air Canada",
+  "Air France", "Iberia Express", "British Airways", "Turkish Airlines",
+  "Qatar Airways", "Viva Aerobus", "VivaAerobus", "Sky Airline",
+  "TAP Air Portugal", "TAP Portugal", "Air Europa", "ITA Airways",
+  "Swiss International Air Lines", "Wizz Air", "Spirit Airlines",
+  "Frontier Airlines", "Southwest Airlines", "Alaska Airlines",
+  "JetBlue Airways", "Aeroméxico", "Aeromexico", "Aerolineas",
+  "American", "United", "Delta", "LATAM", "Avianca", "JetSMART",
+  "Flybondi", "Copa", "Gol", "Azul", "KLM", "Iberia", "Lufthansa",
+  "Turkish", "Emirates", "Qatar", "Volaris", "Arajet", "Wingo",
+  "Swiss", "Level", "Ryanair", "EasyJet", "JetBlue", "Spirit",
+  "Frontier", "Southwest", "Alaska", "TAP"
+].sort((a, b) => b.length - a.length);
+
+function translateProtectPlaceholder(i) { return `ZZTFKEEP${i}ZZ`; }
+
+function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+// Reemplaza cada nombre propio protegido por un token que Google Translate
+// deja intacto (ASCII, sin espacios, no es una palabra real de ningún
+// idioma), y devuelve también la lista de coincidencias originales para
+// poder restaurarlas después en las 3 traducciones.
+function translateProtectTerms(text) {
+  let protectedText = text;
+  const found = [];
+  for (const term of TRANSLATE_PROTECTED_TERMS) {
+    const re = new RegExp(`\\b${escapeRegExp(term)}\\b`, "gi");
+    protectedText = protectedText.replace(re, (match) => {
+      const token = translateProtectPlaceholder(found.length);
+      found.push(match);
+      return token;
+    });
+  }
+  return { protectedText, found };
+}
+
+function translateRestoreTerms(result, found) {
+  if (!found.length) return result;
+  const restoreOne = (value) => {
+    if (typeof value !== "string") return value;
+    let out = value;
+    found.forEach((original, i) => { out = out.split(translateProtectPlaceholder(i)).join(original); });
+    return out;
+  };
+  return { es: restoreOne(result.es), en: restoreOne(result.en), pt: restoreOne(result.pt) };
+}
+
 async function handleTranslateText(body, env) {
   const raw = typeof body.text === "string" ? body.text.trim().replace(/\s+/g, " ") : "";
   if (!raw) return json({ error: "Missing text" }, 400);
@@ -949,9 +1006,12 @@ async function handleTranslateText(body, env) {
     } catch (e) { console.warn("translation cache read failed", e); }
   }
 
+  const { protectedText, found } = translateProtectTerms(raw);
+
   let result;
   try {
-    result = await translateViaGoogle(raw, apiKey);
+    result = await translateViaGoogle(protectedText, apiKey);
+    result = translateRestoreTerms(result, found);
   } catch (e) {
     console.error("Google Translate failed", e);
     return json({ error: "Translation service unavailable" }, 502);
