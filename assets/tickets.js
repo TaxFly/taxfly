@@ -463,6 +463,9 @@ let camStream = null;
 
 let viewingId = null;
 
+const _pdfThumbCache = new Map();
+let _pdfThumbObserver = null;
+
 const TYPE_CFG = {
   "✈️": {
     color: "#2563eb",
@@ -584,6 +587,8 @@ const I18N = {
     btn_cancel: "CANCELAR",
     btn_save: "GUARDAR",
     btn_share: "Compartir",
+    btn_download: "Descargar",
+    btn_share_via: "Compartir vía…",
     btn_del: "Eliminar",
     empty_docs: "Todavía no tenés documentos guardados.\nAgregá tu boarding pass, vouchers y más.",
     settings_title: "Ajustes",
@@ -621,6 +626,7 @@ const I18N = {
     err_enter_name: "Ingresá un nombre.",
     err_add_image_or_pdf: "Agregá al menos una imagen o PDF.",
     err_share_failed: "No se pudo compartir.",
+    err_share_unsupported: "Tu navegador no admite compartir archivos. Usá la opción Descargar.",
     search_placeholder: "Buscar en el documento…"
   },
   en: {
@@ -668,6 +674,8 @@ const I18N = {
     btn_cancel: "CANCEL",
     btn_save: "SAVE",
     btn_share: "Share",
+    btn_download: "Download",
+    btn_share_via: "Share via…",
     btn_del: "Delete",
     empty_docs: "No documents saved yet.\nAdd your boarding pass, vouchers and more.",
     settings_title: "Settings",
@@ -705,6 +713,7 @@ const I18N = {
     err_enter_name: "Enter a name.",
     err_add_image_or_pdf: "Add at least one image or PDF.",
     err_share_failed: "Couldn't share.",
+    err_share_unsupported: "Your browser doesn't support sharing files. Use the Download option.",
     search_placeholder: "Search in the document…"
   },
   pt: {
@@ -752,6 +761,8 @@ const I18N = {
     btn_cancel: "CANCELAR",
     btn_save: "SALVAR",
     btn_share: "Compartilhar",
+    btn_download: "Baixar",
+    btn_share_via: "Compartilhar via…",
     btn_del: "Excluir",
     empty_docs: "Nenhum documento salvo ainda.\nAdicione seu boarding pass, vouchers e mais.",
     settings_title: "Configurações",
@@ -789,6 +800,7 @@ const I18N = {
     err_enter_name: "Digite um nome.",
     err_add_image_or_pdf: "Adicione ao menos uma imagem ou PDF.",
     err_share_failed: "Não foi possível compartilhar.",
+    err_share_unsupported: "Seu navegador não permite compartilhar arquivos. Use a opção Baixar.",
     search_placeholder: "Buscar no documento…"
   }
 };
@@ -1107,6 +1119,10 @@ function renderList() {
     const offlineBadge=`<div class="doc-offline-badge" data-notr>${!hasFiles?tfL3('Sin archivos adjuntos','No attached files','Sem arquivos anexados'):allLocal?tfL3('Disponible sin conexión','Available offline','Disponível sem conexão'):tfL3('Archivos pendientes de descargar','Files not downloaded yet','Arquivos ainda não baixados')}</div>`;
     if(f0?.kind==='img'&&f0.dataUrl){
       preview=`<img class="doc-thumb" src="${f0.dataUrl}" alt="${esc(tfL3('Vista previa del documento','Document preview','Prévia do documento'))}" loading="lazy">`;
+    }else if(f0?.kind==='pdf'&&f0.dataUrl){
+      const cached=_pdfThumbCache.get(doc.id);
+      preview=cached?`<img class="doc-thumb" src="${cached}" alt="${esc(tfL3('Vista previa del documento','Document preview','Prévia do documento'))}" loading="lazy">`:`<div class="doc-thumb doc-pdf-thumb" data-pdf-thumb="${doc.id}"><span class="doc-pdf-thumb-ph">PDF</span></div>`;
+      preview+=`<div class="doc-pdf-preview" data-notr><div class="doc-pdf-icon"><span>PDF</span></div><div class="doc-pdf-meta"><div class="doc-pdf-filename">${esc(f0.name||doc.name)}</div><div class="doc-pdf-size">PDF</div></div></div>`;
     }else if(f0){
       const kind=f0.kind==='pdf'?'PDF':tfL3('Imagen','Image','Imagem');
       preview=`<div class="doc-pdf-preview" data-notr><div class="doc-pdf-icon"><span>${kind}</span></div><div class="doc-pdf-meta"><div class="doc-pdf-filename">${esc(f0.name||doc.name)}</div><div class="doc-pdf-size">${kind}</div></div></div>`;
@@ -1117,6 +1133,65 @@ function renderList() {
     return `<div class="doc-card" style="border-left-color:${cfg.color}" onclick="openViewer('${doc.id}')">\n            <div class="doc-stripe" style="background:${cfg.color}"></div>\n            <div class="doc-body">\n                <div class="doc-top">\n                    <div class="doc-icon" style="background:${cfg.bg}">${doc.type}</div>\n                    <div class="doc-info">\n                        <div class="doc-name">${esc(doc.name)}${window.tfSyncBadge ? tfSyncBadge(window._tfPendingDocs && window._tfPendingDocs.has(doc.id) ? "pending" : "ok", true) : ""}</div>\n                        <div class="doc-meta">\n                            <span>${typeLabel}</span>\n                            ${linked ? `<span class="doc-meta-dot"></span><span>Reserva: ${esc(linked.name)}</span>` : ""}\n                            <span class="doc-meta-dot"></span>\n                            <span>${date}</span>\n                            <span class="doc-meta-dot"></span>\n                            <span>${totalFiles} ${totalFiles===1?tfL3("archivo","file","arquivo"):tfL3("archivos","files","arquivos")}</span>\n                        </div>\n                    </div>\n                    <div class="doc-btns">\n                        ${linked ? `<a class="doc-view-btn" href="planificacion.html?section=reservas&reservation=${encodeURIComponent(linked.id)}" onclick="event.stopPropagation()" style="text-decoration:none;">VER RESERVA</a>` : ""}\n                        <button class="doc-view-btn" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${linked?'CAMBIAR VÍNCULO':'VINCULAR'}</button>
                         <button class="doc-view-btn" onclick="event.stopPropagation();openViewer('${doc.id}')">${t.lbl_ver || "VER"}</button>\n                        <button class="doc-del-btn" onclick="event.stopPropagation();deleteDoc('${doc.id}')" title="Eliminar" aria-label="Eliminar documento">🗑️</button>\n                    </div>\n                </div>\n                ${!linked && suggested ? `<div class="doc-link-hint">🔗 Podría corresponder a <button type="button" onclick="event.stopPropagation();openDocumentLink('${doc.id}')">${esc(suggested.reservation.name)}</button></div>` : ""}\n                ${preview}\n                ${offlineBadge}\n            </div>\n        </div>`;
   }).join("");
+  setupPdfThumbObserver();
+}
+
+function setupPdfThumbObserver() {
+  if (_pdfThumbObserver) _pdfThumbObserver.disconnect();
+  const targets = document.querySelectorAll("[data-pdf-thumb]");
+  if (!targets.length) return;
+  if (!("IntersectionObserver" in window)) {
+    targets.forEach(el => renderPdfThumb(el));
+    return;
+  }
+  _pdfThumbObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        _pdfThumbObserver.unobserve(entry.target);
+        renderPdfThumb(entry.target);
+      }
+    });
+  }, {
+    rootMargin: "300px 0px"
+  });
+  targets.forEach(el => _pdfThumbObserver.observe(el));
+}
+
+async function renderPdfThumb(el) {
+  const id = el.dataset.pdfThumb;
+  const doc = allDocs.find(d => d.id === id);
+  const f0 = (doc?.files || []).find(f => f.kind === "pdf");
+  if (!f0?.dataUrl) return;
+  try {
+    const pdfjs = await getPdfJs();
+    const bytes = Uint8Array.from(atob(f0.dataUrl.split(",")[1]), c => c.charCodeAt(0));
+    const pdf = await pdfjs.getDocument({
+      data: bytes
+    }).promise;
+    const page = await pdf.getPage(1);
+    const baseVp = page.getViewport({
+      scale: 1
+    });
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const scale = (el.clientWidth || 260) * dpr / baseVp.width;
+    const vp = page.getViewport({
+      scale
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    await page.render({
+      canvasContext: canvas.getContext("2d"),
+      viewport: vp
+    }).promise;
+    const dataUrl = canvas.toDataURL("image/jpeg", .75);
+    _pdfThumbCache.set(id, dataUrl);
+    if (document.body.contains(el)) {
+      el.outerHTML = `<img class="doc-thumb" src="${dataUrl}" alt="${esc(tfL3('Vista previa del documento','Document preview','Prévia do documento'))}" loading="lazy">`;
+    }
+  } catch (e) {
+    console.error("pdf thumb error", e);
+  }
 }
 
 window.addEventListener('taxfly:care-ready',()=>renderList());
@@ -1712,6 +1787,7 @@ window.openViewer = async id => {
 window.closeViewer = () => {
   document.getElementById("viewerModal").classList.remove("show");
   document.body.style.overflow = "";
+  document.getElementById("shareMenu")?.classList.remove("show");
   viewingId = null;
   _pdfDoc = null;
   _searchItems = [];
@@ -1784,27 +1860,58 @@ function scrollToMatch(idx) {
   });
 }
 
-window.shareDoc = async () => {
+window.toggleShareMenu = e => {
+  e.stopPropagation();
+  const menu = document.getElementById("shareMenu");
+  if (!menu) return;
+  const isOpen = menu.classList.contains("show");
+  menu.classList.toggle("show", !isOpen);
+};
+
+function closeShareMenu() {
+  document.getElementById("shareMenu")?.classList.remove("show");
+}
+
+window.downloadDoc = () => {
+  closeShareMenu();
   const doc = allDocs.find(d => d.id === viewingId);
-  if (!doc?.files?.[0]) return;
-  const f = doc.files[0];
+  if (!doc?.files?.length) return;
+  doc.files.forEach((f, i) => {
+    setTimeout(() => {
+      const a = document.createElement("a");
+      a.href = f.dataUrl;
+      a.download = f.name || (doc.name + (f.kind === "pdf" ? ".pdf" : ".jpg"));
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }, i * 250);
+  });
+};
+
+window.shareDocNative = async () => {
+  closeShareMenu();
+  const doc = allDocs.find(d => d.id === viewingId);
+  if (!doc?.files?.length) return;
+  if (!navigator.share) {
+    showAlert(tr('err_share_unsupported'));
+    return;
+  }
   try {
-    const blob = await (await fetch(f.dataUrl)).blob();
-    const file = new File([ blob ], doc.name + (f.kind === "pdf" ? ".pdf" : ".jpg"), {
-      type: blob.type
-    });
+    const files = await Promise.all(doc.files.map(async f => {
+      const blob = await (await fetch(f.dataUrl)).blob();
+      return new File([ blob ], f.name || (doc.name + (f.kind === "pdf" ? ".pdf" : ".jpg")), {
+        type: blob.type
+      });
+    }));
     if (navigator.canShare?.({
-      files: [ file ]
+      files
     })) {
       await navigator.share({
-        files: [ file ],
+        files,
         title: doc.name
       });
     } else {
-      const a = document.createElement("a");
-      a.href = f.dataUrl;
-      a.download = file.name;
-      a.click();
+      showAlert(tr('err_share_unsupported'));
     }
   } catch (e) {
     if (e.name !== "AbortError") showAlert(tr('err_share_failed'));
@@ -1826,6 +1933,11 @@ document.addEventListener("click", e => {
   if (dd && btn && !btn.contains(e.target)) {
     dd.classList.remove("show");
     btn.classList.remove("open");
+  }
+  const shareMenu = document.getElementById("shareMenu");
+  const shareWrap = document.querySelector(".share-wrap");
+  if (shareMenu && shareWrap && !shareWrap.contains(e.target)) {
+    shareMenu.classList.remove("show");
   }
 });
 
