@@ -100,6 +100,8 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
 
         
         .doc-thumb{width:100%;height:100px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:block;}
+        .doc-pdf-thumb{display:flex;align-items:center;justify-content:center;background:var(--surface-2);}
+        .doc-pdf-thumb-ph{font-size:.72rem;font-weight:900;letter-spacing:.5px;color:var(--danger);opacity:.55;}
 
         
         .doc-pdf-preview{display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border);}
@@ -204,10 +206,16 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
         .doc-link-hint{font-size:.72rem;color:var(--text-sub);padding:8px 14px 10px}.doc-link-hint button{border:0;background:none;color:var(--primary);font:inherit;font-weight:800;cursor:pointer;padding:0;text-align:left}
         .viewer-actions{padding:10px 14px 28px;display:flex;gap:8px;flex-shrink:0;}
         .viewer-btn{flex:1;padding:12px;border-radius:10px;border:none;font-family:inherit;font-size:.78rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr);}
-        .viewer-btn.share{background:var(--primary);color:white;}
+        .viewer-btn.share{background:var(--primary);color:white;width:100%;}
         .viewer-btn.search-toggle{background:rgba(255,255,255,.1);color:white;}
         .viewer-btn.search-toggle.active{background:var(--primary);color:white;}
         .viewer-btn.del{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.25);}        .lang-opt img{width:18px;border-radius:2px;}        .btn-danger-d{color:var(--danger)!important;border-color:rgba(239,68,68,.3)!important;}
+        .share-wrap{flex:1;position:relative;}
+        .share-menu{display:none;position:absolute;bottom:calc(100% + 10px);left:0;width:100%;min-width:190px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:6px;box-shadow:var(--shadow-lg);z-index:10;animation:ddIn .15s ease;}
+        .share-menu.show{display:block;}
+        .share-menu-item{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;border:none;background:none;color:var(--text);font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;text-align:left;}
+        .share-menu-item:hover{background:var(--primary-dim,rgba(37,99,235,.12));}
+        @keyframes ddIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
         .doc-offline-badge{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 10px;border-radius:20px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);font-size:.62rem;font-weight:800;color:#b45309;letter-spacing:.3px;}
         [data-theme="dark"] .doc-offline-badge{background:rgba(245,158,11,.08);color:#f59e0b;}
     
@@ -406,7 +414,13 @@ if (_t) document.documentElement.setAttribute("data-theme", _t); else if (window
     <div class="viewer-actions">
         <button class="viewer-btn search-toggle" onclick="editDocumentMetadata()">Datos</button>
         <button class="viewer-btn search-toggle" onclick="openDocumentLink()">🔗 Vincular</button>
-        <button class="viewer-btn share" onclick="shareDoc()">📤 <span data-i18n="btn_share">Compartir</span></button>
+        <div class="share-wrap">
+            <button class="viewer-btn share" onclick="toggleShareMenu(event)">📤 <span data-i18n="btn_share">Compartir</span></button>
+            <div class="share-menu" id="shareMenu">
+                <button class="share-menu-item" onclick="downloadDoc()">⬇️ <span data-i18n="btn_download">Descargar</span></button>
+                <button class="share-menu-item" onclick="shareDocNative()">📲 <span data-i18n="btn_share_via">Compartir vía…</span></button>
+            </div>
+        </div>
         <button class="viewer-btn del"   onclick="deleteFromViewer()">🗑️ <span data-i18n="btn_del">Eliminar</span></button>
     </div>
 </div>
