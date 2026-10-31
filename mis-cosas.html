@@ -294,6 +294,17 @@ ul.list{list-style:none;margin:0;padding:0;background:var(--surface);border:1px 
   .dchecks button{min-width:60px}
 }
 .dchecks{display:flex;gap:6px;flex-shrink:0}
+/* Mochila del día: evita que el nombre se rompa letra por letra en tarjetas angostas */
+.diamode .row{flex-wrap:wrap;align-items:center}
+.diamode .thumbs{flex:0 0 auto}
+.diamode .thumbs img{height:72px;max-width:88px}
+.diamode .nophoto{width:72px;height:72px}
+.diamode .info{flex:1 1 120px;min-width:120px}
+.diamode .row h3{overflow-wrap:break-word;word-break:normal;hyphens:auto}
+.diamode .dchecks{flex:1 1 160px;flex-shrink:1}
+.diamode .dchecks button{flex:1 1 0;min-width:64px}
+@media (min-width:860px){.diamode ul.list{align-items:start}}
+
 .dchecks button{
   min-width:76px;height:42px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;
   display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:12.5px;font-weight:700;color:var(--muted);transition:var(--tr);
