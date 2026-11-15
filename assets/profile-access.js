@@ -15,3 +15,47 @@
   window.taxflyProfileAccess=function(){return {...state}};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load);else load();
 })();
+
+// --- Avatar del botón de ajustes: fuente única + auto-reparación ---
+// Antes, cada página (tax.js, index-app.js, compras.js, rutas.js, etc.)
+// reimplementaba por su cuenta "leer perfilActivoFoto y pintarlo en
+// #btnSettings", en momentos distintos del ciclo de carga. Si algo repintaba
+// el botón (ej. buildNav() de ui.js al cambiar idioma) después de que esa
+// copia particular corriera, la foto desaparecía. Esto no reemplaza esas
+// copias (para no tocar 13 archivos a ciegas), sino que agrega un único
+// punto que vuelve a aplicar la foto cada vez que detecta que el botón la
+// perdió, sin importar cuál de esas copias falló.
+(function(){
+  "use strict";
+  function getFoto(){try{return localStorage.getItem("perfilActivoFoto")||""}catch(e){return""}}
+  function paint(btn,foto){
+    if(!btn||!foto)return;
+    var want="url(\""+foto+"\")";
+    if(btn.style.backgroundImage!==want)btn.style.backgroundImage=want;
+    if(btn.textContent)btn.textContent="";
+  }
+  function applyAvatar(){
+    var foto=getFoto();
+    if(!foto)return;
+    ["btnSettings","btnSettings2"].forEach(function(id){paint(document.getElementById(id),foto)});
+  }
+  window.taxflyApplyAvatar=applyAvatar;
+  window.addEventListener("taxfly:profile-updated",applyAvatar);
+  window.addEventListener("taxfly:profile-access",applyAvatar);
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyAvatar);else applyAvatar();
+  // Auto-reparación: si algo repinta el nav (cambio de idioma, re-render,
+  // etc.) y el botón se queda sin la imagen de fondo, la reaplicamos apenas
+  // el DOM vuelve a cambiar.
+  function watch(){
+    var mo=new MutationObserver(function(){
+      var foto=getFoto();
+      if(!foto)return;
+      ["btnSettings","btnSettings2"].forEach(function(id){
+        var btn=document.getElementById(id);
+        if(btn&&!btn.style.backgroundImage)paint(btn,foto);
+      });
+    });
+    mo.observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.body)watch();else document.addEventListener("DOMContentLoaded",watch);
+})();

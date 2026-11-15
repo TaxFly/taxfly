@@ -1,4 +1,4 @@
-const CACHE = "taxfly-e5ec77d2b33a";
+const CACHE = "taxfly-f1a9c4d7e2b6";
 
 const TILES_CACHE = "taxfly-tiles-v1";
 
@@ -9,6 +9,7 @@ const PRECACHE = ["./assets/guide-pages.js", "./assets/mascot.js", "./assets/gui
 const OFFLINE_FALLBACK = "./offline.html";
 
 self.addEventListener("install", e => {
+  self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(async cache => {
     // Firebase modules are imported by the signed-in screens. They are as
     // essential as the local scripts for opening those screens offline.
@@ -22,7 +23,10 @@ self.addEventListener("install", e => {
 });
 
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith("taxfly-") && k !== CACHE && k !== TILES_CACHE).map(k => caches.delete(k)))));
+  e.waitUntil(Promise.all([
+    caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith("taxfly-") && k !== CACHE && k !== TILES_CACHE).map(k => caches.delete(k)))),
+    self.clients.claim()
+  ]));
 });
 
 async function trimTileCache() {
@@ -48,17 +52,13 @@ self.addEventListener("fetch", e => {
     e.respondWith(caches.open(CACHE).then(async cache => {
       const cached = await cache.match(relative);
       if (cached) return cached;
-      // Repair an evicted entry only if the deployed worker identifies this build.
+      // Repair an evicted entry with a single, fast network fetch — no more
+      // double round-trip (sw.js check + resource fetch) that could stall
+      // navigation for up to 16s on every cache miss.
       try {
-        const workerResponse=await fetchWithTimeout(new Request(new URL("sw.js",base),{cache:"no-store"}),8000);
-        const workerSource=await workerResponse.text();
-        const deployed=workerSource.match(/^const CACHE = ["']([^"']+)["'];/m)?.[1];
-        if(workerResponse.ok && deployed===CACHE) {
-          const restored=await fetchWithTimeout(new Request(new URL(relative,base),{cache:"reload"}),8000);
-          if(restored.ok){await cache.put(relative,restored.clone());return restored;}
-        }
+        const restored = await fetchWithTimeout(new Request(new URL(relative, base), {cache:"reload"}), 4000);
+        if (restored.ok) { await cache.put(relative, restored.clone()); return restored; }
       } catch (_) {}
-      // Do not pair a new network document with this worker's older assets.
       if (e.request.headers.get("accept")?.includes("text/html"))
         return await cache.match(OFFLINE_FALLBACK) || new Response(null,{status:503});
       return new Response(null,{status:503});
